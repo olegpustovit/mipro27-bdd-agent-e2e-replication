@@ -32,7 +32,7 @@ are the output of this command; `git diff --exit-code results/` after running it
 
 | Campaign | Commit | Runtime model (CLI) | Executions | Notes |
 |---|---|---|---|---|
-| `campaign-20261101-04d8551` (A) | `04d8551` | `gpt-6-luna` medium (Codex CLI 0.159.3) | 216: 108 step code, 108 agent | 2 maintenance transitions by `gpt-6-luna`. 13 agent false alarms caused by `browser_reload` returning before data loaded (harness defect). |
+| `campaign-20261101-04d8551` (A) | `04d8551` | `gpt-6-luna` medium (Codex CLI 0.159.3) | 216: 108 step code, 108 agent | Step definitions updated in code after change 1 and after change 2. 13 agent false alarms caused by `browser_reload` returning before data loaded (harness defect). |
 | `campaign-b-20261101-02f4758` (B) | `02f4758` | `gpt-6-luna` medium | 108 agent | Post-hoc: reload waits for network idle (max 5 s). Step code frozen from A. |
 | `campaign-c-20261101-f7857ea` (C) | `f7857ea` | `gpt-5.6-terra` medium | 108 agent | Post-hoc second model. |
 | `campaign-d-20261101-2b2589f` (D) | `2b2589f` | `claude-haiku-5-5` medium thinking (omp 18.14.0) | 108 agent | Post-hoc, owner-suggested. CLI and its system prompt are confounded with the model. |
@@ -47,7 +47,7 @@ Each adjudication is a separate LLM review, not code. Its exact prompt, model an
 ### Recompute the two-case rescue fact sheet
 
 In the replication package, `moodle-ledger/` contains the frozen Moodle measurement ledger,
-the referenced trace and repair blobs, and the Cypress follow-up journals and grades under
+the referenced trace and step-definition update blobs, and the Cypress follow-up journals and grades under
 `runs/`. Verify the follow-up files with `sha256sum -c followups.SHA256SUMS`. Install the
 locked Node dependencies with `npm ci`. The Moodle analysis reads the original scenario
 definitions from the public Moodle checkout. If you do not already have that checkout, fetch
@@ -191,12 +191,12 @@ Run `node scripts/human-sample.mjs` only to create a missing sample; overwriting
 explicit `--force`. Do not silently select a new sample after looking at its answers.
 
 `npm run analyze` additionally writes `results/facts.txt`: corrected breakage (12/12, 8/12),
-repair budgets, and with/without-social results. The local console can separately report
+update budgets, and with/without-social results. The local console can separately report
 optional human agreement. Original `.analysis.txt` and
 `.derived.txt` files remain exact historical reproductions; their initial-suite lines are
 known wrong. The frozen B–D journals retain the unfiltered 216-execution plan even though
 each runtime-only rerun recorded 108; the console labels that denominator discrepancy.
-The immediate healthy stages after repairs are 5/12 and 12/12; later v2 repetitions include
+The immediate healthy stages after the step-definition updates are 5/12 and 12/12; later v2 repetitions include
 one infrastructure-invalid execution and are not silently counted as correct passes.
 
 For a persistent local service on host `main`: `smdctl run -f deploy/console.smdctl.yml`
@@ -210,7 +210,7 @@ saves one overall run grade to reveal both automated grades.
 The corrected supplement also contains campaign-specific resource tables: per-run elapsed totals
 across all results, recorded-result mean/median with its denominator, and input/cached-input/
 uncached-input/output token counters. Missing measurements are named; the maintained execution
-arm has no model-usage ledger and its repairs are reported separately. These counters are not
+arm has no model-usage ledger and its step-definition updates are reported separately. These counters are not
 billed charges and exclude unmeasured construction, adapter/prompt/harness engineering and
 human labor. Codex/omp runtime CLI pins are taken from the reproduction record above.
 
@@ -219,7 +219,7 @@ null when any required input/output measurement is missing, while observed parti
 coverage are retained. Cache-read and cache-write counters have separate coverage. Input minus
 cache-read is `nonCacheReadInput`, not one billing category; omp input includes cache writes.
 The table separates new input from cache writes only where all needed counters were recorded.
-Repair sessions have the same coverage/category reporting and never turn missing usage into zero.
+Step-definition update sessions have the same coverage/category reporting and never turn missing usage into zero.
 
 For even sample sizes, the new median averages the two middle elapsed values; recovered scripts
 use the upper middle value. `record.elapsedMs` is the trial phase from setup/environment/UI/reset/
@@ -228,7 +228,7 @@ trial-record emit. Maintenance elapsed includes setup, initial validation, agent
 cleanup and source restore, before maintenance-record emit. Phase sums omit between-phase and
 one-time bootstrap work and are not full campaign wall time or pure model inference latency.
 
-### Recompute the matched Cypress runtime comparison
+### Recompute the follow-up (matched) Cypress runtime comparison
 
 The replication package preserves the 36-cell manifest and the four campaigns under
 `experiment-4/`. Each campaign contains its execution journal, trace records, and both
@@ -253,13 +253,13 @@ In 12 Opus runs the final response ended with prose followed by a bare JSON verd
 Verdict parser version 1 recorded them as unresolved. `scripts/verdict.mjs` is now version 2,
 which also accepts one verdict object ending the response, with the same conflict checks.
 `provenance/orchestration/prepare-verdict-recovery.mjs` replayed every recorded response; only
-12 matched-comparison Opus runs and one follow-up Opus run changed. Their re-decoded records,
+12 follow-up-comparison Opus runs and one follow-up Opus run changed. Their re-decoded records,
 regraded by both graders, are `experiment-4/campaign-experiment4-opus-verdict-v2/` and
 `moodle-ledger/runs/campaign-f-20261118-opus-verdict-v2/`; the summary above uses them in place
 of the originals. `uv run scripts/counts/opus_reparse.py` re-derives them independently.
 The manifest pins `scripts/verdict.mjs` at version 1, the version that ran.
 
-The matched comparison ran with a later `study/ui-contract.mjs` than campaigns A to D. The
+The follow-up comparison ran with a later `study/ui-contract.mjs` than campaigns A to D. The
 package's `study/ui-contract.mjs` is the campaign A to D version; the version pinned by
 `experiment-4/experiment-4-comparison.json` is `experiment-4/source-pins/study/ui-contract.mjs`.
 
@@ -286,5 +286,5 @@ and `moodle-ledger/trials.jsonl`. Consequences:
   `clock-recovery/`, `moodle-ledger/runs/` and campaigns B to D are unaffected.
 - The sandbox self-checks in `scripts/codex-boundary.mjs` and `scripts/drivers/claude-code.mjs`
   test the running user's home directory (`os.homedir()`) instead of a literal path, so the
-  matched-comparison source pins for those two files no longer match.
+  follow-up-comparison source pins for those two files no longer match.
 

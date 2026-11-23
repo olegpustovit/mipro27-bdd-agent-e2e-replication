@@ -40,7 +40,7 @@ Payment app (Cypress Real World App, main comparison; `scripts/counts/payment.py
 - "Stopped before the fault": faulty runs that the first grader classed `action_failure` or
   `no_opportunity` (`data/campaigns/*/adjudication.jsonl`).
 
-Matched comparison (`scripts/counts/matched.py`, `scripts/counts/opus_reparse.py`)
+Follow-up comparison, called the matched comparison in earlier versions (`scripts/counts/matched.py`, `scripts/counts/opus_reparse.py`)
 - Same status rule; each faulty run is paired with the healthy run of the same case on the
   same interface revision. Tokens are input + output counters; minutes sum `record.elapsedMs`.
 - "After re-read" replaces 12 Opus records by the records in
@@ -71,7 +71,7 @@ Cost (`scripts/counts/cost.py`)
 |---|---|
 | `data/campaigns/` | Payment-app main comparison: campaign A (step definitions; its browser-agent runs were discarded for a reload defect) and runtime-only campaigns B, C, D. Trials and events are zstd-compressed JSONL. |
 | `data/excluded/` | Pre-campaign resume test; not study data. |
-| `experiment-4/` | Matched comparison: four configurations x 36 runs, both automated grade files, the manifest, the 12 re-read Opus verdicts (`campaign-experiment4-opus-verdict-v2`), and `source-pins/` with the prompt contract the comparison pinned. |
+| `experiment-4/` | Follow-up comparison: four configurations x 36 runs, both automated grade files, the manifest, the 12 re-read Opus verdicts (`campaign-experiment4-opus-verdict-v2`), and `source-pins/` with the prompt contract the comparison pinned. |
 | `moodle-ledger/` | Moodle measurement ledger (`trials.jsonl`, `tasks.jsonl`, content-addressed `blobs/`) and the Cypress follow-up runs under `runs/`. |
 | `clock-recovery/` | Re-evaluated follow-up traces and their grades. |
 | `results/` | Derived reports. `counts-v1.1.0.txt` is the output of `scripts/reproduce_counts.py`. |
@@ -88,7 +88,7 @@ Checksums: `RELEASE.SHA256SUMS` (every file), `experiment-4/EXECUTION.SHA256SUMS
 ## Other analyses
 
 The Node analyses that produced the derived reports (`npm run analyze`, the Moodle report,
-the matched-comparison summary), the re-run procedure for each campaign and the local trace
+the follow-up-comparison summary), the re-run procedure for each campaign and the local trace
 console are described in `REPRODUCE.md`. They need Node 24 and `npm ci`.
 
 ## Changes in v1.1.0
