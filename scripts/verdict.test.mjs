@@ -21,6 +21,16 @@ test('generic decoder accepts whole JSON and one fenced object with explanatory 
   }
   assert.equal(normalizeAssertion(' And a value stays saved '), 'a value stays saved');
 });
+test('version 2 accepts prose followed by one bare verdict object that ends the response', () => {
+  const raw = `The scenario fails: the invalid email was saved.\n\n- Sign-in worked.\n\n${failure}`;
+  const decoded = decodeVerdict(raw, ['invalid input is rejected']);
+  assert.equal(decoded.reportedStatus, 'fail'); assert.equal(decoded.verdictFormat, 'trailing-json'); assert.equal(decoded.failedAssertionVerified, true);
+  const nested = `Done.\n${JSON.stringify({ status: 'pass', reason: 'Saw {braces} in text.', failedAssertion: null })}`;
+  assert.equal(decodeVerdict(nested).reportedStatus, 'pass');
+  for (const bad of [`Verdict: fail\n${pass}`, `Result = pass\n${failure}`, `${pass}\nThen also\n${failure}`, `Prose ${pass} trailing words`, `Prose\n${pass.slice(0, -1)}`, `Prose\n{"status":"pass","reason":"x"}`]) {
+    const d = decodeVerdict(bad, ['invalid input is rejected']); assert.equal(d.reportedStatus, 'unresolved', bad); assert(d.verdictParseError);
+  }
+});
 test('multiple, conflicting, duplicate-key and malformed verdicts remain unresolved', () => {
   for (const raw of [
     `${pass}\n${failure}`, `\`\`\`json\n${pass}\n\`\`\`\n\`\`\`json\n${failure}\n\`\`\``,

@@ -55,6 +55,31 @@ for (const { campaign, model, driver } of pins.arms) {
         row.opaqueId !== opaqueId(campaign, row.trialId) || !row.ok || !validClass(row))) {
     throw new Error('Grade rows do not reconcile to recorded trials: ' + campaign);
   }
+  // Verdict parser v2 re-decoded some final responses (prepare-verdict-recovery.mjs).
+  // Those trials were regraded by both graders; their new grades replace the originals.
+  const recoveryCampaign = campaign + '-verdict-v2';
+  const recoveryDir = join(runs, recoveryCampaign);
+  let verdictRecovered = 0;
+  if (existsSync(join(recoveryDir, 'trials.jsonl'))) {
+    const recovered = read(recoveryDir, 'trials.jsonl');
+    const recoveredFirst = new Map(read(recoveryDir, 'adjudication.jsonl').map(row => [row.trialId, row.classification]));
+    const recoveredSecond = new Map(read(recoveryDir, 'second-grader.jsonl').filter(row => row.ok)
+      .map(row => [row.trialId, row]));
+    for (const { record } of recovered) {
+      const original = expected.get(record.trialId);
+      const sonnet = recoveredSecond.get(record.trialId);
+      if (!original || original.result !== 'recorded' || record.verdictRecovery?.sourceRecordSHA !== original.record.recordSHA ||
+          recordDigest(record) !== record.recordSHA || !recoveredFirst.has(record.trialId) || !sonnet ||
+          sonnet.opaqueId !== opaqueId(recoveryCampaign, record.trialId) ||
+          !validClass({ trialId: record.trialId, classification: recoveredFirst.get(record.trialId) }) ||
+          !validClass({ trialId: record.trialId, classification: sonnet.classification })) {
+        throw new Error('Verdict recovery does not reconcile: ' + record.trialId);
+      }
+      first.set(record.trialId, recoveredFirst.get(record.trialId));
+      second.set(opaqueId(campaign, record.trialId), sonnet.classification);
+      verdictRecovered++;
+    }
+  }
   const graded = rows.filter(row => row.result === 'recorded').map(({ record }) => ({
     stage: record.trial.stage,
     terra: first.get(record.trialId) ?? 'ungraded',
@@ -90,6 +115,7 @@ for (const { campaign, model, driver } of pins.arms) {
   add('usable', `${result.recorded}/${result.completed}`);
   add('infrastructure_invalid', result.invalid);
   add('grader_agreement', `${result.agree}/${result.compared}`);
+  if (verdictRecovered) add('verdict_parser_v2_regraded', verdictRecovered);
   for (const key of ['inputTokens', 'outputTokens', 'wallMs', 'reportedCostUsd', 'sonnetGradeCostUsd']) {
     const { sum: value, metered } = result[key];
     add(key, value === null ? 'Not reported' : `${Number(value.toFixed(9))} across ${metered}/${result.completed} runs`);

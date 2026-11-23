@@ -4,14 +4,33 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 campaign=${1:?Provide the terminal campaign id}
 case "$campaign" in
-  campaign-e-20261118-*|campaign-f-20261118-*|campaign-experiment4-haiku|campaign-experiment4-luna|campaign-experiment4-sonnet|campaign-experiment4-opus) ;;
+  campaign-e-20261118-*|campaign-f-20261118-*|campaign-experiment4-haiku|campaign-experiment4-luna|campaign-experiment4-sonnet|campaign-experiment4-opus|campaign-experiment4-opus-verdict-v2) ;;
   *) echo 'Expected a rescue campaign id' >&2; exit 64 ;;
 esac
 [[ "$campaign" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 64
 campaign_dir="${STUDY_DATA_DIR:-$HOME/.local/share/cucumber-study}/runs/$campaign"
 [[ -s "$campaign_dir/trials.jsonl" && ! -e "$campaign_dir/adjudication.jsonl" ]] || exit 65
 test ! -e "$campaign_dir/first-grader.events.jsonl" || exit 65
-if [[ "$campaign" == campaign-experiment4-* ]]; then
+if [[ "$campaign" == *-verdict-v2 ]]; then
+  # Re-decoded responses: every record must trace to a recorded original in its source campaign.
+  node --input-type=module - "$campaign_dir" <<'VERIFY'
+import fs from 'node:fs';
+import path from 'node:path';
+import { recordDigest } from './scripts/campaign-guard.mjs';
+const dir = process.argv[2];
+const read = file => fs.readFileSync(file, 'utf8').trim().split('\n').map(JSON.parse);
+for (const row of read(path.join(dir, 'trials.jsonl'))) {
+  const recovery = row.record.verdictRecovery;
+  const source = read(path.join(dir, '..', recovery.sourceCampaign, 'trials.jsonl'))
+    .find(item => item.record?.trialId === row.record.trialId);
+  if (row.result !== 'recorded' || recovery?.toParserVersion !== 2 || source?.result !== 'recorded' ||
+      source.record.recordSHA !== recovery.sourceRecordSHA || recordDigest(source.record) !== source.record.recordSHA ||
+      recordDigest(row.record) !== row.record.recordSHA || source.record.agent.rawResponse !== row.record.agent.rawResponse) {
+    throw new Error('Verdict recovery does not trace to its source record: ' + row.record.trialId);
+  }
+}
+VERIFY
+elif [[ "$campaign" == campaign-experiment4-* ]]; then
   node --input-type=module - "$campaign_dir" <<'VERIFY'
 import fs from 'node:fs';
 import path from 'node:path';

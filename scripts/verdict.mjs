@@ -1,5 +1,5 @@
 import { parseExpressionAt } from 'acorn';
-export const verdictParserVersion = 1;
+export const verdictParserVersion = 2;
 const statuses = new Set(['pass', 'fail', 'unresolved']);
 export const normalizeAssertion = value => typeof value === 'string' ? value.trim().replace(/^(?:Then|And)\s+/, '') : null;
 export function scenarioAssertions(feature, caseId) {
@@ -43,7 +43,10 @@ function singleFence(text) {
     else outside.push(line);
   }
   if (!opened || !closed) throw new Error('Expected whole JSON or exactly one closed JSON fence');
-  const prose = outside.join('\n');
+  checkProse(outside.join('\n'));
+  return body.join('\n').trim();
+}
+function checkProse(prose) {
   // Ambiguity checks are syntactic, not a model interpretation of prose.
   // Ordinary explanations such as "the scenario passes" remain acceptable;
   // another explicit status/verdict/result declaration does not.
@@ -57,7 +60,21 @@ function singleFence(text) {
       if (value && typeof value === 'object' && Object.hasOwn(value, 'status')) throw new Error('additional-verdict-object');
     } catch (error) { if (error.message === 'additional-verdict-object') throw new Error('Additional verdict object outside JSON fence'); }
   }
-  return body.join('\n').trim();
+}
+// Version 2: prose followed by one bare verdict object that ends the response.
+// The prose gets the same ambiguity checks as prose around a fence.
+function trailingObject(text) {
+  if (!text.endsWith('}')) throw new Error('Expected whole JSON, one closed JSON fence, or one JSON object ending the response');
+  for (const match of text.matchAll(/\{/g)) {
+    let node;
+    try { node = parseExpressionAt(text, match.index, { ecmaVersion: 2024 }); } catch { continue; }
+    if (node.type !== 'ObjectExpression' || node.end !== text.length) continue;
+    const prose = text.slice(0, match.index);
+    if (!prose.trim()) throw new Error('Trailing object without prose must be whole JSON');
+    checkProse(prose);
+    return text.slice(match.index);
+  }
+  throw new Error('Expected whole JSON, one closed JSON fence, or one JSON object ending the response');
 }
 export function decodeVerdict(raw, assertions = []) {
   const base = { verdictParserVersion, rawResponse: raw ?? null, reportedStatus: 'unresolved', failedAssertion: null, normalizedFailedAssertion: null, failedAssertionVerified: false, verdictFormat: null, verdictParseError: null };
@@ -68,8 +85,9 @@ export function decodeVerdict(raw, assertions = []) {
     try { JSON.parse(text); wholeJSON = true; } catch {}
     // A syntactically valid JSON value with a wrong schema must not be
     // salvaged by searching inside it for another answer.
-    const object = readObject(wholeJSON ? text : singleFence(text));
-    const format = wholeJSON ? 'whole-json' : 'single-fenced-json';
+    const fenced = !wholeJSON && /^[ \t]*(`{3,}|~{3,})/m.test(text);
+    const object = readObject(wholeJSON ? text : fenced ? singleFence(text) : trailingObject(text));
+    const format = wholeJSON ? 'whole-json' : fenced ? 'single-fenced-json' : 'trailing-json';
     const normalized = normalizeAssertion(object.failedAssertion);
     return { ...base, reportedStatus: object.status, verdictReason: object.reason, failedAssertion: object.failedAssertion, normalizedFailedAssertion: normalized, failedAssertionVerified: object.status === 'fail' && normalized !== null && assertions.includes(normalized), verdictFormat: format };
   } catch (error) { return { ...base, verdictParseError: error.message }; }

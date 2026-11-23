@@ -1,6 +1,8 @@
 // Rebuild every reported count and derived estimate from the committed campaign data.
 // Usage: node scripts/analyze-campaigns.mjs [--verify]
-//   --verify  also checks each decompressed file against data/SHA256SUMS.original
+//   --verify  also checks each decompressed file against data/SHA256SUMS
+//             (data/SHA256SUMS.original keeps the runner-written hashes; since v1.1.0 four
+//             campaign A files differ from them only by the home-path placeholder, see REPRODUCE.md)
 // Output: results/<campaign>.analysis.txt and results/<campaign>.derived.txt
 // The analysis code is the code that produced the reported numbers on 2026-11-01
 // (provenance/orchestration/analyze.mjs and derived.mjs, recovered unchanged).
@@ -16,7 +18,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataDir = path.join(root, 'data', 'campaigns');
 const outDir = path.join(root, 'results');
 const verify = process.argv.includes('--verify');
-const sums = new Map(fs.readFileSync(path.join(root, 'data', 'SHA256SUMS.original'), 'utf8')
+const sums = new Map(fs.readFileSync(path.join(root, 'data', 'SHA256SUMS'), 'utf8')
   .split('\n').filter(Boolean).map(l => { const [h, f] = l.split(/\s+/); return [f, h]; }));
 
 // Campaigns B, C and D re-ran only the runtime arm against campaign A's frozen step code.
@@ -72,7 +74,7 @@ try {
     fs.writeFileSync(path.join(outDir, `${id}.derived.txt`), run('derived.mjs', derivedDir, adj));
     console.log(`${id}: results/${id}.analysis.txt, results/${id}.derived.txt`);
   }
-  if (verify) console.log(`Checksums: all ${ids.length} campaigns match data/SHA256SUMS.original`);
+  if (verify) console.log(`Checksums: all ${ids.length} campaigns match data/SHA256SUMS`);
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }

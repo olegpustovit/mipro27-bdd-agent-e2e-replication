@@ -4,6 +4,15 @@ This repository holds everything needed to (1) recompute every reported number f
 data, and (2) re-run the four campaigns of 2026-11-01. Status of all results: `exploratory-owner-directed`,
 `gatePassExists: false`; the Research Foundry Evidence gate was STOP when they ran (see `AGENTS.md`).
 
+## 0. Recompute the paper's counts (Python, offline, about 10 s)
+
+```sh
+uv run scripts/reproduce_counts.py
+```
+
+Uses the Python 3.14 standard library only and compares every value with the paper; see
+`README.md` for the scoring rules and `results/counts-v1.1.0.txt` for the expected output.
+
 ## 1. Recompute the results (exact, offline, about 30 s)
 
 Requires Node 24 (built-in zstd). No network, no models.
@@ -12,8 +21,9 @@ Requires Node 24 (built-in zstd). No network, no models.
 npm run analyze        # node scripts/analyze-campaigns.mjs --verify
 ```
 
-This decompresses `data/campaigns/*`, checks every file against `data/SHA256SUMS.original` (hashes of
-the files as written by the runner on 2026-11-01), and writes `results/<campaign>.analysis.txt` and
+This decompresses `data/campaigns/*`, checks every file against `data/SHA256SUMS` (hashes of the
+decompressed files as shipped; `data/SHA256SUMS.original` keeps the hashes of the files as written by
+the runner on 2026-11-01, see section 6), and writes `results/<campaign>.analysis.txt` and
 `results/<campaign>.derived.txt` using the analysis code that produced the reported numbers
 (`provenance/orchestration/analyze.mjs`, `derived.mjs`, recovered unchanged). The committed `results/`
 are the output of this command; `git diff --exit-code results/` after running it confirms reproduction.
@@ -109,10 +119,11 @@ npm run study -- task status
 
 Run data is written to `~/.local/share/cucumber-study/runs/<id>/`. To add a run to this repository,
 copy it in the layout of `data/campaigns/` (compress `trials.jsonl` and `events.jsonl` with
-`zstd -19`, rename `progress.log` to `progress.txt`) and append its hashes to `data/SHA256SUMS.original`.
+`zstd -19`, rename `progress.log` to `progress.txt`) and append its hashes to `data/SHA256SUMS`.
 
-The exact commands used on 2026-11-01, including pre-run patches, are in
-`provenance/orchestration/launch-and-patch-commands.log`.
+The exact commands used on 2026-11-01 were to be collected in
+`provenance/orchestration/launch-and-patch-commands.log`. That file was not preserved and is not in
+this package; the launch scripts in `provenance/orchestration/` are the remaining record.
 
 ## 3. Re-run the adjudication
 
@@ -127,7 +138,8 @@ agentpack --yolo codex --no-daemon exec -m gpt-5.6-terra -c 'model_reasoning_eff
 
 The template is `provenance/orchestration/brief-adjudicate.md`; the exact prompt each campaign received
 is `provenance/adjudication/<campaign>.prompt.md`, and the full session (every command it ran and every
-file it wrote) is `<campaign>.codex-rollout.jsonl.zst`. A new adjudication is a new judgment and must be
+file it wrote) is `<campaign>.codex-rollout.jsonl.zst`. In the sessions, the two provider account
+identifiers in the session header are replaced by `<redacted>`. A new adjudication is a new judgment and must be
 reported beside, not instead of, the committed one.
 
 ## 4. Known limits of this record
@@ -140,7 +152,8 @@ reported beside, not instead of, the committed one.
 - The agent's verdicts, raw responses and tool ledgers are in `trials.jsonl`. The agents' own CLI
   session files were not kept: each ran in a sandbox with a temporary home directory.
 - The orchestration scripts in `provenance/orchestration/` were recovered from the orchestrating Claude
-  Code session log on 2026-11-15. They are byte-for-byte what was written then, including hard-coded
+  Code session log on 2026-11-15. They are byte-for-byte what was written then, except that the
+  author's home-directory prefix is replaced by `<home>` (section 6), including hard-coded
   `/tmp/claude-501/...` paths that no longer exist. They are kept as a record, not as a supported entry point.
 - `data/excluded/` is an excluded pre-campaign resume test. It is not study data.
 - Unmeasured: the cost of writing the step definitions in the first place.
@@ -163,7 +176,8 @@ Answers use rater `local-owner`; this label is not a verified personal identity.
 Overview, Trials and Trace read committed campaigns and additional live run directories.
 Every recorded trial has its complete saved tool ledger; expandable results are not truncated.
 The server never runs experiments, models, the study application, Start or Resume.
-The only server write is append-only `data/human-adjudication.jsonl`. Corrections append a
+The only server write is append-only `data/human-adjudication.jsonl` (created on the first
+saved answer; not shipped, because no human grades were collected). Corrections append a
 new answer; latest answer per rater/trial counts. Never replace that history.
 
 The optional human review queue uses the committed `data/human-sample.json`. No human
@@ -183,7 +197,8 @@ each runtime-only rerun recorded 108; the console labels that denominator discre
 The immediate healthy stages after repairs are 5/12 and 12/12; later v2 repetitions include
 one infrastructure-invalid execution and are not silently counted as correct passes.
 
-For a persistent local service on host `main`: `smdctl run -f deploy/console.smdctl.yml`.
+For a persistent local service on host `main`: `smdctl run -f deploy/console.smdctl.yml`
+(replace `<home>` in that file with your home directory).
 Stop it with `smdctl stop cucumber-console` before using `npm run console` on the same port.
 
 The review page shows the test's own report and the observer's recorded checkpoints. A
@@ -232,7 +247,42 @@ together because the comparison uses omp, Codex, and Claude Code. Metered time i
 sum of trial elapsed times. Metered execution charges and second-grader charges are
 reported separately.
 
+In 12 Opus runs the final response ended with prose followed by a bare JSON verdict object.
+Verdict parser version 1 recorded them as unresolved. `scripts/verdict.mjs` is now version 2,
+which also accepts one verdict object ending the response, with the same conflict checks.
+`provenance/orchestration/prepare-verdict-recovery.mjs` replayed every recorded response; only
+12 matched-comparison Opus runs and one follow-up Opus run changed. Their re-decoded records,
+regraded by both graders, are `experiment-4/campaign-experiment4-opus-verdict-v2/` and
+`moodle-ledger/runs/campaign-f-20261118-opus-verdict-v2/`; the summary above uses them in place
+of the originals. `uv run scripts/counts/opus_reparse.py` re-derives them independently.
+The manifest pins `scripts/verdict.mjs` at version 1, the version that ran.
+
+The matched comparison ran with a later `study/ui-contract.mjs` than campaigns A to D. The
+package's `study/ui-contract.mjs` is the campaign A to D version; the version pinned by
+`experiment-4/experiment-4-comparison.json` is `experiment-4/source-pins/study/ui-contract.mjs`.
+
 The `clock-recovery/` directory preserves the re-evaluated Sol and earlier Opus traces
 and their new grades alongside the original invalid records in the follow-up ledgers.
 Run `(cd clock-recovery && sha256sum --quiet -c SHA256SUMS)` to verify the recovery
 files. Its README identifies the inferred observation and the scope of the correction.
+
+## 6. Path placeholders and checksums (v1.1.0)
+
+Release v1.1.0 replaces the author's home-directory prefix with `<home>`, the same prefix in
+munged session-directory names with `-<home>-`, the host name with `<host>`, and the user name
+in one adjudicator session's file listings with `<user>`, in every file,
+including inside the `.zst` files. Nothing else changed in the recorded data. Affected recorded
+files: campaign A `trials`, `events`, `journal` and `adjudication`, `moodle-ledger/tasks.jsonl`
+and `moodle-ledger/trials.jsonl`. Consequences:
+
+- `data/SHA256SUMS` holds the hashes of the shipped decompressed files and is what
+  `npm run analyze` checks. `data/SHA256SUMS.original` still holds the runner-written hashes; four
+  campaign A files differ from them only by the placeholder. The unmodified bytes are in the
+  v1.0.0 release archive.
+- A `recordSHA` stored inside an affected record was computed over the original record, so a
+  recomputed digest of such a record no longer matches it. Records in `experiment-4/`,
+  `clock-recovery/`, `moodle-ledger/runs/` and campaigns B to D are unaffected.
+- The sandbox self-checks in `scripts/codex-boundary.mjs` and `scripts/drivers/claude-code.mjs`
+  test the running user's home directory (`os.homedir()`) instead of a literal path, so the
+  matched-comparison source pins for those two files no longer match.
+
