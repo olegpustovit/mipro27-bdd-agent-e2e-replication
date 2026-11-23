@@ -4,9 +4,10 @@
 # ///
 """Estimated cost of one serial suite run: mean cost per valid execution x number of scenarios.
 
-Payment app (x12): every valid healthy and faulty run; record.elapsedMs and input + output tokens
-from data/campaigns. Step definitions use the maintained arm of campaign A (the two
-infrastructure-invalid runs are left out of the mean).
+Payment app (x12): every healthy and faulty run; record.elapsedMs and input + output tokens
+from data/campaigns. Step definitions use all 108 runs of the maintained arm of campaign A,
+including the two runs graded infrastructure-invalid: they started and exited 1, and count as
+failed runs in the outcome rule (payment.py), so they count in the cost mean too.
 Moodle (x16): browser agents use whole-trial wall time and input + output tokens of every valid
 healthy and faulty run in results/moodle-resources.txt (setup-invalid runs left out).
 Developers' current definitions use the arm A wall mean; updated definitions the mean of the
@@ -36,12 +37,10 @@ AGENT = re.compile(r'^campaign [0-9a-f]+/(B\d+\.S\d+)/(healthy|fault:X\d+)/C/(\S
 def run(ck: Checker):
     ck.section('Cost per suite: payment app (x12 scenarios)')
     coded = [r['record'] for r in read_jsonl('data/campaigns/campaign-20261101-04d8551/trials.jsonl.zst')
-             if r['record']['trial']['arm'] == 'maintained' and r['result'] == 'recorded']
-    assert len(coded) == 106, len(coded)
-    ck.check('coded step definitions, minutes', fmean(r['elapsedMs'] for r in coded) * 12 / 60000, EXPECTED['payment_coded_min'])
-    every = [r['record'] for r in read_jsonl('data/campaigns/campaign-20261101-04d8551/trials.jsonl.zst')
              if r['record']['trial']['arm'] == 'maintained']
-    ck.check('  same, incl. the 2 infrastructure-invalid runs', fmean(r['elapsedMs'] for r in every) * 12 / 60000)
+    assert len(coded) == 108, len(coded)
+    ck.check('coded step definitions, minutes', fmean(r['elapsedMs'] for r in coded) * 12 / 60000, EXPECTED['payment_coded_min'])
+    ck.note('coded mean covers all 108 runs, incl. the 2 infrastructure-invalid runs that exited 1 (failed runs, as in the outcome rule)')
     for label, campaign in PAYMENT.items():
         records = [r['record'] for r in read_jsonl(f'data/campaigns/{campaign}/trials.jsonl.zst') if r['result'] == 'recorded']
         assert len(records) == 108

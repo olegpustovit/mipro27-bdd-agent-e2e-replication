@@ -12,6 +12,8 @@ uv run scripts/reproduce_counts.py
 
 Uses the Python 3.14 standard library only and compares every value with the paper; see
 `README.md` for the scoring rules and `results/counts-v1.1.0.txt` for the expected output.
+The payment-app step-definition cost mean includes the two infrastructure-invalid runs (they started
+and exited 1 and count as failed runs in the outcomes), giving 1.48 minutes per 12-scenario suite.
 
 ## 1. Recompute the results (exact, offline, about 30 s)
 

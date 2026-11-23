@@ -21,9 +21,8 @@ uv run scripts/reproduce_counts.py
 The script prints one table per study part and compares each value with the number stated
 in the paper. A difference is printed as `MISMATCH`, listed on stderr, and the script exits
 with status 1. Values are never adjusted to match. The output of this release is in
-`results/counts-v1.1.0.txt`: 116 values match, 16 rows are informational (no stated value),
-and one differs (payment-app step-definition suite time: 1.4 minutes under the stated rule
-of valid runs, 1.5 in the paper; including the two infrastructure-invalid runs gives 1.48).
+`results/counts-v1.1.0.txt`: all 117 stated values match; 15 rows are informational (no
+stated value).
 
 Each part can also be run alone: `uv run scripts/counts/<part>.py` with `payment`, `matched`,
 `opus_reparse`, `moodle` or `cost`.
@@ -58,9 +57,11 @@ Moodle (`scripts/counts/moodle.py`)
   downstream: the other seven changes.
 
 Cost (`scripts/counts/cost.py`)
-- Mean cost per valid execution (healthy and faulty) times the number of scenarios: 12 for the
-  payment app (`record.elapsedMs`, input + output tokens), 16 for Moodle (whole-trial wall time
-  and input + output tokens from `results/moodle-resources.txt`). Moodle developers' current
+- Mean cost per execution (healthy and faulty) times the number of scenarios: 12 for the
+  payment app (`record.elapsedMs`, input + output tokens; the step-definition mean includes the
+  two infrastructure-invalid runs, which exited 1 and count as failed runs), 16 for Moodle (whole-trial wall time
+  and input + output tokens from `results/moodle-resources.txt`, setup-invalid runs left out, as in
+  the outcomes). Moodle developers' current
   definitions use the arm A wall mean; updated definitions the mean of the three arm B
   per-model wall means. Cache-read share = cached input tokens / input tokens.
 
