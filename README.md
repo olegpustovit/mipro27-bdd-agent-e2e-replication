@@ -5,7 +5,7 @@ executable: maintained step definitions, and an LLM browser agent that interpret
 unchanged scenario on every run. It holds the study code, every recorded execution and
 automated grade, the derived reports, and scripts that recompute every count in the paper.
 
-Version 1.1.0. Changes from v1.0.0 are listed under [Changes in v1.1.0](#changes-in-v110).
+Version 1.1.1. Changes are listed under [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
 All results are exploratory; see `AGENTS.md` and `REPRODUCE.md` for the run status.
 
 ## Quick start: recompute the paper's counts
@@ -21,7 +21,7 @@ uv run scripts/reproduce_counts.py
 The script prints one table per study part and compares each value with the number stated
 in the paper. A difference is printed as `MISMATCH`, listed on stderr, and the script exits
 with status 1. Values are never adjusted to match. The output of this release is in
-`results/counts-v1.1.0.txt`: all 117 stated values match; 15 rows are informational (no
+`results/counts-v1.1.1.txt`: all 122 stated values match; 15 rows are informational (no
 stated value).
 
 Each part can also be run alone: `uv run scripts/counts/<part>.py` with `payment`, `matched`,
@@ -74,7 +74,7 @@ Cost (`scripts/counts/cost.py`)
 | `experiment-4/` | Follow-up comparison: four configurations x 36 runs, both automated grade files, the manifest, the 12 re-read Opus verdicts (`campaign-experiment4-opus-verdict-v2`), and `source-pins/` with the prompt contract the comparison pinned. |
 | `moodle-ledger/` | Moodle measurement ledger (`trials.jsonl`, `tasks.jsonl`, content-addressed `blobs/`) and the Cypress follow-up runs under `runs/`. |
 | `clock-recovery/` | Re-evaluated follow-up traces and their grades. |
-| `results/` | Derived reports. `counts-v1.1.0.txt` is the output of `scripts/reproduce_counts.py`. |
+| `results/` | Derived reports. `counts-v1.1.1.txt` is the output of `scripts/reproduce_counts.py`. |
 | `scripts/` | Study and analysis code (Node 24) and the count scripts (`reproduce_counts.py`, `counts/`). |
 | `study/`, `adapters/`, `manifests/`, `docker/` | Scenarios, step definitions, plans, Moodle adapter, case manifests and patches, Moodle Behat configuration. |
 | `provenance/` | How runs were launched and graded: adjudicator prompts and sessions, second-grader verdicts, orchestration scripts. |
@@ -90,6 +90,15 @@ Checksums: `RELEASE.SHA256SUMS` (every file), `experiment-4/EXECUTION.SHA256SUMS
 The Node analyses that produced the derived reports (`npm run analyze`, the Moodle report,
 the follow-up-comparison summary), the re-run procedure for each campaign and the local trace
 console are described in `REPRODUCE.md`. They need Node 24 and `npm ci`.
+
+## Changes in v1.1.1
+
+- `scripts/counts/moodle.py` also checks two counts the paper now states: the developers' current
+  step definitions on the 14 pairs from 7 changes that the browser agents could run (14/14 catches,
+  0/14 false alarms, 14/14 paired catches), and the unresolved agent runs that ended at the
+  60-tool-call limit (13 of 21; read from `moodle-ledger/trials.jsonl`, a run at the limit records
+  more than 60 calls).
+- No data and no previously stated number changed.
 
 ## Changes in v1.1.0
 

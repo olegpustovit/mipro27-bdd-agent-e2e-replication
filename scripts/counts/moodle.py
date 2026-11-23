@@ -12,6 +12,7 @@ is the setup "Scenario has no leading data steps..." are excluded (they never re
 Catch = faulty run not passing; false alarm = healthy run not passing; paired catch = healthy
 run passes AND faulty run of the same pair and repetition does not pass.
 """
+import json
 import re
 from collections import defaultdict
 
@@ -35,7 +36,11 @@ EXPECTED = {
     'fa_sessions': '16/48', 'fa_changes': 'B04,B07,B25,B28,B29', 'b28_fa_sessions': '6/6',
     'healthy_passing_sessions': {'B04': 2, 'B07': 4, 'B15': 6, 'B25': 3, 'B27': 6, 'B28': 0, 'B29': 5, 'B34': 6},
     'agent_fa_b29_b34_b25': '25/36',
+    'agent_pairs': '14 pairs from 7 changes',
+    'A_on_agent_pairs': {'catches': '14/14', 'false_alarms': '0/14', 'paired': '14/14'},
+    'unresolved_at_tool_limit': '13/21',
 }
+TOOL_CALL_LIMIT = 60  # per agent run in Moodle; a run that hit it records more than 60 calls
 
 
 def parse():
@@ -134,6 +139,21 @@ def run(ck: Checker):
         all_alarms += s['alarms']
     cluster = sum(p['change'] in ('B29', 'B34', 'B25') for p in all_alarms)
     ck.check('agent false alarms in B29+B34+B25', f'{cluster}/{len(all_alarms)}', EXPECTED['agent_fa_b29_b34_b25'])
+
+    # The pairs the agents could run (setup-invalid scenarios excluded) and the coded arm on the same pairs.
+    agent_cases = {p['case'] for p in pairs if p['arm'] == 'C'
+                   and (status(p, 'healthy', causes) is not None or status(p, 'faulty', causes) is not None)}
+    ck.check('pairs the agents could run', f"{len(agent_cases)} pairs from {len({c.split('.')[0] for c in agent_cases})} changes",
+             EXPECTED['agent_pairs'])
+    a14 = summary([p for p in pairs if p['arm'] == 'A' and p['case'] in agent_cases], causes)
+    for key in ('catches', 'false_alarms', 'paired'):
+        ck.check(f"developers' current coded on the agents' pairs, {key.replace('_', ' ')}", a14[key], EXPECTED['A_on_agent_pairs'][key])
+
+    # Unresolved agent verdicts from runs that ended at the tool-call limit (moodle-ledger records).
+    ledger = [json.loads(line) for line in (ROOT / 'moodle-ledger/trials.jsonl').read_text('utf-8').splitlines() if line.strip()]
+    unresolved = [r for r in ledger if r.get('arm') == 'C' and r.get('status') == 'unresolved']
+    at_limit = sum((r.get('toolCalls') or 0) > TOOL_CALL_LIMIT for r in unresolved)
+    ck.check('unresolved agent runs that ended at the tool-call limit', f'{at_limit}/{len(unresolved)}', EXPECTED['unresolved_at_tool_limit'])
 
 
 if __name__ == '__main__':
