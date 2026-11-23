@@ -1,0 +1,21 @@
+diff --git a/public/question/classes/local/bank/question_bank_helper.php b/public/question/classes/local/bank/question_bank_helper.php
+index b82a55cc2ec7bcaf34d6de4ecf19793eace178de..6318670e0357f0e494c44082468a41410b57c1fa 100644
+--- a/public/question/classes/local/bank/question_bank_helper.php
++++ b/public/question/classes/local/bank/question_bank_helper.php
+@@ -571,13 +571,11 @@ class question_bank_helper {
+             $sql = "SELECT cm.id
+                       FROM {course_modules} cm
+                       JOIN {modules} m ON m.id = cm.module
+-                      JOIN {{$defaultyactivityname}} q ON q.id = cm.instance
++                      JOIN {{$defaultyactivityname}} q ON q.id = cm.instance AND cm.module = m.id
+                      WHERE cm.course = :course
+-                       AND q.type = :type
+-                       AND m.name = :modulename";
++                       AND q.type = :type";
+ 
+-            return $DB->get_fieldset_sql($sql, ['type' => $subtype, 'course' => $course->id,
+-                'modulename' => $defaultyactivityname]);
++            return $DB->get_fieldset_sql($sql, ['type' => $subtype, 'course' => $course->id]);
+         }
+ 
+         return [];

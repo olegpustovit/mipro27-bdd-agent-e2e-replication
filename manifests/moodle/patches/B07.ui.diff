@@ -1,0 +1,191 @@
+diff --git a/public/lib/templates/search_input_navbar_inline.mustache b/public/lib/templates/search_input_navbar_inline.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..305749ea38d2a96e529768de10f150d2d0d3674d
+--- /dev/null
++++ b/public/lib/templates/search_input_navbar_inline.mustache
+@@ -0,0 +1,76 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template core/search_input_navbar_inline
++
++    Inline navbar search input for desktop. Always visible, no collapse or toggle.
++
++    Example context (json):
++    {
++        "action": "https://moodle.local/search/index.php",
++        "inputname": "q",
++        "searchstring": "Search",
++        "grouplabel": "Site-wide search",
++        "hiddenfields": [
++            {
++                "name": "context",
++                "value": "1"
++            }
++        ]
++    }
++}}
++<div id="searchinput-navbar" class="search-input-inline">
++    <form role="search"
++          {{#grouplabel}}aria-label="{{{ grouplabel }}}"{{/grouplabel}}
++          autocomplete="off"
++          action="{{{ action }}}"
++          method="get"
++          accept-charset="utf-8"
++          class="searchform-navbar">
++        {{#hiddenfields}}
++            <input type="hidden" name="{{ name }}" value="{{ value }}">
++        {{/hiddenfields}}
++        <label for="searchinput-{{uniqid}}" class="visually-hidden">{{{ searchstring }}}</label>
++        <div class="input-group">
++            <button type="submit" class="input-group-text border-0 pe-0">
++                {{#pix}} a/search, core {{/pix}}
++                <span class="visually-hidden">{{#str}} performsearch, search {{/str}}</span>
++            </button>
++            <input type="text"
++                id="searchinput-{{uniqid}}"
++                class="form-control border-0 ps-1"
++                placeholder="{{{ searchstring }}}"
++                name="{{{ inputname }}}"
++                data-region="input"
++                autocomplete="off">
++        </div>
++    </form>
++</div>
++
++{{#js}}
++require([], function() {
++    const wrapper = document.getElementById('searchinput-navbar');
++    const form = wrapper.querySelector('.searchform-navbar');
++    const input = wrapper.querySelector('[data-region="input"]');
++
++    form.addEventListener('submit', (e) => {
++        if (input.value.trim() === '') {
++            e.preventDefault();
++        }
++    });
++});
++{{/js}}
+diff --git a/public/theme/boost/classes/output/core_renderer.php b/public/theme/boost/classes/output/core_renderer.php
+index d26e093ac0b0a40a922ac026bac9bc9e874243ee..13c3ec716565d2da85785ed79ff3680714cad55a 100644
+--- a/public/theme/boost/classes/output/core_renderer.php
++++ b/public/theme/boost/classes/output/core_renderer.php
+@@ -17,6 +17,7 @@
+ namespace theme_boost\output;
+ 
+ use context_course;
++use context_system;
+ use moodle_url;
+ use html_writer;
+ use get_string;
+@@ -31,6 +32,35 @@ defined('MOODLE_INTERNAL') || die;
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class core_renderer extends \core_renderer {
++    /**
++     * Returns an inline search box permanently visible in the top navigation.
++     *
++     * @param string $id Passed to parent::search_box() for the mobile fallback.
++     * @return string HTML for the inline and mobile search forms, or empty string.
++     */
++    public function search_box($id = false) {
++        global $CFG;
++
++        if (empty($CFG->enableglobalsearch) || !has_capability('moodle/search:query', context_system::instance())) {
++            return '';
++        }
++
++        $data = [
++            'action' => new moodle_url('/search/index.php'),
++            'hiddenfields' => (object) ['name' => 'context', 'value' => $this->page->context->id],
++            'inputname' => 'q',
++            'searchstring' => get_string('search'),
++            'grouplabel' => get_string('sitewidesearch', 'search'),
++        ];
++
++        // Desktop (md+): new inline, always-visible form.
++        $desktop = $this->render_from_template('core/search_input_navbar_inline', $data);
++
++        // Mobile (< md): keep the original toggle + collapse pattern.
++        $mobile = html_writer::div(parent::search_box($id), 'd-flex d-md-none');
++
++        return $desktop . $mobile;
++    }
+ 
+     /**
+      * Returns HTML to display a "Turn editing on/off" button in a form.
+diff --git a/public/theme/boost/scss/moodle/navbar.scss b/public/theme/boost/scss/moodle/navbar.scss
+index 09a9cb4667297f3a6a104086320fda4f94a0840e..c66bd6aa35b032ecc6395babcc90062b4ef37ab6 100644
+--- a/public/theme/boost/scss/moodle/navbar.scss
++++ b/public/theme/boost/scss/moodle/navbar.scss
+@@ -137,6 +137,14 @@
+         height: 100%;
+         display: flex;
+     }
++    .editmode-switch-form {
++        .input-group {
++            flex-wrap: nowrap;
++        }
++        .input-group > label {
++            white-space: nowrap;
++        }
++    }
+ }
+ .dir-rtl .navbar.fixed-top {
+     .usermenu {
+@@ -172,3 +180,29 @@
+ :root {
+     --navbar-height: #{$navbar-height};
+ }
++
++// Inline search form.
++.navbar.fixed-top #usernavigation .search-input-inline {
++    display: none;
++
++    @include media-breakpoint-up(md) {
++        display: flex;
++        align-items: center;
++        height: 100%;
++        padding: 0 $primary-nav-padding-x;
++    }
++
++    .searchform-navbar {
++        .input-group {
++            width: 256px;
++        }
++        .input-group-text,
++        .form-control {
++            background-color: $gray-200;
++        }
++        .input-group-text,
++        .form-control::placeholder {
++            color: $gray-700;
++        }
++    }
++}
+diff --git a/public/theme/boost/templates/navbar.mustache b/public/theme/boost/templates/navbar.mustache
+index cba0f853cc5f5fddff40ffd3f03911fd901d2b45..c6b868df204f860876b45a93fbbe20e504c81f04 100644
+--- a/public/theme/boost/templates/navbar.mustache
++++ b/public/theme/boost/templates/navbar.mustache
+@@ -87,7 +87,6 @@
+         <div id="usernavigation" class="navbar-nav ms-auto h-100">
+             {{# output.search_box }}
+                 {{{ output.search_box }}}
+-                <div class="divider border-start h-75 align-self-center mx-1"></div>
+             {{/output.search_box}}
+             {{#langmenu}}
+                 {{> theme_boost/language_menu }}

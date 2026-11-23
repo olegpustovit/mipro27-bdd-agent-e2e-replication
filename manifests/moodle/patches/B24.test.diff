@@ -1,0 +1,14 @@
+diff --git a/mod/quiz/tests/behat/behat_mod_quiz.php b/mod/quiz/tests/behat/behat_mod_quiz.php
+index bdeb3ce5de09aa56711f0b4f2b992c6ee421d9e2..2832a890194c86fe37313399c957ff2f377862fa 100644
+--- a/mod/quiz/tests/behat/behat_mod_quiz.php
++++ b/mod/quiz/tests/behat/behat_mod_quiz.php
+@@ -435,7 +435,8 @@ class behat_mod_quiz extends behat_question_base {
+      */
+     public function i_should_see_on_quiz_page($questionname, $pagenumber) {
+         $xpath = "//li[contains(., '" . $this->escape($questionname) .
+-                "')][./preceding-sibling::li[contains(., 'Page " . $pagenumber . "')]]";
++            "')][./preceding-sibling::li[contains(@class, 'pagenumber')][1][contains(., 'Page " .
++            $pagenumber . "')]]";
+ 
+         $this->execute('behat_general::should_exist', array($xpath, 'xpath_element'));
+     }

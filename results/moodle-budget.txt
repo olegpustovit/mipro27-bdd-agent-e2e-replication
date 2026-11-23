@@ -1,0 +1,60 @@
+Moodle measured-campaign BUDGET PROJECTION (computed from smoke trials; smoke is NOT measured; nothing here ran a model)
+
+Formula
+  agent arm-C trials  = pairs x states x models x reps
+                      = 16 x 2 x 3 x 2 = 192
+  arm-B trials        = pairs x states x models x reps (Behat runs of the repaired step code; no model tokens)
+                      = 16 x 2 x 3 x 2 = 192
+  repair sessions     = distinct breaks x models x reps (one LLM repair per break, model, repetition; trials of the same break reuse it)
+                      = 8 x 3 x 2 = 48
+  arm-A trials        = pairs x states = 16 x 2 = 32 (deterministic developer tests, one run, no model)
+  generator check     : campaignTrials(arms B,C) = 384; campaignTrials(arm A) = 32; repairJobs = 48
+  model-driven sessions = arm-C 192 + repairs 48 = 240
+
+Smoke means used (tokens = input + output as reported, input includes cache reads)
+  luna         arm C: n=4, 275.3k tokens/run, 44.7 s, 17.5 tool calls; repair: n=5, 101.0k tokens, 66.7 s; arm-B Behat run: n=8, 16.8 s
+  terra        arm C: n=4, 516.0k tokens/run, 78.7 s, 29.8 tool calls; repair: n=6, 221.9k tokens, 132.7 s; arm-B Behat run: n=12, 17.6 s
+  haiku (omp)  arm C: n=6, 553.1k tokens/run, 60.2 s, 27.8 tool calls; repair: n=5, 182.9k tokens, 93.7 s; arm-B Behat run: n=10, 18.4 s
+  arm A Behat run: 18.4 s
+  repair means: smoke repair sessions of plan(s) all smoke plans under the 10-edit / 12-run budget (their breaks were B01 and B12; the selection's repairs are for other breaks, so the repair share is an approximation); arm-C means: every smoke arm-C trial in the ledger.
+
+Projected tokens per model
+  model       C runs  repairs  C tokens   repair tokens  total     wall (sequential)
+  luna        64      16       17.62M     1.62M          19.24M    1.39 h
+  terra       64      16       33.02M     3.55M          36.57M    2.30 h
+  haiku (omp) 64      16       35.40M     2.93M          38.32M    1.81 h
+  total 94.13M tokens
+
+Wall time with 3 parallel workers: (sum of model-model wall + arm A 0.16 h) / 3 = 5.67 h / 3 = 1.89 h (ideal packing; fixture reset and hand-off are inside the per-trial walls; one worker per Moodle site, a worker runs one job at a time)
+
+Check: projected tokens per run <= 2x pilot mean per model
+  model       pilot/run  2x pilot   arm-C smoke/run  ratio   sessions incl. repairs  ratio   verdict (arm-C per run)
+  luna        131.7k     263.3k     275.3k           2.09x   240.5k                  1.83x   EXCEEDS 2x
+  terra       224.9k     449.8k     516.0k           2.29x   457.2k                  2.03x   EXCEEDS 2x
+  haiku (omp) 374.2k     748.5k     553.1k           1.48x   479.0k                  1.28x   WITHIN 2x
+  wall per arm-C run vs pilot: luna 1.76x, terra 1.52x, haiku (omp) 1.00x
+
+The 2x per-run criterion is NOT MET for luna (2.09x) and terra (2.29x); it is met for haiku (1.48x). The paper must say so. Reducing the number of pairs does not change tokens per run, so the earlier pair-count scope rule (15 -> 13 pairs; docs/contracts/moodle-campaign.md, history) did not address this criterion and is dropped.
+
+BINDING BUDGET CHECK: original cap 240M tokens in total
+  projected total 94.13M = 39.2% of the cap; headroom 145.87M; WITHIN the cap (arm-C sessions 86.04M + repair sessions 8.09M; arms A and B run Behat only and use no model tokens)
+
+Pair selection class-i-first-v3 (the v3 rule was committed after model-driven smoke trials, listed in results/moodle-timeline.txt; scripts/moodle/v1-report.mjs): class (i) first, all valid class (i) pairs at most 3 per break, no two pairs share the same fault and scenario; then class (ii) pairs at most 2 per break up to 16 in total; step rule exact (same Behat index or same step text).
+  16 pairs selected (by class: class i 16; by break: B04 3, B07 3, B15 2, B25 1, B27 1, B28 2, B29 2, B34 2; by origin: seeded 16; strict/core: core 13, strict 3)
+  B07.X010@S028  class i  strict  seeded
+  B07.X011@S025  class i  strict  seeded
+  B07.X010@S029  class i  strict  seeded
+  B04.X014@S036  class i  core  seeded
+  B04.X014@S037  class i  core  seeded
+  B04.X014@S041  class i  core  seeded
+  B15.X021@S094  class i  core  seeded
+  B15.X022@S091  class i  core  seeded
+  B25.X020@S125  class i  core  seeded
+  B27.X023@S131  class i  core  seeded
+  B28.X025@S134  class i  core  seeded
+  B28.X025@S137  class i  core  seeded
+  B29.X026@S138  class i  core  seeded
+  B29.X026@S139  class i  core  seeded
+  B34.X018@S153  class i  core  seeded
+  B34.X018@S154  class i  core  seeded
+  Replaces: keep-first-13-selected-pairs (SCOPE_RULE, 15 -> 13): it cut pairs but did not address tokens per run; the 2x per-run criterion stays unmet for luna and terra and the paper must say so.

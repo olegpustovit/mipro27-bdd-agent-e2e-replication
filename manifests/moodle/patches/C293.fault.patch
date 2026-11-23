@@ -1,0 +1,38 @@
+diff --git a/public/lib/amd/src/comboboxsearch/search_combobox.js b/public/lib/amd/src/comboboxsearch/search_combobox.js
+index 745ef64e950d63eca1d640cdb265882fe9bd4cfd..63fb4eda8b6ffadfbd116b93e90c2be22ed3bc50 100644
+--- a/public/lib/amd/src/comboboxsearch/search_combobox.js
++++ b/public/lib/amd/src/comboboxsearch/search_combobox.js
+@@ -359,11 +359,7 @@ export default class {
+             this.searchInput.removeAttribute('aria-activedescendant');
+         }
+         // User may have accidentally clicked off the dropdown and wants to reopen it.
+-        if (
+-            this.getSearchTerm() !== ''
+-            && !this.getHTMLElements().searchDropdown.classList.contains('show')
+-            && e.target.closest(this.selectors.input)
+-        ) {
++        if (e.target.closest(this.selectors.input) && this.getSearchTerm() !== '') {
+             await this.renderAndShow();
+         }
+     }
+diff --git a/public/user/amd/src/comboboxsearch/user.js b/public/user/amd/src/comboboxsearch/user.js
+index f0d005e9f5cdf43a5d11da2f416968a1be4af8db..50216d00c04c7677970e877840d66c8e0f5b0b68 100644
+--- a/public/user/amd/src/comboboxsearch/user.js
++++ b/public/user/amd/src/comboboxsearch/user.js
+@@ -208,16 +208,6 @@ export default class UserSearch extends search_combobox {
+     keyHandler(e) {
+         // Switch the key presses to handle keyboard nav.
+         switch (e.key) {
+-            case 'ArrowUp':
+-            case 'ArrowDown':
+-                if (
+-                    this.getSearchTerm() !== ''
+-                    && !this.searchDropdown.classList.contains('show')
+-                    && e.target.contains(this.combobox)
+-                ) {
+-                    this.renderAndShow();
+-                }
+-                break;
+             case 'Enter':
+             case ' ':
+                 if (e.target.closest(this.selectors.resetPageButton)) {

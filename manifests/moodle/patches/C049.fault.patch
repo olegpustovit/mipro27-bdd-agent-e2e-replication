@@ -1,0 +1,39 @@
+diff --git a/public/mod/assign/locallib.php b/public/mod/assign/locallib.php
+index b64e7f4f073ead6c09f68d1ae0e05f3c17b5c753..6a8e09934f49f19f2213a4204d9b4b79cd7fb4ff 100644
+--- a/public/mod/assign/locallib.php
++++ b/public/mod/assign/locallib.php
+@@ -765,7 +765,7 @@ class assign {
+         } else if ($action == 'viewbatchmarkingallocation') {
+             $o .= $this->view_batch_markingallocation();
+         } else if ($action == 'viewsubmitforgradingerror') {
+-            $o .= $this->view_notices(get_string('submitforgrading', 'assign'), $notices);
++            $o .= $this->view_error_page(get_string('submitforgrading', 'assign'), $notices);
+         } else if ($action == 'fixrescalednullgrades') {
+             $o .= $this->view_fix_rescaled_null_grades();
+         } else {
+@@ -7592,12 +7592,9 @@ class assign {
+     /**
+      * A students submission is submitted for grading by a teacher.
+      *
+-     * @param moodleform|null $mform If validation failed when submitting this form - this is the moodleform.
+-     *               It can be null.
+-     * @param array $notices Receives error messages to display on an error condition.
+      * @return bool
+      */
+-    protected function process_submit_other_for_grading($mform, &$notices) {
++    protected function process_submit_other_for_grading($mform, $notices) {
+         global $USER, $CFG;
+ 
+         require_sesskey();
+@@ -7628,10 +7625,9 @@ class assign {
+      *
+      * @param moodleform|null $mform If validation failed when submitting this form - this is the moodleform.
+      *               It can be null.
+-     * @param array $notices Receives error messages to display on an error condition.
+      * @return bool Return false if the validation fails. This affects which page is displayed next.
+      */
+-    protected function process_submit_for_grading($mform, &$notices) {
++    protected function process_submit_for_grading($mform, $notices) {
+         global $CFG;
+ 
+         require_once($CFG->dirroot . '/mod/assign/submissionconfirmform.php');

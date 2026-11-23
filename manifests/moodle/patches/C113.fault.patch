@@ -1,0 +1,56 @@
+diff --git a/public/completion/classes/progress.php b/public/completion/classes/progress.php
+index 361337108938b5d8bd2afc86d783f0f10110f3a8..a3f4bfa079629dc674e35ea445da83abdb72feb1 100644
+--- a/public/completion/classes/progress.php
++++ b/public/completion/classes/progress.php
+@@ -87,7 +87,7 @@ class progress {
+         }
+ 
+         // Get the number of modules that support completion.
+-        $modules = $completion->get_user_activities_with_completion($userid);
++        $modules = $completion->get_activities();
+         $count = count($modules);
+         if (!$count) {
+             $cache->set($cachekey, 'NULL');
+@@ -95,7 +95,7 @@ class progress {
+         }
+ 
+         // Get the number of modules that have been completed.
+-        $totalcompleted = $completion->count_modules_completed($userid, array_keys($modules));
++        $totalcompleted = $completion->count_modules_completed($userid);
+ 
+         $result = ($totalcompleted / $count) * 100;
+         $cache->set($cachekey, $result);
+diff --git a/public/lib/completionlib.php b/public/lib/completionlib.php
+index 9f849b1e9d379fbdee42313749d25a89d34c8331..0034a4acbc52723d6759e1124b7c7cb8051ba910 100644
+--- a/public/lib/completionlib.php
++++ b/public/lib/completionlib.php
+@@ -1745,10 +1745,9 @@ class completion_info {
+      * Return the number of modules completed by a user in one specific course.
+      *
+      * @param int $userid The User ID.
+-     * @param array $moduleids The course modules to check.
+      * @return int Total number of modules completed by a user
+      */
+-    public function count_modules_completed(int $userid, array $moduleids = []): int {
++    public function count_modules_completed(int $userid): int {
+         global $DB;
+ 
+         $sql = "SELECT COUNT(1)
+@@ -1756,17 +1755,10 @@ class completion_info {
+                   JOIN {course_modules_completion} cmc ON cm.id = cmc.coursemoduleid
+                  WHERE cm.course = :courseid
+                        AND cmc.userid = :userid
+-                       AND cm.visible = 1
+                        AND (cmc.completionstate = " . COMPLETION_COMPLETE . "
+                         OR cmc.completionstate = " . COMPLETION_COMPLETE_PASS . ")";
+         $params = ['courseid' => $this->course_id, 'userid' => $userid];
+ 
+-        if (!empty($moduleids)) {
+-            [$insql, $inparams] = $DB->get_in_or_equal($moduleids, SQL_PARAMS_NAMED);
+-            $sql.= " AND cm.id $insql";
+-            $params = array_merge($params, $inparams);
+-        }
+-
+         return $DB->count_records_sql($sql, $params);
+     }
+ }

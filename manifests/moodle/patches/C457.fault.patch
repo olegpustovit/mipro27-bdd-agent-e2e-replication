@@ -1,0 +1,40 @@
+diff --git a/public/mod/quiz/classes/question/bank/question_name_text_column.php b/public/mod/quiz/classes/question/bank/question_name_text_column.php
+index 5e7406d30357cbddecd540f57383863b0299de84..41d4bad8cb2083057f49aaefe63e78f7b45ea21f 100644
+--- a/public/mod/quiz/classes/question/bank/question_name_text_column.php
++++ b/public/mod/quiz/classes/question/bank/question_name_text_column.php
+@@ -45,8 +45,7 @@ class question_name_text_column extends question_name_column {
+         if ($labelfor) {
+             echo \html_writer::start_tag('label', ['for' => $labelfor]);
+         }
+-        echo quiz_question_tostring($question, false, true, true,
+-            $question->tags, false);
++        echo quiz_question_tostring($question, false, true, true, $question->tags);
+         if ($labelfor) {
+             echo \html_writer::end_tag('label');
+         }
+diff --git a/public/mod/quiz/locallib.php b/public/mod/quiz/locallib.php
+index d2ec29a3417c0ce3a1553f16736277f25e07bc9c..02421a3c1cd2128113a36107761c0c3dc3e95141 100644
+--- a/public/mod/quiz/locallib.php
++++ b/public/mod/quiz/locallib.php
+@@ -1667,11 +1667,10 @@ function quiz_get_js_module() {
+  * @param bool $showidnumber If true, show the question's idnumber, if any. False by default.
+  * @param core_tag_tag[]|bool $showtags if array passed, show those tags. Else, if true, get and show tags,
+  *       else, don't show tags (which is the default).
+- * @param bool $displaytaglink Indicates whether the tag should be displayed as a link.
+  * @return string HTML fragment.
+  */
+ function quiz_question_tostring($question, $showicon = false, $showquestiontext = true,
+-        $showidnumber = false, $showtags = false, $displaytaglink = true) {
++        $showidnumber = false, $showtags = false) {
+     global $OUTPUT;
+     $result = '';
+ 
+@@ -1698,7 +1697,7 @@ function quiz_question_tostring($question, $showicon = false, $showquestiontext
+         $tags = [];
+     }
+     if ($tags) {
+-        $result .= $OUTPUT->tag_list($tags, null, 'd-inline', 0, null, true, $displaytaglink);
++        $result .= $OUTPUT->tag_list($tags, null, 'd-inline', 0, null, true);
+     }
+ 
+     // Question text.

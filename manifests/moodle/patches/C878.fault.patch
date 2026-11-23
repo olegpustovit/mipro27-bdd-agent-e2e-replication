@@ -1,0 +1,431 @@
+diff --git a/public/admin/registration/index.php b/public/admin/registration/index.php
+index dd31f8278d3c311ad1775377952eb608769924f2..5a8ff1b8b0746054132985f588507f56cc237675 100644
+--- a/public/admin/registration/index.php
++++ b/public/admin/registration/index.php
+@@ -87,9 +87,22 @@ echo $OUTPUT->header();
+ 
+ // Current status of registration.
+ 
+-$notification = \core\hub\registration::get_registration_page_notification($siteisregistered, $isinitialregistration);
+-if ($notification['message'] !== '') {
+-    echo $OUTPUT->notification($notification['message'], $notification['type']);
++$notificationtype = \core\output\notification::NOTIFY_ERROR;
++if ($siteisregistered) {
++    $lastupdated = \core\hub\registration::get_last_updated();
++    if ($lastupdated == 0) {
++        $registrationmessage = get_string('pleaserefreshregistrationunknown', 'admin');
++    } else if (\core\hub\registration::get_new_registration_fields()) {
++        $registrationmessage = get_string('pleaserefreshregistrationnewdata', 'admin');
++    } else {
++        $lastupdated = userdate($lastupdated, get_string('strftimedate', 'langconfig'));
++        $registrationmessage = get_string('pleaserefreshregistration', 'admin', $lastupdated);
++        $notificationtype = \core\output\notification::NOTIFY_INFO;
++    }
++    echo $OUTPUT->notification($registrationmessage, $notificationtype);
++} else if (!$isinitialregistration) {
++    $registrationmessage = get_string('registrationwarning', 'admin');
++    echo $OUTPUT->notification($registrationmessage, $notificationtype);
+ }
+ 
+ // Heading.
+diff --git a/public/admin/renderer.php b/public/admin/renderer.php
+index 5948b4fe79daeff7eb358bf75fe50e6fb0fb047c..f1d516f3d56ea7be28a0c51afabad75e78373031 100644
+--- a/public/admin/renderer.php
++++ b/public/admin/renderer.php
+@@ -461,24 +461,15 @@ class core_admin_renderer extends plugin_renderer_base {
+     }
+ 
+     /**
+-     * Determine the severity group for the registration warning: either the "site not registered"
+-     * warning, or the "site registered but reporting has paused" warning.
++     * Determine the severity group for the "site not registered" warning.
+      *
+      * @param bool $registered true if the site is registered on Moodle.org
+-     * @return string 'danger', 'warning' or 'notice'
++     * @return string 'danger' or 'notice'
+      */
+     protected function registration_warning_severity($registered): string {
+         if (!$registered && site_is_public() && has_capability('moodle/site:config', context_system::instance())) {
+             return 'danger';
+         }
+-        $pausedreason = \core\hub\registration::get_reporting_paused_reason();
+-        if (
+-            $registered
+-            && has_capability('moodle/site:config', context_system::instance())
+-            && $pausedreason === \core\hub\registration::REPORTING_PAUSED_TASK_DISABLED
+-        ) {
+-            return 'warning';
+-        }
+         return 'notice';
+     }
+ 
+@@ -1060,8 +1051,7 @@ class core_admin_renderer extends plugin_renderer_base {
+     }
+ 
+     /**
+-     * Display a warning if the site is not registered on Moodle.org, or is registered but has
+-     * stopped sending registration updates.
++     * Display a warning about not being registered on Moodle.org if necesary.
+      *
+      * @param boolean $registered true if the site is registered on Moodle.org
+      * @return string HTML to output.
+@@ -1087,32 +1077,11 @@ class core_admin_renderer extends plugin_renderer_base {
+             );
+         }
+ 
+-        // The site is registered but may have paused reporting; only admins can act on that.
+-        if (!$registered || !has_capability('moodle/site:config', context_system::instance())) {
+-            return '';
+-        }
+-
+-        // The new-fields-pending cause is deliberately not covered here: every page that renders this warning
+-        // for a registered site also calls \core\hub\registration::registration_reminder(), which redirects
+-        // the admin to the registration form under that exact condition before this warning could render.
+-        $pausedreason = \core\hub\registration::get_reporting_paused_reason();
+-        if ($pausedreason === \core\hub\registration::REPORTING_PAUSED_TASK_DISABLED) {
+-            $actionbutton = $this->single_button(
+-                new moodle_url('/admin/tool/task/scheduledtasks.php'),
+-                get_string('scheduledtasks', 'tool_task'),
+-            );
+-            return $this->warning_with_label(
+-                get_string('registrationreportingpausedtaskdisabled', 'admin') . '&nbsp;' . $actionbutton,
+-                get_string('notificationlabelwarning', 'admin')
+-            );
+-        }
+-
+         return '';
+     }
+ 
+     /**
+-     * Return an admin page warning if the site is not registered with moodle.org, or is registered
+-     * but has stopped sending registration updates.
++     * Return an admin page warning if site is not registered with moodle.org
+      *
+      * @return string
+      */
+diff --git a/public/lib/classes/hub/registration.php b/public/lib/classes/hub/registration.php
+index 31539b63ad9c977708bde7063dda3fd3df7e266f..7f199d1f612316f39ea2566693da0f9e1dbefc89 100644
+--- a/public/lib/classes/hub/registration.php
++++ b/public/lib/classes/hub/registration.php
+@@ -31,7 +31,6 @@ use context_system;
+ use stdClass;
+ use html_writer;
+ use core_plugin_manager;
+-use core\output\notification;
+ 
+ /**
+  * Methods to use when registering the site at the moodle sites directory.
+@@ -76,12 +75,6 @@ class registration {
+         2026012200 => ['defaulthomepage'],
+     ];
+ 
+-    /** @var string Registration reporting is paused because new registration fields need manual confirmation */
+-    public const REPORTING_PAUSED_NEW_FIELDS = 'newfields';
+-
+-    /** @var string Registration reporting is paused because the registration cron task is disabled */
+-    public const REPORTING_PAUSED_TASK_DISABLED = 'taskdisabled';
+-
+     /** @var string Site privacy: not displayed */
+     const HUB_SITENOTPUBLISHED = 'notdisplayed';
+ 
+@@ -741,162 +734,6 @@ class registration {
+         return $fieldsneedconfirm;
+     }
+ 
+-    /**
+-     * Returns why a registered site has stopped sending registration updates, if at all.
+-     *
+-     * A registered site can stop reporting either because new registration fields are awaiting manual
+-     * confirmation, or because the {@see \core\task\registration_cron_task} scheduled task has been disabled.
+-     * Both cases leave the site reporting as "registered" with no other indication that updates have stopped.
+-     *
+-     * When both causes apply at once, the new-fields cause is reported: it is the one the admin is redirected
+-     * to resolve by {@see self::registration_reminder()}, and once confirmed the next call reports the
+-     * task-disabled cause instead.
+-     *
+-     * Sites that are not publicly accessible are never reported as paused: {@see \core\task\registration_cron_task}
+-     * only sends updates when site_is_public(), and {@see self::registration_reminder()} and the unregistered
+-     * warning are gated the same way, so such a site is deliberately not nagged about paused reporting.
+-     *
+-     * @return string one of the self::REPORTING_PAUSED_* constants, or '' if the site is not registered, is not
+-     *     public, or is reporting normally
+-     */
+-    public static function get_reporting_paused_reason(): string {
+-        if (!self::is_registered() || !site_is_public()) {
+-            return '';
+-        }
+-
+-        if (self::get_new_registration_fields()) {
+-            return self::REPORTING_PAUSED_NEW_FIELDS;
+-        }
+-
+-        $task = \core\task\manager::get_scheduled_task(\core\task\registration_cron_task::class);
+-        if ($task && $task->get_disabled()) {
+-            return self::REPORTING_PAUSED_TASK_DISABLED;
+-        }
+-
+-        return '';
+-    }
+-
+-    /**
+-     * Determines the status notification to display on the registration page.
+-     *
+-     * Split out from admin/registration/index.php so this branch selection can be unit tested on its own.
+-     * The page itself additionally gates $siteisregistered on \core\hub\api::is_site_registered_in_hub(),
+-     * a live request to the moodle.org hub that cannot be exercised in a test environment; this method
+-     * covers everything downstream of that check.
+-     *
+-     * @param bool $siteisregistered whether the site is registered locally and confirmed at the hub
+-     * @param bool $isinitialregistration whether this is a first-time/pending initial registration
+-     * @return array{message: string, type: string} notification message and \core\output\notification type,
+-     *     or an empty message when nothing should be displayed
+-     */
+-    public static function get_registration_page_notification(bool $siteisregistered, bool $isinitialregistration): array {
+-        if ($siteisregistered) {
+-            $lastupdated = self::get_last_updated();
+-            if ($lastupdated == 0) {
+-                return [
+-                    'message' => get_string('pleaserefreshregistrationunknown', 'admin'),
+-                    'type' => notification::NOTIFY_ERROR,
+-                ];
+-            } else if (self::get_new_registration_fields()) {
+-                // This message is shown regardless of site_is_public(), as it always has been: the admin is
+-                // already here to update the registration. The raw condition is used rather than
+-                // get_reporting_paused_reason(), which only reports publicly accessible sites as paused.
+-                return [
+-                    'message' => get_string('pleaserefreshregistrationnewdata', 'admin'),
+-                    'type' => notification::NOTIFY_ERROR,
+-                ];
+-            } else if (self::get_reporting_paused_reason() === self::REPORTING_PAUSED_TASK_DISABLED) {
+-                $taskurl = new moodle_url('/admin/tool/task/scheduledtasks.php');
+-                return [
+-                    'message' => get_string('registrationtaskdisabled', 'admin', $taskurl->out(false)),
+-                    'type' => notification::NOTIFY_WARNING,
+-                ];
+-            }
+-            return [
+-                'message' => get_string(
+-                    'pleaserefreshregistration',
+-                    'admin',
+-                    userdate($lastupdated, get_string('strftimedate', 'langconfig')),
+-                ),
+-                'type' => notification::NOTIFY_INFO,
+-            ];
+-        } else if (!$isinitialregistration) {
+-            return [
+-                'message' => get_string('registrationwarning', 'admin'),
+-                'type' => notification::NOTIFY_ERROR,
+-            ];
+-        }
+-
+-        return ['message' => '', 'type' => ''];
+-    }
+-
+-    /**
+-     * Checks whether registration reporting has stopped since the last check and, if so, notifies site admins.
+-     *
+-     * Intended to be called periodically (see {@see \core\task\registration_reporting_check_task}) so the
+-     * paused state is surfaced even if no administrator happens to visit a page that checks it directly.
+-     */
+-    public static function check_reporting_paused_notification(): void {
+-        $reason = self::get_reporting_paused_reason();
+-        $previouslynotified = get_config('hub', 'reportingpausednotifiedreason');
+-
+-        if ($reason === '') {
+-            if ($previouslynotified !== false) {
+-                unset_config('reportingpausednotifiedreason', 'hub');
+-            }
+-            return;
+-        }
+-
+-        if ($previouslynotified === $reason) {
+-            // Already notified admins for this reason since it started; do not repeat every run.
+-            return;
+-        }
+-
+-        self::send_reporting_paused_notification($reason);
+-        set_config('reportingpausednotifiedreason', $reason, 'hub');
+-    }
+-
+-    /**
+-     * Sends the registration-reporting-paused notification to all site admins.
+-     *
+-     * @param string $reason one of the self::REPORTING_PAUSED_* constants
+-     */
+-    protected static function send_reporting_paused_notification(string $reason): void {
+-        global $CFG;
+-
+-        $admins = get_admins();
+-        if (empty($admins)) {
+-            return;
+-        }
+-
+-        $stringkey = $reason === self::REPORTING_PAUSED_TASK_DISABLED
+-            ? 'registrationreportingpausedtaskdisabledmessage'
+-            : 'registrationreportingpausednewfieldsmessage';
+-
+-        $registrationurl = new moodle_url('/admin/registration/index.php');
+-        $a = (object) ['siteurl' => $CFG->wwwroot];
+-        $messagetext = get_string($stringkey, 'admin', $a);
+-        $subject = get_string('registrationreportingpausedsubject', 'admin');
+-
+-        foreach ($admins as $admin) {
+-            $message = new \core\message\message();
+-            $message->courseid          = SITEID;
+-            $message->component         = 'moodle';
+-            $message->name              = 'registrationreportingpaused';
+-            $message->userfrom          = get_admin();
+-            $message->userto            = $admin;
+-            $message->subject           = $subject;
+-            $message->fullmessage       = $messagetext;
+-            $message->fullmessageformat = FORMAT_PLAIN;
+-            $message->fullmessagehtml   = html_writer::tag('p', $messagetext);
+-            $message->smallmessage      = $subject;
+-            $message->notification      = 1;
+-            $message->contexturl        = $registrationurl->out(false);
+-            $message->contexturlname    = get_string('registerwithmoodleorgupdate', 'core_hub');
+-            message_send($message);
+-        }
+-    }
+-
+     /**
+      * Redirect to the site registration form if it's a new install, upgrade or registration needs updating.
+      *
+diff --git a/public/lib/classes/task/registration_reporting_check_task.php b/public/lib/classes/task/registration_reporting_check_task.php
+deleted file mode 100644
+index 10f49e9f6065cea245a4fddef83d4c4227fab9ab..0000000000000000000000000000000000000000
+--- a/public/lib/classes/task/registration_reporting_check_task.php
++++ /dev/null
+@@ -1,49 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * A scheduled task.
+- *
+- * @package    core
+- * @copyright  2026 Matt Porritt <matt.porritt@moodle.com>
+- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-namespace core\task;
+-
+-/**
+- * Checks whether a registered site has stopped sending registration updates and notifies admins.
+- *
+- * This runs independently of {@see registration_cron_task} so that a paused or disabled state is
+- * detected and reported even when that task itself is the reason reporting has stopped.
+- */
+-class registration_reporting_check_task extends scheduled_task {
+-    /**
+-     * Get a descriptive name for this task (shown to admins).
+-     *
+-     * @return string
+-     */
+-    public function get_name() {
+-        return get_string('taskregistrationreportingcheck', 'admin');
+-    }
+-
+-    /**
+-     * Do the job.
+-     * Throw exceptions on errors (the job will be retried).
+-     */
+-    public function execute() {
+-        \core\hub\registration::check_reporting_paused_notification();
+-    }
+-}
+diff --git a/public/lib/db/messages.php b/public/lib/db/messages.php
+index 9136bf83e427e2eb91882cf1488c6f383871d284..d01644e9bf132429cf0798a5aea76ca00ab1ae42 100644
+--- a/public/lib/db/messages.php
++++ b/public/lib/db/messages.php
+@@ -98,15 +98,6 @@ $messageproviders = array (
+         'capability' => 'moodle/site:config',
+     ),
+ 
+-    // Notification that a registered site has stopped sending registration updates.
+-    'registrationreportingpaused' => [
+-        'defaults' => [
+-            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+-            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+-        ],
+-        'capability' => 'moodle/site:config',
+-    ],
+-
+     'instantmessage' => array (
+         'defaults' => array(
+             'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+diff --git a/public/lib/db/tasks.php b/public/lib/db/tasks.php
+index b91c350b8c146558027b6193606bab7a701b8b46..50abe35bd90cf4bdd0f5c2bf507f6c546a6cafe9 100644
+--- a/public/lib/db/tasks.php
++++ b/public/lib/db/tasks.php
+@@ -221,15 +221,6 @@ $tasks = array(
+         'dayofweek' => 'R',
+         'month' => '*'
+     ),
+-    [
+-        'classname' => 'core\task\registration_reporting_check_task',
+-        'blocking' => 0,
+-        'minute' => 'R',
+-        'hour' => 'R',
+-        'day' => '*',
+-        'dayofweek' => '*',
+-        'month' => '*',
+-    ],
+     array(
+         'classname' => 'core\task\check_for_updates_task',
+         'blocking' => 0,
+diff --git a/public/message/output/airnotifier/requestaccesskey.php b/public/message/output/airnotifier/requestaccesskey.php
+index bdfded9b116b954dbdff89facd5d42fa67871546..3598d2019c23abc3f3b296b4f923e04a2e9997f2 100644
+--- a/public/message/output/airnotifier/requestaccesskey.php
++++ b/public/message/output/airnotifier/requestaccesskey.php
+@@ -48,9 +48,7 @@ $msg = "";
+ // This check is also done in Airnotifier.
+ if (strpos($CFG->airnotifierurl, message_airnotifier_manager::AIRNOTIFIER_PUBLICURL) !== false ) {
+     $adminrenderer = $PAGE->get_renderer('core', 'admin');
+-    // Only an unregistered site blocks the key request. The admin renderer also warns a registered site whose
+-    // reporting has paused, which must not stop it from requesting a key.
+-    $msg = \core\hub\registration::is_registered() ? '' : $adminrenderer->warn_if_not_registered();
++    $msg = $adminrenderer->warn_if_not_registered();
+     if ($msg) {
+         $msg .= html_writer::div(get_string('sitemustberegistered', 'message_airnotifier'));
+ 
+diff --git a/public/my/courses.php b/public/my/courses.php
+index 7aa2dec2e679472eba9178af08763ae806e9993f..66d8fe8d13981895658c4616fc76a4f28ec3bdca 100644
+--- a/public/my/courses.php
++++ b/public/my/courses.php
+@@ -55,9 +55,6 @@ if ($hassiteconfig && moodle_needs_upgrading()) {
+     redirect(new moodle_url('/admin/index.php'));
+ }
+ 
+-// If site registration needs updating, redirect.
+-\core\hub\registration::registration_reminder('/my/courses.php');
+-
+ $context = context_system::instance();
+ 
+ // Get the My Moodle page info.  Should always return something unless the database is broken.
+diff --git a/public/my/index.php b/public/my/index.php
+index 51063d56943703855982bb3829bde71a86ce0a90..7044a18093a810dbd4da6005f2bc3c721e52c02e 100644
+--- a/public/my/index.php
++++ b/public/my/index.php
+@@ -50,9 +50,6 @@ if ($hassiteconfig && moodle_needs_upgrading()) {
+     redirect(new moodle_url('/admin/index.php'));
+ }
+ 
+-// If site registration needs updating, redirect.
+-\core\hub\registration::registration_reminder('/my/index.php');
+-
+ $strmymoodle = get_string('myhome');
+ 
+ if (empty($CFG->enabledashboard)) {

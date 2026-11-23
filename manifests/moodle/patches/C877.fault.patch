@@ -1,0 +1,54 @@
+diff --git a/public/mod/forum/amd/src/forum_overview_toggle.js b/public/mod/forum/amd/src/forum_overview_toggle.js
+index 8b51cc4b296a242f6bdcb231cd910c00409895d6..62f9ac44115eaa64d7ec2d68b43b07cc602d357b 100644
+--- a/public/mod/forum/amd/src/forum_overview_toggle.js
++++ b/public/mod/forum/amd/src/forum_overview_toggle.js
+@@ -63,21 +63,16 @@ async function subscriptionToggleClickHandler(toggleElement, changeLabel = true)
+         const context = await Repository.setForumSubscriptionState(forumId, newState);
+         const newTargetState = !!context.userstate.subscribed;
+ 
+-        // The aria-label may only follow the toggle state when the visible label follows it too (changeLabel).
+-        // Otherwise the visible label stays static and a state-dependent aria-label would contradict it,
+-        // failing WCAG SC 2.5.3 Label in Name.
+         let labelKey = '';
+-        let ariaLabelKey = '';
+         if (changeLabel) {
+             labelKey = newTargetState ? 'unsubscribe' : 'subscribe';
+-            ariaLabelKey = newTargetState ? 'unsubscribefromforum' : 'subscribetoforum';
+         }
+ 
+         await updateSwitchState(
+             toggleElement,
+             newTargetState,
+             labelKey,
+-            ariaLabelKey,
++            newTargetState ? 'unsubscribefromforum' : 'subscribetoforum',
+             forumName,
+         );
+ 
+diff --git a/public/mod/forum/classes/output/forum_actionbar.php b/public/mod/forum/classes/output/forum_actionbar.php
+index 1a3c8f66cc91622ab1ca699259f517748f0d9c1c..d682c0ffc092f7a623fd413315852264673c0514 100644
+--- a/public/mod/forum/classes/output/forum_actionbar.php
++++ b/public/mod/forum/classes/output/forum_actionbar.php
+@@ -118,9 +118,11 @@ class forum_actionbar implements renderable, templatable {
+         if ($cansubscribe) {
+             $subscribed = \mod_forum\subscriptions::is_subscribed($USER->id, $forumobject);
+             $label = get_string('subscribe', 'mod_forum');
+-            // No aria-label here: the toggle's own <label> already gives it an accessible name that is
+-            // consistent for sighted and screen reader users, and the checked state conveys subscription
+-            // status (WCAG SC 2.5.3 Label in Name).
++            if ($subscribed) {
++                $arialabel = get_string('unsubscribefromforum', 'mod_forum', $forumobject->name);
++            } else {
++                $arialabel = get_string('subscribetoforum', 'mod_forum', $forumobject->name);
++            }
+             $extraattributes = [
+                 ['name' => 'data-type', 'value' => 'forum-subscription-toggle'],
+                 ['name' => 'data-action', 'value' => 'toggle'],
+@@ -128,6 +130,7 @@ class forum_actionbar implements renderable, templatable {
+                 ['name' => 'data-forumname', 'value' => $forumobject->name],
+                 ['name' => 'data-username', 'value' => fullname($USER)],
+                 ['name' => 'data-targetstate', 'value' => !$subscribed],
++                ['name' => 'aria-label', 'value' => $arialabel],
+             ];
+ 
+             $data['subscribetoggle'] = [

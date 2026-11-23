@@ -1,0 +1,38 @@
+diff --git a/public/question/bank/editquestion/classes/output/add_new_question.php b/public/question/bank/editquestion/classes/output/add_new_question.php
+index 242fe3c6e286f1fe4ace490d90f268744643b3dd..60b97e8d9d3f870194cf4d6a93061d466b83b356 100644
+--- a/public/question/bank/editquestion/classes/output/add_new_question.php
++++ b/public/question/bank/editquestion/classes/output/add_new_question.php
+@@ -59,8 +59,7 @@ class add_new_question implements \renderable, \templatable {
+             $addquestiondisplay['buttonhtml'] = $output->single_button(
+                 $url,
+                 get_string('createnewquestion', 'question'),
+-                'get',
+-                ['disabled' => 'disabled'],
++                'get'
+             );
+             $addquestiondisplay['qtypeform'] = editquestion_helper::print_choose_qtype_to_add_form([]);
+         }
+diff --git a/public/question/bank/editquestion/yui/src/chooser/js/chooser.js b/public/question/bank/editquestion/yui/src/chooser/js/chooser.js
+index dee9c5c829281349a1bafdf74f22f44e394418e9..9b4c03b75e086a6f88ca64b40caf7b0c3537e52f 100644
+--- a/public/question/bank/editquestion/yui/src/chooser/js/chooser.js
++++ b/public/question/bank/editquestion/yui/src/chooser/js/chooser.js
+@@ -32,16 +32,12 @@ function Chooser() {
+ 
+ Y.extend(Chooser, M.core.chooserdialogue, {
+     initializer: function() {
+-        Y.all(SELECTORS.CREATENEWQUESTIONFORM).each(function(createForm) {
+-            if (createForm.get('id') === 'chooserform') {
+-                // Not the singlebutton form. Ignore.
+-                return;
++        Y.all('form').each(function(node) {
++            if (/question\/bank\/editquestion\/addquestion\.php/.test(node.getAttribute('action'))) {
++                node.on('submit', this.displayQuestionChooser, this);
+             }
+-            createForm.on('submit', this.displayQuestionChooser, this);
+-            createForm.one('button').set('disabled', false);
+         }, this);
+     },
+-
+     displayQuestionChooser: function(e) {
+         var dialogue = Y.one(SELECTORS.CREATENEWQUESTION + ' ' + SELECTORS.CHOOSERDIALOGUE),
+             header = Y.one(SELECTORS.CREATENEWQUESTION + ' ' + SELECTORS.CHOOSERHEADER);

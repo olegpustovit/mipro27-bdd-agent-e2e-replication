@@ -1,0 +1,34 @@
+diff --git a/public/mod/quiz/classes/output/edit_renderer.php b/public/mod/quiz/classes/output/edit_renderer.php
+index 643abd89f478fcbf0b9d2d74839f27ca632b51f7..2066f7b4728415791296cabe380bbd634b3810e9 100644
+--- a/public/mod/quiz/classes/output/edit_renderer.php
++++ b/public/mod/quiz/classes/output/edit_renderer.php
+@@ -1117,7 +1117,7 @@ class edit_renderer extends \plugin_renderer_base {
+         if (!question_bank::is_qtype_usable($question->qtype)) {
+             $output .= html_writer::span($title);
+             $output .= html_writer::span(
+-                get_string('invalidquestiontype', 'question', $question->originalqtype ?? $question->qtype),
++                get_string('invalidquestiontype', 'question', $question->originalqtype),
+                 'badge bg-danger text-white ms-3'
+             );
+         } else {
+diff --git a/public/mod/quiz/classes/structure.php b/public/mod/quiz/classes/structure.php
+index 64881fef5c976fe113bc0dfef760c44d5c972d8e..650076a7ef2240821094254c8135ab63c7eb9ed6 100644
+--- a/public/mod/quiz/classes/structure.php
++++ b/public/mod/quiz/classes/structure.php
+@@ -811,15 +811,9 @@ class structure {
+      */
+     public function get_version_choices_for_slot(int $slotnumber): array {
+         $slot = $this->get_slot_by_number($slotnumber);
+-        $questionid = $slot->questionid;
+-        if ($slot->qtype === 'missingtype') {
+-            // For missing questions, there may be no id. Use 0, which will not match any questions,
+-            // so the menu we build only has the ‘Always latest’ choice.
+-            $questionid = is_numeric($slot->questionid) ? (int) $slot->questionid : 0;
+-        }
+ 
+         // Get all the versions which exist.
+-        $versions = version_options::get_version_menu_options($questionid);
++        $versions = version_options::get_version_menu_options($slot->questionid);
+         $versioninfo = [];
+ 
+         // Loop through them and set which one is selected.

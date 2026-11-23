@@ -1,0 +1,90 @@
+diff --git a/public/question/bank/deletequestion/classes/helper.php b/public/question/bank/deletequestion/classes/helper.php
+index 0e58d0cf9db947f482012fa8b9765835d79ab417..29488989b072d376ff6d9f2f20ea70a05f611a39 100644
+--- a/public/question/bank/deletequestion/classes/helper.php
++++ b/public/question/bank/deletequestion/classes/helper.php
+@@ -40,18 +40,17 @@ class helper {
+         $questionversions = [];
+         $countselectedquestion = count($questionids);
+ 
+-        $versionsofeachquestionbankentry = $deleteallversions
+-            ? \question_bank::get_all_versions_of_questions($questionids)
+-            : \question_bank::get_version_of_questions($questionids);
+-
+-        foreach ($versionsofeachquestionbankentry as $entryid => $versions) {
+-            // Re-order to the oldest first.
+-            $versionsofeachquestionbankentry[$entryid] = array_reverse($versions, true);
+-            // Flip the array to list question by question id. [ qid => version ].
+-            $questionversions += array_flip($versions);
++        if ($deleteallversions) {
++            $versionsofeachquestionbankentry = \question_bank::get_all_versions_of_questions($questionids);
++            foreach ($versionsofeachquestionbankentry as $entryid => $versions) {
++                // Re-order to oldest first.
++                $versionsofeachquestionbankentry[$entryid] = array_reverse($versions, true);
++                // Flip the array to list question by question id. [ qid => version ].
++                $questionversions += array_flip($versions);
++            }
++            // Flatten an array.
++            $questionids = array_merge(...$versionsofeachquestionbankentry);
+         }
+-        // Flatten an array.
+-        $questionids = array_merge(...$versionsofeachquestionbankentry);
+ 
+         // Get the names of all the questions.
+         $questions = $DB->get_records_list('question', 'id', $questionids, '', 'id, name');
+@@ -63,11 +62,15 @@ class helper {
+                 $inuse = true;
+             }
+             $questionname = format_string($questions[$questionid]->name);
+-
+-            $a = new \stdClass();
+-            $a->name = $questionname;
+-            $a->version = $questionversions[$questionid];
+-            $questionnames .= get_string('questionnameandquestionversion', 'question', $a) . '<br />';
++            if (isset($questionversions[$questionid])) {
++                $a = new \stdClass();
++                $a->name = $questionname;
++                $a->version = $questionversions[$questionid];
++                $questionnames .= get_string('questionnameandquestionversion',
++                    'question', $a) . '<br />';
++            } else {
++                $questionnames .= $questionname . '<br />';
++            }
+         }
+ 
+         // Add the in-use message if required.
+diff --git a/public/question/engine/bank.php b/public/question/engine/bank.php
+index a4d9bf5b65c95489b5f8829b067767df82344e17..4810903e08669ae27361a43e55e202c26731841b 100644
+--- a/public/question/engine/bank.php
++++ b/public/question/engine/bank.php
+@@ -403,31 +403,6 @@ abstract class question_bank {
+         return $result;
+     }
+ 
+-    /**
+-     * Retrieves version information for a list of questions.
+-     *
+-     * @param array $questionids Array of question ids.
+-     * @return array An array question_bank_entries.id => version number => question.id.
+-     */
+-    public static function get_version_of_questions(array $questionids): array {
+-        global $DB;
+-
+-        [$listquestionid, $params] = $DB->get_in_or_equal($questionids, SQL_PARAMS_NAMED);
+-        $sql = "SELECT qv.questionid, qv.version, qv.questionbankentryid
+-                  FROM {question_versions} qv
+-                  JOIN {question_bank_entries} qbe ON qv.questionbankentryid = qbe.id
+-                 WHERE qv.questionid $listquestionid
+-              ORDER BY qv.version DESC";
+-
+-        $rows = $DB->get_recordset_sql($sql, $params);
+-        $result = [];
+-        foreach ($rows as $row) {
+-            $result[$row->questionbankentryid][$row->version] = $row->questionid;
+-        }
+-
+-        return $result;
+-    }
+-
+     /**
+      * @return question_finder a question finder.
+      */

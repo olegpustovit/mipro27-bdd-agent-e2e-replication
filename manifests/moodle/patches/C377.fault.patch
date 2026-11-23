@@ -1,0 +1,40 @@
+diff --git a/public/question/flags.js b/public/question/flags.js
+index a91d90cb2c1fb3d715377cf5e2516d72e2c535df..3720d2409b17fd3ab84e2a6362e3924c5d3bf6d2 100644
+--- a/public/question/flags.js
++++ b/public/question/flags.js
+@@ -29,13 +29,12 @@ M.core_question_flags = {
+     flagattributes: null,
+     actionurl: null,
+     listeners: [],
+-    editableSelector: 'div.questionflag.editable',
+ 
+     init: function(Y, actionurl, flagattributes) {
+         M.core_question_flags.flagattributes = flagattributes;
+         M.core_question_flags.actionurl = actionurl;
+ 
+-        Y.all(M.core_question_flags.editableSelector).each(function(flagdiv) {
++        Y.all('div.questionflag').each(function(flagdiv, i) {
+             var checkbox = flagdiv.one('input[type=checkbox]');
+             if (!checkbox) {
+                 return;
+@@ -65,17 +64,17 @@ M.core_question_flags = {
+         Y.delegate('click', function(e) {
+             e.halt();
+             M.core_question_flags.process(this);
+-        }, document.body, M.core_question_flags.editableSelector);
++        }, document.body, 'div.questionflag');
+         Y.delegate('key', function(e) {
+             e.halt();
+             if (e.keyCode == 13) {
+                 M.core_question_flags.process(this);
+             }
+-        }, document.body, 'down:enter, space', M.core_question_flags.editableSelector);
++        }, document.body, 'down:enter, space', 'div.questionflag');
+         Y.delegate('key', function(e) {
+             e.halt();
+             M.core_question_flags.process(this);
+-        }, document.body, 'up:space', M.core_question_flags.editableSelector);
++        }, document.body, 'up:space', 'div.questionflag');
+     },
+ 
+     update_flag: function(input, toggle) {

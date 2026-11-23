@@ -1,0 +1,25 @@
+Per 12-scenario suite run: agent 1609748 tokens, 208746 uncached+output, 5.2 min sequential; scripts 0 tokens, 1.4 min
+Repair per transition: tokens [ 307434, 1149221 ] uncached+output [ 44650, 95397 ] minutes [ '5.0', '7.3' ]
+Break-even, tokens: one mean repair (728328) equals 0.5 agent suite runs; on uncached+output 0.3.
+Break-even, time: the agent suite costs 3.8 min more per run, so one mean repair (6.2 min agent time) equals 1.6 suite runs.
+Sensitivity: construction cost of step code unmeasured; each unit of it moves break-even by its token cost / agent suite tokens. Scripted-arm tokens are repair only.
+
+Hybrid replay by stage kind/revision (script first, agent only on script failure):
+healthy-v0 {"n":11,"scriptPass":11,"scriptFail":0,"agentPassAfterFail":0,"agentFailAfterFail":0,"agentUnresolved":0,"missing":0,"agentRunsTok":0}
+fault-v0 {"n":24,"scriptPass":0,"scriptFail":24,"agentPassAfterFail":0,"agentFailAfterFail":23,"agentUnresolved":1,"missing":0,"agentRunsTok":2674107}
+healthy-v1 {"n":12,"scriptPass":5,"scriptFail":7,"agentPassAfterFail":4,"agentFailAfterFail":3,"agentUnresolved":0,"missing":0,"agentRunsTok":1075730}
+healthy-v2 {"n":35,"scriptPass":35,"scriptFail":0,"agentPassAfterFail":0,"agentFailAfterFail":0,"agentUnresolved":0,"missing":0,"agentRunsTok":0}
+fault-v2 {"n":24,"scriptPass":0,"scriptFail":24,"agentPassAfterFail":0,"agentFailAfterFail":21,"agentUnresolved":3,"missing":0,"agentRunsTok":3424598}
+Initial suite after change to v1: 0/12 (raw keys caseId,code,scenarioCount,timedOut,actions,elapsedMs,failures,stderr)
+Initial suite after change to v2: 0/12 (raw keys caseId,code,scenarioCount,timedOut,actions,elapsedMs,failures,stderr)
+
+Adjudicated: {"healthy|maintained|true_pass":51,"healthy|runtime|true_pass":38,"healthy|runtime|false_alarm":13,"healthy|runtime|action_failure":8,"healthy|maintained|invalid":2,"fault|runtime|supported_detection":43,"fault|maintained|supported_detection":48,"fault|runtime|action_failure":5,"healthy|maintained|action_failure":7,"healthy|runtime|unsupported_healthy_pass":1}
+
+Agent healthy runs: contract witnessed but verdict not pass: 13 of 60
+Agent healthy false-alarm candidates by case: {"bank-create":5,"bank-delete":5,"social-like":3,"social-comment":4,"profile-email":1,"transfer-request":2,"transfer-pay":1}
+  healthy-v0-1/bank-create/runtime fail | {"status":"fail","reason":"The home page identified @Heath93, and after saving, the Bank Accounts list showed “Study Credit Union” once. After reloading /bankaccounts, the page showed “No Ba
+  healthy-v0-1/bank-delete/runtime fail | {"status":"fail","reason":"Signed in as @Heath93. The account showed “Waters, King and O'Reilly Bank (Deleted)” immediately after deletion. After reloading /bankaccounts, the account was abs
+  healthy-v0-1/social-like/runtime unresolved | {"status":"unresolved","reason":"Signed in as Heath93; the authenticated home identifies @Heath93. The visible feed shows transaction rows but no transaction ID or control to locate transact
+  healthy-v0-1/social-comment/runtime unresolved | {"status":"unresolved","reason":"Signed in successfully and the home page identified @Heath93. The requested transaction was not available in the visible transaction list, so I could not ope
+  healthy-v1-1/bank-create/runtime fail | {"status":"fail","reason":"Signed in as Heath93 and the home page identified @Heath93. Created Study Credit Union, which appeared exactly once before reload. After reloading /bankaccounts, t
+  healthy-v1-1/bank-delete/runtime fail | {"status":"fail","reason":"Signed in as @Heath93 and the home identified Heath93. After deleting the account, the UI showed “Waters, King and O'Reilly Bank (Deleted)”. After reloading, the b

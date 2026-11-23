@@ -1,0 +1,195 @@
+diff --git a/public/files/renderer.php b/public/files/renderer.php
+index f04897da1d8939b2e9fe50fbde9d365fa42ca533..bc78ae50f3dd47c6c449a950253ac501dc34bde6 100644
+--- a/public/files/renderer.php
++++ b/public/files/renderer.php
+@@ -123,8 +123,6 @@ class core_files_renderer extends plugin_renderer_base {
+                 ['updatefileextensiontitle', 'repository'],
+                 ['originalextensionchange', 'repository'],
+                 ['invalidfiletypetitle', 'repository'],
+-                ['filenametoolong', 'repository'],
+-                ['filenametoolongtitle', 'repository'],
+             )
+         );
+         if ($this->page->requires->should_create_one_time_item_now('core_file_managertemplate')) {
+@@ -132,9 +130,7 @@ class core_files_renderer extends plugin_renderer_base {
+                     array($this->filemanager_js_templates()), true, $module);
+         }
+         $this->page->requires->js_call_amd('core/checkbox-toggleall', 'init');
+-        $options = clone $fm->options;
+-        $options->maxfilenamelength = file_storage::MAX_FILENAME_LENGTH;
+-        $this->page->requires->js_init_call('M.form_filemanager.init', [$options], true, $module);
++        $this->page->requires->js_init_call('M.form_filemanager.init', array($fm->options), true, $module);
+ 
+         // non javascript file manager
+         $html .= '<noscript>';
+diff --git a/public/lib/classes/output/requirements/page_requirements_manager.php b/public/lib/classes/output/requirements/page_requirements_manager.php
+index 51dee5c5ded73341ababe866ca4689a1f1719902..8f36cc93744db9b634822153cd87045cc2352300 100644
+--- a/public/lib/classes/output/requirements/page_requirements_manager.php
++++ b/public/lib/classes/output/requirements/page_requirements_manager.php
+@@ -827,7 +827,6 @@ class page_requirements_manager {
+                             ['referencesexist', 'repository'],
+                             ['select', 'repository'],
+                             ['invalidfiletypetitle', 'repository'],
+-                            ['filenametoolongtitle', 'repository'],
+                         ],
+                     ];
+                     break;
+@@ -881,7 +880,6 @@ class page_requirements_manager {
+                             ['maxareabytesreached', 'moodle'], ['serverconnection', 'error'],
+                             ['changesmadereallygoaway', 'moodle'], ['complete', 'moodle'],
+                             ['invalidfiletypetitle', 'repository'],
+-                            ['filenametoolongtitle', 'repository'],
+                             ['upload_error_folders_not_supported', 'repository_upload'],
+                             ['upload_error_folders_not_supported_title', 'repository_upload'],
+                         ],
+diff --git a/public/lib/filestorage/file_storage.php b/public/lib/filestorage/file_storage.php
+index 19d55afe1b8d7eba277ccf8fc6a0de7b363ae74f..65090ccc53dbf105d2bef36ba34540bc01223db7 100644
+--- a/public/lib/filestorage/file_storage.php
++++ b/public/lib/filestorage/file_storage.php
+@@ -45,9 +45,6 @@ require_once("$CFG->libdir/filestorage/stored_file.php");
+  */
+ class file_storage {
+ 
+-    /** @var int Maximum number of characters supported by the files.filename column. */
+-    public const MAX_FILENAME_LENGTH = 255;
+-
+     /** @var string tempdir */
+     private $tempdir;
+ 
+@@ -332,23 +329,11 @@ class file_storage {
+             }
+         }
+ 
+-        // Build the new filename, shortening the base name to fit the filename column.
+-        // Shortened names may already exist, so increment the number until one is free.
+-        do {
+-            $suffix = ' (' . $number . ')';
+-            if (isset($pathinfo['extension'])) {
+-                $suffix .= '.' . $pathinfo['extension'];
+-            }
+-            $newbasename = $basename;
+-            $maxbasenamelength = self::MAX_FILENAME_LENGTH - core_text::strlen($suffix);
+-            if ($maxbasenamelength > 0 && core_text::strlen($newbasename) > $maxbasenamelength) {
+-                $newbasename = core_text::substr($newbasename, 0, $maxbasenamelength);
+-            }
+-            $newfilename = $newbasename . $suffix;
+-            $number++;
+-            $taken = $newbasename !== $basename &&
+-                $this->file_exists($contextid, $component, $filearea, $itemid, $filepath, $newfilename);
+-        } while ($taken);
++        // Constructing the new filename.
++        $newfilename = $basename . ' (' . $number . ')';
++        if (isset($pathinfo['extension'])) {
++            $newfilename .= '.' . $pathinfo['extension'];
++        }
+ 
+         return $newfilename;
+     }
+diff --git a/public/lib/form/dndupload.js b/public/lib/form/dndupload.js
+index edf2b8c398f06c9a2f15115e4aa7405fd95f1b18..919f8990fd09dfb2c6be49675b8a8a3ce9e16958 100644
+--- a/public/lib/form/dndupload.js
++++ b/public/lib/form/dndupload.js
+@@ -679,9 +679,6 @@ M.form_dndupload.init = function(Y, options) {
+             if (errorCode === 'invalidfiletypewithaccepted') {
+                 header = M.util.get_string('invalidfiletypetitle', 'repository');
+             }
+-            if (errorCode === 'filenametoolong') {
+-                header = M.util.get_string('filenametoolongtitle', 'repository');
+-            }
+             if (errorCode === 'uploaderrorfoldersnotsupported') {
+                 header = M.util.get_string('upload_error_folders_not_supported_title', 'repository_upload');
+             }
+diff --git a/public/lib/form/filemanager.js b/public/lib/form/filemanager.js
+index fdd7c09c9176805fbc777e4c489d8ad29207b264..18c501985216f82ed49bfa155c484761ba68ea18 100644
+--- a/public/lib/form/filemanager.js
++++ b/public/lib/form/filemanager.js
+@@ -274,9 +274,6 @@ M.form_filemanager.init = function(Y, options) {
+             if (errorCode === 'invalidfiletype') {
+                 header = M.util.get_string('invalidfiletypetitle', 'repository');
+             }
+-            if (errorCode === 'filenametoolong') {
+-                header = M.util.get_string('filenametoolongtitle', 'repository');
+-            }
+             if (!this.msg_dlg) {
+                 this.msg_dlg_node = Y.Node.create(M.form_filemanager.templates.message);
+                 var nodeid = this.msg_dlg_node.generateID();
+@@ -864,11 +861,6 @@ M.form_filemanager.init = function(Y, options) {
+                     this.print_msg(M.util.get_string('enternewname', 'repository'), 'error');
+                     return;
+                 }
+-                if (Array.from(newfilename).length > options.maxfilenamelength) {
+-                    this.print_msg(M.util.get_string('filenametoolong', 'repository', options.maxfilenamelength),
+-                        'error', options, 'filenametoolong');
+-                    return;
+-                }
+ 
+                 if ((filenamechanged || filepathchanged) && !confirmed) {
+                     var warnings = '';
+diff --git a/public/repository/filepicker.js b/public/repository/filepicker.js
+index 3e6879533d595e6d754cb8f602fd2f687f026193..984acfe8e2b91a872d1750e2cab60735ddb87f20 100644
+--- a/public/repository/filepicker.js
++++ b/public/repository/filepicker.js
+@@ -718,16 +718,11 @@ M.core_filepicker.init = function(Y, options) {
+                             // Show the error dialogue after any recovery UI above (for example the
+                             // filemanager re-showing the file picker) so that it is the last dialogue
+                             // to trap focus, and therefore the one that keeps it.
+-                            var friendlytitles = {
+-                                invalidfiletypewithaccepted: 'invalidfiletypetitle',
+-                                filenametoolong: 'filenametoolongtitle',
+-                            };
+-                            if (friendlytitles[data.errorcode]) {
+-                                // Problems with the chosen file are not really errors, so report them less scarily.
+-                                var titlekey = friendlytitles[data.errorcode];
++                            if (data.errorcode === 'invalidfiletypewithaccepted') {
++                                // File type errors are not really errors, so report them less scarily.
+                                 Y.use('moodle-core-notification-alert', function() {
+                                     return new M.core.alert({
+-                                        title: M.util.get_string(titlekey, 'repository'),
++                                        title: M.util.get_string('invalidfiletypetitle', 'repository'),
+                                         message: data.error,
+                                     });
+                                 });
+diff --git a/public/repository/lib.php b/public/repository/lib.php
+index 60ec0d301d871a4699032024a10a04ee59b19a6c..1c264a08d41cdc0313d2a731525a765b57dfbf22 100644
+--- a/public/repository/lib.php
++++ b/public/repository/lib.php
+@@ -2552,9 +2552,6 @@ abstract class repository implements cacheable_object {
+         $usercontext = context_user::instance($USER->id);
+         // make sure filename and filepath are present in $updatedata
+         $updatedata = $updatedata + array('filepath' => $filepath, 'filename' => $filename);
+-        if (core_text::strlen($updatedata['filename']) > file_storage::MAX_FILENAME_LENGTH) {
+-            throw new moodle_exception('filenametoolong', 'repository', '', file_storage::MAX_FILENAME_LENGTH);
+-        }
+         $filemodified = false;
+         if (!$file = $fs->get_file($usercontext->id, 'user', 'draft', $draftid, $filepath, $filename)) {
+             if ($filename === '.') {
+diff --git a/public/repository/repository_ajax.php b/public/repository/repository_ajax.php
+index 37c40264b5166b53d2ac356317bf0791e6f10760..3d23ad91b8c1ba08a79df68590c9b268db1a0145 100644
+--- a/public/repository/repository_ajax.php
++++ b/public/repository/repository_ajax.php
+@@ -201,9 +201,6 @@ switch ($action) {
+             $record = new stdClass();
+             $record->filepath = $saveas_path;
+             $record->filename = $saveas_filename;
+-            if (core_text::strlen($record->filename) > file_storage::MAX_FILENAME_LENGTH) {
+-                throw new moodle_exception('filenametoolong', 'repository', '', file_storage::MAX_FILENAME_LENGTH);
+-            }
+             $record->component = 'user';
+             $record->filearea = 'draft';
+             $record->itemid = $itemid;
+diff --git a/public/repository/upload/lib.php b/public/repository/upload/lib.php
+index 35b0b96f5b6cdf026634481a2df46f9289bfba54..f33a85a99743303d1659fd52887fde9a87d5aa8e 100644
+--- a/public/repository/upload/lib.php
++++ b/public/repository/upload/lib.php
+@@ -169,11 +169,6 @@ class repository_upload extends repository {
+             }
+         }
+ 
+-        // Validate file name length before closing session.
+-        if (core_text::strlen($record->filename) > file_storage::MAX_FILENAME_LENGTH) {
+-            throw new moodle_exception('filenametoolong', 'repository', '', file_storage::MAX_FILENAME_LENGTH);
+-        }
+-
+         // Validate file type before closing session.
+         if ($this->mimetypes != '*') {
+             // Check filetype.

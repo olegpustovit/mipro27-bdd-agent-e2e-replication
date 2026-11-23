@@ -1,0 +1,93 @@
+diff --git a/public/course/edit_form.php b/public/course/edit_form.php
+index 01839a48bd7eab6d38b810efe702f32e401d1b3d..1757ff1f5ed7e6d38cfef002e9ba4089015808f2 100644
+--- a/public/course/edit_form.php
++++ b/public/course/edit_form.php
+@@ -216,6 +216,8 @@ class course_edit_form extends moodleform {
+         }
+ 
+         if (!empty($course->id) and !has_capability('moodle/course:changesummary', $coursecontext)) {
++            // Remove the description header it does not contain anything any more.
++            $mform->removeElement('descriptionhdr');
+             $mform->hardFreeze($summaryfields);
+         }
+ 
+diff --git a/public/grade/grading/form/rubric/edit_form.php b/public/grade/grading/form/rubric/edit_form.php
+index 07da99e39e9d2df3e05e82c9c613fb4adc42b595..5ba5c9fd238189b3a27fe545e49ac0eb655c3181 100644
+--- a/public/grade/grading/form/rubric/edit_form.php
++++ b/public/grade/grading/form/rubric/edit_form.php
+@@ -177,8 +177,9 @@ class gradingform_rubric_editrubric extends moodleform {
+         }
+ 
+         // freeze form elements and pass the values in hidden fields
++        // TODO MDL-29421 description_editor does not freeze the normal way, uncomment below when fixed
+         $form = $this->_form;
+-        foreach (['rubric', 'name', 'description_editor'] as $fieldname) {
++        foreach (array('rubric', 'name'/*, 'description_editor'*/) as $fieldname) {
+             $el =& $form->getElement($fieldname);
+             $el->freeze();
+             $el->setPersistantFreeze(true);
+diff --git a/public/lib/form/editor.php b/public/lib/form/editor.php
+index 6b4b40b5357132f3c5640e24319730e86637f3e6..c2ade3a502e8eea12e0388a471f1a8e3d83e4392 100644
+--- a/public/lib/form/editor.php
++++ b/public/lib/form/editor.php
+@@ -41,6 +41,7 @@ require_once('templatable_form_element.php');
+  * @category  form
+  * @copyright 2009 Petr Skoda {@link http://skodak.org}
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ * @todo      MDL-29421 element Freezing
+  * @todo      MDL-29426 ajax format conversion
+  */
+ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatable {
+@@ -484,51 +485,13 @@ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatab
+         return $context;
+     }
+ 
+-    /**
+-     * Used by getFrozenHtml() to pass the element's value if _persistantFreeze is on
+-     *
+-     * @return string
+-     */
+-    public function _getPersistantData() {
+-        if (!$this->_persistantFreeze) {
+-            return '';
+-        } else {
+-            $id = $this->getAttribute('id');
+-            if (isset($id)) {
+-                // Id of persistant input is different then the actual input.
+-                $id = ['id' => $id . '_persistant'];
+-            } else {
+-                $id = [];
+-            }
+-
+-            $str = '';
+-            foreach ($this->getValue() as $key => $value) {
+-                $str .= html_writer::empty_tag('input', [
+-                    'type' => 'hidden',
+-                    'name' => $this->getName() . "[{$key}]",
+-                    'value' => $value,
+-                ] + $id);
+-            }
+-            return $str;
+-        }
+-    }
+-
+     /**
+      * Returns the formatted value. The return from parent class is not acceptable.
+      *
+      * @return string
+      */
+     public function getFrozenHtml(): string {
+-        global $CFG;
+-
+-        ['text' => $text, 'format' => $format] = $this->getValue();
+-
+-        // In post-formatted content, draftfiles are never expected to exist. However, in this case we do need to show
+-        // embedded draft files, because they are expected to exist in the editor element.
+-        $content = format_text($text, $format, ['context' => $this->_options['context'], 'overflowdiv' => true]);
+-        $content = str_replace("\"$CFG->wwwroot/brokenfile.php#", "\"$CFG->wwwroot/draftfile.php", $content);
+-
+-        return $content . $this->_getPersistantData();
++        return format_text($this->get_text(), $this->getFormat()) . $this->_getPersistantData();
+     }
+ 
+     /**

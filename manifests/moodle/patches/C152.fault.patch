@@ -1,0 +1,117 @@
+diff --git a/public/lib/classes/task/cleanup_questions_without_categories_task.php b/public/lib/classes/task/cleanup_questions_without_categories_task.php
+deleted file mode 100644
+index fe675ea35e5eb7a3a6d170a010a9432359dc09a7..0000000000000000000000000000000000000000
+--- a/public/lib/classes/task/cleanup_questions_without_categories_task.php
++++ /dev/null
+@@ -1,75 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace core\task;
+-
+-use core\local\cli\shutdown;
+-
+-/**
+- * Task to find questions with no category and delete them
+- *
+- * Due to MDL-86154, there may be questions left in the database after a restore, whose category has been deleted.
+- * This will find any questions like that and delete them. These questions will always be unused.
+- *
+- * Now that we have prevented this occurring, this task is used by the upgrade process to clean up these questions.
+- *
+- * @package   core
+- * @copyright 2026 Martin Gauk <martin.gauk@tu-berlin.de>
+- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-class cleanup_questions_without_categories_task extends adhoc_task {
+-    use stored_progress_task_trait;
+-
+-    #[\Override]
+-    public function execute() {
+-        global $CFG, $DB;
+-        require_once($CFG->libdir . '/questionlib.php');
+-
+-        $this->start_stored_progress();
+-        $progress = $this->get_progress();
+-
+-        $questionids = $DB->get_fieldset_sql('
+-            SELECT q.id
+-              FROM {question_bank_entries} qbe
+-              JOIN {question_versions} qv ON qv.questionbankentryid = qbe.id
+-              JOIN {question} q ON qv.questionid = q.id
+-         LEFT JOIN {question_categories} qc ON qbe.questioncategoryid = qc.id
+-             WHERE qc.id IS NULL
+-        ');
+-
+-        $progress->start_progress('', count($questionids));
+-        $done = 0;
+-
+-        foreach ($questionids as $questionid) {
+-            $transaction = $DB->start_delegated_transaction();
+-            question_delete_question($questionid);
+-            $transaction->allow_commit();
+-            $progress->increment_progress();
+-            $done++;
+-
+-            // The task might be running for a long time. If a graceful exit is requested, queue this task again.
+-            if (shutdown::should_gracefully_exit()) {
+-                $newtask = new cleanup_questions_without_categories_task();
+-                manager::queue_adhoc_task($newtask);
+-                mtrace('Graceful exit requested, rescheduled cleanup_questions_without_categories_task');
+-                break;
+-            }
+-        }
+-
+-        $progress->end_progress();
+-        mtrace("Cleaned up {$done} questions left over from restores.");
+-    }
+-}
+diff --git a/public/question/classes/category_manager.php b/public/question/classes/category_manager.php
+index 89363ceb4d0d645c0a8ddf0d6dca9cc7e99774fb..5adda08203a65c55e01aea292df17e66321f3fc5 100644
+--- a/public/question/classes/category_manager.php
++++ b/public/question/classes/category_manager.php
+@@ -454,4 +454,31 @@ class category_manager {
+             $DB->update_record('question_categories', $categorytofix, true);
+         }
+     }
++
++    /**
++     * Upgrade step to find questions with no category and delete them.
++     *
++     * Due to MDL-86154, there may be questions left in the database after a restore, whose category has been deleted. This will
++     * find any questions like that and delete them. These questions will always be unused.
++     *
++     * Now that we have prevented this occurring, this function is used by the upgrade process to clean up these questions.
++     *
++     * @return int A count of deleted questions.
++     * @todo Deprecate in 6.0 MDL-87844 for Removal in 7.0 MDL-87845.
++     */
++    public static function cleanup_questions_without_categories(): int {
++        global $DB;
++        $questionids = $DB->get_fieldset_sql("
++            SELECT q.id
++              FROM {question_bank_entries} qbe
++              JOIN {question_versions} qv ON qv.questionbankentryid = qbe.id
++              JOIN {question} q ON qv.questionid = q.id
++         LEFT JOIN {question_categories} qc ON qbe.questioncategoryid = qc.id
++             WHERE qc.id IS NULL
++        ");
++        foreach ($questionids as $questionid) {
++            question_delete_question($questionid);
++        }
++        return count($questionids);
++    }
+ }

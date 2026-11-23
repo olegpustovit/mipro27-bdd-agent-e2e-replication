@@ -1,0 +1,26 @@
+diff --git a/public/admin/tool/lp/templates/plans_page.mustache b/public/admin/tool/lp/templates/plans_page.mustache
+index d0298f7c7dbd312231ac3e713bb657ec7b5ff8cf..ac3cbc26d9afed2e149e26251f41886ccad96b09 100644
+--- a/public/admin/tool/lp/templates/plans_page.mustache
++++ b/public/admin/tool/lp/templates/plans_page.mustache
+@@ -71,13 +71,17 @@
+                 <li>
+                     <a href="#">{{#str}}edit{{/str}}</a><b class="caret"></b>
+                     <ul class="dropdown dropdown-menu">
+-                    {{#canbeedited}}
+-                    <li class="dropdown-item">
+-                        <a href="{{pluginbaseurl}}/editplan.php?id={{id}}&amp;userid={{userid}}&amp;return=plans">
++                    <li class="{{^canbeedited}} disabled {{/canbeedited}} dropdown-item">
++                        <a href="{{#canbeedited}}
++                                    {{pluginbaseurl}}/editplan.php?id={{id}}&amp;userid={{userid}}&amp;return=plans
++                                 {{/canbeedited}}
++                                 {{^canbeedited}}
++                                    #
++                                 {{/canbeedited}}
++                                 ">
+                             {{#pix}}t/edit{{/pix}} {{#str}}editthisplan, tool_lp{{/str}}
+                         </a>
+                     </li>
+-                    {{/canbeedited}}
+                     {{#isreopenallowed}}
+                     <li class="dropdown-item">
+                         <a data-action="plan-reopen" href="#">

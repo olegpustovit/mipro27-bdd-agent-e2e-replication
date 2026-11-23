@@ -1,0 +1,30 @@
+diff --git a/public/customfield/field/number/classes/task/recalculate.php b/public/customfield/field/number/classes/task/recalculate.php
+index 2151cf1fa77255c72ac302216b567c0e8d167dd7..b0b55cb9af64626d2fb71efc417d5abbc951c909 100644
+--- a/public/customfield/field/number/classes/task/recalculate.php
++++ b/public/customfield/field/number/classes/task/recalculate.php
+@@ -17,7 +17,6 @@
+ namespace customfield_number\task;
+ 
+ use core\task\adhoc_task;
+-use core_customfield\customfield\shared_handler;
+ use core_customfield\field_controller;
+ use customfield_number\provider_base;
+ 
+@@ -79,15 +78,10 @@ class recalculate extends adhoc_task {
+      */
+     protected function field_is_scheduled(field_controller $field): bool {
+         $customdata = $this->get_custom_data();
+-        $handler = $field->get_handler();
+-        // Shared custom fields can be enabled for any component/area, so they should not be filtered out.
+-        if ($handler instanceof shared_handler) {
+-            return true;
+-        }
+-        if (!empty($customdata->component) && $handler->get_component() !== $customdata->component) {
++        if (!empty($customdata->component) && $field->get_handler()->get_component() !== $customdata->component) {
+             return false;
+         }
+-        if (!empty($customdata->area) && $handler->get_area() !== $customdata->area) {
++        if (!empty($customdata->area) && $field->get_handler()->get_area() !== $customdata->area) {
+             return false;
+         }
+         return true;

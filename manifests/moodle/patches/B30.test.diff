@@ -1,0 +1,56 @@
+diff --git a/lib/behat/classes/partial_named_selector.php b/lib/behat/classes/partial_named_selector.php
+index 66335e9c8ef140c49183c13aa7c8afba7dff7d88..8faa23aa68763e36ca62bf3e2af2b2608667bff4 100644
+--- a/lib/behat/classes/partial_named_selector.php
++++ b/lib/behat/classes/partial_named_selector.php
+@@ -255,7 +255,7 @@ XPATH
+         ,
+             'filemanager' => <<<XPATH
+ .//*[@data-fieldtype = 'filemanager' or @data-fieldtype = 'filepicker']
+-    /descendant::input[@id = //label[contains(normalize-space(string(.)), %locator%)]/@for]
++    /descendant::input[@id = substring-before(//p[contains(normalize-space(string(.)), %locator%)]/@id, '_label')]
+ XPATH
+         ,
+              'passwordunmask' => <<<XPATH
+diff --git a/lib/behat/core_behat_file_helper.php b/lib/behat/core_behat_file_helper.php
+index 957a357ec4e9696374e7e9f3d7082301552c16aa..b4064ef4bfba8862e267fcea0e055c7918c7515d 100644
+--- a/lib/behat/core_behat_file_helper.php
++++ b/lib/behat/core_behat_file_helper.php
+@@ -74,7 +74,7 @@ trait core_behat_file_helper {
+             $filepickerelement = behat_context_helper::escape($filepickerelement);
+             $filepickercontainer = $this->find(
+                     'xpath',
+-                    "//input[./@id = //label[normalize-space(.)=$filepickerelement]/@for]" .
++                    "//input[./@id = substring-before(//p[normalize-space(.)=$filepickerelement]/@id, '_label')]" .
+                     "//ancestor::*[@data-fieldtype = 'filemanager' or @data-fieldtype = 'filepicker']",
+                     $exception
+             );
+diff --git a/lib/behat/form_field/behat_form_filemanager.php b/lib/behat/form_field/behat_form_filemanager.php
+index 7d709496696e74fd08d91d94f28ec175fc9db089..1fa9ff6c4f2c0c3ae7dfc3e842aff69190321813 100644
+--- a/lib/behat/form_field/behat_form_filemanager.php
++++ b/lib/behat/form_field/behat_form_filemanager.php
+@@ -68,7 +68,7 @@ class behat_form_filemanager extends behat_form_field {
+         $fieldlabel = $this->get_field_locator();
+ 
+         // Get the name of the current directory elements.
+-        $xpath = "//label[contains(., '" . $fieldlabel . "')]" .
++        $xpath = "//p[normalize-space(.)='$fieldlabel']" .
+             "/ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' fitem ')]" .
+             "/descendant::div[@data-fieldtype = 'filemanager']" .
+             "/descendant::div[contains(concat(' ', normalize-space(@class), ' '), ' fp-filename ')]";
+diff --git a/repository/upload/tests/behat/behat_repository_upload.php b/repository/upload/tests/behat/behat_repository_upload.php
+index 74d6abf203312738813d79dc77cdc31d0a8624d9..52fa09bbc0ffb1568f75716ef6104890cc15150d 100644
+--- a/repository/upload/tests/behat/behat_repository_upload.php
++++ b/repository/upload/tests/behat/behat_repository_upload.php
+@@ -209,10 +209,8 @@ class behat_repository_upload extends behat_base {
+             $filepickerelement = behat_context_helper::escape($filepickerelement);
+             $filepickercontainer = $this->find(
+                     'xpath',
+-                    "//input[./@id = //label[normalize-space(.)=$filepickerelement]/@for]" .
+-                    "//ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' felement ')] |" .
+-                    "//input[./@id = //label[normalize-space(.)=$filepickerelement]/@for]" .
+-                    "//ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' form-setting ')]",
++                    "//input[./@id = substring-before(//p[normalize-space(.)=$filepickerelement]/@id, '_label')]" .
++                    "//ancestor::*[@data-fieldtype = 'filemanager' or @data-fieldtype = 'filepicker']",
+                     $exception
+             );
+         }

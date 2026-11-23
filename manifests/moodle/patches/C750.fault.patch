@@ -1,0 +1,30 @@
+diff --git a/public/message/amd/src/default_notification_preferences.js b/public/message/amd/src/default_notification_preferences.js
+index 0f925431d13f9e1e7443515c78aa25e7537fa7bc..af96d237e8021c52379a69ff72d9ba84888a8290 100644
+--- a/public/message/amd/src/default_notification_preferences.js
++++ b/public/message/amd/src/default_notification_preferences.js
+@@ -25,7 +25,6 @@
+  */
+ import * as Ajax from 'core/ajax';
+ import Notification from 'core/notification';
+-import {add as addToast} from 'core/toast';
+ 
+ const selectors = {
+     provider: '.defaultmessageoutputs .provider_enabled',
+@@ -81,9 +80,14 @@ const registerEventListeners = () => {
+                 preference: preference,
+                 state: isEnabled ? 1 : 0
+             }
+-        }])[0]
+-        .then((data) => addToast(data.successmessage))
+-        .catch(Notification.exception);
++        }])[0].done((data) => {
++            // Display success notification.
++            Notification.addNotification({
++                message: data.successmessage,
++                type: 'success'
++            });
++        })
++        .fail(Notification.exception);
+     };
+ 
+     const container = document.querySelector('.preferences-container');

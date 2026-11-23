@@ -1,0 +1,91 @@
+diff --git a/public/message/renderer.php b/public/message/renderer.php
+index 0392b7081b2b1f98a3da8361b95f4536a2e85faf..f787d482ec5d728cc364bb36816a787cd234da4c 100644
+--- a/public/message/renderer.php
++++ b/public/message/renderer.php
+@@ -75,8 +75,6 @@ class core_message_renderer extends plugin_renderer_base {
+     public function manage_messageoutputs($processors) {
+         // Display the current workflows
+         $table = new html_table();
+-        $table->caption = get_string('messageoutputs', 'message');
+-        $table->captionhide = true;
+         $table->attributes['class'] = 'admintable table generaltable table-hover';
+         $table->data        = array();
+         $table->head        = array(
+@@ -92,11 +90,7 @@ class core_message_renderer extends plugin_renderer_base {
+             $row = new html_table_row();
+             $row->attributes['class'] = 'messageoutputs';
+ 
+-            $pluginname = get_string('pluginname', 'message_' . $processor->name);
+-            $name = new html_table_cell($pluginname);
+-            $name->header = true;
+-            $name->attributes['class'] = 'fw-normal';
+-            $name->attributes['scope'] = 'row';
++            $name = new html_table_cell(get_string('pluginname', 'message_'.$processor->name));
+             $enable = new html_table_cell();
+             if (!$processor->available) {
+                 $enable->text = html_writer::nonempty_tag('span', get_string('outputnotavailable', 'message'),
+@@ -104,10 +98,7 @@ class core_message_renderer extends plugin_renderer_base {
+                 );
+             } else {
+                 $enable->text = html_writer::checkbox($processor->name, $processor->id, $processor->enabled, '',
+-                    [
+-                        'id' => $processor->name,
+-                        'aria-label' => get_string('enablenotificationplugin', 'message', $pluginname),
+-                    ]
++                    array('id' => $processor->name)
+                 );
+             }
+             // Settings
+diff --git a/public/message/templates/default_notification_preferences.mustache b/public/message/templates/default_notification_preferences.mustache
+index 417a9dc2fcd5f6fd389128cb40f6fc10adb8c76b..3d2c47ede0c8e8f9fcaae23f54236b1fc4503385 100644
+--- a/public/message/templates/default_notification_preferences.mustache
++++ b/public/message/templates/default_notification_preferences.mustache
+@@ -70,15 +70,13 @@
+     }
+ }}
+ <div class="preferences-page-container">
+-    <h2 id="defaultnotificationprefsheading">{{#str}} managemessageoutputs, message {{/str}}</h2>
++    <h2>{{#str}} managemessageoutputs, message {{/str}}</h2>
+ 
+     <div class="preferences-container">
+-        <table class="table table-hover preference-table" aria-labelledby="defaultnotificationprefsheading">
++        <table class="table table-hover preference-table">
+             <thead>
+                 <tr>
+-                    <th>
+-                        <span class="visually-hidden">{{#str}}preference, message{{/str}}</span>
+-                    </th>
++                    <th></th>
+                     <th>{{#str}} enabled, core_message {{/str}}</th>
+                     {{#processors}}
+                         <th data-processor-name="{{name}}">{{{displayname}}}</th>
+@@ -100,7 +98,8 @@
+                                             class="form-check-input provider_enabled"
+                                             {{#enabled}}checked{{/enabled}}
+                                         >
+-                                        <label for="{{{enabledsetting}}}" class="form-check-label">
++                                        <label for="{{{enabledsetting}}}" class="form-check-label"
++                                            title="{{enabledlabel}}">
+                                             <span class="accesshide">{{enabledlabel}}</span>
+                                         </label>
+                                     </div>
+@@ -117,7 +116,8 @@
+                                                        class="form-check-input enabled_message_setting"
+                                                        {{#enabled}}checked{{/enabled}}
+                                                 >
+-                                                <label for="{{{enabledsetting}}}" class="form-check-label">
++                                                <label for="{{{enabledsetting}}}" class="form-check-label"
++                                                       title="{{enabledlabel}}">
+                                                     {{#str}} enabled, core_message {{/str}}
+                                                 </label>
+                                             </div>
+@@ -130,7 +130,8 @@
+                                                        class="form-check-input locked_message_setting"
+                                                        {{#locked}}checked{{/locked}}
+                                                 >
+-                                                <label for="{{{lockedsetting}}}" class="form-check-label">
++                                                <label for="{{{lockedsetting}}}" class="form-check-label"
++                                                       title="{{lockedlabel}}">
+                                                     {{#str}} forced, core_message {{/str}}
+                                                 </label>
+                                             </div>

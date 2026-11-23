@@ -1,0 +1,27 @@
+diff --git a/public/mod/assign/feedback/comments/classes/privacy/provider.php b/public/mod/assign/feedback/comments/classes/privacy/provider.php
+index 46d78656a61282769a9440d3e1907b58a28ef913..713150dea75d98743e77b54cf0fccbc20995dde8 100644
+--- a/public/mod/assign/feedback/comments/classes/privacy/provider.php
++++ b/public/mod/assign/feedback/comments/classes/privacy/provider.php
+@@ -102,20 +102,11 @@ class provider implements
+      * information to help with exporting.
+      */
+     public static function export_feedback_user_data(assign_plugin_request_data $exportdata) {
+-        global $DB;
+-
+         // Get that comment information and jam it into that exporter.
+         $assign = $exportdata->get_assign();
++        $plugin = $assign->get_plugin_by_type('assignfeedback', 'comments');
+         $gradeid = $exportdata->get_pluginobject()->id;
+-        if ($exportdata->get_user()) {
+-            // A user is only set when exporting on behalf of a teacher (it does not identify which teacher).
+-            // Include every stored comment for the grade, even those retained from markers who are no longer allocated.
+-            $comments = $DB->get_records('assignfeedback_comments', ['grade' => $gradeid]);
+-        } else {
+-            // Exporting the student's own data: only include feedback from the currently allocated markers, as shown to them.
+-            $plugin = $assign->get_plugin_by_type('assignfeedback', 'comments');
+-            $comments = $plugin->get_all_feedback_comments($gradeid);
+-        }
++        $comments = $plugin->get_all_feedback_comments($gradeid);
+         $markids = [];
+         $data = new stdClass();
+         $currentpath = array_merge(

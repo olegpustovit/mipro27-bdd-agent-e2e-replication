@@ -1,0 +1,39 @@
+diff --git a/public/message/output/sms/message_output_sms.php b/public/message/output/sms/message_output_sms.php
+index 22911379e2b03cdd33d3f850bb9c8f6a1f0fcf6b..ba085b07678e10a1d3a70ab746028f3c03a85709 100644
+--- a/public/message/output/sms/message_output_sms.php
++++ b/public/message/output/sms/message_output_sms.php
+@@ -65,7 +65,7 @@ class message_output_sms extends message_output {
+ 
+         // Skip any SMS if user doesn't have a mobile number.
+         if (empty($user->phone2)) {
+-            if (CLI_SCRIPT && !PHPUNIT_TEST) {
++            if (CLI_SCRIPT) {
+                 mtrace('No mobile number found for userid: ' . $user->id);
+             }
+             return false;
+@@ -77,7 +77,7 @@ class message_output_sms extends message_output {
+             $user->suspended ||
+             $user->deleted
+         ) {
+-            if (CLI_SCRIPT && !PHPUNIT_TEST) {
++            if (CLI_SCRIPT) {
+                 mtrace('The user with userid: ' . $user->id . ' is either deleted or suspended. Can not send SMS.');
+             }
+             return false;
+@@ -97,14 +97,14 @@ class message_output_sms extends message_output {
+ 
+         // Don't send SMS if it's not a production site and the following config is set.
+         if (!empty($CFG->nosmsever)) {
+-            if (CLI_SCRIPT && !PHPUNIT_TEST) {
++            if (CLI_SCRIPT) {
+                 mtrace('Can not send SMS while nosmsever is enabled.');
+             }
+             return false;
+         }
+         // We don't have a fallback for SMS text. It has to be included.
+         if (!isset($messagedata->fullmessagesms)) {
+-            if (CLI_SCRIPT && !PHPUNIT_TEST) {
++            if (CLI_SCRIPT) {
+                 mtrace('No SMS string found for the message');
+             }
+             return false;

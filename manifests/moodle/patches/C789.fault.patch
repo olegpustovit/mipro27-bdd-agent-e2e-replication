@@ -1,0 +1,53 @@
+diff --git a/public/message/amd/src/message_drawer.js b/public/message/amd/src/message_drawer.js
+index 44752c88341181c291addd26d909d3c89a58bc5d..f71ad4b0b4ea711aaac29059f0d58f80a4b8bb62 100644
+--- a/public/message/amd/src/message_drawer.js
++++ b/public/message/amd/src/message_drawer.js
+@@ -45,7 +45,6 @@ define(
+     'core/local/aria/focuslock',
+     'core/modal_backdrop',
+     'core/templates',
+-    'core/local/aria/selectors',
+ ],
+ function(
+     $,
+@@ -71,7 +70,6 @@ function(
+     FocusLock,
+     ModalBackdrop,
+     Templates,
+-    AriaSelectors,
+ ) {
+ 
+     var SELECTORS = {
+@@ -482,32 +480,6 @@ function(
+             data.originalEvent.preventDefault();
+         });
+ 
+-        // Close the message drawer if the drawer is visible and the click happened outside the drawer and the toggle button.
+-        $(document).on(CustomEvents.events.activate, e => {
+-            var drawer = $(e.target).closest(SELECTORS.DRAWER);
+-            var toggleButtonId = $(SELECTORS.DRAWER)?.attr('data-origin');
+-            var toggleButton = '';
+-            if (toggleButtonId !== undefined && toggleButtonId) {
+-                toggleButton = $(e.target).closest("#" + toggleButtonId);
+-            }
+-
+-            if (!drawer.length && !toggleButton.length && isVisible(root)) {
+-                // Determine if the element that was clicked is focusable.
+-                var focusableElement = $(e.target).closest(AriaSelectors.elements.focusable);
+-                if (focusableElement.length) {
+-                    // We need to move the focus to the clicked element after the drawer is hidden,
+-                    // so we need to clear the `data-origin` attribute first.
+-                    $(SELECTORS.DRAWER).attr('data-origin', '');
+-                }
+-                // Hide the drawer.
+-                hide(root);
+-                // Move the focus to the clicked element if it is focusable.
+-                if (focusableElement.length) {
+-                    focusableElement.focus();
+-                }
+-            }
+-        });
+-
+         // These are theme-specific to help us fix random behat fails.
+         // These events target those events defined in BS3 and BS4 onwards.
+         root[0].querySelectorAll('.collapse').forEach((collapse) => {

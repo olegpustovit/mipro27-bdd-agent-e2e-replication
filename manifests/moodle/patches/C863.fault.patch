@@ -1,0 +1,33 @@
+diff --git a/public/lib/form/form.js b/public/lib/form/form.js
+index f46340f8fc5ebd7b559ca568789d30f574dbe774..0761e5f0098dc3bc842d46401e3a68f046f8606b 100644
+--- a/public/lib/form/form.js
++++ b/public/lib/form/form.js
+@@ -268,7 +268,7 @@ if (typeof M.form.dependencyManager === 'undefined') {
+          * @param {Boolean} disabled True to disable, false to enable.
+          */
+         _disableElement: function(name, disabled) {
+-            const els = this.elementsByName(name, true),
++            const els = this.elementsByName(name),
+                 filepicker = this.isFilePicker(name),
+                 editors = this.get('form').all('.fitem [data-fieldtype="editor"] textarea[name="' + name + '[text]"]'),
+                 staticElement = this.isStaticElement(name);
+@@ -280,19 +280,6 @@ if (typeof M.form.dependencyManager === 'undefined') {
+                 } else {
+                     node.removeAttribute('disabled');
+                 }
+-                // Handle element groups.
+-                const groupName = node.getData('groupname');
+-                if (groupName) {
+-                    const groupNameChildren = '[name^="' + groupName + '\\["]';
+-                    node.all(groupNameChildren).each(function(child) {
+-                        if (disabled) {
+-                            child.setAttribute('disabled', 'disabled');
+-                        } else {
+-                            child.removeAttribute('disabled');
+-                        }
+-                    });
+-                }
+-
+                 // Enable/Disable static elements if exist.
+                 if (staticElement) {
+                     const disabledNonTextElements = 'INPUT,SELECT,TEXTAREA,BUTTON,A';

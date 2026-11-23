@@ -1,0 +1,28 @@
+diff --git a/public/mod/quiz/yui/src/autosave/js/autosave.js b/public/mod/quiz/yui/src/autosave/js/autosave.js
+index 02a4b0ffa52ded068d992cee8f0ca88cec2038ba..f0c95a58af9277d43025550e3a453dc62bc1db72 100644
+--- a/public/mod/quiz/yui/src/autosave/js/autosave.js
++++ b/public/mod/quiz/yui/src/autosave/js/autosave.js
+@@ -426,17 +426,12 @@ M.mod_quiz.autosave = {
+      */
+     update_saved_time_display: function() {
+         // We fetch the current language's preferred time format from the language pack.
+-        require(['core/user_date', 'core/notification'], function(UserDate, Notification) {
+-            UserDate.get([{
+-                timestamp: Math.floor(Date.now() / 1000),
+-                format: M.util.get_string('strftimedatetimeshortaccurate', 'langconfig'),
+-            }]).then(function(dateStrs) {
+-                var infoDiv = Y.one('#mod_quiz_navblock .othernav .autosave_info');
+-                infoDiv.set('text', M.util.get_string('lastautosave', 'quiz', dateStrs[0]));
+-                infoDiv.show();
+-                return;
+-            }).catch(Notification.exception);
+-        });
++        var timeFormat = M.util.get_string('strftimedatetimeshortaccurate', 'langconfig');
++        var message = M.util.get_string('lastautosave', 'quiz', Y.Date.format(new Date(), {'format': timeFormat}));
++
++        var infoDiv = Y.one('#mod_quiz_navblock .othernav .autosave_info');
++        infoDiv.set('text', message);
++        infoDiv.show();
+     },
+ 
+     is_time_nearly_over: function() {

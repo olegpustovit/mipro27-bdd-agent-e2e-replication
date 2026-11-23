@@ -1,0 +1,39 @@
+diff --git a/public/repository/filepicker.js b/public/repository/filepicker.js
+index 3e6879533d595e6d754cb8f602fd2f687f026193..8315a7cef8f903ebe2abdee92f763159cb6c5b12 100644
+--- a/public/repository/filepicker.js
++++ b/public/repository/filepicker.js
+@@ -1505,6 +1505,7 @@ M.core_filepicker.init = function(Y, options) {
+                 visible      : false,
+                 width        : width+'px',
+                 responsiveWidth : 768,
++                height       : '558px',
+                 zIndex       : this.options.zIndex,
+                 focusOnPreviousTargetAfterHide: true,
+                 focusAfterHide: this.options.previousActiveElement
+diff --git a/public/theme/boost/scss/moodle/filemanager.scss b/public/theme/boost/scss/moodle/filemanager.scss
+index d80c3bd58cc438e363c52670a99f16dd0cb6768a..41d12a34570deaff3165e7da9d3cc231f8fd4403 100644
+--- a/public/theme/boost/scss/moodle/filemanager.scss
++++ b/public/theme/boost/scss/moodle/filemanager.scss
+@@ -31,6 +31,11 @@
+     height: auto;
+ }
+ 
++/* The javascript is adding a style="height: 0px;" to this element - we need to set the min-height so the height is ignored. */
++.filepicker .moodle-dialogue-bd {
++    min-height: 520px;
++}
++
+ .fp-navbar {
+     border-color: $input-border-color;
+     border-bottom: 0;
+@@ -44,10 +49,6 @@
+     clear: none;
+     overflow: auto;
+     height: 452px;
+-    // Keep the dialogue inside short viewports. The 240px budget covers everything in the dialogue that is
+-    // not this content area (header, navbar and body padding), plus a margin from the top and bottom edges.
+-    min-height: 150px;
+-    max-height: calc(100vh - 240px);
+ }
+ 
+ .filepicker.moodle-dialogue-fullscreen .file-picker .fp-content {

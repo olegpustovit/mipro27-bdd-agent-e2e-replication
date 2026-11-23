@@ -1,0 +1,46 @@
+diff --git a/public/mod/quiz/comment.php b/public/mod/quiz/comment.php
+index 00f655e5d9884894acde5c2223525502519a4b8f..005e11d6e3f70582142ef66b697bbe3dd48e9d29 100644
+--- a/public/mod/quiz/comment.php
++++ b/public/mod/quiz/comment.php
+@@ -74,9 +74,6 @@ $summary->add_item('quizname', get_string('modulename', 'quiz'), format_string($
+ // Question name.
+ $summary->add_item('questionname', get_string('question', 'quiz'), $attemptobj->get_question_name($slot));
+ 
+-// Error message in case of input invalid mark.
+-$submiterror = false;
+-
+ // Process any data that was submitted.
+ if (data_submitted() && confirm_sesskey()) {
+     if (optional_param('submit', false, PARAM_BOOL) && question_engine::is_manual_grade_in_range($attemptobj->get_uniqueid(), $slot)) {
+@@ -101,18 +98,12 @@ if (data_submitted() && confirm_sesskey()) {
+         echo $output->notification(get_string('changessaved'), 'notifysuccess');
+         close_window(2, true);
+         die;
+-    } else {
+-        $submiterror = true;
+     }
+ }
+ 
+ // Print quiz information.
+ echo html_writer::div($output->render($summary), 'mb-3');
+ 
+-// Display notification if current mark is invalid.
+-if ($submiterror) {
+-    echo $output->notification(get_string('savemanualgradingfailed', 'quiz'), \core\output\notification::NOTIFY_ERROR);
+-}
+ // Print the comment form.
+ echo '<form method="post" class="mform" id="manualgradingform" action="' .
+         $CFG->wwwroot . '/mod/quiz/comment.php">';
+diff --git a/public/question/behaviour/rendererbase.php b/public/question/behaviour/rendererbase.php
+index 9ebb9ece7b3bd9c31ff8acafdb89681f50dd3076..21de819f65ca2d0d047304c7e4ebfcfd7f78b95d 100644
+--- a/public/question/behaviour/rendererbase.php
++++ b/public/question/behaviour/rendererbase.php
+@@ -164,7 +164,7 @@ abstract class qbehaviour_renderer extends plugin_renderer_base {
+             $error = $qa->validate_manual_mark($currentmark);
+             $errorclass = '';
+             if ($error !== '') {
+-                $errorclass = ' error alert-danger';
++                $erroclass = ' error';
+                 $error = html_writer::tag('span', $error,
+                         array('class' => 'error')) . html_writer::empty_tag('br');
+             }

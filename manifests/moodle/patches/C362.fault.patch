@@ -1,0 +1,73 @@
+diff --git a/public/completion/classes/activity_custom_completion.php b/public/completion/classes/activity_custom_completion.php
+index e0cc9a479382e71dbe7d9eb3a63fa7aa55511929..a144867a408c3e7c74aec0a50f36aa34edb1d216 100644
+--- a/public/completion/classes/activity_custom_completion.php
++++ b/public/completion/classes/activity_custom_completion.php
+@@ -114,25 +114,16 @@ abstract class activity_custom_completion {
+     /**
+      * Fetches the overall completion status of this activity instance for a user based on its available custom completion rules.
+      *
+-     * @return int The completion state (e.g. COMPLETION_COMPLETE, COMPLETION_INCOMPLETE, COMPLETION_COMPLETE_FAIL).
++     * @return int The completion state (e.g. COMPLETION_COMPLETE, COMPLETION_INCOMPLETE).
+      */
+     public function get_overall_completion_state(): int {
+-        $iscompletefail = false;
+         foreach ($this->get_available_custom_rules() as $rule) {
+             $state = $this->get_state($rule);
+             // Return early if one of the custom completion rules is not yet complete.
+             if ($state == COMPLETION_INCOMPLETE) {
+                 return $state;
+             }
+-            if (!$iscompletefail) {
+-                $iscompletefail = ($state === COMPLETION_COMPLETE_FAIL || $state === COMPLETION_COMPLETE_FAIL_HIDDEN);
+-            }
+-        }
+-
+-        if ($iscompletefail) {
+-            return COMPLETION_COMPLETE_FAIL;
+         }
+-
+         // If this was reached, then all custom rules have been marked complete.
+         return COMPLETION_COMPLETE;
+     }
+diff --git a/public/completion/classes/cm_completion_details.php b/public/completion/classes/cm_completion_details.php
+index 874b4ad0597ab0f167c732dbc0953bfd4a48023d..72aed1ff2394e9a60bedb24390cd7a7bd9c0a7f0 100644
+--- a/public/completion/classes/cm_completion_details.php
++++ b/public/completion/classes/cm_completion_details.php
+@@ -207,10 +207,7 @@ class cm_completion_details {
+             $completionstates = [COMPLETION_COMPLETE];
+         } else if ($this->is_automatic()) {
+             // Successfull completion states depend on the completion settings.
+-            if (property_exists($this->completiondata, 'customcompletion') && !empty($this->completiondata->customcompletion)) {
+-                // If the module has any failed custom completion rule the state could be COMPLETION_COMPLETE_FAIL.
+-                $completionstates = [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS];
+-            } else if (isset($this->completiondata->passgrade)) {
++            if (isset($this->completiondata->passgrade)) {
+                 // Passing grade is required. Don't mark it as complete when state is COMPLETION_COMPLETE_FAIL.
+                 $completionstates = [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS];
+             } else {
+diff --git a/public/lib/completionlib.php b/public/lib/completionlib.php
+index 9f849b1e9d379fbdee42313749d25a89d34c8331..f7947bc4e9a6f09092edba440d8a80db86d1ff9a 100644
+--- a/public/lib/completionlib.php
++++ b/public/lib/completionlib.php
+@@ -739,15 +739,16 @@ class completion_info {
+         $completionstate = $this->get_core_completion_state($cminfo, $userid);
+ 
+         if (plugin_supports('mod', $cminfo->modname, FEATURE_COMPLETION_HAS_RULES)) {
++            $response = true;
+             $cmcompletionclass = activity_custom_completion::get_cm_completion_class($cminfo->modname);
+             if ($cmcompletionclass) {
+                 /** @var activity_custom_completion $cmcompletion */
+                 $cmcompletion = new $cmcompletionclass($cminfo, $userid, $completionstate);
+-                $customstate = $cmcompletion->get_overall_completion_state();
+-                if ($customstate == COMPLETION_INCOMPLETE) {
+-                    return $customstate;
+-                }
+-                $completionstate[] = $customstate;
++                $response = $cmcompletion->get_overall_completion_state() != COMPLETION_INCOMPLETE;
++            }
++
++            if (!$response) {
++                return COMPLETION_INCOMPLETE;
+             }
+         }
+ 

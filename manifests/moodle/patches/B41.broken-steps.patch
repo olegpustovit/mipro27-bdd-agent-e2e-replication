@@ -1,0 +1,17 @@
+diff --git a/public/grade/grading/form/rubric/tests/behat/behat_gradingform_rubric.php b/public/grade/grading/form/rubric/tests/behat/behat_gradingform_rubric.php
+index dca76c04603d72288aba22c6edf9df96f090b02e..42ed3ee093636a4d05dd8515cbedd76409f1961a 100644
+--- a/public/grade/grading/form/rubric/tests/behat/behat_gradingform_rubric.php
++++ b/public/grade/grading/form/rubric/tests/behat/behat_gradingform_rubric.php
+@@ -316,10 +316,9 @@ class behat_gradingform_rubric extends behat_base {
+                 $levelnode = $this->find('xpath', $selectedlevelxpath);
+ 
+                 // Using in_array() as there are only a few elements.
+-                if (!$levelnode->hasClass('checked')) {
+-                    $levelnodexpath = $selectedlevelxpath . "//div[contains(concat(' ', normalize-space(@class), ' '), ' score ')]";
++                if (!in_array('checked', explode(' ', $levelnode->getAttribute('class')))) {
+                     $this->execute('behat_general::i_click_on_in_the',
+-                        array($levelnodexpath, "xpath_element", $this->escape($name), "table_row")
++                        array($selectedlevelxpath, "xpath_element", $this->escape($name), "table_row")
+                     );
+                 }
+ 

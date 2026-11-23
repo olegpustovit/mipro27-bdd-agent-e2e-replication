@@ -1,0 +1,83 @@
+diff --git a/public/question/type/numerical/backup/moodle2/restore_qtype_numerical_plugin.class.php b/public/question/type/numerical/backup/moodle2/restore_qtype_numerical_plugin.class.php
+index 990d5196da2d576a3ab8104954605b21d87ca31c..42cdcfeb4ca2f674f8dab4db2e7cfc30f6479414 100644
+--- a/public/question/type/numerical/backup/moodle2/restore_qtype_numerical_plugin.class.php
++++ b/public/question/type/numerical/backup/moodle2/restore_qtype_numerical_plugin.class.php
+@@ -83,34 +83,13 @@ class restore_qtype_numerical_plugin extends restore_qtype_plugin {
+ 
+     #[\Override]
+     public static function convert_backup_to_questiondata(array $backupdata): \stdClass {
+-        global $CFG;
+-        require_once($CFG->dirroot . '/question/type/numerical/questiontype.php');
+         $questiondata = parent::convert_backup_to_questiondata($backupdata);
+-        if (count(get_object_vars($questiondata->options)) <= 2) {
+-            // Old question, set defaults.
+-            $qtype = new qtype_numerical();
+-            $questiondata->options->unitgradingtype = 0;
+-            $questiondata->options->unitpenalty = 0.1;
+-            if ($qtype->get_default_numerical_unit($questiondata)) {
+-                $questiondata->options->showunits = $qtype::UNITINPUT;
+-            } else {
+-                $questiondata->options->showunits = $qtype::UNITNONE;
+-            }
+-            $questiondata->options->unitsleft = 0;
+-        }
+-        if (isset($backupdata['plugin_qtype_numerical_question']['numerical_records'])) {
+-            foreach ($backupdata['plugin_qtype_numerical_question']['numerical_records']['numerical_record'] as $record) {
+-                foreach ($questiondata->options->answers as &$answer) {
+-                    if ($answer->id == $record['answer']) {
+-                        $answer->tolerance = $record['tolerance'];
+-                        continue 2;
+-                    }
+-                }
+-            }
+-        } else {
+-            // If the numerical record is missing (e.g. MDL-85721), default tolerances to 0.
++        foreach ($backupdata['plugin_qtype_numerical_question']['numerical_records']['numerical_record'] as $record) {
+             foreach ($questiondata->options->answers as &$answer) {
+-                $answer->tolerance = 0;
++                if ($answer->id == $record['answer']) {
++                    $answer->tolerance = $record['tolerance'];
++                    continue 2;
++                }
+             }
+         }
+         return $questiondata;
+diff --git a/public/question/type/numerical/questiontype.php b/public/question/type/numerical/questiontype.php
+index 53323a7a897fa914e25a15eefbb40e5c1941a695..b8823123a77e8bdda7fd58675dfaeb207cc0bc55 100644
+--- a/public/question/type/numerical/questiontype.php
++++ b/public/question/type/numerical/questiontype.php
+@@ -64,25 +64,22 @@ class qtype_numerical extends question_type {
+     }
+ 
+     public function get_question_options($question) {
+-        global $DB;
++        global $CFG, $DB, $OUTPUT;
+         parent::get_question_options($question);
+         // Get the question answers and their respective tolerances
+         // Note: question_numerical is an extension of the answer table rather than
+         //       the question table as is usually the case for qtype
+         //       specific tables.
+-        // If the numerical record is missing for some reason (e.g. MDL-85721), use a default tolerance.
+         if (!$question->options->answers = $DB->get_records_sql(
+-            "
+-                SELECT a.*, COALESCE(n.tolerance, '0') AS tolerance
+-                  FROM {question_answers} a
+-             LEFT JOIN {question_numerical} n ON a.id = n.answer
+-                 WHERE a.question = ?
+-              ORDER BY a.id ASC
+-            ",
+-            [$question->id],
+-        )) {
+-            debugging('Error: Missing question answer for numerical question ' .
++                                "SELECT a.*, n.tolerance " .
++                                "FROM {question_answers} a, " .
++                                "     {question_numerical} n " .
++                                "WHERE a.question = ? " .
++                                "    AND   a.id = n.answer " .
++                                "ORDER BY a.id ASC", array($question->id))) {
++            echo $OUTPUT->notification('Error: Missing question answer for numerical question ' .
+                     $question->id . '!');
++            return false;
+         }
+ 
+         $question->hints = $DB->get_records('question_hints',

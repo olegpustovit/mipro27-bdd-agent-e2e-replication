@@ -1,0 +1,55 @@
+diff --git a/public/question/bank/editquestion/question.php b/public/question/bank/editquestion/question.php
+index 0972a02f3a485b91648d7652b524db04306c11f8..6e00b63b3ef8d562382cb31508b59a656769f1b2 100644
+--- a/public/question/bank/editquestion/question.php
++++ b/public/question/bank/editquestion/question.php
+@@ -322,14 +322,6 @@ if ($mform->is_cancelled()) {
+                 $returnurl->param('sesskey', sesskey());
+                 $returnurl->param('cmid', $cmid);
+             }
+-            // Update the filter param to the updated category if the return have any.
+-            if (!empty($returnurl->param('filter'))) {
+-                $filter = json_decode($returnurl->param('filter'), true);
+-                if (isset($filter['category']['values'])) {
+-                    $filter['category']['values'][0] = $question->category;
+-                    $returnurl->param('filter', json_encode($filter));
+-                }
+-            }
+             redirect($returnurl);
+         }
+ 
+@@ -351,14 +343,6 @@ if ($mform->is_cancelled()) {
+         } else {
+             $nexturl->param('courseid', $COURSE->id);
+         }
+-        // Update the filter param to the updated category if the return url have any.
+-        if (!empty($nexturl->param('filter'))) {
+-            $filter = json_decode($nexturl->param('filter'), true);
+-            if (isset($filter['category']['values'])) {
+-                $filter['category']['values'][0] = $question->category;
+-                $nexturl->param('filter', json_encode($filter));
+-            }
+-        }
+         redirect($nexturl);
+     }
+ 
+diff --git a/public/question/classes/local/bank/view.php b/public/question/classes/local/bank/view.php
+index 3d38497acabe71988e3dd2b7757a5119d8270faf..4734f27f1b7b706b7e6f1aca02d2a0fc3bfe607b 100644
+--- a/public/question/classes/local/bank/view.php
++++ b/public/question/classes/local/bank/view.php
+@@ -987,16 +987,6 @@ class view {
+ 
+         [$categoryid, $contextid] = category_condition::validate_category_param($this->pagevars['cat']);
+         $catcontext = \context::instance_by_id($contextid);
+-        // Update the question in the list with correct category context when we have selected category filter.
+-        if (isset($this->pagevars['filter']['category']['values'])) {
+-            $categoryid = $this->pagevars['filter']['category']['values'][0];
+-            foreach ($this->contexts->all() as $context) {
+-                if ((int) $context->instanceid === (int) $categoryid) {
+-                    $catcontext = $context;
+-                    break;
+-                }
+-            }
+-        }
+ 
+         echo \html_writer::start_tag(
+             'div',

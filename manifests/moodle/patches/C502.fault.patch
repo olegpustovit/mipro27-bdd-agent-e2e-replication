@@ -1,0 +1,60 @@
+diff --git a/public/mod/assign/classes/notification_helper.php b/public/mod/assign/classes/notification_helper.php
+index df2fa5eea36e4944646d99e33f464ca8a81a0479..f1599de55874bea8aa136235de2ee4a20b67bc84 100644
+--- a/public/mod/assign/classes/notification_helper.php
++++ b/public/mod/assign/classes/notification_helper.php
+@@ -76,13 +76,10 @@ class notification_helper {
+         $sql = "SELECT DISTINCT a.id
+                   FROM {assign} a
+                   JOIN {course_modules} cm ON a.id = cm.instance
+-                  JOIN {course} c ON a.course = c.id
+                   JOIN {modules} m ON cm.module = m.id AND m.name = :modulename
+              LEFT JOIN {assign_overrides} ao ON a.id = ao.assignid
+                  WHERE (a.duedate < :futuretime OR ao.duedate < :ao_futuretime)
+-                   AND (a.duedate > :timenow OR ao.duedate > :ao_timenow)
+-                   AND cm.visible = 1
+-                   AND c.visible = 1";
++                   AND (a.duedate > :timenow OR ao.duedate > :ao_timenow)";
+ 
+         $params = [
+             'timenow' => $timenow,
+@@ -116,15 +113,12 @@ class notification_helper {
+         $sql = "SELECT DISTINCT a.id
+                   FROM {assign} a
+                   JOIN {course_modules} cm ON a.id = cm.instance
+-                  JOIN {course} c ON a.course = c.id
+                   JOIN {modules} m ON cm.module = m.id AND m.name = :modulename
+              LEFT JOIN {assign_overrides} ao ON a.id = ao.assignid
+                  WHERE (a.duedate < :dd_timenow OR ao.duedate < :dd_ao_timenow)
+                    AND (a.duedate > :dd_timewindow OR ao.duedate > :dd_ao_timewindow)
+                    AND ((a.cutoffdate > :co_timenow OR a.cutoffdate = 0) OR
+-                       (ao.cutoffdate > :co_ao_timenow OR ao.cutoffdate = 0))
+-                   AND cm.visible = 1
+-                   AND c.visible = 1";
++                       (ao.cutoffdate > :co_ao_timenow OR ao.cutoffdate = 0))";
+ 
+         $params = [
+             'dd_timenow' => $timenow,
+@@ -153,13 +147,10 @@ class notification_helper {
+         $sql = "SELECT DISTINCT a.id
+                   FROM {assign} a
+                   JOIN {course_modules} cm ON a.id = cm.instance
+-                  JOIN {course} c ON a.course = c.id
+                   JOIN {modules} m ON cm.module = m.id AND m.name = :modulename
+              LEFT JOIN {assign_overrides} ao ON a.id = ao.assignid
+                  WHERE (a.duedate <= :endofday OR ao.duedate <= :ao_endofday)
+-                   AND (a.duedate >= :startofday OR ao.duedate >= :ao_startofday)
+-                   AND cm.visible = 1
+-                   AND c.visible = 1";
++                   AND (a.duedate >= :startofday OR ao.duedate >= :ao_startofday)";
+ 
+         $params = [
+             'startofday' => $day['start'],
+@@ -199,8 +190,6 @@ class notification_helper {
+                  WHERE (a.duedate <= :endofday OR ao.duedate <= :ao_endofday)
+                    AND (a.duedate >= :startofday OR ao.duedate >= :ao_startofday)
+                    AND ue.userid = :userid
+-                   AND cm.visible = 1
+-                   AND c.visible = 1
+               ORDER BY a.duedate ASC";
+ 
+         $params = [

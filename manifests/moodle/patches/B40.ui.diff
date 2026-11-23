@@ -1,0 +1,264 @@
+diff --git a/lib/amd/src/form-autocomplete.js b/lib/amd/src/form-autocomplete.js
+index 361d0e15e7e4cdffe543f4cebb8fba3f428ddfb0..f627ebe035b1c8499f12721efbb6c53fcb184fc0 100644
+--- a/lib/amd/src/form-autocomplete.js
++++ b/lib/amd/src/form-autocomplete.js
+@@ -450,10 +450,18 @@ define(['jquery', 'core/log', 'core/str', 'core/templates', 'core/notification']
+         updateSelectionList(options, state, originalSelect);
+         // Notifiy that the selection changed.
+         notifyChange(originalSelect);
+-        // Clear the input element.
+-        inputElement.val('');
+-        // Close the list of suggestions.
+-        closeSuggestions(state);
++
++        if (!options.multiple) {
++            // Clear the input element.
++            inputElement.val('');
++            // Close the list of suggestions.
++            closeSuggestions(state);
++        } else {
++            // Focus on the input element so the suggestions does not auto-close.
++            inputElement.focus();
++            // Remove the last selected item from the suggestions list.
++            updateSuggestions(options, state, inputElement.val(), originalSelect);
++        }
+     };
+ 
+     /**
+diff --git a/enrol/externallib.php b/enrol/externallib.php
+index 3f53fcd8a98de61b6ae505af330846cc7df699f3..224f4347f8c01f9c9c6f4749d2964adad1e4f769 100644
+--- a/enrol/externallib.php
++++ b/enrol/externallib.php
+@@ -415,7 +415,10 @@ class core_enrol_external extends external_api {
+      * @return array An array of users
+      */
+     public static function get_potential_users($courseid, $enrolid, $search, $searchanywhere, $page, $perpage) {
+-        global $PAGE;
++        global $PAGE, $DB, $CFG;
++
++        require_once($CFG->dirroot.'/enrol/locallib.php');
++        require_once($CFG->dirroot.'/user/lib.php');
+ 
+         $params = self::validate_parameters(
+             self::get_potential_users_parameters(),
+@@ -429,6 +432,14 @@ class core_enrol_external extends external_api {
+             )
+         );
+         $context = context_course::instance($params['courseid']);
++        try {
++            self::validate_context($context);
++        } catch (Exception $e) {
++            $exceptionparam = new stdClass();
++            $exceptionparam->message = $e->getMessage();
++            $exceptionparam->courseid = $params['courseid'];
++            throw new moodle_exception('errorcoursecontextnotvalid' , 'webservice', '', $exceptionparam);
++        }
+         require_capability('moodle/course:enrolreview', $context);
+ 
+         $course = $DB->get_record('course', array('id' => $params['courseid']));
+@@ -441,7 +452,7 @@ class core_enrol_external extends external_api {
+                                                $params['perpage']);
+ 
+         $results = array();
+-        foreach ($users as $id => $user) {
++        foreach ($users['users'] as $id => $user) {
+             if ($userdetails = user_get_user_details($user)) {
+                 $results[] = $userdetails;
+             }
+diff --git a/enrol/manual/amd/src/form-potential-user-selector.js b/enrol/manual/amd/src/form-potential-user-selector.js
+index 2d707739523e6f5b4a9aef4204690fdef5b2358c..d09aa82238be93ca1a0b9003a9845c2ebd5c5d9c 100644
+--- a/enrol/manual/amd/src/form-potential-user-selector.js
++++ b/enrol/manual/amd/src/form-potential-user-selector.js
+@@ -40,11 +40,11 @@ define(['jquery', 'core/ajax', 'core/templates'], function($, Ajax, Templates) {
+ 
+         transport: function(selector, query, success, failure) {
+             var promise;
+-            var courseid = $(selector).data('courseid');
++            var courseid = $(selector).attr('courseid');
+             if (typeof courseid === "undefined") {
+                 courseid = '1';
+             }
+-            var enrolid = $(selector).data('enrolid');
++            var enrolid = $(selector).attr('enrolid');
+             if (typeof enrolid === "undefined") {
+                 enrolid = '';
+             }
+@@ -66,7 +66,7 @@ define(['jquery', 'core/ajax', 'core/templates'], function($, Ajax, Templates) {
+                     i = 0;
+ 
+                 // Render the label.
+-                $.each(results.users, function(index, user) {
++                $.each(results, function(index, user) {
+                     var ctx = user,
+                         identity = [];
+                     $.each(['idnumber', 'email', 'phone1', 'phone2', 'department', 'institution'], function(i, k) {
+@@ -82,11 +82,11 @@ define(['jquery', 'core/ajax', 'core/templates'], function($, Ajax, Templates) {
+                 // Apply the label to the results.
+                 return $.when.apply($.when, promises).then(function() {
+                     var args = arguments;
+-                    $.each(results.users, function(index, user) {
++                    $.each(results, function(index, user) {
+                         user._label = args[i];
+                         i++;
+                     });
+-                    success(results.users);
++                    success(results);
+                 });
+ 
+             }, failure);
+diff --git a/enrol/manual/classes/enrol_users_form.php b/enrol/manual/classes/enrol_users_form.php
+index 8603ced101c96d7e947d72ac60487e4fb94b332b..f5e9c8fca567e3c6ada9efbce4a51453b531fddb 100644
+--- a/enrol/manual/classes/enrol_users_form.php
++++ b/enrol/manual/classes/enrol_users_form.php
+@@ -101,7 +101,7 @@ class enrol_manual_enrol_users_form extends moodleform {
+         $mform->setDefault('role', $defaultrole);
+ 
+         $options = array(
+-            'ajax' => 'tool_lp/form-user-selector',
++            'ajax' => 'enrol_manual/form-potential-user-selector',
+             'multiple' => true,
+             'courseid' => $course->id,
+             'enrolid' => $instance->id
+diff --git a/lib/db/services.php b/lib/db/services.php
+index 9df07a7a4488f50f3ba6103958647bb88405e948..3f280e22fcad7c7e4317a20ce705b3e190acd67b 100644
+--- a/lib/db/services.php
++++ b/lib/db/services.php
+@@ -468,6 +468,7 @@ $functions = array(
+         'methodname' => 'get_potential_users',
+         'classpath' => 'enrol/externallib.php',
+         'description' => 'Get the list of potential users to enrol',
++        'ajax' => true,
+         'type' => 'read',
+         'capabilities' => 'moodle/course:enrolreview'
+     ),
+diff --git a/enrol/manual/amd/src/form-potential-user-selector.js b/enrol/manual/amd/src/form-potential-user-selector.js
+index d09aa82238be93ca1a0b9003a9845c2ebd5c5d9c..49bdcbfc30e7f52f1d80b4df6bc3e45a055d93e9 100644
+--- a/enrol/manual/amd/src/form-potential-user-selector.js
++++ b/enrol/manual/amd/src/form-potential-user-selector.js
+@@ -87,9 +87,10 @@ define(['jquery', 'core/ajax', 'core/templates'], function($, Ajax, Templates) {
+                         i++;
+                     });
+                     success(results);
++                    return;
+                 });
+ 
+-            }, failure);
++            }).fail(failure);
+         }
+ 
+     };
+diff --git a/enrol/manual/amd/src/quickenrolment.js b/enrol/manual/amd/src/quickenrolment.js
+index 107345628f621dd8f53ab38ac59c9fd396c0792e..6650786c8371c8f135b0d1e94186f4ece8753a18 100644
+--- a/enrol/manual/amd/src/quickenrolment.js
++++ b/enrol/manual/amd/src/quickenrolment.js
+@@ -34,6 +34,7 @@ define(['core/templates',
+     /**
+      * Constructor
+      *
++     * @param {Object} options Object containing options. The only valid option at this time is contextid.
+      * Each call to templates.render gets it's own instance of this class.
+      */
+     var QuickEnrolment = function(options) {
+@@ -82,6 +83,7 @@ define(['core/templates',
+      * This triggers a form submission, so that any mform elements can do final tricks before the form submission is processed.
+      *
+      * @method submitForm
++     * @param {Event} e Form submission event.
+      * @private
+      */
+     QuickEnrolment.prototype.submitForm = function(e) {
+@@ -94,7 +96,7 @@ define(['core/templates',
+      *
+      * @method submitForm
+      * @private
+-     * @return Promise
++     * @param {Event} e Form submission event.
+      */
+     QuickEnrolment.prototype.submitFormAjax = function(e) {
+         // We don't want to do a real form submission.
+@@ -126,6 +128,7 @@ define(['core/templates',
+                     }
+                     window.location.reload();
+                 }
++                return;
+             })
+             .fail(Notification.exception);
+     };
+@@ -135,7 +138,7 @@ define(['core/templates',
+      *
+      * @method getBody
+      * @private
+-     * @return Promise
++     * @return {Promise}
+      */
+     QuickEnrolment.prototype.getBody = function() {
+         return Fragment.loadFragment('enrol_manual', 'enrol_users_form', this.contextid, {}).fail(Notification.exception);
+@@ -146,7 +149,7 @@ define(['core/templates',
+      *
+      * @method getFooter
+      * @private
+-     * @return Promise
++     * @return {Promise}
+      */
+     QuickEnrolment.prototype.getFooter = function() {
+         return Template.render('enrol_manual/enrol_modal_footer', {});
+diff --git a/lib/amd/src/form-cohort-selector.js b/lib/amd/src/form-cohort-selector.js
+index f154991053b058576a303c64c7c98a9ab94c3c0f..de9b2c6b1161fa9309efe363436013e168a3aab6 100644
+--- a/lib/amd/src/form-cohort-selector.js
++++ b/lib/amd/src/form-cohort-selector.js
+@@ -59,7 +59,7 @@ define(['core/ajax', 'jquery'], function(ajax, $) {
+                 includes: 'parents',
+                 limitfrom: 0,
+                 limitnum: 100,
+-                context: { contextid: contextid }
++                context: {contextid: contextid}
+             };
+ 
+             var calls = [{
+diff --git a/enrol/manual/amd/src/quickenrolment.js b/enrol/manual/amd/src/quickenrolment.js
+index 6650786c8371c8f135b0d1e94186f4ece8753a18..eedda356f4e2196151be279bfd11232b21170753 100644
+--- a/enrol/manual/amd/src/quickenrolment.js
++++ b/enrol/manual/amd/src/quickenrolment.js
+@@ -59,21 +59,30 @@ define(['core/templates',
+     QuickEnrolment.prototype.initModal = function() {
+         var triggerButtons = $('.enrolusersbutton.enrol_manual_plugin [type="submit"]');
+ 
+-        Str.get_string('enrolusers', 'enrol_manual').then(function(modalTitle) {
++        var strparams = [
++            {key: 'enroluserscohorts', component: 'enrol_manual'},
++            {key: 'enrolusers', component: 'enrol_manual'}
++        ];
++
++        $.when(Str.get_strings(strparams)).then(function(strlist) {
++            var modalSaveChanges = strlist[0],
++                modalTitle = strlist[1];
++
+             return ModalFactory.create({
++                type: ModalFactory.types.SAVE_CANCEL,
+                 title: modalTitle,
+-                body: this.getBody(),
+-                footer: this.getFooter()
++                body: this.getBody()
+             }, triggerButtons).then(function(modal) {
+                 this.modal = modal;
+                 this.modal.setLarge();
++                this.modal.setSaveButtonText(modalSaveChanges);
+ 
+                 // We want the reset the form every time it is opened.
+                 this.modal.getRoot().on(ModalEvents.hidden, function() {
+                     this.modal.setBody(this.getBody());
+                 }.bind(this));
+ 
+-                this.modal.getFooter().on('click', '[data-action="submit"]', this.submitForm.bind(this));
++                this.modal.getRoot().on(ModalEvents.save, this.submitForm.bind(this));
+                 this.modal.getRoot().on('submit', 'form', this.submitFormAjax.bind(this));
+             }.bind(this));
+         }.bind(this)).fail(Notification.exception);
+diff --git a/enrol/manual/templates/enrol_modal_footer.mustache b/enrol/manual/templates/enrol_modal_footer.mustache
+deleted file mode 100644
+index 9fc86c2e7f98c33a5c29a36cf8bd1d7b8c98da23..0000000000000000000000000000000000000000
+--- a/enrol/manual/templates/enrol_modal_footer.mustache
++++ /dev/null
+@@ -1,2 +0,0 @@
+-<input type="button" class="btn btn-primary" data-action="submit" value="{{#str}}enroluserscohorts, enrol_manual{{/str}}">
+-<input type="button" class="btn btn-secondary" data-action="hide" value="{{#str}}cancel{{/str}}">

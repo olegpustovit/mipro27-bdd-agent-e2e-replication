@@ -1,0 +1,305 @@
+diff --git a/public/lib/templates/search_input_navbar_inline.mustache b/public/lib/templates/search_input_navbar_inline.mustache
+deleted file mode 100644
+index 296b21f2462f53b5d1028e2962d1f8a699c96c20..0000000000000000000000000000000000000000
+--- a/public/lib/templates/search_input_navbar_inline.mustache
++++ /dev/null
+@@ -1,109 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template core/search_input_navbar_inline
+-
+-    Navbar search input using the inline field design. The field is always
+-    visible on desktop. On small screens only a toggle button is shown and
+-    the field expands across the navbar, with a close button inside the field.
+-
+-    Example context (json):
+-    {
+-        "action": "https://moodle.local/search/index.php",
+-        "inputname": "q",
+-        "searchstring": "Search",
+-        "grouplabel": "Site-wide search",
+-        "hiddenfields": [
+-            {
+-                "name": "context",
+-                "value": "1"
+-            }
+-        ]
+-    }
+-}}
+-<div id="searchinput-navbar" class="search-input-inline">
+-    <button type="button"
+-            class="nav-link icon-no-margin search-toggle"
+-            data-action="opensearch"
+-            aria-expanded="false"
+-            aria-controls="searchform-navbar-inline"
+-            title="{{#str}} togglesearch {{/str}}">
+-        {{#pix}} a/search, core {{/pix}}
+-        <span class="visually-hidden">{{#str}} togglesearch {{/str}}</span>
+-    </button>
+-    <form role="search"
+-          id="searchform-navbar-inline"
+-          {{#grouplabel}}aria-label="{{{ grouplabel }}}"{{/grouplabel}}
+-          autocomplete="off"
+-          action="{{{ action }}}"
+-          method="get"
+-          accept-charset="utf-8"
+-          class="searchform-navbar">
+-        {{#hiddenfields}}
+-            <input type="hidden" name="{{ name }}" value="{{ value }}">
+-        {{/hiddenfields}}
+-        <label for="searchinput-{{uniqid}}" class="visually-hidden">{{{ searchstring }}}</label>
+-        <div class="input-group">
+-            <button type="submit" class="input-group-text border-0 pe-0">
+-                {{#pix}} a/search, core {{/pix}}
+-                <span class="visually-hidden">{{#str}} performsearch, search {{/str}}</span>
+-            </button>
+-            <input type="text"
+-                id="searchinput-{{uniqid}}"
+-                class="form-control border-0 ps-1"
+-                placeholder="{{{ searchstring }}}"
+-                name="{{{ inputname }}}"
+-                data-region="input"
+-                autocomplete="off">
+-            <button type="button"
+-                class="search-close d-md-none"
+-                data-action="closesearch">
+-                {{#pix}} e/cancel, core {{/pix}}
+-                <span class="visually-hidden">{{#str}} closebuttontitle {{/str}}</span>
+-            </button>
+-        </div>
+-    </form>
+-</div>
+-
+-{{#js}}
+-require([], function() {
+-    const wrapper = document.getElementById('searchinput-navbar');
+-    const form = wrapper.querySelector('.searchform-navbar');
+-    const input = wrapper.querySelector('[data-region="input"]');
+-    const opensearch = wrapper.querySelector('[data-action="opensearch"]');
+-    const closesearch = wrapper.querySelector('[data-action="closesearch"]');
+-
+-    form.addEventListener('submit', (e) => {
+-        if (input.value.trim() === '') {
+-            e.preventDefault();
+-        }
+-    });
+-
+-    opensearch.addEventListener('click', () => {
+-        wrapper.classList.add('expanded');
+-        opensearch.setAttribute('aria-expanded', 'true');
+-        input.focus();
+-    });
+-
+-    closesearch.addEventListener('click', () => {
+-        wrapper.classList.remove('expanded');
+-        opensearch.setAttribute('aria-expanded', 'false');
+-        input.value = '';
+-        opensearch.focus();
+-    });
+-});
+-{{/js}}
+diff --git a/public/search/tests/behat/behat_search.php b/public/search/tests/behat/behat_search.php
+index 3e86a07497b5d441829c51d821c2b5fd72a38be0..eedf2d7aea8fe6cb0be41cbdaa74a0efcd9df6ec 100644
+--- a/public/search/tests/behat/behat_search.php
++++ b/public/search/tests/behat/behat_search.php
+@@ -45,14 +45,10 @@ class behat_search extends behat_base {
+      * @param string $query Query to search for
+      */
+     public function i_search_for_using_the_header_global_search_box($query) {
+-        // In boost the toggle button is only visible on small screens, where it expands the
+-        // inline search field. Check visibility before clicking.
+-        $togglelabel = get_string('togglesearch', 'core');
+-        $toggle = $this->getSession()->getPage()->find('named', ['button', $togglelabel]);
+-        if ($toggle && $toggle->isVisible()) {
+-            $this->execute("behat_general::i_click_on", [$togglelabel, 'button']);
+-        }
++        // Click the search icon.
++        $this->execute("behat_general::i_click_on", [get_string('togglesearch', 'core'), 'button']);
+ 
++        // Set the field.
+         $this->execute('behat_forms::i_set_the_field_to', ['q', $query]);
+ 
+         // Submit the form.
+diff --git a/public/theme/boost/classes/output/core_renderer.php b/public/theme/boost/classes/output/core_renderer.php
+index 43982c9cb8b16f28e4dc5d6d80d89fefa6d1736e..08ab7d8370c5d8f8f678f1f87ba9748bf078f0f0 100644
+--- a/public/theme/boost/classes/output/core_renderer.php
++++ b/public/theme/boost/classes/output/core_renderer.php
+@@ -17,7 +17,6 @@
+ namespace theme_boost\output;
+ 
+ use context_course;
+-use context_system;
+ use moodle_url;
+ use html_writer;
+ use get_string;
+@@ -33,41 +32,6 @@ defined('MOODLE_INTERNAL') || die;
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class core_renderer extends \core_renderer {
+-    /**
+-     * Returns the navbar search box using the inline field design.
+-     *
+-     * The field is always visible on md+ viewports and collapses behind a
+-     * toggle button on smaller screens.
+-     *
+-     * @param string $id Unused, kept for compatibility with the parent signature.
+-     * @return string HTML for the navbar search form, or empty string.
+-     */
+-    public function search_box($id = false) {
+-        global $CFG;
+-
+-        if (empty($CFG->enableglobalsearch) || !has_capability('moodle/search:query', context_system::instance())) {
+-            return '';
+-        }
+-
+-        $data = [
+-            'action' => new moodle_url('/search/index.php'),
+-            'hiddenfields' => (object) ['name' => 'context', 'value' => $this->page->context->id],
+-            'inputname' => 'q',
+-            'searchstring' => get_string('search'),
+-            'grouplabel' => get_string('sitewidesearch', 'search'),
+-        ];
+-
+-        return $this->render_from_template('core/search_input_navbar_inline', $data);
+-    }
+-
+-    /**
+-     * Returns the navbar menu for switching between the light and dark colour modes.
+-     *
+-     * @return string HTML for the colour mode menu, or an empty string.
+-     */
+-    public function colour_mode_menu(): string {
+-        return colour_mode::render_menu($this);
+-    }
+ 
+     /**
+      * Returns HTML to display a "Turn editing on/off" button in a form.
+diff --git a/public/theme/boost/scss/moodle/navbar.scss b/public/theme/boost/scss/moodle/navbar.scss
+index d3151190a26f53d8ef78b3380dd16e334b64ef5a..2958f3bd51314a0dac62eacfdacc053d54e0c585 100644
+--- a/public/theme/boost/scss/moodle/navbar.scss
++++ b/public/theme/boost/scss/moodle/navbar.scss
+@@ -187,97 +187,3 @@
+ :root {
+     --navbar-height: #{$navbar-height};
+ }
+-
+-// Inline search form.
+-.navbar.fixed-top #usernavigation .search-input-inline {
+-    display: flex;
+-    align-items: center;
+-    height: 100%;
+-
+-    .search-toggle {
+-        display: flex;
+-        align-items: center;
+-        height: 100%;
+-    }
+-
+-    .searchform-navbar {
+-        display: none;
+-
+-        .input-group-text,
+-        .form-control {
+-            background-color: var(--#{$prefix}gray-200);
+-        }
+-        .input-group-text,
+-        .form-control::placeholder {
+-            color: var(--#{$prefix}gray-700);
+-        }
+-        .input-group > .form-control {
+-            @include border-end-radius($input-border-radius);
+-        }
+-        // Close button floats inside the field, over its end padding.
+-        .search-close {
+-            position: absolute;
+-            top: 0;
+-            right: 0;
+-            height: 100%;
+-            padding: 0 0.5rem;
+-            background: none;
+-            border: 0;
+-            color: var(--#{$prefix}gray-700);
+-            z-index: 6;
+-
+-            .icon {
+-                margin: 0;
+-            }
+-        }
+-    }
+-
+-    @include media-breakpoint-up(md) {
+-        padding: 0 $primary-nav-padding-x;
+-
+-        .search-toggle {
+-            display: none;
+-        }
+-
+-        .searchform-navbar {
+-            display: block;
+-
+-            .input-group {
+-                width: 256px;
+-            }
+-        }
+-    }
+-
+-    // On small screens the field expands across the whole navbar.
+-    @include media-breakpoint-down(md) {
+-        &.expanded {
+-            position: absolute;
+-            top: 0;
+-            left: 0;
+-            width: 100%;
+-            height: $navbar-height;
+-            padding: 0 $primary-nav-padding-x;
+-            background-color: var(--#{$prefix}white);
+-            z-index: $zindex-popover;
+-
+-            .search-toggle {
+-                display: none;
+-            }
+-
+-            .searchform-navbar {
+-                display: flex;
+-                align-items: center;
+-                width: 100%;
+-
+-                .input-group {
+-                    width: 100%;
+-                    flex-wrap: nowrap;
+-                }
+-
+-                .form-control {
+-                    padding-right: 2rem;
+-                }
+-            }
+-        }
+-    }
+-}
+diff --git a/public/theme/boost/templates/navbar.mustache b/public/theme/boost/templates/navbar.mustache
+index c18d2ebce7064b87ae28c5f19fa852c7648777b8..7817998cda45534bc3194a7a3e31fdbbe5f8c17d 100644
+--- a/public/theme/boost/templates/navbar.mustache
++++ b/public/theme/boost/templates/navbar.mustache
+@@ -87,6 +87,7 @@
+         <div id="usernavigation" class="navbar-nav ms-auto h-100">
+             {{# output.search_box }}
+                 {{{ output.search_box }}}
++                <div class="divider border-start h-75 align-self-center mx-1"></div>
+             {{/output.search_box}}
+             {{#langmenu}}
+                 {{> theme_boost/language_menu }}

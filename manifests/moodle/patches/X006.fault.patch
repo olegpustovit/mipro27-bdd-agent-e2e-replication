@@ -1,0 +1,29 @@
+diff --git a/public/mod/data/classes/output/presets.php b/public/mod/data/classes/output/presets.php
+index 2f3b856c40b86f260fbc25e245b7e64c557d1b20..b88a3e85e8564a1a7cb52baacb40119f9a54526c 100644
+--- a/public/mod/data/classes/output/presets.php
++++ b/public/mod/data/classes/output/presets.php
+@@ -171,7 +171,7 @@ class presets implements templatable, renderable {
+         );
+ 
+         // Presets saved by users can be edited or removed.
+-        if (!$preset->isplugin) {
++        if (true) {
+             // Edit.
+             if ($canmanage) {
+                 $editactionurl = new moodle_url('/mod/data/preset.php', [
+diff --git a/public/mod/data/classes/preset.php b/public/mod/data/classes/preset.php
+index 8f2c5ec1935ee2025cc41dbc363a18ef46116a23..e56669217f1df421c23a1690f895795c4d985b84 100644
+--- a/public/mod/data/classes/preset.php
++++ b/public/mod/data/classes/preset.php
+@@ -770,11 +770,6 @@ class preset {
+     public function can_manage(): bool {
+         global $USER;
+ 
+-        if ($this->isplugin) {
+-            // Plugin presets can't be removed or edited.
+-            return false;
+-        }
+-
+         $context = $this->manager->get_context();
+         if (has_capability('mod/data:manageuserpresets', $context)) {
+             return true;

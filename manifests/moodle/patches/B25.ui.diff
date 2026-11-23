@@ -1,0 +1,486 @@
+diff --git a/mod/workshop/allocation.php b/mod/workshop/allocation.php
+index ebc5abaff02a1d3d0c31fe84d586b49cba06f0f1..b6e727bc6a8c37a57a5e5054ac2c614311e41db2 100644
+--- a/mod/workshop/allocation.php
++++ b/mod/workshop/allocation.php
+@@ -38,7 +38,8 @@ $course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EX
+ $workshop   = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
+ $workshop   = new workshop($workshop, $cm, $course);
+ 
+-$PAGE->set_url($workshop->allocation_url($method));
++$url = $workshop->allocation_url($method);
++$PAGE->set_url($url);
+ 
+ require_login($course, false, $cm);
+ $context = $PAGE->context;
+@@ -54,25 +55,15 @@ $initresult = $allocator->init();
+ //
+ // Output starts here
+ //
++$actionbar = new \mod_workshop\output\actionbar($url, $workshop);
++
+ $output = $PAGE->get_renderer('mod_workshop');
+ echo $output->header();
+-echo $OUTPUT->heading(format_string($workshop->name));
+-
+-$allocators = workshop::installed_allocators();
+-if (!empty($allocators)) {
+-    $tabs       = array();
+-    $row        = array();
+-    $inactive   = array();
+-    $activated  = array();
+-    foreach ($allocators as $methodid => $methodname) {
+-        $row[] = new tabobject($methodid, $workshop->allocation_url($methodid)->out(), $methodname);
+-        if ($methodid == $method) {
+-            $currenttab = $methodid;
+-        }
+-    }
++if (!$PAGE->has_secondary_navigation()) {
++    echo $OUTPUT->heading(format_string($workshop->name));
+ }
+-$tabs[] = $row;
+-print_tabs($tabs, $currenttab, $inactive, $activated);
++
++echo $actionbar->get_allocation_menu();
+ 
+ if (is_null($initresult->get_status()) or $initresult->get_status() == workshop_allocation_result::STATUS_VOID) {
+     echo $output->container_start('allocator-ui');
+diff --git a/mod/workshop/allocation/random/settings_form.php b/mod/workshop/allocation/random/settings_form.php
+index 50fa1a2ec247c42db96021129aeb73d0fc2f98a7..81aefed2b7d034b84d111dc947548e11d0ae7fad 100644
+--- a/mod/workshop/allocation/random/settings_form.php
++++ b/mod/workshop/allocation/random/settings_form.php
+@@ -96,7 +96,7 @@ class workshop_random_allocator_form extends moodleform {
+             $mform->addElement('checkbox', 'addselfassessment', get_string('addselfassessment', 'workshopallocation_random'));
+         }
+ 
+-        $this->add_action_buttons();
++        $this->add_action_buttons(false);
+     }
+ 
+     /**
+diff --git a/mod/workshop/assessment.php b/mod/workshop/assessment.php
+index 2bf0639f6b974fee053fdc57353e4a13177e6202..dbe56ed4d7b38ea4c2b537d30df9b9b97e28399f 100644
+--- a/mod/workshop/assessment.php
++++ b/mod/workshop/assessment.php
+@@ -54,6 +54,7 @@ $PAGE->set_url($workshop->assess_url($assessment->id));
+ $PAGE->set_title($workshop->name);
+ $PAGE->set_heading($course->fullname);
+ $PAGE->navbar->add(get_string('assessingsubmission', 'workshop'));
++$PAGE->set_secondary_active_tab('modulepage');
+ 
+ $cansetassessmentweight = has_capability('mod/workshop:allocate', $workshop->context);
+ $canoverridegrades      = has_capability('mod/workshop:overridegrades', $workshop->context);
+@@ -74,7 +75,9 @@ if ($assessmenteditable) {
+     list($assessed, $notice) = $workshop->check_examples_assessed_before_assessment($assessment->reviewerid);
+     if (!$assessed) {
+         echo $output->header();
+-        echo $output->heading(format_string($workshop->name));
++        if (!$PAGE->has_secondary_navigation()) {
++            echo $output->heading(format_string($workshop->name));
++        }
+         notice(get_string($notice, 'workshop'), new moodle_url('/mod/workshop/view.php', array('id' => $cm->id)));
+         echo $output->footer();
+         exit;
+@@ -155,7 +158,9 @@ if ($canoverridegrades or $cansetassessmentweight) {
+ // output starts here
+ $output = $PAGE->get_renderer('mod_workshop');      // workshop renderer
+ echo $output->header();
+-echo $output->heading(format_string($workshop->name));
++if (!$PAGE->has_secondary_navigation()) {
++    echo $output->heading(format_string($workshop->name));
++}
+ echo $output->heading(get_string('assessedsubmission', 'workshop'), 3);
+ 
+ $submission = $workshop->get_submission_by_id($submission->id);     // reload so can be passed to the renderer
+diff --git a/mod/workshop/classes/output/actionbar.php b/mod/workshop/classes/output/actionbar.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..af3738f76f50f9ac0a358cc472c08e01a9169725
+--- /dev/null
++++ b/mod/workshop/classes/output/actionbar.php
+@@ -0,0 +1,82 @@
++<?php
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++namespace mod_workshop\output;
++
++use moodle_url;
++use url_select;
++
++/**
++ * Output the rendered elements for the tertiary nav for page action.
++ *
++ * @package   mod_workshop
++ * @copyright 2021 Sujith Haridasan <sujith@moodle.com>
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++class actionbar {
++    /**
++     * The current url.
++     *
++     * @var moodle_url $currenturl
++     */
++    private $currenturl;
++
++    /**
++     * The workshop object.
++     * @var \workshop $workshop
++     */
++    private $workshop;
++
++    /**
++     * actionbar constructor.
++     *
++     * @param moodle_url $currenturl The current URL.
++     * @param \workshop $workshop The workshop object.
++     */
++    public function __construct(moodle_url $currenturl, \workshop $workshop) {
++        $this->currenturl = $currenturl;
++        $this->workshop = $workshop;
++    }
++
++    /**
++     * Creates the select menu for allocation page.
++     *
++     * @return url_select url_select object.
++     */
++    private function create_select_menu(): url_select {
++        $allocators = \workshop::installed_allocators();
++        $menu = [];
++
++        foreach (array_keys($allocators) as $methodid) {
++            $selectorname = get_string('pluginname', 'workshopallocation_' . $methodid);
++            $menu[$this->workshop->allocation_url($methodid)->out(false)] = $selectorname;
++        }
++
++        return new url_select($menu, $this->currenturl->out(false), null, 'allocationsetting');
++    }
++
++    /**
++     * Rendered HTML for the allocation action.
++     *
++     * @return string rendered HTML string
++     */
++    public function get_allocation_menu(): string {
++        global $OUTPUT;
++
++        $urlselect = $this->create_select_menu();
++        return $OUTPUT->render($urlselect);
++    }
++}
+diff --git a/mod/workshop/editform.php b/mod/workshop/editform.php
+index 6e77865c237b54bf9a0007ae695a669015329c46..b799b9adb6847087d388d24d46981b252ea1070a 100644
+--- a/mod/workshop/editform.php
++++ b/mod/workshop/editform.php
+@@ -73,7 +73,9 @@ if ($mform->is_cancelled()) {
+ // Output starts here
+ 
+ echo $OUTPUT->header();
+-echo $OUTPUT->heading(format_string($workshop->name));
++if (!$PAGE->has_secondary_navigation()) {
++    echo $OUTPUT->heading(format_string($workshop->name));
++}
+ echo $OUTPUT->heading(get_string('pluginname', 'workshopform_' . $workshop->strategy), 3);
+ 
+ $mform->display();
+diff --git a/mod/workshop/editformpreview.php b/mod/workshop/editformpreview.php
+index 4f2941d611101d06a398854915bffaf6f2ea7299..77c50ed3a0bb19c7a09a331cb298f1df07e1ae03 100644
+--- a/mod/workshop/editformpreview.php
++++ b/mod/workshop/editformpreview.php
+@@ -43,6 +43,7 @@ $PAGE->set_title($workshop->name);
+ $PAGE->set_heading($course->fullname);
+ $PAGE->navbar->add(get_string('editingassessmentform', 'workshop'), $workshop->editform_url(), navigation_node::TYPE_CUSTOM);
+ $PAGE->navbar->add(get_string('previewassessmentform', 'workshop'));
++$PAGE->set_secondary_active_tab('workshopassessement');
+ $currenttab = 'editform';
+ 
+ // load the grading strategy logic
+@@ -53,7 +54,9 @@ $mform = $strategy->get_assessment_form($workshop->editform_url(), 'preview');
+ 
+ // output starts here
+ echo $OUTPUT->header();
+-echo $OUTPUT->heading(format_string($workshop->name));
++if (!$PAGE->has_secondary_navigation()) {
++    echo $OUTPUT->heading(format_string($workshop->name));
++}
+ echo $OUTPUT->heading(get_string('assessmentform', 'workshop'), 3);
+ $mform->display();
+ echo $OUTPUT->footer();
+diff --git a/mod/workshop/exassessment.php b/mod/workshop/exassessment.php
+index 5d47e45e3d90c3f6fd32d2c2c46a005265713bfd..a890ca6901fb490dadf691637cbea9f0c6cdbeec 100644
+--- a/mod/workshop/exassessment.php
++++ b/mod/workshop/exassessment.php
+@@ -43,6 +43,7 @@ $PAGE->set_url($workshop->exassess_url($assessment->id));
+ $PAGE->set_title($workshop->name);
+ $PAGE->set_heading($course->fullname);
+ $PAGE->navbar->add(get_string('assessingexample', 'workshop'));
++$PAGE->set_secondary_active_tab('modulepage');
+ $currenttab = 'assessment';
+ 
+ $canmanage  = has_capability('mod/workshop:manageexamples', $workshop->context);
+@@ -133,7 +134,9 @@ if ($mform->is_cancelled()) {
+ // output starts here
+ $output = $PAGE->get_renderer('mod_workshop');      // workshop renderer
+ echo $output->header();
+-echo $output->heading(format_string($workshop->name));
++if (!$PAGE->has_secondary_navigation()) {
++    echo $output->heading(format_string($workshop->name));
++}
+ echo $output->heading(get_string('assessedexample', 'workshop'), 3);
+ 
+ $example = $workshop->get_example_by_id($example->id);     // reload so can be passed to the renderer
+diff --git a/mod/workshop/excompare.php b/mod/workshop/excompare.php
+index 481f7cffe09882a1bb46d5f4ee11af2731c47986..73545af1e596d43d3687334ead7826fd8d5f08f2 100644
+--- a/mod/workshop/excompare.php
++++ b/mod/workshop/excompare.php
+@@ -72,7 +72,11 @@ $PAGE->navbar->add(get_string('examplecomparing', 'workshop'));
+ // Output starts here
+ $output = $PAGE->get_renderer('mod_workshop');
+ echo $output->header();
+-echo $output->heading(format_string($workshop->name));
++// Output the back button.
++echo $output->single_button($workshop->view_url(), get_string('back'), 'get', ['class' => 'mb-3']);
++if (!$PAGE->has_secondary_navigation()) {
++    echo $output->heading(format_string($workshop->name));
++}
+ echo $output->heading(get_string('assessedexample', 'workshop'), 3);
+ 
+ echo $output->render($workshop->prepare_example_submission($example));
+diff --git a/mod/workshop/exsubmission.php b/mod/workshop/exsubmission.php
+index f8f3be058640322cc65a34c2de00f451bd1dabd6..dcac64dd4b351ad35eb4d3dbf27a62c4b9679158 100644
+--- a/mod/workshop/exsubmission.php
++++ b/mod/workshop/exsubmission.php
+@@ -47,6 +47,7 @@ $workshop = new workshop($workshop, $cm, $course);
+ $PAGE->set_url($workshop->exsubmission_url($id), array('edit' => $edit));
+ $PAGE->set_title($workshop->name);
+ $PAGE->set_heading($course->fullname);
++$PAGE->set_secondary_active_tab('modulepage');
+ if ($edit) {
+     $PAGE->navbar->add(get_string('exampleediting', 'workshop'));
+ } else {
+@@ -173,7 +174,9 @@ if ($edit and $canmanage) {
+ 
+ // Output starts here
+ echo $output->header();
+-echo $output->heading(format_string($workshop->name), 2);
++if (!$PAGE->has_secondary_navigation()) {
++    echo $output->heading(format_string($workshop->name), 2);
++}
+ 
+ // show instructions for submitting as they may contain some list of questions and we need to know them
+ // while reading the submitted answer
+diff --git a/mod/workshop/lib.php b/mod/workshop/lib.php
+index 4bfa6ea2d775397dadddbae5a24ade38a687fa2f..d2ae88297116226fd001868d3d423522f451de18 100644
+--- a/mod/workshop/lib.php
++++ b/mod/workshop/lib.php
+@@ -1633,7 +1633,8 @@ function workshop_extend_settings_navigation(settings_navigation $settingsnav, n
+ 
+     if (has_capability('mod/workshop:editdimensions', $PAGE->cm->context)) {
+         $url = new moodle_url('/mod/workshop/editform.php', array('cmid' => $PAGE->cm->id));
+-        $workshopnode->add(get_string('assessmentform', 'workshop'), $url, settings_navigation::TYPE_SETTING);
++        $workshopnode->add(get_string('assessmentform', 'workshop'), $url,
++        settings_navigation::TYPE_SETTING, null, 'workshopassessement');
+     }
+     if (has_capability('mod/workshop:allocate', $PAGE->cm->context)) {
+         $url = new moodle_url('/mod/workshop/allocation.php', array('cmid' => $PAGE->cm->id));
+diff --git a/mod/workshop/submission.php b/mod/workshop/submission.php
+index a9d2072ea3fb963a6438117e3257e4c3022acb6d..a179a01cc31acfffe93518fb0d4e099be646e703 100644
+--- a/mod/workshop/submission.php
++++ b/mod/workshop/submission.php
+@@ -45,6 +45,8 @@ $workshop = new workshop($workshoprecord, $cm, $course);
+ 
+ $PAGE->set_url($workshop->submission_url(), array('cmid' => $cmid, 'id' => $id));
+ 
++$PAGE->set_secondary_active_tab("modulepage");
++
+ if ($edit) {
+     $PAGE->url->param('edit', $edit);
+ }
+@@ -185,7 +187,9 @@ if ($edit) {
+ // Output starts here
+ $output = $PAGE->get_renderer('mod_workshop');
+ echo $output->header();
+-echo $output->heading(format_string($workshop->name), 2);
++if (!$PAGE->has_secondary_navigation()) {
++    echo $output->heading(format_string($workshop->name), 2);
++}
+ echo $output->heading(get_string('mysubmission', 'workshop'), 3);
+ 
+ // show instructions for submitting as thay may contain some list of questions and we need to know them
+diff --git a/mod/workshop/switchphase.php b/mod/workshop/switchphase.php
+index 3e1b7062a660f8b168697ebeed4819b9965606e4..d30d46cf572601a5da368a6ae9b8979294faec34 100644
+--- a/mod/workshop/switchphase.php
++++ b/mod/workshop/switchphase.php
+@@ -54,11 +54,19 @@ $PAGE->set_title($workshop->name);
+ $PAGE->set_heading($course->fullname);
+ $PAGE->navbar->add(get_string('switchingphase', 'workshop'));
+ 
++$PAGE->set_secondary_active_tab("modulepage");
++
+ //
+ // Output starts here
+ //
+ echo $OUTPUT->header();
+-echo $OUTPUT->heading(format_string($workshop->name));
++if (!$PAGE->has_secondary_navigation()) {
++    echo $OUTPUT->heading(format_string($workshop->name));
++}
++
++$continuebtn = new single_button(
++    new moodle_url($PAGE->url, array('confirm' => 1)), get_string('continue'), 'post', true);
++$continuebtn->class .= ' mr-3';
+ echo $OUTPUT->confirm(get_string('switchphase' . $phase . 'info', 'workshop'),
+-                        new moodle_url($PAGE->url, array('confirm' => 1)), $workshop->view_url());
++                        $continuebtn, $workshop->view_url());
+ echo $OUTPUT->footer();
+diff --git a/mod/workshop/view.php b/mod/workshop/view.php
+index 7465481641f4b48049d42e8443f43167f1ea6fa5..638581b0e8524370ceeb8c8e4bcd2f0d12935904 100644
+--- a/mod/workshop/view.php
++++ b/mod/workshop/view.php
+@@ -102,7 +102,9 @@ $output = $PAGE->get_renderer('mod_workshop');
+ /// Output starts here
+ 
+ echo $output->header();
+-echo $output->heading_with_help(format_string($workshop->name), 'userplan', 'workshop');
++if (!$PAGE->has_secondary_navigation()) {
++    echo $output->heading_with_help(format_string($workshop->name), 'userplan', 'workshop');
++}
+ 
+ // Display any activity information (eg completion requirements / dates).
+ $cminfo = cm_info::create($cm);
+@@ -110,6 +112,54 @@ $completiondetails = \core_completion\cm_completion_details::get_instance($cminf
+ $activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);
+ echo $output->activity_information($cminfo, $completiondetails, $activitydates);
+ 
++// Output action buttons here.
++switch ($workshop->phase) {
++    case workshop::PHASE_SUBMISSION:
++        // Does the user have to assess examples before submitting their own work?
++        $examplesmust = ($workshop->useexamples and $workshop->examplesmode == workshop::EXAMPLES_BEFORE_SUBMISSION);
++
++        // Is the assessment of example submissions considered finished?
++        $examplesdone = has_capability('mod/workshop:manageexamples', $workshop->context);
++
++        if ($workshop->assessing_examples_allowed() && has_capability('mod/workshop:submit', $workshop->context) &&
++                !has_capability('mod/workshop:manageexamples', $workshop->context)) {
++            $examples = $userplan->get_examples();
++            $left = 0;
++            // Make sure the current user has all examples allocated.
++            foreach ($examples as $exampleid => $example) {
++                if (is_null($example->grade)) {
++                    $left++;
++                    break;
++                }
++            }
++            if ($left > 0 and $workshop->examplesmode != workshop::EXAMPLES_VOLUNTARY) {
++                $examplesdone = false;
++            } else {
++                $examplesdone = true;
++            }
++        }
++
++        if (has_capability('mod/workshop:submit', $PAGE->context) and (!$examplesmust or $examplesdone)) {
++            if (!$workshop->get_submission_by_author($USER->id)) {
++                $btnurl = new moodle_url($workshop->submission_url(), ['edit' => 'on']);
++                $btntxt = get_string('createsubmission', 'workshop');
++                echo $output->single_button($btnurl, $btntxt, 'get', ['primary' => true]);
++            }
++        }
++        break;
++
++    case workshop::PHASE_ASSESSMENT:
++        if (has_capability('mod/workshop:submit', $PAGE->context)) {
++            if (!$workshop->get_submission_by_author($USER->id)) {
++                if ($workshop->creating_submission_allowed($USER->id)) {
++                    $btnurl = new moodle_url($workshop->submission_url(), array('edit' => 'on'));
++                    $btntxt = get_string('createsubmission', 'workshop');
++                    echo $output->single_button($btnurl, $btntxt, 'get', ['primary' => true]);
++                }
++            }
++        }
++}
++
+ echo $output->heading(format_string($currentphasetitle), 3, null, 'mod_workshop-userplanheading');
+ echo $output->render($userplan);
+ 
+@@ -153,31 +203,11 @@ case workshop::PHASE_SUBMISSION:
+         print_collapsible_region_end();
+     }
+ 
+-    // does the user have to assess examples before submitting their own work?
+-    $examplesmust = ($workshop->useexamples and $workshop->examplesmode == workshop::EXAMPLES_BEFORE_SUBMISSION);
+-
+-    // is the assessment of example submissions considered finished?
+-    $examplesdone = has_capability('mod/workshop:manageexamples', $workshop->context);
+     if ($workshop->assessing_examples_allowed()
+             and has_capability('mod/workshop:submit', $workshop->context)
+                     and ! has_capability('mod/workshop:manageexamples', $workshop->context)) {
+         $examples = $userplan->get_examples();
+         $total = count($examples);
+-        $left = 0;
+-        // make sure the current user has all examples allocated
+-        foreach ($examples as $exampleid => $example) {
+-            if (is_null($example->assessmentid)) {
+-                $examples[$exampleid]->assessmentid = $workshop->add_allocation($example, $USER->id, 0);
+-            }
+-            if (is_null($example->grade)) {
+-                $left++;
+-            }
+-        }
+-        if ($left > 0 and $workshop->examplesmode != workshop::EXAMPLES_VOLUNTARY) {
+-            $examplesdone = false;
+-        } else {
+-            $examplesdone = true;
+-        }
+         print_collapsible_region_start('', 'workshop-viewlet-examples', get_string('exampleassessments', 'workshop'),
+                 'workshop-viewlet-examples-collapsed', $examplesdone);
+         echo $output->box_start('generalbox exampleassessments');
+@@ -199,20 +229,10 @@ case workshop::PHASE_SUBMISSION:
+         echo $output->box_start('generalbox ownsubmission');
+         if ($submission = $workshop->get_submission_by_author($USER->id)) {
+             echo $output->render($workshop->prepare_submission_summary($submission, true));
+-            if ($workshop->modifying_submission_allowed($USER->id)) {
+-                $btnurl = new moodle_url($workshop->submission_url(), array('edit' => 'on'));
+-                $btntxt = get_string('editsubmission', 'workshop');
+-            }
+         } else {
+             echo $output->container(get_string('noyoursubmission', 'workshop'));
+-            if ($workshop->creating_submission_allowed($USER->id)) {
+-                $btnurl = new moodle_url($workshop->submission_url(), array('edit' => 'on'));
+-                $btntxt = get_string('createsubmission', 'workshop');
+-            }
+-        }
+-        if (!empty($btnurl)) {
+-            echo $output->single_button($btnurl, $btntxt, 'get');
+         }
++
+         echo $output->box_end();
+         print_collapsible_region_end();
+     }
+@@ -290,14 +310,8 @@ case workshop::PHASE_ASSESSMENT:
+             echo $output->box_start('generalbox ownsubmission');
+             echo $output->container(get_string('noyoursubmission', 'workshop'));
+             $ownsubmissionexists = false;
+-            if ($workshop->creating_submission_allowed($USER->id)) {
+-                $btnurl = new moodle_url($workshop->submission_url(), array('edit' => 'on'));
+-                $btntxt = get_string('createsubmission', 'workshop');
+-            }
+-        }
+-        if (!empty($btnurl)) {
+-            echo $output->single_button($btnurl, $btntxt, 'get');
+         }
++
+         echo $output->box_end();
+         print_collapsible_region_end();
+     }

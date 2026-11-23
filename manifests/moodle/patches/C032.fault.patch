@@ -1,0 +1,91 @@
+diff --git a/public/mod/quiz/classes/courseformat/overview.php b/public/mod/quiz/classes/courseformat/overview.php
+index 8cb154c580009a7dae1da83e06b387316a76a276..09b0ffbc2ce4997b694fddaed7195ac7bf7b65f9 100644
+--- a/public/mod/quiz/classes/courseformat/overview.php
++++ b/public/mod/quiz/classes/courseformat/overview.php
+@@ -167,20 +167,15 @@ class overview extends \core_courseformat\activityoverviewbase {
+             $allowedattempts,
+         );
+ 
+-        $totalattempts = quiz_num_attempts(
+-            $this->cm,
+-            $groups,
+-            withcapabilities: ['mod/quiz:attempt', 'mod/quiz:reviewmyattempts']
+-        );
+-        // Only attempts completed by students. If we count all attempts, including teachers,
+-        // the average attempts per student would be misleading.
++        $numstudentattempted = quiz_num_users_who_attempted($this->cm, $groups);
++        $numstudentwhocanattempt = quiz_num_users_who_can_attempt($this->cm, $groups);
++        if ($numstudentwhocanattempt > 0 && $numstudentattempted > 0) {
++            $overviewdialog->add_item(
++                get_string('averageattemptsperstudent', 'mod_quiz'),
++                round($numstudentattempted / $numstudentwhocanattempt)
++            );
++        }
+ 
+-        $attemptedusers = quiz_num_users_who_attempted($this->cm, $groups);
+-        $averageattempts = $totalattempts ? round($totalattempts / $attemptedusers, 1) : 0;
+-        $overviewdialog->add_item(
+-            get_string('averageattemptsperstudent', 'mod_quiz'),
+-            $averageattempts
+-        );
+         return new overviewitem(
+             name: get_string('totalattempts', 'mod_quiz'),
+             value: $total,
+diff --git a/public/mod/quiz/lib.php b/public/mod/quiz/lib.php
+index 5bd07536a99da699844aad9351ff300d662eb462..bb3f31b39d266a7a04a2e80d900d7e1388fdb94c 100644
+--- a/public/mod/quiz/lib.php
++++ b/public/mod/quiz/lib.php
+@@ -1678,47 +1678,24 @@ function quiz_num_attempt_summary($quiz, $cm, $returnzero = false, $currentgroup
+  *
+  * @param cm_info $cm
+  * @param array $groupidlist array of group ids to count attempts from, if array is empty we return all records from all groups.
+- * @param array $withcapabilities if non-null, only count attempts from users who have any the given capabilities
+- * in the quiz context.
+- *
+  * @return int the number of attempts filtered by group if groupidlist is not empty (or all attempts).
+  */
+-function quiz_num_attempts(cm_info $cm, array $groupidlist = [], array $withcapabilities = []): int {
++function quiz_num_attempts(cm_info $cm, array $groupidlist = []): int {
+     global $DB;
+     $context = context_module::instance($cm->id);
+-
+-    $groupjoins = groups_get_members_join($groupidlist, 'u.id', $context);
+-    $params = array_merge(
+-        ['quizid' => $cm->instance, 'preview' => 0],
+-        $groupjoins->params ?? []
+-    );
+-    $joins = $groupjoins->joins;
+-    $wheres = !empty($groupjoins->wheres) ? "AND $groupjoins->wheres" : "";
+-
+-    if ($withcapabilities) {
+-        $studentsjoins = get_enrolled_with_capabilities_join(
+-            $context,
+-            '',
+-            $withcapabilities
+-        );
+-        $wheres .= !empty($studentsjoins->wheres) ? " AND $studentsjoins->wheres" : "";
+-        $joins .= $studentsjoins->joins;
+-        $params = array_merge(
+-            $params,
+-            $studentsjoins->params ?? [],
+-        );
+-    }
++    $groupjoins = groups_get_members_join($groupidlist, 'qa.userid', $context);
++    $groupjoins->wheres = !empty($groupjoins->wheres) ? "AND $groupjoins->wheres" : '';
++    $params = array_merge(['quizid' => $cm->instance], $groupjoins->params ?? []);
+ 
+     return $DB->count_records_sql(
+         "SELECT
+             COUNT(DISTINCT qa.id)
+         FROM
+             {quiz_attempts} qa
+-            LEFT JOIN {user} u ON qa.userid = u.id
+-            {$joins}
++            {$groupjoins->joins}
+         WHERE
+             quiz = :quizid
+-            AND preview = :preview $wheres",
++            AND preview = 0 {$groupjoins->wheres}",
+         $params
+     );
+ }

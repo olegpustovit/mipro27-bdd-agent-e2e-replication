@@ -1,0 +1,14 @@
+diff --git a/public/course/tests/behat/behat_course.php b/public/course/tests/behat/behat_course.php
+index ecc314b240396b3c35e152a705dddffeab9eba40..92cf7f7c54e4951c9ca432beadafa61d5d00f7ed 100644
+--- a/public/course/tests/behat/behat_course.php
++++ b/public/course/tests/behat/behat_course.php
+@@ -2028,8 +2028,7 @@ class behat_course extends behat_base {
+ 
+         $exception = new ExpectationException('"' . $categoryname . '" category can not be found', $this->getSession());
+         $categoryliteral = behat_context_helper::escape($categoryname);
+-        $xpath = "//div[@class='info']/descendant::*[" . implode(' or ', $headingtags) .
+-            "][contains(@class,'categoryname')][./descendant::a[.=$categoryliteral]]";
++        $xpath = "//div[@class='info']/descendant::*[" . implode(' or ', $headingtags) . "][@class='categoryname'][./descendant::a[.=$categoryliteral]]";
+         $node = $this->find('xpath', $xpath, $exception);
+         $node->click();
+ 

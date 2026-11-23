@@ -1,0 +1,17 @@
+diff --git a/public/customfield/classes/handler.php b/public/customfield/classes/handler.php
+index c9e9b3f6d024f55aebd5f55cfa2888bef46e817f..811a4432a208e1c944fd52e3d39b4fd123a8c77d 100644
+--- a/public/customfield/classes/handler.php
++++ b/public/customfield/classes/handler.php
+@@ -627,11 +627,8 @@ abstract class handler {
+      * @param int $oldid The original ID of the custom field data before backup.
+      */
+     public function restore_define_structure(\restore_structure_step $step, int $newid, int $oldid): void {
++        $datacontrollers = $this->get_instance_data($newid);
+ 
+-        // Retrieve the 'instanceid' of the new custom field data.
+-        $instanceid = (new data($newid))->get('instanceid');
+-
+-        $datacontrollers = $this->get_instance_data($instanceid);
+         foreach ($datacontrollers as $controller) {
+             $controller->restore_define_structure($step, $newid, $oldid);
+         }

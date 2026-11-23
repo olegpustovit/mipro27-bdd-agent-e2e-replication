@@ -1,0 +1,582 @@
+diff --git a/blocks/myoverview/templates/view-list.mustache b/blocks/myoverview/templates/view-list.mustache
+index c4d527cf7d9c87090d9700316b3198fca1e05f3a..f32e7e8c4cffbd833c0d6055669ec1c237b563bc 100644
+--- a/blocks/myoverview/templates/view-list.mustache
++++ b/blocks/myoverview/templates/view-list.mustache
+@@ -63,7 +63,7 @@
+                         <div>{{{shortname}}}</div>
+                         {{/showshortname}}
+                     </div>
+-                    <a href="{{viewurl}}" class="coursename">
++                    <a href="{{viewurl}}" class="aalink coursename">
+                         {{> core_course/favouriteicon }}
+                         <span class="sr-only">
+                             {{#str}}aria:coursename, core_course{{/str}}
+diff --git a/blocks/myoverview/templates/view-summary.mustache b/blocks/myoverview/templates/view-summary.mustache
+index 9f929900cc5600dc3acf8d9a6b1d7bb8133aaff7..02dd28428b40f01f5d7181c1b0228f3249bcad50 100644
+--- a/blocks/myoverview/templates/view-summary.mustache
++++ b/blocks/myoverview/templates/view-summary.mustache
+@@ -73,7 +73,7 @@
+                     {{/showshortname}}
+                 </div>
+                 <div class="d-flex mb-1">
+-                    <a href="{{viewurl}}" class="coursename">
++                    <a href="{{viewurl}}" class="aalink coursename">
+                         {{> core_course/favouriteicon }}
+                         <span class="sr-only">
+                             {{#str}}aria:coursename, core_course{{/str}}
+diff --git a/calendar/templates/header.mustache b/calendar/templates/header.mustache
+index ce7c76f27fc3549325eb0828519a96a3a4c2b943..6bfc7980edc904ade31ff14a414cc5281f7bd236 100644
+--- a/calendar/templates/header.mustache
++++ b/calendar/templates/header.mustache
+@@ -31,7 +31,7 @@
+     {
+     }
+ }}
+-<div class="header d-flex flex-wrap">
++<div class="header d-flex flex-wrap p-1">
+     {{> core_calendar/view_selector}}
+     {{#filter_selector}}
+         {{{filter_selector}}}
+diff --git a/calendar/templates/month_detailed.mustache b/calendar/templates/month_detailed.mustache
+index 11608cd08a9184eddf4a7171ea77aa9c39da52af..a88f65ebbaa1f48254bae7e36bb00faf239aa6d6 100644
+--- a/calendar/templates/month_detailed.mustache
++++ b/calendar/templates/month_detailed.mustache
+@@ -72,7 +72,7 @@
+                         data-new-event-timestamp="{{neweventtimestamp}}">
+                         <div class="d-none d-md-block hidden-phone text-xs-center">
+                             {{#hasevents}}
+-                                <a data-action="view-day-link" href="#" class="day" aria-label="{{viewdaylinktitle}}"
++                                <a data-action="view-day-link" href="#" class="aalink day" aria-label="{{viewdaylinktitle}}"
+                                     data-year="{{date.year}}" data-month="{{date.mon}}" data-day="{{mday}}"
+                                     data-courseid="{{courseid}}" data-categoryid="{{categoryid}}"
+                                     data-timestamp="{{timestamp}}">{{mday}}</a>
+@@ -125,7 +125,7 @@
+                         </div>
+                         <div class="d-md-none hidden-desktop hidden-tablet">
+                             {{#hasevents}}
+-                                <a data-action="view-day-link" href="#" class="day" aria-label="{{viewdaylinktitle}}"
++                                <a data-action="view-day-link" href="#" class="day aalink" aria-label="{{viewdaylinktitle}}"
+                                     data-year="{{date.year}}" data-month="{{date.mon}}" data-day="{{mday}}"
+                                     data-courseid="{{courseid}}" data-categoryid="{{categoryid}}"
+                                     data-timestamp="{{timestamp}}">{{mday}}</a>
+diff --git a/course/classes/management_renderer.php b/course/classes/management_renderer.php
+index 07394ca4706ef4530321c52fdaa4cb6c5436a5af..ada3a69a44fd70b37fcac93959b7cb0b67a2008b 100644
+--- a/course/classes/management_renderer.php
++++ b/course/classes/management_renderer.php
+@@ -272,7 +272,7 @@ class core_course_management_renderer extends plugin_renderer_base {
+         $html .= html_writer::end_div();
+         $html .= $icon;
+         if ($hasactions) {
+-            $textattributes = array('class' => 'float-left categoryname');
++            $textattributes = array('class' => 'float-left categoryname aalink');
+         } else {
+             $textattributes = array('class' => 'float-left categoryname without-actions');
+         }
+@@ -647,7 +647,7 @@ class core_course_management_renderer extends plugin_renderer_base {
+             'for' => 'courselistitem' . $course->id));
+         $html .= html_writer::end_div();
+         $html .= html_writer::end_div();
+-        $html .= html_writer::link($viewcourseurl, $text, array('class' => 'float-left coursename'));
++        $html .= html_writer::link($viewcourseurl, $text, array('class' => 'float-left coursename aalink'));
+         $html .= html_writer::start_div('float-right');
+         if ($course->idnumber) {
+             $html .= html_writer::tag('span', s($course->idnumber), array('class' => 'text-muted idnumber'));
+@@ -1222,7 +1222,7 @@ class core_course_management_renderer extends plugin_renderer_base {
+             $html .= html_writer::end_div();
+         }
+         $html .= html_writer::end_div();
+-        $html .= html_writer::link($viewcourseurl, $text, array('class' => 'float-left coursename'));
++        $html .= html_writer::link($viewcourseurl, $text, array('class' => 'float-left coursename aalink'));
+         $html .= html_writer::tag('span', $categoryname, array('class' => 'float-left ml-3 text-muted'));
+         $html .= html_writer::start_div('float-right');
+         $html .= $this->search_listitem_actions($course);
+diff --git a/course/renderer.php b/course/renderer.php
+index b5260c410d15bc3f6523bf1cb052fb10b16709e4..bb7b3b9867e45d541d3b809911a99f98231a7421 100644
+--- a/course/renderer.php
++++ b/course/renderer.php
+@@ -709,7 +709,7 @@ class core_course_renderer extends plugin_renderer_base {
+                 'class' => 'iconlarge activityicon', 'alt' => '', 'role' => 'presentation', 'aria-hidden' => 'true')) .
+                 html_writer::tag('span', $instancename . $altname, array('class' => 'instancename'));
+         if ($mod->uservisible) {
+-            $output .= html_writer::link($url, $activitylink, array('class' => $linkclasses, 'onclick' => $onclick));
++            $output .= html_writer::link($url, $activitylink, array('class' => 'aalink' . $linkclasses, 'onclick' => $onclick));
+         } else {
+             // We may be displaying this just in order to show information
+             // about visibility, without the actual link ($mod->is_visible_on_course_page()).
+@@ -1142,7 +1142,7 @@ class core_course_renderer extends plugin_renderer_base {
+         }
+         $coursename = $chelper->get_course_formatted_name($course);
+         $coursenamelink = html_writer::link(new moodle_url('/course/view.php', ['id' => $course->id]),
+-            $coursename, ['class' => $course->visible ? '' : 'dimmed']);
++            $coursename, ['class' => $course->visible ? 'aalink' : 'aalink dimmed']);
+         $content .= html_writer::tag($nametag, $coursenamelink, ['class' => 'coursename']);
+         // If we display course in collapsed form but the course has summary or course contacts, display the link to the info page.
+         $content .= html_writer::start_tag('div', ['class' => 'moreinfo']);
+@@ -1648,7 +1648,7 @@ class core_course_renderer extends plugin_renderer_base {
+         }
+         $content .= html_writer::start_tag('div', array('class' => 'info'));
+ 
+-        $content .= html_writer::tag(($depth > 1) ? 'h4' : 'h3', $categoryname, array('class' => 'categoryname'));
++        $content .= html_writer::tag(($depth > 1) ? 'h4' : 'h3', $categoryname, array('class' => 'categoryname aabtn'));
+         $content .= html_writer::end_tag('div'); // .info
+ 
+         // add category content to the output
+@@ -1682,7 +1682,7 @@ class core_course_renderer extends plugin_renderer_base {
+ 
+         if ($coursecat->get_children_count()) {
+             $classes = array(
+-                'collapseexpand',
++                'collapseexpand', 'aabtn'
+             );
+ 
+             // Check if the category content contains subcategories with children's content loaded.
+@@ -2391,7 +2391,7 @@ class core_course_renderer extends plugin_renderer_base {
+         }
+         $output = html_writer::link('#' . $skipdivid,
+             get_string('skipa', 'access', core_text::strtolower(strip_tags($header))),
+-            array('class' => 'skip-block skip'));
++            array('class' => 'skip-block skip aabtn'));
+ 
+         // Wrap frontpage part in div container.
+         $output .= html_writer::start_tag('div', array('id' => $contentsdivid));
+diff --git a/course/templates/coursecard.mustache b/course/templates/coursecard.mustache
+index 74300b9fb6c9a18c1a29e43ee1da1d425069251d..b24636c88dbe98598aeecb474fafe7b2645f41a9 100644
+--- a/course/templates/coursecard.mustache
++++ b/course/templates/coursecard.mustache
+@@ -57,7 +57,7 @@
+                     </div>
+                     {{/showshortname}}
+                 </div>
+-                <a href="{{viewurl}}" class="coursename mr-2">
++                <a href="{{viewurl}}" class="aalink coursename mr-2">
+                     {{> core_course/favouriteicon }}
+                     <span class="sr-only">
+                             {{#str}}aria:coursename, core_course{{/str}}
+diff --git a/course/templates/local/activitychooser/item.mustache b/course/templates/local/activitychooser/item.mustache
+index ccebf9403439c3baa492f7ff2c6d53359c259bbe..82e6de3295677ad239ba73b702d0a569e5dc9a8b 100644
+--- a/course/templates/local/activitychooser/item.mustache
++++ b/course/templates/local/activitychooser/item.mustache
+@@ -29,7 +29,7 @@
+         "icon": "<img class='icon' src='http://urltooptionicon'>"
+     }
+ }}
+-<div role="menuitem" tabindex="-1" aria-label="{{title}}" class="option d-block text-center py-1 mb-1" data-region="chooser-option-container" data-internal="{{name}}" data-modname="{{componentname}}_{{link}}">
++<div role="menuitem" tabindex="-1" aria-label="{{title}}" class="option d-block text-center py-1 mb-1 aabtn" data-region="chooser-option-container" data-internal="{{name}}" data-modname="{{componentname}}_{{link}}">
+     <div class="optioninfo w-100" data-region="chooser-option-info-container">
+         <a class="d-block" href="{{link}}" title="{{#str}} addnew, moodle, {{title}} {{/str}}" tabindex="-1" data-action="add-chooser-option">
+             <span class="optionicon d-block">
+diff --git a/files/renderer.php b/files/renderer.php
+index 62e15b64b82cede94e030bfdf24f4954a6ad3561..2df7fa9828a4e98ab34f3b2d38488d9c83b767a8 100644
+--- a/files/renderer.php
++++ b/files/renderer.php
+@@ -166,7 +166,7 @@ class core_files_renderer extends plugin_renderer_base {
+     protected function fm_js_template_iconfilename() {
+         $rv = '
+ <div class="fp-file">
+-    <a href="#">
++    <a href="#" class="d-block aabtn">
+     <div style="position:relative;">
+         <div class="fp-thumbnail"></div>
+         <div class="fp-reficons1"></div>
+@@ -176,7 +176,8 @@ class core_files_renderer extends plugin_renderer_base {
+         <div class="fp-filename text-truncate"></div>
+     </div>
+     </a>
+-    <a class="fp-contextmenu" href="#">'.$this->pix_icon('i/menu', '▶').'</a>
++    <a class="fp-contextmenu btn btn-icon btn-light border icon-no-margin icon-size-3" href="#">
++        <span>'.$this->pix_icon('i/menu', '▶').'</span></a>
+ </div>';
+         return $rv;
+     }
+@@ -226,7 +227,7 @@ class core_files_renderer extends plugin_renderer_base {
+ <div class="filemanager fp-mkdir-dlg" role="dialog" aria-live="assertive" aria-labelledby="fp-mkdir-dlg-title">
+     <div class="fp-mkdir-dlg-text">
+         <label id="fp-mkdir-dlg-title">' . get_string('newfoldername', 'repository') . '</label><br/>
+-        <input type="text" />
++        <input type="text" class="form-control"/>
+     </div>
+     <button class="fp-dlg-butcreate btn-primary btn">'.get_string('makeafolder').'</button>
+     <button class="fp-dlg-butcancel btn-cancel btn">'.get_string('cancel').'</button>
+diff --git a/lib/form/dateselector.php b/lib/form/dateselector.php
+index 7d24f66f576006dfcd9d794444ab2cc91b96a85b..4ae8400ad72c969a25e1a7928086573085dc590c 100644
+--- a/lib/form/dateselector.php
++++ b/lib/form/dateselector.php
+@@ -135,8 +135,7 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group {
+         if ($calendartype->get_name() === 'gregorian') {
+             $image = $OUTPUT->pix_icon('i/calendar', get_string('calendar', 'calendar'), 'moodle');
+             $this->_elements[] = $this->createFormElement('link', 'calendar',
+-                    null, '#', $image,
+-                    array('class' => 'visibleifjs'));
++                    null, '#', $image);
+         }
+         // If optional we add a checkbox which the user can use to turn if on
+         if ($this->_options['optional']) {
+diff --git a/lib/form/datetimeselector.php b/lib/form/datetimeselector.php
+index 9c1ff765cc2bbd3d28f5920bfe5f6facc5dff5c0..084768d2294c8932717e1f0b9c0752185de5a519 100644
+--- a/lib/form/datetimeselector.php
++++ b/lib/form/datetimeselector.php
+@@ -154,8 +154,7 @@ class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group {
+         if ($calendartype->get_name() === 'gregorian') {
+             $image = $OUTPUT->pix_icon('i/calendar', get_string('calendar', 'calendar'), 'moodle');
+             $this->_elements[] = $this->createFormElement('link', 'calendar',
+-                    null, '#', $image,
+-                    array('class' => 'visibleifjs'));
++                    null, '#', $image);
+         }
+         // If optional we add a checkbox which the user can use to turn if on
+         if ($this->_options['optional']) {
+diff --git a/lib/outputrenderers.php b/lib/outputrenderers.php
+index a72bb2642a9668f63a3675aae46b0742d14216c8..cbc964941c58b0a8dd5490f251a4223495cbf311 100644
+--- a/lib/outputrenderers.php
++++ b/lib/outputrenderers.php
+@@ -1167,7 +1167,7 @@ class core_renderer extends renderer_base {
+         if ($this->page->pagetype == 'site-index') {
+             // Special case for site home page - please do not remove
+             return '<div class="sitelink">' .
+-                   '<a title="Moodle" href="http://moodle.org/">' .
++                   '<a title="Moodle" class="d-inline-block aalink" href="http://moodle.org/">' .
+                    '<img src="' . $this->image_url('moodlelogo_grayhat') . '" alt="'.get_string('moodlelogo').'" /></a></div>';
+ 
+         } else if (!empty($CFG->target_release) && $CFG->target_release != $CFG->release) {
+@@ -2571,7 +2571,7 @@ class core_renderer extends renderer_base {
+             $url = new moodle_url('/user/view.php', array('id' => $user->id, 'course' => $courseid));
+         }
+ 
+-        $attributes = array('href'=>$url);
++        $attributes = array('href' => $url, 'class' => 'd-inline-block aabtn');
+         if (!$userpicture->visibletoscreenreaders) {
+             $attributes['tabindex'] = '-1';
+             $attributes['aria-hidden'] = 'true';
+diff --git a/lib/templates/action_menu_link.mustache b/lib/templates/action_menu_link.mustache
+index 0e9f42af6cd77855e7feafe8e7da865c665bcc82..0184d49bbe42fe220e9ea79c81fdd585c39ede75 100644
+--- a/lib/templates/action_menu_link.mustache
++++ b/lib/templates/action_menu_link.mustache
+@@ -27,7 +27,7 @@
+     }
+ }}
+ {{^disabled}}
+-    <a href="{{url}}" class="{{classes}}" {{#attributes}}{{name}}={{#quote}}{{value}}{{/quote}} {{/attributes}}{{#showtext}}aria-labelledby="actionmenuaction-{{instance}}"{{/showtext}}>{{#icon}}{{#pix}}{{key}}, {{component}}, {{title}}{{/pix}}{{/icon}}{{#showtext}}<span class="menu-action-text" id="actionmenuaction-{{instance}}">{{{text}}}</span>{{/showtext}}</a>
++    <a href="{{url}}" class="aabtn {{classes}}" {{#attributes}}{{name}}={{#quote}}{{value}}{{/quote}} {{/attributes}}{{#showtext}}aria-labelledby="actionmenuaction-{{instance}}"{{/showtext}}>{{#icon}}{{#pix}}{{key}}, {{component}}, {{title}}{{/pix}}{{/icon}}{{#showtext}}<span class="menu-action-text" id="actionmenuaction-{{instance}}">{{{text}}}</span>{{/showtext}}</a>
+ {{/disabled}}
+ {{#disabled}}
+     <span class="currentlink" role="menuitem">{{#icon}}{{#pix}}{{key}},{{component}},{{title}}{{/pix}}{{/icon}}{{{text}}}</span>
+diff --git a/lib/templates/action_menu_trigger.mustache b/lib/templates/action_menu_trigger.mustache
+index cf34a04a6f6792991ce462e01801ec11d82a8441..8a172c9dfad5259fb293231e269b4c21401c0fad 100644
+--- a/lib/templates/action_menu_trigger.mustache
++++ b/lib/templates/action_menu_trigger.mustache
+@@ -78,7 +78,7 @@
+     }
+ }}
+ <div class="dropdown{{^secondary.items}} hidden{{/secondary.items}}">
+-    <a href="#" tabindex="0" class="{{triggerextraclasses}} dropdown-toggle icon-no-margin" id="action-menu-toggle-{{instance}}" aria-label="{{title}}" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" aria-controls="action-menu-{{instance}}-menu">
++    <a href="#" tabindex="0" class="d-inline-block {{triggerextraclasses}} dropdown-toggle icon-no-margin" id="action-menu-toggle-{{instance}}" aria-label="{{title}}" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" aria-controls="action-menu-{{instance}}-menu">
+         {{{actiontext}}}
+         {{{menutrigger}}}
+             {{#icon}}
+diff --git a/lib/templates/filemanager_modal_generallayout.mustache b/lib/templates/filemanager_modal_generallayout.mustache
+index 57ec021313920c38fb140a0fee2b350e85dfc8b3..6bd05e1e5a428e3d80694ed1b1bb20c082355705 100644
+--- a/lib/templates/filemanager_modal_generallayout.mustache
++++ b/lib/templates/filemanager_modal_generallayout.mustache
+@@ -77,7 +77,7 @@
+                         <div class="fp-clear-left"></div>
+                     </div>
+                     <div class="fp-pathbar">
+-                        <span class="fp-path-folder"><a class="fp-path-folder-name" href="#"></a></span>
++                        <span class="fp-path-folder"><a class="fp-path-folder-name btn btn-icon icon-no-margin icon-size-3" href="#"></a></span>
+                     </div>
+                 </div>
+                 <div class="fp-content card"></div>
+diff --git a/lib/templates/filemanager_page_generallayout.mustache b/lib/templates/filemanager_page_generallayout.mustache
+index 7300170a584d6530cdc086822451ff5c2d6565e0..0e0092ca507e07d992782e3b8056a6d40fc13cb4 100644
+--- a/lib/templates/filemanager_page_generallayout.mustache
++++ b/lib/templates/filemanager_page_generallayout.mustache
+@@ -72,7 +72,7 @@
+             </div>
+         </div>
+         <div class="fp-pathbar">
+-            <span class="fp-path-folder"><a class="fp-path-folder-name" href="#"></a></span>
++            <span class="fp-path-folder"><a class="fp-path-folder-name aalink" href="#"></a></span>
+         </div>
+     </div>
+     <div class="filemanager-loading mdl-align">{{#pix}}i/loading_small{{/pix}}<span class="sr-only">{{#str}}loadinghelp{{/str}}</span></div>
+diff --git a/lib/templates/inplace_editable.mustache b/lib/templates/inplace_editable.mustache
+index dc78b41141966a408b9f309a5991bee8b0cfb1aa..cfdf87c008561d51b1bbf74e72df3ce896aa2acf 100644
+--- a/lib/templates/inplace_editable.mustache
++++ b/lib/templates/inplace_editable.mustache
+@@ -54,7 +54,7 @@
+ <span class="inplaceeditable inplaceeditable-{{type}}" data-inplaceeditable="1" data-component="{{component}}" data-itemtype="{{itemtype}}" data-itemid="{{itemid}}"
+     data-value="{{value}}" data-editlabel="{{editlabel}}" data-type="{{type}}" data-options="{{options}}">
+         {{^ linkeverything }}{{{displayvalue}}}{{/ linkeverything }}
+-        <a href="#" class="quickeditlink" data-inplaceeditablelink="1" title="{{edithint}}">
++        <a href="#" class="quickeditlink aalink" data-inplaceeditablelink="1" title="{{edithint}}">
+             {{# linkeverything }}{{{displayvalue}}}{{/ linkeverything }}
+             <span class="quickediticon visibleifjs">{{#pix}}t/editstring,core,{{{edithint}}}{{/pix}}</span>
+         </a>
+diff --git a/mod/quiz/attemptlib.php b/mod/quiz/attemptlib.php
+index e85f69638e69e727e59cb17220f49c69874127e8..5efd8ffc1aaeb31153ebbfbee50c9cbdfc2fe4b8 100644
+--- a/mod/quiz/attemptlib.php
++++ b/mod/quiz/attemptlib.php
+@@ -2794,7 +2794,7 @@ class quiz_attempt_nav_panel extends quiz_nav_panel_base {
+             return '';
+         }
+         return html_writer::link($this->attemptobj->summary_url(),
+-                get_string('endtest', 'quiz'), array('class' => 'endtestlink')) .
++                get_string('endtest', 'quiz'), array('class' => 'endtestlink aalink')) .
+                 $output->countdown_timer($this->attemptobj, time()) .
+                 $this->render_restart_preview_link($output);
+     }
+diff --git a/theme/boost/scss/moodle/buttons.scss b/theme/boost/scss/moodle/buttons.scss
+index b4db9f2504dbf1d3cd1fe294d9dac96277dc9887..a3ddda2c06d881caf3abfdf14530e5463b0d1fb0 100644
+--- a/theme/boost/scss/moodle/buttons.scss
++++ b/theme/boost/scss/moodle/buttons.scss
+@@ -60,3 +60,23 @@ p.arrow_button {
+         }
+     }
+ }
++
++@mixin button-focus($background, $innershadow) {
++    &:focus,
++    &.focus {
++        outline: $btn-focus-width solid darken($background, 40%);
++        box-shadow: inset 0 0 0 2px $innershadow;
++    }
++}
++
++@each $color, $value in $theme-colors {
++    .btn-#{$color} {
++        @include button-focus($value, $white);
++    }
++}
++
++@each $color, $value in $theme-colors {
++    .btn-outline-#{$color} {
++        @include button-focus($value, $gray-800);
++    }
++}
+\ No newline at end of file
+diff --git a/theme/boost/scss/moodle/core.scss b/theme/boost/scss/moodle/core.scss
+index 1065a7066e2f1337449496784f1184c7f4112630..a21dc2cb560f30068bddee787ba0ab480d0a1e2d 100644
+--- a/theme/boost/scss/moodle/core.scss
++++ b/theme/boost/scss/moodle/core.scss
+@@ -138,6 +138,66 @@ a.dimmed_text:visited,
+     color: $text-muted;
+ }
+ 
++// Accessible focus styling for links, add .aalink to links with custom css classes to get
++// accessible focus styles.
++.aalink,
++#page-footer a:not([class]),
++.arrow_link,
++a:not([class]),
++.activityinstance > a {
++    &.focus,
++    &:focus {
++        outline: $btn-focus-width solid transparent;
++        color: $gray-900;
++        background-color: lighten($primary, 50%);
++        box-shadow: 0 -#{$btn-focus-width} lighten($primary, 50%), 0 $btn-focus-width $gray-800;
++    }
++    &:focus:hover {
++        text-decoration: none;
++    }
++}
++
++// Accessible focus styling for buttons like elements that do not use the .btn class. Add
++// .aabtn to you element if you need the same focus styles.
++.aabtn,
++.btn-link,
++.nav-link,
++.atto_link_button,
++[role="button"],
++.list-group-item-action,
++input[type="checkbox"],
++input[type="radio"],
++input[type="file"],
++input[type="image"],
++.sr-only-focusable,
++a.dropdown-item,
++a.dropdown-toggle,
++.modal-dialog[tabindex="0"],
++.moodle-dialogue-base .closebutton,
++button.close {
++    &.focus,
++    &:focus {
++        outline: 0;
++        box-shadow: $input-btn-focus-box-shadow;
++    }
++    &:focus:hover {
++        text-decoration: none;
++    }
++}
++
++.usermenu,
++div.dropdown-item {
++    a,
++    a[role="button"] {
++        outline: 0;
++        box-shadow: none;
++    }
++    &:focus-within {
++        outline: 0;
++        box-shadow: $input-btn-focus-box-shadow;
++    }
++}
++
+ .unlist,
+ .unlist li,
+ .inline-list,
+@@ -1956,6 +2016,7 @@ nav.navbar .logo img {
+ 
+     // Do not remove these rules.
+     overflow: hidden;
++    padding: 0.25rem;
+ 
+     .page-header-image,
+     .page-header-headings {
+@@ -1967,6 +2028,9 @@ nav.navbar .logo img {
+     .page-header-image {
+         margin-right: 1em;
+         margin-bottom: 1em;
++        & > a {
++            display: inline-block;
++        }
+     }
+ 
+     .page-header-headings,
+@@ -1979,13 +2043,6 @@ nav.navbar .logo img {
+     .header-button-group {
+         display: block;
+         float: left;
+-
+-        a {
+-            position: relative;
+-
+-            // Don't touch it unless you know exactly what you are doing.
+-            top: -0.4em;
+-        }
+     }
+ }
+ 
+@@ -2218,6 +2275,9 @@ $footer-link-color: $bg-inverse-link-color !default;
+     .icon {
+         color: $footer-link-color;
+     }
++    &:focus .icon {
++        color: $body-color;
++    }
+ }
+ 
+ .bg-inverse a {
+diff --git a/theme/boost/scss/moodle/course.scss b/theme/boost/scss/moodle/course.scss
+index 8a9297f3646d35eeb60741b68ed1bf7c2bf5c3cb..e548f3317140fd069dded2bc7a983fa021f0e33c 100644
+--- a/theme/boost/scss/moodle/course.scss
++++ b/theme/boost/scss/moodle/course.scss
+@@ -89,7 +89,7 @@ body:not(.editing)  .sitetopic ul.section {
+             min-height: 2em;
+ 
+             > a {
+-                display: block;
++                display: inline-block;
+                 text-indent: -31px;
+                 padding-left: 31px;
+             }
+diff --git a/theme/boost/scss/moodle/filemanager.scss b/theme/boost/scss/moodle/filemanager.scss
+index c1f03d9e35d4070335996b96856802a275d4f46b..347004d1255ae09992ef5c1ef6aeab381a3e2a3d 100644
+--- a/theme/boost/scss/moodle/filemanager.scss
++++ b/theme/boost/scss/moodle/filemanager.scss
+@@ -184,6 +184,7 @@
+ 
+ .fp-iconview .fp-filename-field {
+     height: 33px;
++    margin-top: 3px;
+     word-wrap: break-word;
+     overflow: hidden;
+     position: absolute;
+@@ -736,10 +737,12 @@ a.ygtvspacer:hover {
+ }
+ 
+ .filemanager .fp-iconview .fp-folder.fp-hascontextmenu .fp-contextmenu {
+-    display: block;
+     position: absolute;
+-    right: 7px;
+-    bottom: 5px;
++    right: 0;
++    bottom: 0;
++    display: flex;
++    align-items: center;
++    justify-content: center;
+ }
+ 
+ .filemanager .fp-treeview .fp-folder.fp-hascontextmenu .fp-contextmenu,
+diff --git a/theme/boost/scss/moodle/modules.scss b/theme/boost/scss/moodle/modules.scss
+index f961a82ed34f360fa2e3bff19e1adaa5a79916ca..62f78626b337cd8c626e593581359ddb94993e7c 100644
+--- a/theme/boost/scss/moodle/modules.scss
++++ b/theme/boost/scss/moodle/modules.scss
+@@ -1059,15 +1059,6 @@ div#dock {
+ .usermenu {
+     .login {
+         line-height: 2.25rem;
+-
+-        a {
+-            color: $link-color;
+-            &:hover,
+-            &:focus {
+-                color: $link-hover-color;
+-                text-decoration: underline;
+-            }
+-        }
+     }
+ }
+ 
+diff --git a/theme/boost/scss/preset/default.scss b/theme/boost/scss/preset/default.scss
+index 01ef061c093a1054944eb1b398927e02e5a83a8a..280f1920f3451a67df2e0a6f1cc798d370f0dfd7 100644
+--- a/theme/boost/scss/preset/default.scss
++++ b/theme/boost/scss/preset/default.scss
+@@ -68,6 +68,8 @@ $card-group-margin: .25rem;
+ // Custom control size
+ $custom-control-indicator-size: 1.25rem;
+ 
++$input-btn-focus-color: rgba($primary, .75) !default;
++
+ // stylelint-disable
+ $theme-colors: () !default;
+ $theme-colors: map-merge((
+diff --git a/theme/boost/templates/navbar.mustache b/theme/boost/templates/navbar.mustache
+index e3067d9bc81d543aa9662acf4b0b671bae59e290..c93e68f0c0be5a961dc9784a99e1c582387a90d2 100644
+--- a/theme/boost/templates/navbar.mustache
++++ b/theme/boost/templates/navbar.mustache
+@@ -23,7 +23,7 @@
+             <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn nav-link float-sm-left mr-1 btn-light bg-gray" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">{{#pix}}i/menubars{{/pix}}<span class="sr-only">{{#str}}sidepanel, core{{/str}}</span></button>
+         </div>
+ 
+-        <a href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
++        <a href="{{{ config.wwwroot }}}" class="navbar-brand aabtn {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
+             {{^ output.should_display_navbar_logo }}
+                 d-none d-sm-inline
+             {{/ output.should_display_navbar_logo }}
+diff --git a/theme/classic/scss/preset/default.scss b/theme/classic/scss/preset/default.scss
+index 858f81d05b59a2fc94ae441a0c65279a44635d4b..c5f2517f75f456216d19b2a301b4f92a30afbd7f 100644
+--- a/theme/classic/scss/preset/default.scss
++++ b/theme/classic/scss/preset/default.scss
+@@ -62,6 +62,8 @@ $alert-border-width:                0 !default;
+ 
+ $card-group-margin: .25rem;
+ 
++$input-btn-focus-color: rgba($primary, .75) !default;
++
+ // stylelint-disable
+ $theme-colors: () !default;
+ $theme-colors: map-merge((
+diff --git a/theme/classic/templates/navbar.mustache b/theme/classic/templates/navbar.mustache
+index c5cd4ab07f776d387d0328a4c67fc47061c5ba8d..5966aabb5f7b2c7030d270c3fc5cca9418021601 100644
+--- a/theme/classic/templates/navbar.mustache
++++ b/theme/classic/templates/navbar.mustache
+@@ -38,7 +38,7 @@
+ }}
+ <nav class="fixed-top navbar navbar-bootswatch navbar-expand moodle-has-zindex">
+ 
+-        <a href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
++        <a href="{{{ config.wwwroot }}}" class="navbar-brand aalink {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
+             {{^ output.should_display_navbar_logo }}
+                 d-none d-sm-inline
+             {{/ output.should_display_navbar_logo }}

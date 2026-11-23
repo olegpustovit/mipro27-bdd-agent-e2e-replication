@@ -1,0 +1,26 @@
+diff --git a/public/question/type/multianswer/edit_multianswer_form.php b/public/question/type/multianswer/edit_multianswer_form.php
+index 1580c24554d9c119f06b157346aa361be053fa84..a192637c8d538713f4cffe06f22d0e025d91195d 100644
+--- a/public/question/type/multianswer/edit_multianswer_form.php
++++ b/public/question/type/multianswer/edit_multianswer_form.php
+@@ -390,7 +390,7 @@ class qtype_multianswer_edit_form extends question_edit_form {
+                         foreach ($subquestion->answer as $key => $answer) {
+                             if ($subquestion->qtype == 'numerical' && $key == 0) {
+                                 $defaultvalues[$prefix.'tolerance['.$key.']'] =
+-                                    $subquestion->tolerance[0] ?? 0;
++                                        $subquestion->tolerance[0];
+                             }
+                             if (is_array($answer)) {
+                                 $answer = $answer['text'];
+diff --git a/public/question/type/numerical/questiontype.php b/public/question/type/numerical/questiontype.php
+index 53323a7a897fa914e25a15eefbb40e5c1941a695..387073d135b25993582952b06057724faf3dcb87 100644
+--- a/public/question/type/numerical/questiontype.php
++++ b/public/question/type/numerical/questiontype.php
+@@ -229,7 +229,7 @@ class qtype_numerical extends question_type {
+             }
+             $options->question = $question->id;
+             $options->answer   = $answer->id;
+-            if (!array_key_exists($key, $question->tolerance) || trim($question->tolerance[$key]) == '') {
++            if (trim($question->tolerance[$key]) == '') {
+                 $options->tolerance = '';
+             } else {
+                 $options->tolerance = $this->apply_unit($question->tolerance[$key],

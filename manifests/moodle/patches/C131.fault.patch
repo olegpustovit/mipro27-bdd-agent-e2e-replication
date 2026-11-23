@@ -1,0 +1,166 @@
+diff --git a/public/mod/assign/classes/output/actionmenu.php b/public/mod/assign/classes/output/actionmenu.php
+index cbcacc4da59d57989c6d296f026223f9f0adff7f..967ff651c069deb0adab019f5a01967585841fe1 100644
+--- a/public/mod/assign/classes/output/actionmenu.php
++++ b/public/mod/assign/classes/output/actionmenu.php
+@@ -60,9 +60,10 @@ class actionmenu implements templatable, renderable {
+             if ($this->markingworkflow) {
+                 $gradelink = new moodle_url('/mod/assign/view.php', ['id' => $this->cmid, 'action' => 'marker']);
+                 $return['marklink'] = $gradelink->out(false);
++            } else {
++                $gradelink = new moodle_url('/mod/assign/view.php', ['id' => $this->cmid, 'action' => 'grader']);
++                $return['gradelink'] = $gradelink->out(false);
+             }
+-            $gradelink = new moodle_url('/mod/assign/view.php', ['id' => $this->cmid, 'action' => 'grader']);
+-            $return['gradelink'] = $gradelink->out(false);
+         }
+ 
+         return $return;
+diff --git a/public/mod/assign/classes/output/grading_actionmenu.php b/public/mod/assign/classes/output/grading_actionmenu.php
+index f4cfcd5a4fd1ae173976c09f1972bf40fb3c000f..b2fdda1f8d92bf4ab46acaef607c35d47a42dd77 100644
+--- a/public/mod/assign/classes/output/grading_actionmenu.php
++++ b/public/mod/assign/classes/output/grading_actionmenu.php
+@@ -96,7 +96,7 @@ class grading_actionmenu implements templatable, renderable {
+      * @return array Data to render.
+      */
+     public function export_for_template(\renderer_base $output): array {
+-        global $PAGE, $USER;
++        global $PAGE;
+ 
+         $course = $this->assign->get_course();
+         $cm = get_coursemodule_from_id('assign', $this->cmid);
+@@ -188,18 +188,6 @@ class grading_actionmenu implements templatable, renderable {
+             $data['graderurl'] = $url->out(false);
+         }
+ 
+-        $markingworkflow = property_exists($this->assign->get_instance(), 'markingworkflow') &&
+-            $this->assign->get_instance()->markingworkflow == '1' &&
+-            $this->assign->is_user_allocated_marker($USER->id);
+-
+-        if ($markingworkflow) {
+-            $url = new moodle_url('/mod/assign/view.php', [
+-                'id' => $this->assign->get_course_module()->id,
+-                'action' => 'marker',
+-            ]);
+-            $data['markerurl'] = $url->out(false);
+-        }
+-
+         $gradingmanager = get_grading_manager($this->assign->get_context(), 'mod_assign', 'submissions');
+         $controller = $gradingmanager->get_active_controller();
+         $showquickgrading = empty($controller) && $this->assign->can_grade();
+diff --git a/public/mod/assign/classes/output/renderer.php b/public/mod/assign/classes/output/renderer.php
+index a2f9593546ca9c2e4e8df82c8bab640e61816ec0..4fd7b4f0167c9684f8712ec2348b9b991a0e21e0 100644
+--- a/public/mod/assign/classes/output/renderer.php
++++ b/public/mod/assign/classes/output/renderer.php
+@@ -296,7 +296,7 @@ class renderer extends \plugin_renderer_base {
+     public function render_assign_grading_summary(\assign_grading_summary $summary) {
+         // Create a table for the data.
+         $o = '';
+-        $o .= $this->output->container_start('gradingsummary container-fluid');
++        $o .= $this->output->container_start('gradingsummary');
+         $o .= $this->output->heading(get_string('gradingsummary', 'assign'), 3);
+ 
+         if (isset($summary->cm)) {
+diff --git a/public/mod/assign/locallib.php b/public/mod/assign/locallib.php
+index b64e7f4f073ead6c09f68d1ae0e05f3c17b5c753..22cd41eaf76751bb4cc6c0999a97e24fd6e282fc 100644
+--- a/public/mod/assign/locallib.php
++++ b/public/mod/assign/locallib.php
+@@ -6621,8 +6621,7 @@ class assign {
+         if ($this->can_view_grades()) {
+             $markingworkflow =
+                 property_exists($this->get_instance(), 'markingworkflow') &&
+-                $this->get_instance()->markingworkflow == '1' &&
+-                $this->is_user_allocated_marker($USER->id);
++                $this->get_instance()->markingworkflow == '1';
+             $actionbuttons = new \mod_assign\output\actionmenu($this->get_course_module()->id, $markingworkflow);
+             $o .= $this->get_renderer()->submission_actionmenu($actionbuttons);
+ 
+@@ -11308,27 +11307,20 @@ class assign {
+     }
+ 
+     /**
+-     * Check if a user is an allocated marker on this assignment.
+-     *
+-     * Providing a student ID will check the user is allocated to that student too.
++     * Check if a given user is allocated as a marker for a given student on this assignment.
+      *
+      * @param int $userid The ID of the user we are checking to see if they are a marker.
+-     * @param int|null $studentid The ID of the student (optional).
++     * @param int $studentid The ID of the student.
+      * @return bool
+      */
+-    public function is_user_allocated_marker(int $userid, ?int $studentid = null): bool {
++    public function is_user_allocated_marker(int $userid, int $studentid): bool {
+         global $DB;
+ 
+-        $params = [
++        $record = $DB->count_records('assign_allocated_marker', [
+             'assignment' => $this->get_instance()->id,
++            'student' => $studentid,
+             'marker' => $userid,
+-        ];
+-
+-        if (!empty($studentid)) {
+-            $params['student'] = $studentid;
+-        }
+-
+-        $record = $DB->count_records('assign_allocated_marker', $params);
++        ]);
+ 
+         return ($record > 0);
+     }
+diff --git a/public/mod/assign/templates/grading_actionmenu.mustache b/public/mod/assign/templates/grading_actionmenu.mustache
+index 2f32900a1cb491f017aec58c573b00d51f477063..460f8691b96702cfd6df6595b3548b5cf7ebed45 100644
+--- a/public/mod/assign/templates/grading_actionmenu.mustache
++++ b/public/mod/assign/templates/grading_actionmenu.mustache
+@@ -55,7 +55,6 @@
+         "extrafiltersdropdown": "<div class='dropdown extrafilters'></div>",
+         "pagereset": "http://moodle.local/mod/assign/view.php?id=2&action=grading&group=0",
+         "graderurl": "http://moodle.local/mod/assign/view.php?id=2&action=grader",
+-        "markerurl": "http://moodle.local/mod/assign/view.php?id=2&action=marker",
+         "quickgrading": {
+             "baseurl": "http://moodle.local/mod/assign/view.php?id=2&action=grading",
+             "enabled": true
+@@ -115,15 +114,10 @@
+             </div>
+             <div class="navitem-divider"></div>
+         {{/pagereset}}
+-        {{#markerurl}}
+-            <div class="navitem ms-sm-auto align-self-center">
+-                <a class="btn btn-primary text-nowrap" href="{{markerurl}}">{{#str}}markallocatedsubmissions, mod_assign{{/str}}</a>
+-            </div>
+-        {{/markerurl}}
+         {{#graderurl}}
+-            <div class="navitem {{^markerurl}}ms-sm-auto{{/markerurl}} align-self-center">
+-                <a class="btn btn-primary" href="{{graderurl}}">{{#str}}gradeverb, core{{/str}}</a>
+-            </div>
++        <div class="navitem ms-sm-auto align-self-center">
++            <a class="btn btn-primary" href="{{graderurl}}">{{#str}}gradeverb, core{{/str}}</a>
++        </div>
+         {{/graderurl}}
+     </div>
+ </div>
+diff --git a/public/mod/assign/templates/submission_actionmenu.mustache b/public/mod/assign/templates/submission_actionmenu.mustache
+index da65dbc345d72dee8ad52d8d1b9b74b12b9ceca2..f77fcd98478cb98c10d851099eb134e67a512dd9 100644
+--- a/public/mod/assign/templates/submission_actionmenu.mustache
++++ b/public/mod/assign/templates/submission_actionmenu.mustache
+@@ -34,15 +34,15 @@
+ }}
+ <div class="container-fluid tertiary-navigation">
+     <div class="d-flex">
+-        {{#marklink}}
+-        <div class="navitem">
+-            <a class="btn btn-primary text-nowrap" href="{{marklink}}">{{#str}}markallocatedsubmissions, mod_assign{{/str}}</a>
+-        </div>
+-        {{/marklink}}
+         {{#gradelink}}
+         <div class="navitem">
+             <a class="btn btn-primary" href="{{gradelink}}">{{#str}}gradeverb, core{{/str}}</a>
+         </div>
+         {{/gradelink}}
++        {{#marklink}}
++        <div class="navitem">
++            <a class="btn btn-primary" href="{{marklink}}">{{#str}}markverb, mod_assign{{/str}}</a>
++        </div>
++        {{/marklink}}
+     </div>
+ </div>

@@ -1,0 +1,60 @@
+diff --git a/public/mod/assign/classes/notification_helper.php b/public/mod/assign/classes/notification_helper.php
+index df2fa5eea36e4944646d99e33f464ca8a81a0479..595156b7e7425f6ae5539996a888454b6e34d142 100644
+--- a/public/mod/assign/classes/notification_helper.php
++++ b/public/mod/assign/classes/notification_helper.php
+@@ -229,19 +229,6 @@ class notification_helper {
+         // Get our assignment users.
+         $users = $assignmentobj->list_participants(0, false, false, true);
+ 
+-        // If it's an overdue type and there are no submission plugins, skip the assignment.
+-        if ($type == self::TYPE_OVERDUE) {
+-            if (!$assignmentobj->is_any_submission_plugin_enabled()) {
+-                // No enabled submission plugins. Removing users.
+-                return [];
+-            }
+-        }
+-
+-        // Get completion info for this module.
+-        $cm = $assignmentobj->get_course_module();
+-        $course = $assignmentobj->get_course();
+-        $completion = new \completion_info($course);
+-
+         foreach ($users as $key => $user) {
+             // Exclude suspended users.
+             if ($user->suspended || ($user->auth == 'nologin')) {
+@@ -266,19 +253,6 @@ class notification_helper {
+                 continue;
+             }
+ 
+-            // Don't send if the user has a grade for this assignment already.
+-            if ($assignmentobj->get_grading_status($user->id) === ASSIGN_GRADING_STATUS_GRADED) {
+-                unset($users[$key]);
+-                continue;
+-            }
+-
+-            // Don't send if the user has met completion conditions.
+-            $completiondata = $completion->get_data($cm, false, $user->id);
+-            if ($completiondata && $completiondata->completionstate != COMPLETION_INCOMPLETE) {
+-                unset($users[$key]);
+-                continue;
+-            }
+-
+             // Perform some checks depending on the notification type.
+             $match = [];
+             $checksent = true;
+@@ -422,14 +396,10 @@ class notification_helper {
+             'url' => $url->out(false),
+             'subject' => get_string('assignmentduesoonsubject', 'mod_assign', $stringparams),
+             'assignmentname' => $stringparams['assignmentname'],
++            'html' => get_string('assignmentduesoonhtml', 'mod_assign', $stringparams),
+             'sms' => get_string('assignmentduesoonsms', 'mod_assign', $stringparams),
+         ];
+ 
+-        // Offline assignments will have a slightly different message.
+-        $messagedata['html'] = !$assignmentobj->is_any_submission_plugin_enabled()
+-            ? get_string('assignmentduesoonofflinehtml', 'mod_assign', $stringparams)
+-            : get_string('assignmentduesoonhtml', 'mod_assign', $stringparams);
+-
+         $message = new \core\message\message();
+         $message->component = 'mod_assign';
+         $message->name = self::TYPE_DUE_SOON;

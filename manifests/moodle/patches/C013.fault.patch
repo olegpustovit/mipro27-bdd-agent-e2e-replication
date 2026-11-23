@@ -1,0 +1,27 @@
+diff --git a/public/mod/assign/amd/src/actionbar/grading/extra_filters_dropdown.js b/public/mod/assign/amd/src/actionbar/grading/extra_filters_dropdown.js
+index f010ae6a2f830c5923cb07594cb3a0ce39acf4a2..5d31c52a31f6c5e46d5bbdc2ddc1c09470047799 100644
+--- a/public/mod/assign/amd/src/actionbar/grading/extra_filters_dropdown.js
++++ b/public/mod/assign/amd/src/actionbar/grading/extra_filters_dropdown.js
+@@ -78,10 +78,9 @@ const registerEventListeners = (extraFiltersDropdown) => {
+  * @param {DropdownDialog} extraFiltersDropdown The dropdown dialog instance.
+  */
+ const restoreAppliedWorkflowFilter = async(extraFiltersDropdown) => {
++    const appliedWorkflowFilter = await getUserPreference('assign_workflowfilter');
+     const workflowFilterSelect = extraFiltersDropdown.getElement().querySelector(Selectors.workflowFilterElement);
+-    if (workflowFilterSelect) {
+-        workflowFilterSelect.value = await getUserPreference('assign_workflowfilter');
+-    }
++    workflowFilterSelect.value = appliedWorkflowFilter;
+ };
+ 
+ /**
+@@ -92,7 +91,8 @@ const restoreAppliedWorkflowFilter = async(extraFiltersDropdown) => {
+ const restoreAppliedMarkerFilter = async(extraFiltersDropdown) => {
+     const markerFilterSelect = extraFiltersDropdown.getElement().querySelector(Selectors.markerFilterElement);
+     if (markerFilterSelect) {
+-        markerFilterSelect.value = await getUserPreference('assign_markerfilter');
++        const appliedMarkerFilter = await getUserPreference('assign_markerfilter');
++        markerFilterSelect.value = appliedMarkerFilter;
+     }
+ };
+ 

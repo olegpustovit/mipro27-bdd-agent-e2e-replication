@@ -1,0 +1,138 @@
+diff --git a/public/blocks/accessreview/tests/behat/accessreview.feature b/public/blocks/accessreview/tests/behat/accessreview.feature
+index 090620e0f85efa635f2e0b4710f6f5dc24a5c498..c56a5ec178d7c2a6730d48f24e65cd0c33836d6d 100644
+--- a/public/blocks/accessreview/tests/behat/accessreview.feature
++++ b/public/blocks/accessreview/tests/behat/accessreview.feature
+@@ -24,9 +24,9 @@ Feature: Block accessreview
+     When I add the "Accessibility review" block
+     Then I should see "Accessibility review"
+     And I should see "Your accessibility toolkit needs to be registered."
+-    And I click on "Actions menu" "menuitem" in the "Accessibility review" "block"
++    And I click on "Actions menu" "icon" in the "Accessibility review" "block"
+     And I follow "Hide Accessibility review block"
+     And I should not see "Your accessibility toolkit needs to be registered."
+-    And I click on "Actions menu" "menuitem" in the "Accessibility review" "block"
++    And I click on "Actions menu" "icon" in the "Accessibility review" "block"
+     And I follow "Show Accessibility review block"
+     And I should see "Your accessibility toolkit needs to be registered."
+diff --git a/public/mod/data/preset/imagegallery/tests/behat/imagegallery_preset.feature b/public/mod/data/preset/imagegallery/tests/behat/imagegallery_preset.feature
+index f6552e8994831096e5c8ced345e9025ee9fffa10..3df65bea14b5ca3b0236f75181604323bdd0900a 100644
+--- a/public/mod/data/preset/imagegallery/tests/behat/imagegallery_preset.feature
++++ b/public/mod/data/preset/imagegallery/tests/behat/imagegallery_preset.feature
+@@ -32,7 +32,7 @@ Feature: Users can use the Image gallery preset
+     And I should not see "first.png"
+     And I should not see "Alice Student" in the "#imagegallery-list" "css_element"
+     And "//a/child::img[contains(@src, 'first.png')]" "xpath_element" should exist
+-    And "Actions" "button" should exist in the "#imagegallery-list" "css_element"
++    And "Actions" "icon" should exist in the "#imagegallery-list" "css_element"
+     And I should see "Second image"
+     And I should not see "And this is the description text for image 2"
+     And I should not see "second.png"
+@@ -44,7 +44,7 @@ Feature: Users can use the Image gallery preset
+     And I should see "Alice Student" in the ".imagegallery-single" "css_element"
+     And I should see "This is the description text for image 1"
+     And "//a/child::img[contains(@src, 'first.png')]" "xpath_element" should exist
+-    And "Actions" "button" should exist in the ".imagegallery-single" "css_element"
++    And "Actions" "icon" should exist in the ".imagegallery-single" "css_element"
+     And I should not see "Second image"
+     And I should not see "And this is the description text for image 2"
+     And I should not see "Pau Teacher"
+@@ -55,7 +55,7 @@ Feature: Users can use the Image gallery preset
+     And I should see "And this is the description text for image 2"
+     And "//a/child::img[contains(@src, 'second.png')]" "xpath_element" should exist
+     # This student can't edit or delete this entry, so the Actions menu shouldn't be displayed.
+-    And "Actions" "button" should not exist in the ".imagegallery-single" "css_element"
++    And "Actions" "icon" should not exist in the ".imagegallery-single" "css_element"
+     And I should not see "First image"
+     And I should not see "Alice Student" in the ".imagegallery-single" "css_element"
+     And I should not see "This is the description text for image 1"
+diff --git a/public/mod/data/preset/journal/tests/behat/journal_preset.feature b/public/mod/data/preset/journal/tests/behat/journal_preset.feature
+index a243a53c5b1277395c1dc021d46a00d587dc045e..1c48c9eac16e1565d1ec3780ddeadcb257eea5e3 100644
+--- a/public/mod/data/preset/journal/tests/behat/journal_preset.feature
++++ b/public/mod/data/preset/journal/tests/behat/journal_preset.feature
+@@ -29,21 +29,21 @@ Feature: Users can use the Journal preset
+     When I am on the "Student reflections" "data activity" page logged in as student1
+     Then I should see "Reflection created by student"
+     And I should see "This is the content for the entry 1"
+-    And "Actions" "button" should exist in the "#journal-list" "css_element"
++    And "Actions" "icon" should exist in the "#journal-list" "css_element"
+     And I should see "Reflection created by teacher"
+     And I should see "And this is the content for the entry 2"
+     # Single view.
+     And I select "Single view" from the "jump" singleselect
+     And I should see "Reflection created by student"
+     And I should see "This is the content for the entry 1"
+-    And "Actions" "button" should exist in the ".journal-single" "css_element"
++    And "Actions" "icon" should exist in the ".journal-single" "css_element"
+     And I should not see "Reflection created by teacher"
+     And I should not see "And this is the content for the entry 2"
+     And I follow "Next"
+     And I should see "Reflection created by teacher"
+     And I should see "And this is the content for the entry 2"
+     # This student can't edit or delete this entry, so the Actions menu shouldn't be displayed.
+-    And "Actions" "button" should not exist in the ".journal-single" "css_element"
++    And "Actions" "icon" should not exist in the ".journal-single" "css_element"
+     And I should not see "Reflection created by student"
+     And I should not see "This is the content for the entry 1"
+ 
+diff --git a/public/mod/data/preset/proposals/tests/behat/proposals_preset.feature b/public/mod/data/preset/proposals/tests/behat/proposals_preset.feature
+index 51d6120f65a7662776b4efb0d13c01b3415a7b22..c5e91341ff33b357846d7d74bfad6f383ada8c99 100644
+--- a/public/mod/data/preset/proposals/tests/behat/proposals_preset.feature
++++ b/public/mod/data/preset/proposals/tests/behat/proposals_preset.feature
+@@ -29,7 +29,7 @@ Feature: Users can use the Proposals preset
+     When I am on the "Student projects" "data activity" page logged in as student1
+     Then I should see "Project created by student"
+     And "Summary 1" "text" should exist
+-    And "Actions" "button" should exist in the "#proposals-list" "css_element"
++    And "Actions" "icon" should exist in the "#proposals-list" "css_element"
+     And I should see "Project created by teacher"
+     And "Summary 2" "text" should exist
+     And I click on "Project created by student" "link"
+@@ -44,7 +44,7 @@ Feature: Users can use the Proposals preset
+     And I should see "Summary 1"
+     And I should see "Content for entry 1"
+     And I should see "Pending"
+-    And "Actions" "button" should exist in the ".proposals-single" "css_element"
++    And "Actions" "icon" should exist in the ".proposals-single" "css_element"
+     And I should not see "Project created by teacher"
+     And I should not see "Summary 2"
+     And I should not see "And content for entry 2"
+@@ -55,7 +55,7 @@ Feature: Users can use the Proposals preset
+     And I should see "And content for entry 2"
+     And I should see "Rejected"
+     # This student can't edit or delete this entry, so the Actions menu shouldn't be displayed.
+-    And "Actions" "button" should not exist in the ".proposals-single" "css_element"
++    And "Actions" "icon" should not exist in the ".proposals-single" "css_element"
+     And I should not see "Project created by student"
+     And I should not see "Summary 1"
+     And I should not see "Content for entry 1"
+diff --git a/public/mod/data/preset/resources/tests/behat/resources_preset.feature b/public/mod/data/preset/resources/tests/behat/resources_preset.feature
+index 6ef796b2b1278e61161f53d5dfe904fb523a6d1b..318fb8a6c8c584d61995d2ca8f39a2ebeb88d4ce 100644
+--- a/public/mod/data/preset/resources/tests/behat/resources_preset.feature
++++ b/public/mod/data/preset/resources/tests/behat/resources_preset.feature
+@@ -32,7 +32,7 @@ Feature: Users can use the Resources preset
+     And I should see "The book author"
+     And I should see "http://myfavouritebook.cat"
+     And I should not see "Book content"
+-    And "Actions" "button" should exist in the "#resources-list" "css_element"
++    And "Actions" "icon" should exist in the "#resources-list" "css_element"
+     And I should see "My favourite podcast"
+     And I should see "Type2"
+     And I should see "The podcast author"
+@@ -45,7 +45,7 @@ Feature: Users can use the Resources preset
+     And I should see "The book author"
+     And I should see "http://myfavouritebook.cat"
+     And I should see "Book content"
+-    And "Actions" "button" should exist in the ".resources-single" "css_element"
++    And "Actions" "icon" should exist in the ".resources-single" "css_element"
+     And I should not see "My favourite podcast"
+     And I should not see "Type2"
+     And I should not see "The podcast author"
+@@ -58,7 +58,7 @@ Feature: Users can use the Resources preset
+     And I should see "http://myfavouritepodcast.cat"
+     And I should see "Podcast content"
+     # This student can't edit or delete this entry, so the Actions menu shouldn't be displayed.
+-    And "Actions" "button" should not exist in the ".resources-single" "css_element"
++    And "Actions" "icon" should not exist in the ".resources-single" "css_element"
+     And I should not see "My favourite book"
+     And I should not see "Type1"
+     And I should not see "The book author"

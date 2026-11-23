@@ -1,0 +1,51 @@
+diff --git a/public/mod/assign/amd/src/grading_navigation.js b/public/mod/assign/amd/src/grading_navigation.js
+index 3b82db7dc3cec9970c55c7f4befe5e7579b82c20..381f7b6da2f681bc022f173b4e76723346a1979b 100644
+--- a/public/mod/assign/amd/src/grading_navigation.js
++++ b/public/mod/assign/amd/src/grading_navigation.js
+@@ -62,7 +62,6 @@ define(['jquery', 'core/notification', 'core/str', 'core/form-autocomplete',
+         this._region.find('[data-region="user-resettable"]').on('click', this._toggleResetTable.bind());
+ 
+         $(document).on('user-changed', this._refreshSelector.bind(this));
+-        $(document).on('reset-table', this._toggleResetTable.bind(this));
+         $(document).on('done-saving-show-next', this._handleNextUser.bind(this));
+ 
+         // Position the configure filters panel under the link that expands it.
+@@ -161,9 +160,6 @@ define(['jquery', 'core/notification', 'core/str', 'core/form-autocomplete',
+             var configPanel = $(document.getElementById(toggleLink.attr('aria-controls')));
+ 
+             configPanel.find('select[name="filter"]').trigger('change');
+-
+-            $('[data-region="grade-panel"]').show();
+-            $('[data-region="grade-actions-panel"]').show();
+         } else {
+             this._selectNoUser();
+         }
+@@ -295,10 +291,6 @@ define(['jquery', 'core/notification', 'core/str', 'core/form-autocomplete',
+         if (this._isLoading) {
+             return;
+         }
+-
+-        $('[data-region="grade-panel"]').hide();
+-        $('[data-region="grade-actions-panel"]').hide();
+-
+         if (checker.checkFormForChanges('[data-region="grade-panel"] .gradeform')) {
+             // Form has changes, so we need to confirm before switching users.
+             str.get_strings([
+diff --git a/public/mod/assign/amd/src/grading_panel.js b/public/mod/assign/amd/src/grading_panel.js
+index d4be998793d0cc82d2d9cad2a203a928dc6e1899..fa01744271d2ee15c3a68583a875fdec20893a35 100644
+--- a/public/mod/assign/amd/src/grading_panel.js
++++ b/public/mod/assign/amd/src/grading_panel.js
+@@ -359,13 +359,6 @@ define([
+                         jsonformdata: JSON.stringify(submissiondata),
+                         marker: marker};
+                     fragment.loadFragment('mod_assign', 'gradingpanel', contextid, params).done(function(html, js) {
+-
+-                        // Reset whole grading page when there is a failure in retrieving the html
+-                        // i.e. user no longer under "requires grading" filter when graded
+-                        if (html === '') {
+-                            $(document).trigger('reset-table', true);
+-                        }
+-
+                         this._niceReplaceNodeContents(this._region, html, js)
+                         .done(function() {
+                             checker.saveFormState('[data-region="grade-panel"] .gradeform');

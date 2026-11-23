@@ -1,0 +1,41 @@
+diff --git a/public/user/classes/output/participants_filter.php b/public/user/classes/output/participants_filter.php
+index a43825bfc1682a463a9350fd9c11f9a0d29c9805..0ceb9fe4ab2e65b345db04dbe3f44a0a5667a935 100644
+--- a/public/user/classes/output/participants_filter.php
++++ b/public/user/classes/output/participants_filter.php
+@@ -237,17 +237,7 @@ class participants_filter extends \core\output\datafilter {
+             ];
+             $select = 'courseid = :courseid AND timeaccess != :timeaccess';
+             $minlastaccess = $DB->get_field_select('user_lastaccess', 'MIN(timeaccess)', $select, $params);
+-
+-            // Determine enrolled users, who do not have accompanying lastaccess to the course.
+-            [$enrolledsql, $enrolledparams] = get_enrolled_sql($this->context);
+-
+-            $sql = "SELECT 'x'
+-                     FROM {user} u
+-                     JOIN ({$enrolledsql}) je ON je.id = u.id
+-                LEFT JOIN {user_lastaccess} ula ON ula.userid = je.id AND ula.courseid = :courseid
+-                    WHERE COALESCE(ula.timeaccess, 0) = :timeaccess";
+-
+-            $lastaccess0exists = $DB->record_exists_sql($sql, array_merge($params, $enrolledparams));
++            $lastaccess0exists = $DB->record_exists('user_lastaccess', $params);
+         } else {
+             // Front page.
+             $params = ['lastaccess' => 0];
+@@ -257,6 +247,8 @@ class participants_filter extends \core\output\datafilter {
+         }
+ 
+         $now = usergetmidnight(time());
++        $timeoptions = [];
++        $criteria = get_string('usersnoaccesssince');
+ 
+         $getoptions = function(int $count, string $singletype, string $type) use ($now, $minlastaccess): array {
+             $values = [];
+@@ -290,7 +282,7 @@ class participants_filter extends \core\output\datafilter {
+ 
+         if ($lastaccess0exists) {
+             $values[] = [
+-                'value' => -1,
++                'value' => time(),
+                 'title' => get_string('never', 'moodle'),
+             ];
+         }

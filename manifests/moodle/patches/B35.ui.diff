@@ -1,0 +1,313 @@
+diff --git a/admin/renderer.php b/admin/renderer.php
+index fb4ce52452212a3ec7d11f8fe878f6832107cd7f..5ba612e10b1849ccbc2a41dcb96e1fbcb522dae3 100644
+--- a/admin/renderer.php
++++ b/admin/renderer.php
+@@ -1902,7 +1902,7 @@ class core_admin_renderer extends plugin_renderer_base {
+             get_string('status'),
+         );
+         $servertable->colclasses = array('centeralign name', 'centeralign info', 'leftalign report', 'leftalign plugin', 'centeralign status');
+-        $servertable->attributes['class'] = 'admintable environmenttable generaltable';
++        $servertable->attributes['class'] = 'admintable environmenttable generaltable table-sm';
+         $servertable->id = 'serverstatus';
+ 
+         $serverdata = array('ok'=>array(), 'warn'=>array(), 'error'=>array());
+@@ -1915,7 +1915,7 @@ class core_admin_renderer extends plugin_renderer_base {
+             get_string('status'),
+         );
+         $othertable->colclasses = array('aligncenter info', 'alignleft report', 'alignleft plugin', 'aligncenter status');
+-        $othertable->attributes['class'] = 'admintable environmenttable generaltable';
++        $othertable->attributes['class'] = 'admintable environmenttable generaltable table-sm';
+         $othertable->id = 'otherserverstatus';
+ 
+         $otherdata = array('ok'=>array(), 'warn'=>array(), 'error'=>array());
+diff --git a/admin/roles/classes/capability_table_base.php b/admin/roles/classes/capability_table_base.php
+index 2765659f8511753024aac1e0ccbf52b8b89b378a..ab45e085861e51c001c665e4135343d2035e87c0 100644
+--- a/admin/roles/classes/capability_table_base.php
++++ b/admin/roles/classes/capability_table_base.php
+@@ -43,7 +43,7 @@ abstract class core_role_capability_table_base {
+     protected $id;
+ 
+     /** Added to the class="" attribute on output. */
+-    protected $classes = array('rolecap');
++    protected $classes = array('rolecap table-hover');
+ 
+     /** Default number of capabilities in the table for the search UI to be shown. */
+     const NUM_CAPS_FOR_SEARCH = 12;
+diff --git a/admin/roles/classes/check_capability_table.php b/admin/roles/classes/check_capability_table.php
+index b716ae507473a220b073776886191de1f65359ff..99e8c2ea38cdf67035820359d1e1809f006e37fb 100644
+--- a/admin/roles/classes/check_capability_table.php
++++ b/admin/roles/classes/check_capability_table.php
+@@ -50,6 +50,7 @@ class core_role_check_capability_table extends core_role_capability_table_base {
+         $this->contextname = $contextname;
+         $this->stryes = get_string('yes');
+         $this->strno = get_string('no');
++        $this->add_classes(['table-striped']);
+     }
+ 
+     protected function add_header_cells() {
+diff --git a/admin/roles/classes/define_role_table_advanced.php b/admin/roles/classes/define_role_table_advanced.php
+index f4ab5625bb72fbad6537cd972d03f706d47c61ac..c0e3d8d5ab8af6d02c0c40fc102c29cab74f8959 100644
+--- a/admin/roles/classes/define_role_table_advanced.php
++++ b/admin/roles/classes/define_role_table_advanced.php
+@@ -55,6 +55,7 @@ class core_role_define_role_table_advanced extends core_role_capability_table_wi
+         foreach ($levels as $level => $classname) {
+             $this->allcontextlevels[$level] = context_helper::get_level_name($level);
+         }
++        $this->add_classes(['table-striped']);
+     }
+ 
+     protected function load_current_permissions() {
+diff --git a/admin/tool/capability/index.php b/admin/tool/capability/index.php
+index 57f071678c87cf224311501658e5cd5458c094ed..96a23d34f4ee78c2155e4aaca6cec488423d61a6 100644
+--- a/admin/tool/capability/index.php
++++ b/admin/tool/capability/index.php
+@@ -138,7 +138,7 @@ function print_report_tree($contextid, $contexts, $allroles) {
+     // If there are any role overrides here, print them.
+     if (!empty($contexts[$contextid]->rolecapabilities)) {
+         $rowcounter = 0;
+-        echo '<table class="generaltable rolecaps"><tbody>';
++        echo '<table class="generaltable table-striped"><tbody>';
+         foreach ($allroles as $role) {
+             if (isset($contexts[$contextid]->rolecapabilities[$role->id])) {
+                 $permission = $contexts[$contextid]->rolecapabilities[$role->id];
+diff --git a/admin/tool/xmldb/actions/main_view/main_view.class.php b/admin/tool/xmldb/actions/main_view/main_view.class.php
+index feef78ae00fbc24f89ff9595a81c8c3490711a2e..7a37f8eb1adea3659e01519f418f0231bd55ac7d 100644
+--- a/admin/tool/xmldb/actions/main_view/main_view.class.php
++++ b/admin/tool/xmldb/actions/main_view/main_view.class.php
+@@ -120,7 +120,8 @@ class main_view extends XMLDBAction {
+         $result = $this->launch('get_db_directories');
+         // Display list of DB directories if everything is ok
+         if ($result && !empty($XMLDB->dbdirs)) {
+-            $o .= '<table id="listdirectories" border="0" cellpadding="5" cellspacing="1" class="admintable generaltable">';
++            $o .= '<table id="listdirectories" border="0" cellpadding="5" cellspacing="1"' .
++                ' class="table-striped table-sm admintable generaltable">';
+             $row = 0;
+             foreach ($XMLDB->dbdirs as $key => $dbdir) {
+                 // Detect if this is the lastused dir
+diff --git a/admin/user.php b/admin/user.php
+index 216906ccf4d25ed8b00fbfa84b1df472fbf500e4..a06b2edc04720441838f099a410097de23a5af4c 100644
+--- a/admin/user.php
++++ b/admin/user.php
+@@ -300,7 +300,7 @@
+         $table->head = array ();
+         $table->colclasses = array();
+         $table->head[] = $fullnamedisplay;
+-        $table->attributes['class'] = 'admintable generaltable';
++        $table->attributes['class'] = 'admintable generaltable table-sm';
+         foreach ($extracolumns as $field) {
+             $table->head[] = ${$field};
+         }
+diff --git a/backup/util/ui/renderer.php b/backup/util/ui/renderer.php
+index 8caf01409778706edc2b806c129b27dc4c934d45..c53126092770b22b8d9bb7a568d12da64903a1c5 100644
+--- a/backup/util/ui/renderer.php
++++ b/backup/util/ui/renderer.php
+@@ -717,7 +717,7 @@ class core_backup_renderer extends plugin_renderer_base {
+         $url = $component->get_url();
+ 
+         $output = html_writer::start_tag('div', array('class' => 'restore-course-search form-inline mb-1'));
+-        $output .= html_writer::start_tag('div', array('class' => 'rcs-results w-75'));
++        $output .= html_writer::start_tag('div', array('class' => 'rcs-results table-sm w-75'));
+ 
+         $table = new html_table();
+         $table->head = array('', get_string('shortnamecourse'), get_string('fullnamecourse'));
+@@ -877,7 +877,7 @@ class core_backup_renderer extends plugin_renderer_base {
+         $url = $component->get_url();
+ 
+         $output = html_writer::start_tag('div', array('class' => 'restore-course-search form-inline mb-1'));
+-        $output .= html_writer::start_tag('div', array('class' => 'rcs-results w-75'));
++        $output .= html_writer::start_tag('div', array('class' => 'rcs-results table-sm w-75'));
+ 
+         $table = new html_table();
+         $table->head = array('', get_string('name'), get_string('description'));
+diff --git a/enrol/renderer.php b/enrol/renderer.php
+index bb88d11bce7d6005707e0be31652fccda9769f72..8c572d1ae309a05ba39875c1ce976b1324b2b194 100644
+--- a/enrol/renderer.php
++++ b/enrol/renderer.php
+@@ -370,7 +370,7 @@ class course_enrolment_table extends html_table implements renderable {
+         $this->sort           = optional_param(self::SORTVAR, self::DEFAULTSORT, PARAM_ALPHANUM);
+         $this->sortdirection  = optional_param(self::SORTDIRECTIONVAR, self::DEFAULTSORTDIRECTION, PARAM_ALPHA);
+ 
+-        $this->attributes = array('class'=>'userenrolment');
++        $this->attributes = array('class' => 'userenrolment table-striped');
+         if (!in_array($this->sort, self::$sortablefields)) {
+             $this->sort = self::DEFAULTSORT;
+         }
+diff --git a/lib/tablelib.php b/lib/tablelib.php
+index 81a944a308e3af38c079f801475e14285ed911f2..c1093c268c9a3ed8f85dd7b8ee75211cc36a3f7e 100644
+--- a/lib/tablelib.php
++++ b/lib/tablelib.php
+@@ -574,11 +574,11 @@ class flexible_table {
+ 
+         // Always introduce the "flexible" class for the table if not specified
+         if (empty($this->attributes)) {
+-            $this->attributes['class'] = 'flexible';
++            $this->attributes['class'] = 'flexible table table-striped table-hover';
+         } else if (!isset($this->attributes['class'])) {
+-            $this->attributes['class'] = 'flexible';
++            $this->attributes['class'] = 'flexible table table-striped table-hover';
+         } else if (!in_array('flexible', explode(' ', $this->attributes['class']))) {
+-            $this->attributes['class'] = trim('flexible ' . $this->attributes['class']);
++            $this->attributes['class'] = trim('flexible table table-striped table-hover ' . $this->attributes['class']);
+         }
+     }
+ 
+diff --git a/mod/workshop/renderer.php b/mod/workshop/renderer.php
+index 289b5e8ecf83eeb2792d55085507a860a462635f..350c8810ea3b7724c18746ca413b3d5bfef0000f 100644
+--- a/mod/workshop/renderer.php
++++ b/mod/workshop/renderer.php
+@@ -425,7 +425,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
+         }
+ 
+         $table = new html_table();
+-        $table->attributes['class'] = 'grading-report';
++        $table->attributes['class'] = 'grading-report table-striped table-hover';
+ 
+         $sortbyfirstname = $this->helper_sortable_heading(get_string('firstname'), 'firstname', $options->sortby, $options->sorthow);
+         $sortbylastname = $this->helper_sortable_heading(get_string('lastname'), 'lastname', $options->sortby, $options->sorthow);
+diff --git a/report/log/classes/table_log.php b/report/log/classes/table_log.php
+index 68c866b07bbe1426f87bc70256c7c535ca96434d..f65aabb8cb7b8336f112fd470b2db2366fa81491 100644
+--- a/report/log/classes/table_log.php
++++ b/report/log/classes/table_log.php
+@@ -59,7 +59,7 @@ class report_log_table_log extends table_sql {
+     public function __construct($uniqueid, $filterparams = null) {
+         parent::__construct($uniqueid);
+ 
+-        $this->set_attribute('class', 'reportlog generaltable generalbox');
++        $this->set_attribute('class', 'reportlog generaltable generalbox table-sm');
+         $this->filterparams = $filterparams;
+         // Add course column if logs are displayed for site.
+         $cols = array();
+diff --git a/report/loglive/classes/table_log.php b/report/loglive/classes/table_log.php
+index 848a5dd50dcde74ce3ffcaaf21e797869eff002a..798a801467aecfbead82d225830befa439f4638b 100644
+--- a/report/loglive/classes/table_log.php
++++ b/report/loglive/classes/table_log.php
+@@ -64,7 +64,7 @@ class report_loglive_table_log extends table_sql {
+     public function __construct($uniqueid, $filterparams = null) {
+         parent::__construct($uniqueid);
+ 
+-        $this->set_attribute('class', 'reportloglive generaltable generalbox');
++        $this->set_attribute('class', 'reportloglive generaltable table-sm');
+         $this->set_attribute('aria-live', 'polite');
+         $this->filterparams = $filterparams;
+         // Add course column if logs are displayed for site.
+diff --git a/theme/boost/scss/moodle.scss b/theme/boost/scss/moodle.scss
+index d79cd5a2e2d10d2f7420b90ecae8a0ffc807d8fe..fe534cdcb7496ef7f7bebb20b2623a05b903ea87 100644
+--- a/theme/boost/scss/moodle.scss
++++ b/theme/boost/scss/moodle.scss
+@@ -34,7 +34,6 @@ $breadcrumb-divider-rtl: "◀" !default;
+ @import "moodle/templates";
+ @import "moodle/undo";
+ @import "moodle/debug";
+-@import "moodle/expendable";
+ @import "moodle/sticky-footer";
+ @import "moodle/popover-region";
+ @import "moodle/tool_usertours";
+diff --git a/theme/boost/scss/moodle/expendable.scss b/theme/boost/scss/moodle/expendable.scss
+index def05bd56307b28520d0cc51cef6f842c0457302..7b608fabbe41b54500543731c33939fe142c11d3 100644
+--- a/theme/boost/scss/moodle/expendable.scss
++++ b/theme/boost/scss/moodle/expendable.scss
+@@ -1,15 +1,8 @@
+-table#explaincaps,
+-table#defineroletable,
+-table.grading-report,
+-table#listdirectories,
+-table.rolecaps,
+-table.userenrolment,
+-form#movecourses table,
+-#page-admin-course-index .editcourse,
+-.forumheaderlist,
+ table.flexible,
+ .generaltable {
+-    @extend .table-striped;
++    tbody tr:nth-of-type(#{$table-striped-order}) {
++        background-color: $table-accent-bg;
++    }
+ }
+ 
+ table {
+@@ -28,17 +21,23 @@ table {
+ #page-admin-user table,
+ .environmenttable,
+ .category_subcategories,
+-.rcs-results,
+-table#listdirectories {
+-    @extend .table-sm;
++.rcs-results {
++    th,
++    td {
++        padding: $table-cell-padding-sm;
++    }
+ }
+ 
+-table.grading-report,
+ .forumheaderlist,
+ .generaltable,
+ table.flexible,
+ .category_subcategories,
+ table#modules,
+ table#permissions {
+-    @extend .table-hover;
++    tbody tr {
++        @include hover {
++            color: $table-hover-color;
++            background-color: $table-hover-bg;
++        }
++    }
+ }
+diff --git a/theme/boost/scss/moodle/tables.scss b/theme/boost/scss/moodle/tables.scss
+index 24ab7f127cfc79e9cae0828ed510d7283cf3a071..d5e893959810790ef194c3a8d75f751b82aa9d87 100644
+--- a/theme/boost/scss/moodle/tables.scss
++++ b/theme/boost/scss/moodle/tables.scss
+@@ -1,6 +1,48 @@
+-table.flexible,
+ .generaltable {
+-    @extend .table;
++    width: 100%;
++    margin-bottom: $spacer;
++    color: $table-color;
++    background-color: $table-bg; // Reset for nesting within parents with `background-color`.
++
++    th,
++    td {
++        padding: $table-cell-padding;
++        vertical-align: top;
++        border-top: $table-border-width solid $table-border-color;
++    }
++
++    thead th {
++        vertical-align: bottom;
++        border-bottom: (2 * $table-border-width) solid $table-border-color;
++    }
++
++    tbody + tbody {
++        border-top: (2 * $table-border-width) solid $table-border-color;
++    }
++
++    tbody tr:nth-of-type(#{$table-striped-order}) {
++        background-color: $table-accent-bg;
++    }
++    &.table-sm {
++        th,
++        td {
++            padding: $table-cell-padding-sm;
++        }
++    }
++    tbody tr {
++        @include hover {
++            color: $table-hover-color;
++            background-color: $table-hover-bg;
++        }
++    }
++}
++
++table {
++    caption {
++        font-size: 24px;
++        font-weight: bold;
++        line-height: 42px;
++        text-align: left;
++        caption-side: top;
++    }
+ }
+-// fancier table styles moved to expendable.less
+-// to shift after 4096 selector break

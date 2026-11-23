@@ -1,0 +1,145 @@
+diff --git a/public/mod/quiz/classes/question/bank/preview_action_column.php b/public/mod/quiz/classes/question/bank/preview_action_column.php
+index 74261d6b3a921de56d340722d75bfb5d705efc8b..bb97e78ea615e5a7402eed716085e93dda9f0243 100644
+--- a/public/mod/quiz/classes/question/bank/preview_action_column.php
++++ b/public/mod/quiz/classes/question/bank/preview_action_column.php
+@@ -31,22 +31,14 @@ class preview_action_column extends \core_question\local\bank\column_base {
+         return ['iconcol'];
+     }
+ 
+-    #[\Override]
+     public function get_title(): string {
+         return '&#160;';
+     }
+ 
+-    #[\Override]
+     public function get_name() {
+         return 'previewquestionaction';
+     }
+ 
+-    #[\Override]
+-    public function get_default_width(): int {
+-        return 45;
+-    }
+-
+-    #[\Override]
+     protected function display_content($question, $rowclasses) {
+         global $PAGE;
+         if (!question_has_capability_on($question, 'use')) {
+diff --git a/public/mod/quiz/classes/question/bank/question_name_text_column.php b/public/mod/quiz/classes/question/bank/question_name_text_column.php
+index 5e7406d30357cbddecd540f57383863b0299de84..b9f2e7c8055b8d5086f3ef54440379f37c93a20b 100644
+--- a/public/mod/quiz/classes/question/bank/question_name_text_column.php
++++ b/public/mod/quiz/classes/question/bank/question_name_text_column.php
+@@ -27,18 +27,10 @@ namespace mod_quiz\question\bank;
+  */
+ class question_name_text_column extends question_name_column {
+ 
+-    #[\Override]
+     public function get_name(): string {
+         return 'questionnametext';
+     }
+ 
+-    #[\Override]
+-    public function get_default_width(): int {
+-        // In the places this is used, this seems to make it use all the available space, without overflowing.
+-        return 800;
+-    }
+-
+-    #[\Override]
+     protected function display_content($question, $rowclasses): void {
+         echo \html_writer::start_tag('div');
+         $labelfor = $this->label_for($question);
+@@ -53,7 +45,6 @@ class question_name_text_column extends question_name_column {
+         echo \html_writer::end_tag('div');
+     }
+ 
+-    #[\Override]
+     public function get_required_fields(): array {
+         $fields = parent::get_required_fields();
+         $fields[] = 'q.questiontext';
+@@ -62,7 +53,6 @@ class question_name_text_column extends question_name_column {
+         return $fields;
+     }
+ 
+-    #[\Override]
+     public function load_additional_data(array $questions) {
+         parent::load_additional_data($questions);
+         parent::load_question_tags($questions);
+diff --git a/public/mod/quiz/classes/question/bank/random_question_view.php b/public/mod/quiz/classes/question/bank/random_question_view.php
+index 19c5a4ddead0a07e45f265d25565cc22fccde760..57bfb70ff6aaa0cb122eb8c6e95a69ec3ab4192f 100644
+--- a/public/mod/quiz/classes/question/bank/random_question_view.php
++++ b/public/mod/quiz/classes/question/bank/random_question_view.php
+@@ -16,8 +16,6 @@
+ 
+ namespace mod_quiz\question\bank;
+ 
+-use qbank_viewquestiontype\question_type_column;
+-
+ /**
+  * Subclass to customise the view of the question bank for the quiz editing screen.
+  *
+@@ -27,16 +25,24 @@ use qbank_viewquestiontype\question_type_column;
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class random_question_view extends custom_view {
+-    #[\Override]
+-    protected function get_question_bank_plugins(): array {
+-        return [
+-            new question_type_column($this),
+-            new question_name_text_column($this),
+-            new preview_action_column($this),
++    /**
++     * Init required columns.
++     *
++     * @return void
++     */
++    protected function init_required_columns(): void {
++        // Override core columns.
++        $this->corequestionbankcolumns = [
++            'question_type_column',
++            'question_name_text_column',
++            'preview_action_column'
+         ];
+     }
+ 
+-    #[\Override]
++    /**
++     * Prints the table of questions in a category with interactions
++     *
++     * @param \context $catcontext*/
+     protected function display_bottom_controls(\context $catcontext): void {
+     }
+ }
+diff --git a/public/theme/boost/scss/moodle/question.scss b/public/theme/boost/scss/moodle/question.scss
+index 32ee5423d95968ae91e7e0966b571e8a6ac74d3b..43fb69034ec23f699d4ebe1ecefa7fa10bd65977 100644
+--- a/public/theme/boost/scss/moodle/question.scss
++++ b/public/theme/boost/scss/moodle/question.scss
+@@ -154,7 +154,12 @@ table.question-bank-table {
+     table-layout: fixed;
+     overflow-x: scroll;
+     width: min-content;
+-    max-width: 100%;
++
++    td,
++    th {
++        max-width: 40vw;
++        width: max-content;
++    }
+ 
+     th {
+         text-align: left;
+@@ -612,6 +617,15 @@ body.jsenabled .questionflag input[type=checkbox] {
+     }
+ }
+ 
++@include media-breakpoint-down(md) {
++    .question-bank-table {
++        td,
++        th {
++            max-width: 75vw;
++        }
++    }
++}
++
+ #page-mod-quiz-edit .questionbankwindow div.header .title {
+     color: var(--#{$prefix}body-color);
+ }

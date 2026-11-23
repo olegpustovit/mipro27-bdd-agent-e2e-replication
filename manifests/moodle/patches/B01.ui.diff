@@ -1,0 +1,112 @@
+diff --git a/public/lang/en/search.php b/public/lang/en/search.php
+index 540b6184b05d3f25e2b393ffd695ecaf2be51795..8c01e8f07e1de5d4360e0108228cf669c765e218 100644
+--- a/public/lang/en/search.php
++++ b/public/lang/en/search.php
+@@ -98,6 +98,7 @@ $string['optimize'] = 'Optimize';
+ $string['order'] = 'Results order';
+ $string['order_location'] = 'Prioritise results related to {$a}';
+ $string['order_relevance'] = 'Most relevant results first';
++$string['performsearch'] = 'Perform search';
+ $string['priority'] = 'Priority';
+ $string['priority_reindexing'] = 'Reindexing';
+ $string['priority_normal'] = 'Normal';
+@@ -126,6 +127,7 @@ $string['searchnotpermitted'] = 'You are not allowed to do a search';
+ $string['searchsetupdescription'] = 'The following steps help you to set up Moodle global search.';
+ $string['searchwithin'] = 'Search within';
+ $string['seconds'] = 'seconds';
++$string['sitewidesearch'] = 'Sitewide search';
+ $string['solutions'] = 'Solutions';
+ $string['statistics'] = 'Statistics';
+ $string['step'] = 'Step';
+diff --git a/public/lib/classes/output/core_renderer.php b/public/lib/classes/output/core_renderer.php
+index d3a81dfec41f9f1d71c7363215dda7c1a3d49010..d4b87f91953ad7c54db97fb643917bd2982717da 100644
+--- a/public/lib/classes/output/core_renderer.php
++++ b/public/lib/classes/output/core_renderer.php
+@@ -3061,7 +3061,8 @@ EOD;
+             'hiddenfields' => (object) ['name' => 'context', 'value' => $this->page->context->id],
+             'inputname' => 'q',
+             'searchstring' => get_string('search'),
+-            ];
++            'grouplabel' => get_string('sitewidesearch', 'search'),
++        ];
+         return $this->render_from_template('core/search_input_navbar', $data);
+     }
+ 
+diff --git a/public/lib/templates/search_input_navbar.mustache b/public/lib/templates/search_input_navbar.mustache
+index 5cb12a747c6b758bb7089ce25c6a20c13ee95fad..9605da5b76b62fc4376a08bf8b7255f14678e58a 100644
+--- a/public/lib/templates/search_input_navbar.mustache
++++ b/public/lib/templates/search_input_navbar.mustache
+@@ -38,8 +38,10 @@
+             {{#hiddenfields}}
+                 <input type="hidden" name="{{ name }}" value="{{ value }}">
+             {{/hiddenfields}}
+-            <div class="input-group">
+-
++            <div class="input-group" {{#grouplabel}}role="group" aria-labelledby="searchgrouplabel-{{uniqid}}"{{/grouplabel}}>
++                {{#grouplabel}}
++                    <span id="searchgrouplabel-{{uniqid}}" class="visually-hidden">{{{ . }}}</span>
++                {{/grouplabel}}
+                 <input type="text"
+                     id="searchinput-{{uniqid}}"
+                     class="form-control withclear"
+@@ -57,12 +59,13 @@
+                     data-bs-toggle="collapse"
+                     href="#searchform-navbar"
+                     role="button"
++                    title="{{#str}} closebuttontitle {{/str}}"
+                 >
+                     <span class="visually-hidden">{{#str}} closebuttontitle {{/str}}</span>
+                 </a>
+-                <button type="submit" class="btn btn-submit" data-action="submit">
++                <button type="submit" class="btn btn-submit" data-action="submit" title="{{#str}}performsearch, search{{/str}}">
+                     {{#pix}} a/search, core {{/pix}}
+-                    <span class="visually-hidden">{{{ searchstring }}}</span>
++                    <span class="visually-hidden">{{#str}}performsearch, search{{/str}}</span>
+                 </button>
+             </div>
+         </form>
+diff --git a/public/message/templates/message_drawer_view_overview_header.mustache b/public/message/templates/message_drawer_view_overview_header.mustache
+index 8a8dfede24c5f6e5f5cc5ff97486eacef1a503d2..ea6f24a0dfce0358bbcc68dbf1ab62d9fbdf3219 100644
+--- a/public/message/templates/message_drawer_view_overview_header.mustache
++++ b/public/message/templates/message_drawer_view_overview_header.mustache
+@@ -35,7 +35,8 @@
+ }}
+ <div class="border-bottom p-1 px-sm-2" aria-hidden="false" {{^isdrawer}}data-in-panel="true"{{/isdrawer}} data-region="view-overview">
+     <div class="d-flex align-items-center">
+-        <div class="input-group simplesearchform">
++        <div class="input-group simplesearchform" role="group" aria-labelledby="messageoverviewgrouplabel">
++            <span class="visually-hidden" id="messageoverviewgrouplabel">{{#str}}searchcombined, message{{/str}}</span>
+             <input
+                 type="text"
+                 class="form-control"
+diff --git a/public/message/templates/message_drawer_view_search_header.mustache b/public/message/templates/message_drawer_view_search_header.mustache
+index 40071f33a61bd78e9816d460d25f50bd56314672..8b6657cd9346c4a50475ff9475915898dc0f9e7e 100644
+--- a/public/message/templates/message_drawer_view_search_header.mustache
++++ b/public/message/templates/message_drawer_view_search_header.mustache
+@@ -45,7 +45,8 @@
+         >
+             {{> core_message/message_drawer_icon_back }}
+         </a>
+-        <div class="input-group simplesearchform">
++        <div class="input-group simplesearchform" role="group" aria-labelledby="messagesearchgrouplabel">
++            <span class="visually-hidden" id="messagesearchgrouplabel">{{#str}}searchcombined, message{{/str}}</span>
+             <input
+                 type="text"
+                 class="form-control"
+@@ -57,7 +58,8 @@
+                 class="btn btn-submit icon-no-margin"
+                 type="button"
+                 data-action="search"
+-                aria-label="{{#str}} search, core_search {{/str}}"
++                aria-label="{{#str}} performsearch, core_search {{/str}}"
++                title="{{#str}} performsearch, core_search {{/str}}"
+             >
+                 <span data-region="search-icon-container">
+                     {{#pix}} a/search, core {{/pix}}
+@@ -68,4 +70,4 @@
+             </button>
+         </div>
+     </div>
+-</div>
+\ No newline at end of file
++</div>

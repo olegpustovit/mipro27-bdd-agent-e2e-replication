@@ -1,0 +1,57 @@
+diff --git a/public/mod/quiz/amd/src/searchwidget/user.js b/public/mod/quiz/amd/src/searchwidget/user.js
+index 7dba6b18ebdbe8b4e18e64a4185e4b5ac59c890e..563c4f05ba5a2fbc18a00dbb3d4d5a9769f86fd2 100644
+--- a/public/mod/quiz/amd/src/searchwidget/user.js
++++ b/public/mod/quiz/amd/src/searchwidget/user.js
+@@ -23,6 +23,7 @@
+ import UserSearch from 'core_user/comboboxsearch/user';
+ import Url from 'core/url';
+ import * as Repository from 'mod_quiz/searchwidget/repository';
++import {getStrings} from 'core/str';
+ 
+ export default class QuizUserSearch extends UserSearch {
+ 
+@@ -48,10 +49,12 @@ export default class QuizUserSearch extends UserSearch {
+         // Await the user fetch request
+         const r = await Repository.userFetch(params);
+ 
+-        // The server already resolves the human-readable label for each field (including
+-        // custom profile fields), so map extrafields to their matching extrafieldsdisplay entry.
++        // Await the result of getStrings
++        const stringArray = await getStrings(r.extrafields.map((key) => ({key})));
++
++        // Map the extrafields to profilestringmap
+         this.profilestringmap = new Map(
+-            r.extrafields.map((key, index) => ([key, r.extrafieldsdisplay[index]]))
++            r.extrafields.map((key, index) => ([key, stringArray[index]]))
+         );
+ 
+         // Return r.users as the final result
+diff --git a/public/mod/quiz/classes/external/get_users_in_report.php b/public/mod/quiz/classes/external/get_users_in_report.php
+index b121288774a50474e9a5c9198ba2194831e27c5c..74bf72596af7142f1c63a36fb95d91ad9649c739 100644
+--- a/public/mod/quiz/classes/external/get_users_in_report.php
++++ b/public/mod/quiz/classes/external/get_users_in_report.php
+@@ -150,14 +150,8 @@ class get_users_in_report extends external_api {
+         // We don't want the filter to strip out the picture field and other name fields,
+         // since we already have the full name field.
+         $allowfields = array_merge(['fullname'], $userfieldsapi->get_required_fields([\core_user\fields::PURPOSE_IDENTITY]));
+-        // Resolve the display name label for each field here.
+-        $extrafieldsdisplay = array_map(
+-            fn($field) => \core_user\fields::get_display_name($field),
+-            $allowfields
+-        );
+         return [
+             'extrafields' => $allowfields,
+-            'extrafieldsdisplay' => $extrafieldsdisplay,
+             'users' => $users,
+             'warnings' => $warnings,
+         ];
+@@ -177,9 +171,6 @@ class get_users_in_report extends external_api {
+ 
+         return new external_single_structure([
+             'extrafields' => new external_multiple_structure(new external_value(PARAM_RAW, 'List of extra fields')),
+-            'extrafieldsdisplay' => new external_multiple_structure(
+-                new external_value(PARAM_RAW, 'Display name label for the extra field at the same index')
+-            ),
+             'users' => new external_multiple_structure(core_user_external::user_description($additionalfields)),
+             'warnings' => new external_warnings(),
+         ]);

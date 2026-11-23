@@ -1,0 +1,41 @@
+diff --git a/public/user/calendar.php b/public/user/calendar.php
+index 191133ae2fcffa3ff102f7eeb51ab0803fc91ae7..79f28c9e87640780460b1b45e9674c5b782ca97c 100644
+--- a/public/user/calendar.php
++++ b/public/user/calendar.php
+@@ -45,12 +45,11 @@ if (isset($CFG->calendar_maxevents)) {
+ // Create form.
+ $calendarform = new core_user\form\calendar_form(null, array('userid' => $user->id));
+ 
+-$user->timeformat = get_user_preferences('calendar_timeformat', '', $user);
+-$user->startwday  = get_user_preferences('calendar_startwday', calendar_get_starting_weekday(), $user);
+-$user->maxevents  = get_user_preferences('calendar_maxevents', $defaultmaxevents, $user);
+-$user->lookahead  = get_user_preferences('calendar_lookahead', $defaultlookahead, $user);
+-$user->persistflt = get_user_preferences('calendar_persistflt', 0, $user);
+-
++$user->timeformat = get_user_preferences('calendar_timeformat', '');
++$user->startwday  = calendar_get_starting_weekday();
++$user->maxevents  = get_user_preferences('calendar_maxevents', $defaultmaxevents);
++$user->lookahead  = get_user_preferences('calendar_lookahead', $defaultlookahead);
++$user->persistflt = get_user_preferences('calendar_persistflt', 0);
+ $calendarform->set_data($user);
+ 
+ $redirect = new moodle_url("/user/preferences.php", array('userid' => $user->id));
+@@ -59,14 +58,14 @@ if ($calendarform->is_cancelled()) {
+ } else if ($calendarform->is_submitted() && $calendarform->is_validated() && confirm_sesskey()) {
+     $data = $calendarform->get_data();
+ 
+-    useredit_update_user_preference([
+-        'id' => $user->id,
++    $usernew = ['id' => $USER->id,
+         'preference_calendar_timeformat' => $data->timeformat,
+         'preference_calendar_startwday' => $data->startwday,
+         'preference_calendar_maxevents' => $data->maxevents,
+         'preference_calendar_lookahead' => $data->lookahead,
+-        'preference_calendar_persistflt' => $data->persistflt,
+-    ]);
++        'preference_calendar_persistflt' => $data->persistflt
++    ];
++    useredit_update_user_preference($usernew);
+ 
+     // Calendar type.
+     $calendartype = $data->calendartype;

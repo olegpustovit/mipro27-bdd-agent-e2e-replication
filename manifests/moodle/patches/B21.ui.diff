@@ -1,0 +1,122 @@
+diff --git a/lib/amd/src/form-autocomplete.js b/lib/amd/src/form-autocomplete.js
+index 0a0fa54eadd4eece2f4e4fc523124754b545c943..53dd4bc9e071820b20abbc6987f9389606a6abbd 100644
+--- a/lib/amd/src/form-autocomplete.js
++++ b/lib/amd/src/form-autocomplete.js
+@@ -1102,26 +1102,24 @@ define([
+             return pendingPromise;
+     };
+ 
+-    return {
+-        // Public variables and functions.
+-        /**
+-         * Turn a boring select box into an auto-complete beast.
+-         *
+-         * @method enhance
+-         * @param {string} selector The selector that identifies the select box.
+-         * @param {boolean} tags Whether to allow support for tags (can define new entries).
+-         * @param {string} ajax Name of an AMD module to handle ajax requests. If specified, the AMD
+-         *                      module must expose 2 functions "transport" and "processResults".
+-         *                      These are modeled on Select2 see: https://select2.github.io/options.html#ajax
+-         * @param {String|Promise<string>} placeholder - The text to display before a selection is made.
+-         * @param {Boolean} caseSensitive - If search has to be made case sensitive.
+-         * @param {Boolean} showSuggestions - If suggestions should be shown
+-         * @param {String|Promise<string>} noSelectionString - Text to display when there is no selection
+-         * @param {Boolean} closeSuggestionsOnSelect - Whether to close the suggestions immediately after making a selection.
+-         * @param {Object} templateOverrides A set of templates to use instead of the standard templates
+-         * @return {Promise}
+-         */
+-        enhance: async function(selector, tags, ajax, placeholder, caseSensitive, showSuggestions, noSelectionString,
++    /**
++     * Turn a boring select box into an auto-complete beast.
++     *
++     * @method enhanceField
++     * @param {string} selector The selector that identifies the select box.
++     * @param {boolean} tags Whether to allow support for tags (can define new entries).
++     * @param {string} ajax Name of an AMD module to handle ajax requests. If specified, the AMD
++     *                      module must expose 2 functions "transport" and "processResults".
++     *                      These are modeled on Select2 see: https://select2.github.io/options.html#ajax
++     * @param {String|Promise<string>} placeholder - The text to display before a selection is made.
++     * @param {Boolean} caseSensitive - If search has to be made case sensitive.
++     * @param {Boolean} showSuggestions - If suggestions should be shown
++     * @param {String|Promise<string>} noSelectionString - Text to display when there is no selection
++     * @param {Boolean} closeSuggestionsOnSelect - Whether to close the suggestions immediately after making a selection.
++     * @param {Object} templateOverrides A set of templates to use instead of the standard templates
++     * @return {Promise}
++     */
++     var enhanceField = async function(selector, tags, ajax, placeholder, caseSensitive, showSuggestions, noSelectionString,
+                           closeSuggestionsOnSelect, templateOverrides) {
+             // Set some default values.
+             var options = {
+@@ -1239,8 +1237,8 @@ define([
+                 return $(html);
+             });
+ 
+-            return $.when(renderLayout, renderInput, renderDatalist, renderSelection)
+-            .then(function(layout, input, suggestions, selection) {
++            return Promise.all([renderLayout, renderInput, renderDatalist, renderSelection])
++            .then(function([layout, input, suggestions, selection]) {
+                 originalSelect.hide();
+                 var container = originalSelect.parent();
+ 
+@@ -1277,6 +1275,20 @@ define([
+                 M.util.js_complete(pendingKey);
+                 notification.exception(error);
+             });
++    };
++
++    return {
++        // Public variables and functions.
++        enhanceField: enhanceField,
++
++        /**
++         * We need to use jQuery here as some calling code uses .done() and .fail() rather than native .then() and .catch()
++         *
++         * @method enhance
++         * @return {Promise} A jQuery promise
++         */
++        enhance: function() {
++            return $.when(enhanceField(...arguments));
+         }
+     };
+ });
+diff --git a/lib/form/upgrade.txt b/lib/form/upgrade.txt
+index dcbaeee2a8b149f4d5870e957943179834a3ef38..bc43b963b547a28f14d552f8e3822e8a9c8a6ec4 100644
+--- a/lib/form/upgrade.txt
++++ b/lib/form/upgrade.txt
+@@ -5,6 +5,8 @@ information provided here is intended especially for developers.
+ 
+ * Now autocomplete suggestions will preserve classes defined in respective original "option" elements
+   Alongside with that new ".suggestions-heading" class was added to easily generate suggestion headings
++* The `core/form-autocomplete` module now exports an `enhanceField` method to return native promise (of
++  which the previous `enhance` is now a wrapper of, while preserving jQuery promise return)
+ 
+ === 4.3 ===
+ 
+diff --git a/reportbuilder/amd/src/local/editor/conditions.js b/reportbuilder/amd/src/local/editor/conditions.js
+index 29afced0f19ff7da67ee650f26d728cffcc999d6..e8de97b49561e838992d6febf78c14b300ac973a 100644
+--- a/reportbuilder/amd/src/local/editor/conditions.js
++++ b/reportbuilder/amd/src/local/editor/conditions.js
+@@ -73,7 +73,8 @@ const initConditionsForm = () => {
+ 
+     // Enhance condition selector.
+     const reportAddCondition = reportElement.querySelector(reportSelectors.actions.reportAddCondition);
+-    AutoComplete.enhance(reportAddCondition, false, '', getString('selectacondition', 'core_reportbuilder'));
++    AutoComplete.enhanceField(reportAddCondition, false, '', getString('selectacondition', 'core_reportbuilder'))
++        .catch(Notification.exception);
+ 
+     // Handle dynamic conditions form.
+     const conditionFormContainer = reportElement.querySelector(reportSelectors.regions.settingsConditions);
+diff --git a/reportbuilder/amd/src/local/editor/filters.js b/reportbuilder/amd/src/local/editor/filters.js
+index 2e68abf6458e0b18e22c1f2d5ba2e6f33d290771..a3550be8a3ea16825030a950513ee00d67a1eecc 100644
+--- a/reportbuilder/amd/src/local/editor/filters.js
++++ b/reportbuilder/amd/src/local/editor/filters.js
+@@ -69,7 +69,8 @@ const initFiltersForm = () => {
+ 
+     // Enhance filter selector.
+     const reportAddFilter = reportElement.querySelector(reportSelectors.actions.reportAddFilter);
+-    AutoComplete.enhance(reportAddFilter, false, '', getString('selectafilter', 'core_reportbuilder'));
++    AutoComplete.enhanceField(reportAddFilter, false, '', getString('selectafilter', 'core_reportbuilder'))
++        .catch(Notification.exception);
+ };
+ 
+ /**

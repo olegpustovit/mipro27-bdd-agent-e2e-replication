@@ -1,0 +1,54 @@
+diff --git a/public/mod/assign/classes/notification_helper.php b/public/mod/assign/classes/notification_helper.php
+index df2fa5eea36e4944646d99e33f464ca8a81a0479..35a22cb0383083ebfb6d2db5343a759b44eae7a6 100644
+--- a/public/mod/assign/classes/notification_helper.php
++++ b/public/mod/assign/classes/notification_helper.php
+@@ -227,7 +227,7 @@ class notification_helper {
+         $assignmentobj = self::get_assignment_data($assignmentid);
+ 
+         // Get our assignment users.
+-        $users = $assignmentobj->list_participants(0, false, false, true);
++        $users = $assignmentobj->list_participants(0, true, false, true);
+ 
+         // If it's an overdue type and there are no submission plugins, skip the assignment.
+         if ($type == self::TYPE_OVERDUE) {
+@@ -243,12 +243,6 @@ class notification_helper {
+         $completion = new \completion_info($course);
+ 
+         foreach ($users as $key => $user) {
+-            // Exclude suspended users.
+-            if ($user->suspended || ($user->auth == 'nologin')) {
+-                unset($users[$key]);
+-                continue;
+-            }
+-
+             // Check if the user has submitted already.
+             $submission = $assignmentobj->get_user_submission($user->id, false);
+             if ($submission && $submission->status === ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
+@@ -339,12 +333,7 @@ class notification_helper {
+             }
+         }
+ 
+-        // Only the array key and user id field are required.
+-        $userids = [];
+-        foreach ($users as $key => $user) {
+-            $userids[$key] = (object) ['id' => $user->id];
+-        }
+-        return $userids;
++        return $users;
+     }
+ 
+     /**
+diff --git a/public/mod/assign/locallib.php b/public/mod/assign/locallib.php
+index b64e7f4f073ead6c09f68d1ae0e05f3c17b5c753..28e5f8a7c258689e0019e67632206aa01bf93762 100644
+--- a/public/mod/assign/locallib.php
++++ b/public/mod/assign/locallib.php
+@@ -2521,6 +2521,9 @@ class assign {
+                 }
+             }
+ 
++            // Exclude suspended users from the list of participants.
++            $additionalfilters .= " AND u.suspended = 0 AND u.auth <> 'nologin'";
++
+             $sql = "SELECT $fields
+                       FROM {user} u
+                       JOIN ($esql UNION $ssql) je ON je.id = u.id

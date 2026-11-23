@@ -1,0 +1,36 @@
+diff --git a/public/lib/classes/formatting.php b/public/lib/classes/formatting.php
+index a84af40266131197afe40b92c37c69b7c437cae0..497ae67a1cca2aade7ff1663e7c117162572301e 100644
+--- a/public/lib/classes/formatting.php
++++ b/public/lib/classes/formatting.php
+@@ -329,11 +329,8 @@ class formatting {
+                 $domdoc->saveHTML($domdoc->documentElement),
+             ));
+             // Libxml2 >= 2.14.0 doesn't wrap plain text in <p> tags, so add them for consistency.
+-            if (LIBXML_VERSION >= 21400) {
+-                $trimmed = trim($text);
+-                if ($trimmed !== '' && !preg_match('/^</', $trimmed)) {
+-                    $text = '<p>' . $text . '</p>';
+-                }
++            if (LIBXML_VERSION >= 21400 && !empty($text) && !preg_match('/^\s*</', $text)) {
++                $text = '<p>' . $text . '</p>';
+             }
+             // The meta charset approach preserves leading/trailing whitespace in <p> tags more than the old XML
+             // declaration approach. Normalize this by trimming whitespace inside <p> tags to match old behavior.
+diff --git a/public/message/classes/helper.php b/public/message/classes/helper.php
+index b01009b48c3dcb06200a78b0566b31a5dbbbedac..994368946e3bd09ea7ab9c0597f12e1fcc98886e 100644
+--- a/public/message/classes/helper.php
++++ b/public/message/classes/helper.php
+@@ -702,11 +702,8 @@ class helper {
+                     // Remove <body> element added in C14N function.
+                     $html = preg_replace('~<(/?(?:body))[^>]*>\s*~i', '', $html);
+                     // Libxml2 >= 2.14.0 doesn't wrap plain text in <p> tags, so add them for consistency.
+-                    if (LIBXML_VERSION >= 21400) {
+-                        $trimmed = trim($html);
+-                        if ($trimmed !== '' && !preg_match('/^</', $trimmed)) {
+-                            $html = '<p>' . $html . '</p>';
+-                        }
++                    if (LIBXML_VERSION >= 21400 && !empty($html) && !preg_match('/^\s*</', $html)) {
++                        $html = '<p>' . $html . '</p>';
+                     }
+                 }
+             }

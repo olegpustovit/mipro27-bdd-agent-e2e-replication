@@ -1,0 +1,47 @@
+diff --git a/public/mod/quiz/classes/external/create_grade_item_per_section.php b/public/mod/quiz/classes/external/create_grade_item_per_section.php
+index 657827b1647c6342d3ec9947e800b9d3d3cc3268..630e8eee1016e483eeb8f760b654aa3a2fb75f5a 100644
+--- a/public/mod/quiz/classes/external/create_grade_item_per_section.php
++++ b/public/mod/quiz/classes/external/create_grade_item_per_section.php
+@@ -85,16 +85,6 @@ class create_grade_item_per_section extends external_api {
+ 
+         $gradeitemsids = [];
+         foreach ($structure->get_sections() as $section) {
+-            // Only create a grade item for sections that contain at least one real question (not description).
+-            $hasrealquestion = false;
+-            foreach ($structure->get_slots_in_section($section->id) as $slot) {
+-                $hasrealquestion = $hasrealquestion || $structure->is_real_question($slot);
+-            }
+-            if (!$hasrealquestion) {
+-                continue;
+-            }
+-
+-            // Grade item required. Create it.
+             $gradeitem = new stdClass();
+             $gradeitem->quizid = $quizid;
+             $gradeitem->name = $section->heading;
+@@ -103,9 +93,7 @@ class create_grade_item_per_section extends external_api {
+         }
+ 
+         foreach ($structure->get_slots() as $slot) {
+-            if ($structure->is_real_question($slot->slot)) {
+-                $structure->update_slot_grade_item($slot, $gradeitemsids[$slot->section->id]);
+-            }
++            $structure->update_slot_grade_item($slot, $gradeitemsids[$slot->section->id]);
+         }
+ 
+         $transaction->allow_commit();
+diff --git a/public/mod/quiz/classes/structure.php b/public/mod/quiz/classes/structure.php
+index 64881fef5c976fe113bc0dfef760c44d5c972d8e..46f83e85aff65071b3f41b470c0014b450f2940e 100644
+--- a/public/mod/quiz/classes/structure.php
++++ b/public/mod/quiz/classes/structure.php
+@@ -1262,10 +1262,6 @@ class structure {
+             $gradeitemid = null;
+         }
+ 
+-        if ($gradeitemid !== null && !$this->is_real_question($slot->slot)) {
+-            throw new coding_exception('Cannot set a grade item for a question that is ungraded.');
+-        }
+-
+         if ($slot->quizgradeitemid !== null) {
+             // Object $slot likely comes from the database, which means int may be
+             // represented as a string, which breaks the next test, so fix up.

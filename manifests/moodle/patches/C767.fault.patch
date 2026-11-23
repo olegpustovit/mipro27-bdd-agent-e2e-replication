@@ -1,0 +1,58 @@
+diff --git a/public/enrol/manual/externallib.php b/public/enrol/manual/externallib.php
+index ce69b58a790f964f7b2c21cad4b8cd86b2cd9bd7..baf2cebb56990f84a21a1652a513e76036bd388e 100644
+--- a/public/enrol/manual/externallib.php
++++ b/public/enrol/manual/externallib.php
+@@ -91,16 +91,13 @@ class enrol_manual_external extends external_api {
+             // Check that the user has the permission to manual enrol.
+             require_capability('enrol/manual:enrol', $context);
+ 
+-            $user = core_user::get_user($enrolment['userid'], strictness: MUST_EXIST);
+-            core_user::require_active_user($user);
+-
+             // Throw an exception if user is not able to assign the role.
+             $roles = get_assignable_roles($context);
+             if (!array_key_exists($enrolment['roleid'], $roles)) {
+                 $errorparams = new stdClass();
+                 $errorparams->roleid = $enrolment['roleid'];
+                 $errorparams->courseid = $enrolment['courseid'];
+-                $errorparams->userid = $user->id;
++                $errorparams->userid = $enrolment['userid'];
+                 throw new moodle_exception('wsusercannotassign', 'enrol_manual', '', $errorparams);
+             }
+ 
+@@ -124,7 +121,7 @@ class enrol_manual_external extends external_api {
+                 $errorparams = new stdClass();
+                 $errorparams->roleid = $enrolment['roleid'];
+                 $errorparams->courseid = $enrolment['courseid'];
+-                $errorparams->userid = $user->id;
++                $errorparams->userid = $enrolment['userid'];
+                 throw new moodle_exception('wscannotenrol', 'enrol_manual', '', $errorparams);
+             }
+ 
+@@ -134,7 +131,7 @@ class enrol_manual_external extends external_api {
+             $enrolment['status'] = (isset($enrolment['suspend']) && !empty($enrolment['suspend'])) ?
+                     ENROL_USER_SUSPENDED : ENROL_USER_ACTIVE;
+ 
+-            $enrol->enrol_user($instance, $user->id, $enrolment['roleid'],
++            $enrol->enrol_user($instance, $enrolment['userid'], $enrolment['roleid'],
+                     $enrolment['timestart'], $enrolment['timeend'], $enrolment['status']);
+ 
+         }
+@@ -199,12 +196,14 @@ class enrol_manual_external extends external_api {
+             if (!$instance) {
+                 throw new moodle_exception('wsnoinstance', 'enrol_manual', '', $enrolment);
+             }
+-            $user = core_user::get_user($enrolment['userid'], strictness: MUST_EXIST);
+-            core_user::require_active_user($user);
++            $user = $DB->get_record('user', array('id' => $enrolment['userid']));
++            if (!$user) {
++                throw new invalid_parameter_exception('User id not exist: '.$enrolment['userid']);
++            }
+             if (!$enrol->allow_unenrol($instance)) {
+                 throw new moodle_exception('wscannotunenrol', 'enrol_manual', '', $enrolment);
+             }
+-            $enrol->unenrol_user($instance, $user->id);
++            $enrol->unenrol_user($instance, $enrolment['userid']);
+         }
+         $transaction->allow_commit();
+     }

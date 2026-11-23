@@ -1,0 +1,27 @@
+diff --git a/public/mod/workshop/tests/behat/behat_mod_workshop.php b/public/mod/workshop/tests/behat/behat_mod_workshop.php
+index f581daaf326b72bcc4d18848a88e1bf6da32142a..c981431a495c039d991a436f1a29ee75f714b75c 100644
+--- a/public/mod/workshop/tests/behat/behat_mod_workshop.php
++++ b/public/mod/workshop/tests/behat/behat_mod_workshop.php
+@@ -72,13 +72,20 @@ class behat_mod_workshop extends behat_base {
+     public function i_add_a_submission_in_workshop_as($workshopname, $table) {
+         $workshopname = $this->escape($workshopname);
+         $savechanges = $this->escape(get_string('savechanges'));
+-        $xpath = "//div[contains(concat(' ', normalize-space(@class), ' '), ' singlebutton ')]/descendant::*[@type='submit']";
++        $xpath = "//*[@class='userplan']/descendant::*[@type='submit']";
+ 
+         $this->execute("behat_navigation::i_am_on_page_instance", [$workshopname, 'workshop activity']);
+ 
+         $this->execute("behat_general::i_click_on", array($xpath, "xpath_element"));
+ 
+-        $this->execute("behat_forms::i_set_the_following_fields_to_these_values", $table);
++        foreach ($table->getRowsHash() as $field => $value) {
++            if ($field === 'Title') {
++                // The submission title label is now "Submission title".
++                $this->find('xpath', "//form//input[@type='text']")->setValue($value);
++            } else {
++                $this->execute('behat_forms::i_set_the_field_to', [$field, $value]);
++            }
++        }
+ 
+         $this->execute("behat_forms::press_button", $savechanges);
+     }

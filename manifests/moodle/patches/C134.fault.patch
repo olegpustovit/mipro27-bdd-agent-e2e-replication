@@ -1,0 +1,27 @@
+diff --git a/public/lib/editor/tiny/plugins/autosave/classes/autosave_manager.php b/public/lib/editor/tiny/plugins/autosave/classes/autosave_manager.php
+index a746e83f12b5ecf419a2072e2faa8f1d41c6a500..91fabda9bf9a3cf94737e7485abec8f0aceba07d 100644
+--- a/public/lib/editor/tiny/plugins/autosave/classes/autosave_manager.php
++++ b/public/lib/editor/tiny/plugins/autosave/classes/autosave_manager.php
+@@ -190,9 +190,10 @@ class autosave_manager {
+             return $stale;
+         }
+ 
+-        // If we have a draftid, check in the users own draft area.
+-        $usercontext = \core\context\user::instance($this->user->id);
+-        $files = get_file_storage()->get_directory_files($usercontext->id, 'user', 'draft', $record->draftid, '/', true);
++        $fs = get_file_storage();
++        $files = $fs->get_directory_files($record->contextid, 'user', 'draft', $record->draftid, '/', true, true);
++
++        $lastfilemodified = 0;
+         foreach ($files as $file) {
+             if ($record->timemodified < $file->get_timemodified()) {
+                 $stale = true;
+@@ -216,7 +217,7 @@ class autosave_manager {
+         require_once("{$CFG->libdir}/filelib.php");
+ 
+         // Copy all draft files from the old draft area.
+-        $usercontext = \core\context\user::instance($this->user->id);
++        $usercontext = \context_user::instance($this->user->id);
+ 
+         // This function copies all the files in one draft area, to another area (in this case it's
+         // another draft area). It also rewrites the text to @@PLUGINFILE@@ links.

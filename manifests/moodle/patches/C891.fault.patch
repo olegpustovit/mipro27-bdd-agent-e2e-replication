@@ -1,0 +1,125 @@
+diff --git a/public/lib/form/templates/element-choicedropdown.mustache b/public/lib/form/templates/element-choicedropdown.mustache
+index c5dbb25f3e1b63f90564fcb098f230e5c97fd584..876c3181cbd92510d73d928b3aaab6bd542498c9 100644
+--- a/public/lib/form/templates/element-choicedropdown.mustache
++++ b/public/lib/form/templates/element-choicedropdown.mustache
+@@ -31,18 +31,15 @@
+     * extraclasses - Extra classes assocaited,
+     * type - Element type,
+     * attributes - Element attributes,
+-    * select - Choices exported by core\output\choicelist: {
+-        options - [
+-            {
+-                name - Option text,
+-                value - Option value,
+-                selected - Selected?,
+-                disabled - Disabled?,
+-                optionuniqid - Unique option id
+-            }
+-        ]
+-    },
+-    * dropdown - Context for the core/local/dropdown/status choice dialog
++    * options - [
++        {
++            text - Option text,
++            value - Option value,
++            selected - Selected?,
++            disabled - Disabled?,
++            optionattributes - Option attributes
++        }
++    ]
+ 
+     Example context (json):
+     {
+@@ -66,31 +63,32 @@
+             "type": "select",
+             "attributes": "",
+             "fieldicon": "<a class='btn'><i class='icon fa fa-ellipsis-h'></i></a>",
+-            "select": {
+-                "options": [
+-                    {
+-                        "optionuniqid": "choice_option_1",
+-                        "name": "Hidden",
+-                        "value": 0,
+-                        "selected": false,
+-                        "disabled": false
+-                    },
+-                    {
+-                        "optionuniqid": "choice_option_2",
+-                        "name": "Visible to everyone",
+-                        "value": 1,
+-                        "selected": true,
+-                        "disabled": false
+-                    },
+-                    {
+-                        "optionuniqid": "choice_option_3",
+-                        "name": "Allow only other course members to see my email address",
+-                        "value": 2,
+-                        "selected": false,
+-                        "disabled": false
+-                    }
+-                ]
+-            }
++            "options": [
++                {
++                    "rawoptionid": "1",
++                    "text": "Hidden",
++                    "value": 0,
++                    "selected": false,
++                    "disabled": false,
++                    "optionattributes": ""
++                },
++                {
++                    "rawoptionid": "2",
++                    "text": "Visible to everyone",
++                    "value": 1,
++                    "selected": true,
++                    "disabled": false,
++                    "optionattributes": ""
++                },
++                {
++                    "rawoptionid": "3",
++                    "text": "Allow only other course members to see my email address",
++                    "value": 2,
++                    "selected": false,
++                    "disabled": false,
++                    "optionattributes": ""
++                }
++            ]
+         }
+     }
+ }}
+@@ -128,21 +126,19 @@
+         {{/element.dropdown}}
+         {{/element.frozen}}
+         {{#element.frozen}}
+-            {{#element.select}}
+-                {{#options}}
+-                    {{#selected}}
+-                        {{{name}}}
+-                        {{^element.hardfrozen}}
+-                        <input
+-                            type="hidden"
+-                            name="{{element.name}}"
+-                            value="{{value}}"
+-                            id="{{element.id}}"
+-                        >
+-                        {{/element.hardfrozen}}
+-                    {{/selected}}
+-                {{/options}}
+-            {{/element.select}}
++            {{#element.options}}
++                {{#selected}}
++                    {{{text}}}
++                    {{^element.hardfrozen}}
++                    <input
++                        type="hidden"
++                        name="{{element.name}}"
++                        value="{{value}}"
++                        id="{{element.id}}"
++                    >
++                    {{/element.hardfrozen}}
++                {{/selected}}
++            {{/element.options}}
+         {{/element.frozen}}
+     {{/element}}
+ {{/ core_form/element-template }}

@@ -1,0 +1,22 @@
+diff --git a/public/mod/workshop/submission.php b/public/mod/workshop/submission.php
+index 953a35d2e322520c5659390f36b62306164f1a5d..78c872168f8a6f17dc4e839296c0fcbf7ee390f3 100644
+--- a/public/mod/workshop/submission.php
++++ b/public/mod/workshop/submission.php
+@@ -307,7 +307,7 @@ if ($isreviewer) {
+     echo $output->render($assessment);
+ 
+     if ($workshop->phase == workshop::PHASE_CLOSED) {
+-        if (isset($userassessment->feedbackreviewer) && !empty(trim($userassessment->feedbackreviewer))) {
++        if (strlen(trim($userassessment->feedbackreviewer)) > 0) {
+             echo $output->render(new workshop_feedback_reviewer($userassessment));
+         }
+     }
+@@ -341,7 +341,7 @@ if (has_capability('mod/workshop:viewallassessments', $workshop->context) or ($o
+         echo $output->render($displayassessment);
+ 
+         if ($workshop->phase == workshop::PHASE_CLOSED and has_capability('mod/workshop:viewallassessments', $workshop->context)) {
+-            if (isset($assessment->feedbackreviewer) && !empty(trim($assessment->feedbackreviewer))) {
++            if (strlen(trim($assessment->feedbackreviewer)) > 0) {
+                 echo $output->render(new workshop_feedback_reviewer($assessment));
+             }
+         }

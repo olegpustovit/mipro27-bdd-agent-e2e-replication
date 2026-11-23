@@ -1,0 +1,32 @@
+diff --git a/public/backup/moodle2/restore_stepslib.php b/public/backup/moodle2/restore_stepslib.php
+index dbd58f6080b2fa316ed3872a46186282a49b118f..891b517a94405149f46139dcd2d96e01eab5a181 100644
+--- a/public/backup/moodle2/restore_stepslib.php
++++ b/public/backup/moodle2/restore_stepslib.php
+@@ -5857,20 +5857,20 @@ class restore_move_module_questions_categories extends restore_execution_step {
+                 );
+             }
+         }
+-        // Remove any remaining course-level question categories and their questions from the restored course.
++        // Remove any remaining course-level question categories from the restored course.
+         $coursecatsql = "
+-            SELECT qc.id AS id, qc.contextid AS contextid
++            SELECT qc.id AS categoryid
+               FROM {question_categories} qc
+               JOIN {context} c ON c.id = qc.contextid
+              WHERE c.contextlevel = :courselevel AND c.instanceid = :courseid
+         ";
+-        $categories = $DB->get_records_sql(
++        $DB->delete_records_subquery(
++            'question_categories',
++            'id',
++            'categoryid',
+             $coursecatsql,
+-            ['courselevel' => context_course::LEVEL, 'courseid' => $this->task->get_courseid()],
++            ['courselevel' => context_course::LEVEL, 'courseid' => $this->task->get_courseid()]
+         );
+-        foreach ($categories as $category) {
+-            question_category_delete_safe($category);
+-        }
+     }
+ }
+ 

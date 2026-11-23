@@ -1,0 +1,20 @@
+diff --git a/public/mod/quiz/classes/output/renderer.php b/public/mod/quiz/classes/output/renderer.php
+index f29f14edb845bd716e4095ed045b6507d1c86f9d..ad918febd64eb2aabd0290daf68f24ca861626dd 100644
+--- a/public/mod/quiz/classes/output/renderer.php
++++ b/public/mod/quiz/classes/output/renderer.php
+@@ -927,13 +927,12 @@ class renderer extends plugin_renderer_base {
+             $attemptbtn = $this->start_attempt_button($viewobj->buttontext,
+                     $viewobj->startattempturl, $viewobj->preflightcheckform,
+                     $viewobj->popuprequired, $viewobj->popupoptions);
+-            $content .= html_writer::div($attemptbtn, 'navitem');
++            $content .= $attemptbtn;
+         }
+ 
+         if ($viewobj->canedit && !$viewobj->quizhasquestions) {
+-            $addquestionbutton = html_writer::link($viewobj->editurl, get_string('addquestion', 'quiz'),
++            $content .= html_writer::link($viewobj->editurl, get_string('addquestion', 'quiz'),
+                     ['class' => 'btn btn-secondary']);
+-            $content .= html_writer::div($addquestionbutton, 'navitem');
+         }
+ 
+         if ($content) {

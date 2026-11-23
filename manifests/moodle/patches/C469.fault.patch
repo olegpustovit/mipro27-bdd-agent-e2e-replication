@@ -1,0 +1,46 @@
+diff --git a/public/question/bank/columnsortorder/classes/local/bank/preview_view.php b/public/question/bank/columnsortorder/classes/local/bank/preview_view.php
+index ad7960731d69581f7e12bf2da19301ddc5de40e9..ce1a608fdfd8a7d5f972c73814a2118f65f66193 100644
+--- a/public/question/bank/columnsortorder/classes/local/bank/preview_view.php
++++ b/public/question/bank/columnsortorder/classes/local/bank/preview_view.php
+@@ -85,7 +85,6 @@ class preview_view extends view {
+             'modifierfirstname' => 'Admin',
+             'modifierlastname' => 'User',
+             'timemodified' => 1691157311,
+-            'isdummy' => true,
+         ];
+     }
+ 
+diff --git a/public/question/bank/history/classes/history_action.php b/public/question/bank/history/classes/history_action.php
+index 4417d9682dc617f8e496a93ea47a970ea6496c53..894712ab6f58941b394719722a4917f4c7360820 100644
+--- a/public/question/bank/history/classes/history_action.php
++++ b/public/question/bank/history/classes/history_action.php
+@@ -16,7 +16,6 @@
+ 
+ namespace qbank_history;
+ 
+-use core_question\local\bank\filter_condition_manager;
+ use core_question\local\bank\question_action_base;
+ 
+ /**
+@@ -50,20 +49,11 @@ class history_action extends question_action_base {
+         }
+ 
+         if (question_has_capability_on($question, 'use')) {
+-            $currentfilter = $this->qbank->base_url()->param('filter');
+-            if ($currentfilter) {
+-                $currentfilter = filter_condition_manager::update_filter_param_to_category(
+-                    $currentfilter, $question->categoryid);
+-            } else if (empty($question->isdummy)) {
+-                $currentfilter = json_encode(filter_condition_manager::get_default_filter(
+-                    $question->categoryid . ',' . $question->contextid));
+-            }
+-
+             $url = helper::get_question_history_url(
+                 $question->questionbankentryid,
+                 $this->qbank->returnurl,
+                 $this->qbank->cm->id,
+-                $currentfilter,
++                $this->qbank->base_url()->param('filter'),
+             );
+             return [$url, 't/log', $this->strpreview];
+         }

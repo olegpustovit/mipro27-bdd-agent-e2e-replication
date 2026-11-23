@@ -1,0 +1,100 @@
+diff --git a/public/message/amd/src/preferences_notifications_list_controller.js b/public/message/amd/src/preferences_notifications_list_controller.js
+index 2ff334a57022b249ffb32be3bd49a004a9d2ad58..febbc8e4903353c7e4c92230b0b9f1179a405b14 100644
+--- a/public/message/amd/src/preferences_notifications_list_controller.js
++++ b/public/message/amd/src/preferences_notifications_list_controller.js
+@@ -43,7 +43,6 @@ define(['jquery',
+         PREFERENCE: '.preference-state',
+         PREFERENCE_ROW: '[data-region="preference-row"]',
+         PREFERENCE_INPUT: '.preference-state input',
+-        UNCONFIGURED_INPUT: '[data-unconfigured="1"]',
+         PROCESSOR_SETTING: '[data-processor-setting]',
+     };
+ 
+@@ -83,14 +82,11 @@ define(['jquery',
+     /**
+      * Enable all of the preferences.
+      *
+-     * Preferences belonging to a processor the user has not configured (e.g. SMS without a
+-     * phone number) must stay disabled, so they are explicitly excluded here.
+-     *
+      * @method setEnabled
+      */
+     PreferencesController.prototype.setEnabled = function() {
+         this.root.removeClass('disabled');
+-        this.root.find(SELECTORS.PREFERENCE_INPUT).not(SELECTORS.UNCONFIGURED_INPUT).prop('disabled', false);
++        this.root.find(SELECTORS.PREFERENCE_INPUT).prop('disabled', false);
+     };
+ 
+     /**
+diff --git a/public/message/templates/notification_preferences_component_notification.mustache b/public/message/templates/notification_preferences_component_notification.mustache
+index 17f5889cca87ba4a37efb9dca4640b4c2231cb8c..d33c2bdb1af5373ae436d37116b7f6e67573c235 100644
+--- a/public/message/templates/notification_preferences_component_notification.mustache
++++ b/public/message/templates/notification_preferences_component_notification.mustache
+@@ -64,17 +64,11 @@
+                                        name="{{{preferencekey}}}_{{{name}}}"
+                                        class="form-check-input notification_enabled{{#disableall}} disabled{{/disableall}}"
+                                     {{#disableall}} disabled="true" {{/disableall}}
+-                                    {{^userconfigured}} disabled="true" data-unconfigured="1" aria-describedby="{{{preferencekey}}}_{{{name}}}_unconfigured"{{/userconfigured}}
+                                     {{#enabled}}checked{{/enabled}}
+                                 >
+                                 <label for="{{{preferencekey}}}_{{{name}}}" class="visually-hidden">
+                                     {{enabledlabel}}
+                                 </label>
+-                                {{^userconfigured}}
+-                                    <span id="{{{preferencekey}}}_{{{name}}}_unconfigured" class="visually-hidden">
+-                                        {{#str}} requiresconfiguration, message {{/str}}
+-                                    </span>
+-                                {{/userconfigured}}
+                             </div>
+                         </div>
+                     </form>
+diff --git a/public/message/templates/notification_preferences_processor.mustache b/public/message/templates/notification_preferences_processor.mustache
+index 0d0d29dd02bf2ede590c738303508e9a485c49bf..cb39806ce7c06f22560f3e7c60da6b3fcdc0c694 100644
+--- a/public/message/templates/notification_preferences_processor.mustache
++++ b/public/message/templates/notification_preferences_processor.mustache
+@@ -62,7 +62,6 @@
+         </a>
+     {{/hassettings}}
+     {{^hassettings}}
+-        <span {{^userconfigured}}class="dimmed_text"{{/userconfigured}}>{{displayname}}</span>
+-        {{^userconfigured}}<span class="visually-hidden">{{#str}} requiresconfiguration, message {{/str}}</span>{{/userconfigured}}
++        {{displayname}}
+     {{/hassettings}}
+ </th>
+diff --git a/public/theme/boost/scss/moodle/message.scss b/public/theme/boost/scss/moodle/message.scss
+index a2d870840a33d728f8663f476e0397ab8ce2e5f1..fd507adae7c2df19a2592797a45c066a73520a00 100644
+--- a/public/theme/boost/scss/moodle/message.scss
++++ b/public/theme/boost/scss/moodle/message.scss
+@@ -69,6 +69,11 @@
+             .preference-name {
+                 vertical-align: middle;
+             }
++            .disabled-message {
++                text-align: center;
++                height: 30px;
++                line-height: 30px;
++            }
+             &.loading {
+                 .preference-name {
+                     .loading-icon {
+@@ -80,6 +85,20 @@
+     }
+ }
+ 
++.disabled-message {
++    display: none;
++}
++
++.disabled {
++    .disabled-message {
++        display: block;
++
++        + form {
++            display: none;
++        }
++    }
++}
++
+ .general-settings-container {
+     .loading-icon {
+         display: none;

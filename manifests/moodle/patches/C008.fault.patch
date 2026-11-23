@@ -1,0 +1,14 @@
+diff --git a/public/question/type/multianswer/questiontype.php b/public/question/type/multianswer/questiontype.php
+index 87819ad6ef3380c93b6fcf1238170a3465c6c1f2..ab8a7d4cf093e7ed5532045afc2517814518192b 100644
+--- a/public/question/type/multianswer/questiontype.php
++++ b/public/question/type/multianswer/questiontype.php
+@@ -110,7 +110,8 @@ class qtype_multianswer extends question_type {
+ 
+         parent::get_question_options($question);
+         // Get relevant data indexed by positionkey from the multianswers table.
+-        $sequence = $DB->get_field('question_multianswer', 'sequence', ['question' => $question->id]);
++        $sequence = $DB->get_field('question_multianswer', 'sequence',
++                array('question' => $question->id), MUST_EXIST);
+ 
+         if (empty($sequence)) {
+             $question->options->questions = [];

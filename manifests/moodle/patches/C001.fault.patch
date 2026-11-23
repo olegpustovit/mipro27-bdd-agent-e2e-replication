@@ -1,0 +1,38 @@
+diff --git a/public/mod/assign/classes/notification_helper.php b/public/mod/assign/classes/notification_helper.php
+index df2fa5eea36e4944646d99e33f464ca8a81a0479..3abf146f28e5aa70b83a2aead065662fd78fccd7 100644
+--- a/public/mod/assign/classes/notification_helper.php
++++ b/public/mod/assign/classes/notification_helper.php
+@@ -354,14 +354,8 @@ class notification_helper {
+      * @param int $userid The user id.
+      */
+     public static function send_due_soon_notification_to_user(int $assignmentid, int $userid): void {
+-        try {
+-            // Get assignment data.
+-            $assignmentobj = self::get_assignment_data($assignmentid);
+-        } catch (\dml_missing_record_exception) {
+-            // The assignment has vanished, nothing to do.
+-            mtrace("No notification send as the assignment $assignmentid can no longer be found in the database.");
+-            return;
+-        }
++        // Get assignment data.
++        $assignmentobj = self::get_assignment_data($assignmentid);
+ 
+         // Check if the module is visible to the user.
+         $cm = $assignmentobj->get_course_module();
+@@ -460,14 +454,8 @@ class notification_helper {
+      * @param int $userid The user id.
+      */
+     public static function send_overdue_notification_to_user(int $assignmentid, int $userid): void {
+-        try {
+-            // Get assignment data.
+-            $assignmentobj = self::get_assignment_data($assignmentid);
+-        } catch (\dml_missing_record_exception) {
+-            // The assignment has vanished, nothing to do.
+-            mtrace("No notification send as the assignment $assignmentid can no longer be found in the database.");
+-            return;
+-        }
++        // Get assignment data.
++        $assignmentobj = self::get_assignment_data($assignmentid);
+ 
+         // Get the user and check they are a still a valid participant.
+         $user = $assignmentobj->get_participant($userid);

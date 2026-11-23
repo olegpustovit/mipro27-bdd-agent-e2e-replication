@@ -1,0 +1,40 @@
+diff --git a/public/completion/classes/manager.php b/public/completion/classes/manager.php
+index 58dc7a3643b7adb6b4497cc9cbb6dcfda75d011a..8a612a65deb0443e9541083a715d9f0bf9fc7b15 100644
+--- a/public/completion/classes/manager.php
++++ b/public/completion/classes/manager.php
+@@ -123,7 +123,6 @@ class manager {
+             }
+ 
+             $icon = activity_icon::from_cm_info($mod)
+-                ->set_extra_classes('smaller')
+                 ->set_icon_size(iconsize::SIZE5);
+ 
+             $moduleobject = new stdClass();
+diff --git a/public/course/classes/output/bulk_activity_completion_renderer.php b/public/course/classes/output/bulk_activity_completion_renderer.php
+index 745035d20b52dc815e7c023c7c7871bb1aca76c4..186aee6e810c21a96cfeaa3c3b67f32e31bbbc02 100644
+--- a/public/course/classes/output/bulk_activity_completion_renderer.php
++++ b/public/course/classes/output/bulk_activity_completion_renderer.php
+@@ -72,9 +72,7 @@ class core_course_bulk_activity_completion_renderer extends plugin_renderer_base
+                     $module->open = false;
+                 }
+ 
+-                $module->activityicon = activity_icon::from_modname($module->name)
+-                    ->set_extra_classes('smaller')
+-                    ->export_for_template($this);
++                $module->activityicon = activity_icon::from_modname($module->name)->export_for_template($this);
+ 
+                 $moduleform = manager::get_module_form($module->name, $course);
+                 if ($moduleform) {
+diff --git a/public/course/templates/activityinstance.mustache b/public/course/templates/activityinstance.mustache
+index 3ee2360c9fcacb43971ecec840d52f352f92d2ca..2eb1950f474fef193f07c43bc4b3dee17fcef338 100644
+--- a/public/course/templates/activityinstance.mustache
++++ b/public/course/templates/activityinstance.mustache
+@@ -41,7 +41,7 @@
+             <label class="accesshide" for="selectactivity_{{cmid}}">{{#str}}select, completion{{/str}} {{modname}}</label>
+             <input type="checkbox" id="selectactivity_{{cmid}}" name="cmid[]" data-section="{{sectionnumber}}" value="{{cmid}}" aria-label="{{#str}}checkactivity, completion, {{{modname}}}{{/str}}">
+             {{/canmanage}}
+-            <a href="{{url}}" class="d-flex gap-2 justify-content-center align-items-center">
++            <a href="{{url}}" class="activityiconcontainer">
+                 {{#activityicon}}
+                     {{> core_course/activity_icon}}
+                 {{/activityicon}}

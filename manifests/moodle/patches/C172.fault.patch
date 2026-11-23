@@ -1,0 +1,110 @@
+diff --git a/public/mod/data/field/checkbox/field.class.php b/public/mod/data/field/checkbox/field.class.php
+index 6557d013ad32e03c5e8359a0f4e0c08c492274c8..4239971bc80f6ab9df471359ea8668687d19a206 100644
+--- a/public/mod/data/field/checkbox/field.class.php
++++ b/public/mod/data/field/checkbox/field.class.php
+@@ -207,7 +207,7 @@ class data_field_checkbox extends data_field_base {
+ 
+     function display_browse_field($recordid, $template) {
+         $content = $this->get_data_content($recordid);
+-        if (!$content || !isset($content->content)) {
++        if (!$content || empty($content->content)) {
+             return '';
+         }
+ 
+diff --git a/public/mod/data/field/date/field.class.php b/public/mod/data/field/date/field.class.php
+index 65fadc25d2045b57fc193334bbd42b99fd1daf58..48dc75ae58b236c35798f07203dd2bde98669b6b 100644
+--- a/public/mod/data/field/date/field.class.php
++++ b/public/mod/data/field/date/field.class.php
+@@ -166,7 +166,7 @@ class data_field_date extends data_field_base {
+             $data['usedate'] = 1;
+             return $data;
+         } else {
+-            return '';
++            return 0;
+         }
+     }
+ 
+diff --git a/public/mod/data/field/multimenu/field.class.php b/public/mod/data/field/multimenu/field.class.php
+index 8327db214d8dc618c8024aa541a7c1762a1a1756..a63095c9d684b049421df452b6e2f504b885ed39 100644
+--- a/public/mod/data/field/multimenu/field.class.php
++++ b/public/mod/data/field/multimenu/field.class.php
+@@ -272,7 +272,7 @@ class data_field_multimenu extends data_field_base {
+ 
+     function display_browse_field($recordid, $template) {
+         $content = $this->get_data_content($recordid);
+-        if (!$content || !isset($content->content)) {
++        if (!$content || empty($content->content)) {
+             return '';
+         }
+         $options = explode("\n", $this->field->param1);
+diff --git a/public/mod/data/lib.php b/public/mod/data/lib.php
+index bbff1ec514c80ec9821f9720fdf74b8960ef1881..85764133a6e946aabaaebe45c57ba59075a541eb 100644
+--- a/public/mod/data/lib.php
++++ b/public/mod/data/lib.php
+@@ -1879,7 +1879,7 @@ function data_print_preference_form($data, $perpage, $search, $sort='', $order='
+         if ($searchfield->type === 'unknown') {
+             continue;
+         }
+-        if (isset($search_array[$field->field->id]->data)) {
++        if (!empty($search_array[$field->field->id]->data)) {
+             $searchinput = $searchfield->display_search_field($search_array[$field->field->id]->data);
+         } else {
+             $searchinput = $searchfield->display_search_field();
+@@ -1909,8 +1909,8 @@ function data_print_preference_form($data, $perpage, $search, $sort='', $order='
+         $replacement[] = '';
+     }
+ 
+-    $fn = isset($search_array[DATA_FIRSTNAME]->data) ? $search_array[DATA_FIRSTNAME]->data : '';
+-    $ln = isset($search_array[DATA_LASTNAME]->data) ? $search_array[DATA_LASTNAME]->data : '';
++    $fn = !empty($search_array[DATA_FIRSTNAME]->data) ? $search_array[DATA_FIRSTNAME]->data : '';
++    $ln = !empty($search_array[DATA_LASTNAME]->data) ? $search_array[DATA_LASTNAME]->data : '';
+     $patterns[]    = '/##firstname##/';
+     $replacement[] = '<label class="accesshide" for="u_fn">' . get_string('authorfirstname', 'data') . '</label>' .
+                      '<input type="text" class="form-control" size="16" id="u_fn" name="u_fn" value="' . s($fn) . '" />';
+diff --git a/public/mod/data/locallib.php b/public/mod/data/locallib.php
+index 2c6f0c9b90e9eec73d2e087c3a26f67e5fbd58ea..7ef3673ff41243c7f32bef54be611b5d1c58771d 100644
+--- a/public/mod/data/locallib.php
++++ b/public/mod/data/locallib.php
+@@ -1072,6 +1072,10 @@ function data_search_entries($data, $cm, $context, $mode, $currentgroup, $search
+         $searcharray = array();
+     }
+ 
++    if (core_text::strlen($search) < 2) {
++        $search = '';
++    }
++
+     $approvecap = has_capability('mod/data:approve', $context);
+     $canmanageentries = has_capability('mod/data:manageentries', $context);
+ 
+@@ -1167,7 +1171,7 @@ function data_search_entries($data, $cm, $context, $mode, $currentgroup, $search
+             $initialparams['myid3'] = $params['myid2'];
+         }
+ 
+-        if ($search !== '') {
++        if ($search) {
+             $searchselect = " AND (".$DB->sql_like('c.content', ':search1', false)."
+                               OR ".$DB->sql_like('u.firstname', ':search2', false)."
+                               OR ".$DB->sql_like('u.lastname', ':search3', false)." ) ";
+@@ -1207,7 +1211,7 @@ function data_search_entries($data, $cm, $context, $mode, $currentgroup, $search
+             $initialparams['myid3'] = $params['myid2'];
+         }
+ 
+-        if ($search !== '') {
++        if ($search) {
+             $searchselect = " AND (".$DB->sql_like('c.content', ':search1', false)." OR
+                 ".$DB->sql_like('u.firstname', ':search2', false)." OR
+                 ".$DB->sql_like('u.lastname', ':search3', false)." ) ";
+@@ -1357,12 +1361,7 @@ function data_build_search_array($data, $paging, $searcharray, $defaults = null,
+                     $val = '';
+                 }
+             }
+-
+-            // Account for both arrays and empty text.
+-            if (
+-                (is_array($val) && !empty($val)) ||
+-                ((string) $val !== '')
+-            ) {
++            if (!empty($val)) {
+                 $searcharray[$field->id] = new stdClass();
+                 list($searcharray[$field->id]->sql, $searcharray[$field->id]->params) = $searchfield->generate_sql('c'.$field->id, $val);
+                 $searcharray[$field->id]->data = $val;

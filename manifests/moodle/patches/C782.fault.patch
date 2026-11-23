@@ -1,0 +1,68 @@
+diff --git a/public/lib/templates/popover_region.mustache b/public/lib/templates/popover_region.mustache
+index 4e12e3d0f4dd68ce7e07fba80baa98e78af66cd1..70f2709edae0ef740688dcebb05c44f1cd6b0b5b 100644
+--- a/public/lib/templates/popover_region.mustache
++++ b/public/lib/templates/popover_region.mustache
+@@ -53,7 +53,7 @@
+         data-region="popover-region-container"
+         aria-hidden="true"
+         aria-label="{{$containerlabel}}{{/containerlabel}}"
+-        role="{{$containerrole}}region{{/containerrole}}">
++        role="region">
+         <div class="popover-region-header-container">
+             <h3 class="popover-region-header-text" data-region="popover-region-header-text">{{$headertext}}{{/headertext}}</h3>
+             <div class="popover-region-header-actions" data-region="popover-region-header-actions">{{$headeractions}}{{/headeractions}}</div>
+diff --git a/public/message/output/popup/amd/src/notification_popover_controller.js b/public/message/output/popup/amd/src/notification_popover_controller.js
+index eed763b9e62918dd43f4adb68b6f660c67f830d9..80bf4c2ca1e4090bc3ff74b9729a5bf7c55d654a 100644
+--- a/public/message/output/popup/amd/src/notification_popover_controller.js
++++ b/public/message/output/popup/amd/src/notification_popover_controller.js
+@@ -25,11 +25,9 @@
+  */
+ define(['jquery', 'core/ajax', 'core/templates', 'core/str', 'core/url',
+             'core/notification', 'core/custom_interaction_events', 'core/popover_region_controller',
+-            'message_popup/notification_repository', 'message_popup/notification_area_events',
+-            'core/local/aria/focuslock',
+-        ],
++            'message_popup/notification_repository', 'message_popup/notification_area_events'],
+         function($, Ajax, Templates, Str, URL, DebugNotification, CustomEvents,
+-            PopoverController, NotificationRepo, NotificationAreaEvents, FocusLock) {
++            PopoverController, NotificationRepo, NotificationAreaEvents) {
+ 
+     var SELECTORS = {
+         MARK_ALL_READ_BUTTON: '[data-action="mark-all-read"]',
+@@ -375,19 +373,12 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/str', 'core/url',
+             if (!this.hasDoneInitialLoad()) {
+                 this.loadMoreNotifications();
+             }
+-
+-            // Lock focus to the popover when it is opened, it is the parent of the container.
+-            const contentContainer = this.getContentContainer()[0].parentNode;
+-            FocusLock.trapFocus(contentContainer);
+-
+         }.bind(this));
+ 
+         // Update the unread notification count when the menu is closed.
+         this.root.on(this.events().menuClosed, function() {
+             this.renderUnreadCount();
+             this.updateButtonAriaLabel();
+-            // Lock focus to the popover when it is opened, it is the parent of the container.
+-            FocusLock.untrapFocus();
+         }.bind(this));
+ 
+         // Set aria attributes when popover is loading.
+diff --git a/public/message/output/popup/templates/notification_popover.mustache b/public/message/output/popup/templates/notification_popover.mustache
+index b54eaab7a2ae0687a934db81e117b696f49ef989..98443ef7eb3b38db9395c8894733b3e928a1a502 100644
+--- a/public/message/output/popup/templates/notification_popover.mustache
++++ b/public/message/output/popup/templates/notification_popover.mustache
+@@ -56,11 +56,7 @@
+             {{unreadcount}}
+         </div>
+     {{/togglecontent}}
+-    {{$containerrole}}dialog{{/containerrole}}
+-    {{$containerattributes}}
+-        aria-modal="true"
+-        tabindex="-1"
+-    {{/containerattributes}}
++
+     {{$containerlabel}}{{#str}} notificationwindow, message {{/str}}{{/containerlabel}}
+ 
+     {{$headertext}}{{#str}} notifications, message {{/str}}{{/headertext}}

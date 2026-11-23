@@ -1,0 +1,26 @@
+diff --git a/public/mod/forum/classes/local/renderers/discussion_list.php b/public/mod/forum/classes/local/renderers/discussion_list.php
+index a3418c9f7d88a8cc1f65cbb4b34fc9fdbdaacad5..2a78026c5cb032fcb7e4180abbc1b01746431be8 100644
+--- a/public/mod/forum/classes/local/renderers/discussion_list.php
++++ b/public/mod/forum/classes/local/renderers/discussion_list.php
+@@ -230,7 +230,7 @@ class discussion_list {
+             $exportedposts = ($this->postprocessfortemplate) ($discussions, $user, $forum);
+         }
+ 
+-        $baseurl = new \moodle_url($PAGE->url, ['o' => $sortorder, 's' => $pagesize]);
++        $baseurl = new \moodle_url($PAGE->url, array('o' => $sortorder));
+ 
+         $forumview = array_merge(
+             $forumview,
+diff --git a/public/mod/forum/view.php b/public/mod/forum/view.php
+index 8504bb2b08d05feab825caf8eee6183a8e259ec5..b0af745d1e7caffecc51e2ff12fb1c4348d03b68 100644
+--- a/public/mod/forum/view.php
++++ b/public/mod/forum/view.php
+@@ -41,7 +41,7 @@ $showall = optional_param('showall', '', PARAM_INT);
+ $pageno = optional_param('page', 0, PARAM_INT);
+ $search = optional_param('search', '', PARAM_CLEAN);
+ $pageno = optional_param('p', $pageno, PARAM_INT);
+-$pagesize = optional_param('s', $CFG->forum_manydiscussions ?? 0, PARAM_INT);
++$pagesize = optional_param('s', 0, PARAM_INT);
+ $sortorder = optional_param('o', null, PARAM_INT);
+ 
+ if (!$cmid && !$forumid) {

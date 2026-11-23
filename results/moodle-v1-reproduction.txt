@@ -1,0 +1,1213 @@
+Moodle model-free V1 reproduction (developers' own Behat step definitions; no model, not a measured campaign)
+pin cfe123f26fc7071981fe949cb16cd5a08a8234f1 (5.3.1 (Build: 20261112)); plan any; trials recorded: 2233 (passed 1866, error 32, failed 328, undefined 7)
+States: healthy = pin (= "adapted": current UI + developers' repaired tests). before = old UI + old tests (UI half and test half reverted). broken = new UI + old tests (test half reverted). fault = pin with the fix's non-test hunks reverted. broken-steps = new UI + the developers' NEW .feature files + OLD step definitions/selectors (only the non-.feature test hunks reverted): arm B's starting state in every class; an empty patch means the fix touched no step definition (Gherkin-only fix) and the state is the pin itself. Where broken-steps is byte-identical to broken (class i without .feature hunks) the broken rows are used for it.
+before/broken states are patches at the pin; where later commits touched the same lines the conflicting region takes the pre-change side (see manifests/moodle/patches/index.json), so "before" can fail for reasons other than the UI change.
+Step indices are Behat's: 0-based over all executed steps, Background first. The manifest target (own-step index at the fix commit) is resolved to a Behat index at the pin: the step with the same text (closest to background + manifest index), else background + manifest index. "at" = same index or same step text. ONE step rule for the valid-pair gate and for campaign scoring: exact (tolerance 0). "near" (within 2 steps) is classified for the report only; a near pair is not valid and a near failure is not a catch.
+
+BREAKS (bite measured in arm B's starting state: reproduced strict = some affected scenario: before passes, start state fails, adapted passes; core = start state fails and adapted passes; whole-half = old state with the whole developer test half reverted, provenance only)
+break mdl         cls strict core  whole-half core scenarios strict/core/total  detail
+B01   MDL-85795   i   NO     yes   yes (6)         0/6/29  e.g. S024: broken:B01 fails at step 8 "I search for "frogs" using the header global search box"
+B02   MDL-82232   i   n/a    n/a   n/a             not usable: repaired step is not used by any scenario at the pin: verified repair, no scenarios to run
+B03   MDL-86488   i   NO     NO    NO (0)          0/0/29  no scenario fails in broken:B03
+B04   MDL-87662   i   NO     yes   yes (4)         0/4/29  e.g. S036: broken:B04 fails at step 8 "the manual completion button for "Test choice manual" should be disabled"
+B05   MDL-81608   i   NO     yes   yes (6)         0/6/29  e.g. S042: broken:B05 fails at step 34 "I click on the "Add" page break icon after question "Question A""
+B06   MDL-75699   i   NO     NO    NO (0)          0/0/29  no scenario fails in broken:B06
+B07   MDL-87834   i   yes    yes   yes (6)         6/6/29  e.g. S024: broken:B07 fails at step 8 "I search for "frogs" using the header global search box"
+B08   MDL-89814   i   NO     NO    NO (0)          0/0/28  no scenario fails in broken-steps:B08
+B09   MDL-86488   ii  NO     NO    yes (5)         0/0/28  no scenario fails in broken-steps:B09
+B10   MDL-86488   ii  NO     NO    yes (5)         0/0/29  no scenario fails in broken-steps:B10
+B11   MDL-86701   ii  NO     NO    yes (6)         0/0/29  no scenario fails in broken-steps:B11
+B12   MDL-87304   ii  NO     NO    yes (7)         0/0/29  no scenario fails in broken-steps:B12
+B13   MDL-82943   ii  NO     NO    yes (6)         0/0/29  no scenario fails in broken-steps:B13
+B14   MDL-90062   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before available
+B15   MDL-85281   i   NO     yes   NO (0)          0/3/4  e.g. S091: broken-steps:B15 fails at step 3 "I add the "Logged in user" block"
+B16   MDL-81663   i   NO     yes   NO (0)          0/3/4  e.g. S096: broken-steps:B16 fails at step 3 "I click on the "Tools > Accessibility checker" menu item for the "Description" TinyMCE editor"
+B17   MDL-79671   i   NO     yes   NO (0)          0/2/4  e.g. S100: broken-steps:B17 fails at step 6 "I click on the "Equation editor" button for the "Description" TinyMCE editor"
+B18   MDL-81036   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link same-component): does not bite: the start state passed in 4/4 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B19   MDL-80461   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): no probe scenario (no plain scenario uses the reverted step definitions at the pin); before n/a (UI hunks do not reverse-apply at the pin)
+B20   MDL-80248   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B21   MDL-79629   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B22   MDL-77033   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B23   MDL-75155   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B24   MDL-73489   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link same-component): does not bite: the start state passed in 4/4 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B25   MDL-71915   i   NO     yes   NO (0)          0/4/4  e.g. S125: broken-steps:B25 fails at step 8 "I add a submission in workshop "TestWorkshop" as:"
+B26   MDL-72896   i   NO     yes   NO (0)          0/1/1  e.g. S129: broken-steps:B26 fails at step 10 "the group overview should include groups "Group 1, Group 2" in grouping "Grouping 1""
+B27   MDL-69588   i   NO     yes   NO (0)          0/2/4  e.g. S131: broken-steps:B27 fails at step 1 "I follow "Profile" in the user menu"
+B28   MDL-58579   i   NO     yes   NO (0)          0/4/4  e.g. S134: broken-steps:B28 fails at step 5 "I select "Teacher 1" user in messaging"
+B29   MDL-70846   i   NO     yes   NO (0)          0/3/4  e.g. S054: broken-steps:B29 fails at step 5 "I expand "Site administration" node"
+B30   MDL-68353   i   NO     yes   NO (0)          0/4/4  e.g. S141: broken-steps:B30 fails at step 1 "I upload "lib/ddl/tests/fixtures/xmldb_table.xml" file to "File picker" filemanager"
+B31   MDL-67874   i   NO     yes   NO (0)          0/2/2  e.g. S145: broken-steps:B31 fails at step 9 "I toggle "Category A" category children visibility in frontpage"
+B32   MDL-67275   i   NO     yes   NO (0)          0/2/2  e.g. S147: broken-steps:B32 fails at step 6 "I reply "Discussion 2" post from "Test forum name" forum using an inpage reply with:"
+B33   MDL-65987   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B34   MDL-66999   i   NO     yes   NO (0)          0/4/4  e.g. S153: broken-steps:B34 fails at step 5 "I go to "Assign 1" advanced grading definition page"
+B35   MDL-66999   i   NO     yes   NO (0)          0/4/4  e.g. S157: broken-steps:B35 fails at step 8 ""mod/forum:deleteanypost" capability has "Prohibit" permission"
+B36   MDL-64676   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link same-component): does not bite: the start state passed in 1/1 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B37   MDL-40759   i   NO     yes   NO (0)          0/1/1  e.g. S162: broken-steps:B37 fails at step 8 "I delete "Comment from student1" comment from comments block"
+B38   MDL-56684   i   NO     yes   NO (0)          0/4/4  e.g. S163: broken-steps:B38 fails at step 6 "I click on "Duplicate" of edit menu in the "CF1" row"
+B39   MDL-60590   i   NO     yes   NO (0)          0/3/4  e.g. S168: broken-steps:B39 fails at step 4 "I enrol "Studie One" user as "Student""
+B40   MDL-59365   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link same-mdl): bites (core) in 3/4 probed scenarios (S168, S169, S170); strict 0; before n/a (UI hunks do not reverse-apply at the pin); not a distinct break: it bites scenarios of B39 (S168, S169, S170), the break with the lower id is the one counted
+B41   MDL-55074   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link same-mdl): does not bite: the start state passed in 2/2 probed scenarios; before n/a (UI hunks do not reverse-apply at the pin)
+B42   MDL-77375   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before available
+B43   MDL-84801   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before available
+B44   MDL-76597   i   NO     yes   NO (0)          0/2/4  e.g. S178: broken-steps:B44 fails at step 8 "I change quiz section heading "" to "This is section one""
+B45   MDL-88580   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): does not bite: the start state passed in 4/4 probed scenarios; before available
+B46   MDL-85612   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link same-component): does not bite: the start state passed in 2/2 probed scenarios; before available
+B47   MDL-73952   i   n/a    n/a   n/a             not usable: wave 3 (mine_breaks_v2.py; link combined): no probe scenario (no plain scenario uses the reverted step definitions at the pin); before n/a (UI hunks do not reverse-apply at the pin)
+
+ARM B STARTING STATE per break (mining/make_steps_patches.py): the developer test half split into .feature files and step-definition/selector files; class (i) must hold no .feature file
+break cls feature files step files == broken patch      Gherkin check              start state
+B01   i   0             1          yes       non-empty  no .feature hunk           broken:B01 (same bytes)
+B02   i   0             1          yes       non-empty  no .feature hunk           broken:B02 (same bytes)
+B03   i   0             1          yes       non-empty  no .feature hunk           broken:B03 (same bytes)
+B04   i   0             1          yes       non-empty  no .feature hunk           broken:B04 (same bytes)
+B05   i   0             1          yes       non-empty  no .feature hunk           broken:B05 (same bytes)
+B06   i   0             1          yes       non-empty  no .feature hunk           broken:B06 (same bytes)
+B07   i   0             1          yes       non-empty  no .feature hunk           broken:B07 (same bytes)
+B08   i   1             1          no        non-empty  class i HAS .feature hunk  broken-steps:B08
+B09   ii  5             0          no        empty      new Gherkin kept           broken-steps:B09 (= the pin: Gherkin-only fix, no step definition to repair)
+B10   ii  2             0          no        empty      new Gherkin kept           broken-steps:B10 (= the pin: Gherkin-only fix, no step definition to repair)
+B11   ii  10            0          no        empty      new Gherkin kept           broken-steps:B11 (= the pin: Gherkin-only fix, no step definition to repair)
+B12   ii  6             0          no        empty      new Gherkin kept           broken-steps:B12 (= the pin: Gherkin-only fix, no step definition to repair)
+B13   ii  9             0          no        empty      new Gherkin kept           broken-steps:B13 (= the pin: Gherkin-only fix, no step definition to repair)
+B14   i   0             1          yes       non-empty  no .feature hunk           broken:B14 (same bytes)
+B15   i   0             1          yes       non-empty  no .feature hunk           broken:B15 (same bytes)
+B16   i   0             1          yes       non-empty  no .feature hunk           broken:B16 (same bytes)
+B17   i   0             1          yes       non-empty  no .feature hunk           broken:B17 (same bytes)
+B18   i   0             1          yes       non-empty  no .feature hunk           broken:B18 (same bytes)
+B19   i   0             1          yes       non-empty  no .feature hunk           broken:B19 (same bytes)
+B20   i   0             1          yes       non-empty  no .feature hunk           broken:B20 (same bytes)
+B21   i   0             1          yes       non-empty  no .feature hunk           broken:B21 (same bytes)
+B22   i   0             1          yes       non-empty  no .feature hunk           broken:B22 (same bytes)
+B23   i   0             1          yes       non-empty  no .feature hunk           broken:B23 (same bytes)
+B24   i   0             1          yes       non-empty  no .feature hunk           broken:B24 (same bytes)
+B25   i   0             1          yes       non-empty  no .feature hunk           broken:B25 (same bytes)
+B26   i   0             1          yes       non-empty  no .feature hunk           broken:B26 (same bytes)
+B27   i   0             1          yes       non-empty  no .feature hunk           broken:B27 (same bytes)
+B28   i   0             1          yes       non-empty  no .feature hunk           broken:B28 (same bytes)
+B29   i   0             1          yes       non-empty  no .feature hunk           broken:B29 (same bytes)
+B30   i   0             4          yes       non-empty  no .feature hunk           broken:B30 (same bytes)
+B31   i   0             1          yes       non-empty  no .feature hunk           broken:B31 (same bytes)
+B32   i   0             1          yes       non-empty  no .feature hunk           broken:B32 (same bytes)
+B33   i   0             1          yes       non-empty  no .feature hunk           broken:B33 (same bytes)
+B34   i   0             1          yes       non-empty  no .feature hunk           broken:B34 (same bytes)
+B35   i   0             1          yes       non-empty  no .feature hunk           broken:B35 (same bytes)
+B36   i   0             1          yes       non-empty  no .feature hunk           broken:B36 (same bytes)
+B37   i   0             1          yes       non-empty  no .feature hunk           broken:B37 (same bytes)
+B38   i   0             1          yes       non-empty  no .feature hunk           broken:B38 (same bytes)
+B39   i   0             1          yes       non-empty  no .feature hunk           broken:B39 (same bytes)
+B40   i   0             1          yes       non-empty  no .feature hunk           broken:B40 (same bytes)
+B41   i   0             1          yes       non-empty  no .feature hunk           broken:B41 (same bytes)
+B42   i   0             1          yes       non-empty  no .feature hunk           broken:B42 (same bytes)
+B43   i   0             1          yes       non-empty  no .feature hunk           broken:B43 (same bytes)
+B44   i   0             1          yes       non-empty  no .feature hunk           broken:B44 (same bytes)
+B45   i   0             1          yes       non-empty  no .feature hunk           broken:B45 (same bytes)
+B46   i   0             1          yes       non-empty  no .feature hunk           broken:B46 (same bytes)
+B47   i   0             1          yes       non-empty  no .feature hunk           broken:B47 (same bytes)
+
+BREAK x SCENARIO (before = old UI + old tests; whole-half = new UI + whole developer test half reverted; start = arm B's starting state; adapted = the pin)
+break scen  before  whole-half start   adapted step wall b/k/a s    start-state failure
+B01   S001  not-run passed     passed  passed  -    -/11/12         
+B01   S002  not-run passed     passed  passed  -    -/17/16         
+B01   S003  not-run passed     passed  passed  -    -/18/20         
+B01   S004  not-run passed     passed  passed  -    -/18/19         
+B01   S005  not-run passed     passed  passed  -    -/21/21         
+B01   S006  not-run passed     passed  passed  -    -/9/9           
+B01   S007  not-run passed     passed  passed  -    -/24/22         
+B01   S008  not-run passed     passed  passed  -    -/41/34         
+B01   S009  not-run not-run    not-run passed  -    -/-/31          
+B01   S010  not-run passed     passed  passed  -    -/7/8           
+B01   S011  not-run passed     passed  passed  -    -/10/9          
+B01   S012  not-run passed     passed  passed  -    -/5/5           
+B01   S013  not-run passed     passed  passed  -    -/13/12         
+B01   S014  not-run passed     passed  passed  -    -/6/6           
+B01   S015  not-run passed     passed  passed  -    -/8/6           
+B01   S016  not-run passed     passed  passed  -    -/5/5           
+B01   S017  not-run passed     passed  passed  -    -/10/9          
+B01   S018  not-run passed     passed  passed  -    -/13/14         
+B01   S019  not-run passed     passed  passed  -    -/5/5           
+B01   S020  not-run passed     passed  passed  -    -/10/10         
+B01   S021  not-run passed     passed  passed  -    -/5/7           
+B01   S022  not-run passed     passed  passed  -    -/22/22         
+B01   S023  not-run passed     passed  passed  -    -/28/28         
+B01   S024  failed  failed     failed  passed  8    3/10/5          Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Search" in the "'#usernavigation' css_element" not found.
+B01   S025  failed  failed     failed  passed  9    3/10/5          Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Search" in the "'#usernavigation' css_element" not found.
+B01   S026  failed  failed     failed  passed  9    3/10/8          Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Search" in the "'#usernavigation' css_element" not found.
+B01   S027  failed  failed     failed  passed  3    3/9/4           Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Search" in the "'#usernavigation' css_element" not found.
+B01   S028  failed  failed     failed  passed  3    3/9/8           Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Search" in the "'#usernavigation' css_element" not found.
+B01   S029  failed  failed     failed  passed  3    3/9/6           Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Search" in the "'#usernavigation' css_element" not found.
+B03   S001  not-run passed     passed  passed  -    -/10/12         
+B03   S002  not-run passed     passed  passed  -    -/17/16         
+B03   S003  passed  passed     passed  passed  -    20/18/20        
+B03   S004  passed  passed     passed  passed  -    18/18/19        
+B03   S005  not-run passed     passed  passed  -    -/21/21         
+B03   S006  not-run passed     passed  passed  -    -/11/9          
+B03   S007  not-run passed     passed  passed  -    -/22/22         
+B03   S008  not-run passed     passed  passed  -    -/42/34         
+B03   S009  not-run not-run    not-run passed  -    -/-/31          
+B03   S010  not-run passed     passed  passed  -    -/7/8           
+B03   S011  not-run passed     passed  passed  -    -/10/9          
+B03   S012  not-run passed     passed  passed  -    -/5/5           
+B03   S013  passed  passed     passed  passed  -    13/13/12        
+B03   S014  not-run passed     passed  passed  -    -/7/6           
+B03   S015  not-run passed     passed  passed  -    -/6/6           
+B03   S016  not-run passed     passed  passed  -    -/6/5           
+B03   S017  not-run passed     passed  passed  -    -/9/9           
+B03   S018  not-run passed     passed  passed  -    -/14/14         
+B03   S019  not-run passed     passed  passed  -    -/6/5           
+B03   S020  not-run passed     passed  passed  -    -/10/10         
+B03   S021  not-run passed     passed  passed  -    -/6/7           
+B03   S022  passed  passed     passed  passed  -    22/22/22        
+B03   S023  passed  passed     passed  passed  -    28/32/28        
+B03   S030  passed  passed     passed  passed  -    5/5/6           
+B03   S031  passed  passed     passed  passed  -    3/3/3           
+B03   S032  passed  passed     passed  passed  -    3/4/2           
+B03   S033  passed  passed     passed  passed  -    7/7/7           
+B03   S034  passed  passed     passed  passed  -    13/11/10        
+B03   S035  passed  passed     passed  passed  -    13/13/13        
+B04   S001  not-run passed     passed  passed  -    -/10/12         
+B04   S002  not-run passed     passed  passed  -    -/18/16         
+B04   S003  not-run passed     passed  passed  -    -/18/20         
+B04   S004  not-run passed     passed  passed  -    -/18/19         
+B04   S005  not-run passed     passed  passed  -    -/24/21         
+B04   S006  not-run passed     passed  passed  -    -/9/9           
+B04   S007  not-run passed     passed  passed  -    -/22/22         
+B04   S008  not-run passed     passed  passed  -    -/33/34         
+B04   S009  not-run not-run    not-run passed  -    -/-/31          
+B04   S010  not-run passed     passed  passed  -    -/9/8           
+B04   S011  not-run passed     passed  passed  -    -/9/9           
+B04   S012  not-run passed     passed  passed  -    -/6/5           
+B04   S013  not-run passed     passed  passed  -    -/13/12         
+B04   S014  not-run passed     passed  passed  -    -/5/6           
+B04   S015  not-run passed     passed  passed  -    -/6/6           
+B04   S016  not-run passed     passed  passed  -    -/5/5           
+B04   S017  not-run passed     passed  passed  -    -/8/9           
+B04   S018  not-run passed     passed  passed  -    -/14/14         
+B04   S019  not-run passed     passed  passed  -    -/6/5           
+B04   S020  not-run passed     passed  passed  -    -/12/10         
+B04   S021  not-run passed     passed  passed  -    -/5/7           
+B04   S022  not-run passed     passed  passed  -    -/22/22         
+B04   S023  not-run passed     passed  passed  -    -/29/28         
+B04   S036  failed  failed     failed  passed  8    4/10/12         Behat\Mink\Exception\ElementNotFoundException: Css_element matching locator "div[data-region='activity-information'][data-activityname='Test
+B04   S037  failed  failed     failed  passed  15   3/3/3           Behat\Mink\Exception\ElementNotFoundException: Css_element matching locator "div[data-region='activity-information'][data-activityname='Test
+B04   S038  passed  passed     passed  passed  -    3/3/7           
+B04   S039  passed  passed     passed  passed  -    5/5/5           
+B04   S040  failed  failed     failed  passed  15   10/17/11        Behat\Mink\Exception\ElementNotFoundException: Css_element matching locator "div[data-region=activity-information][data-activityname='Music 
+B04   S041  failed  failed     failed  passed  6    3/10/4          Behat\Mink\Exception\ElementNotFoundException: Css_element matching locator "div[data-region='activity-information'][data-activityname='Musi
+B05   S001  not-run passed     passed  passed  -    -/10/12         
+B05   S002  not-run passed     passed  passed  -    -/17/16         
+B05   S003  not-run passed     passed  passed  -    -/20/20         
+B05   S004  not-run passed     passed  passed  -    -/19/19         
+B05   S005  not-run passed     passed  passed  -    -/21/21         
+B05   S006  not-run passed     passed  passed  -    -/10/9          
+B05   S007  not-run passed     passed  passed  -    -/22/22         
+B05   S008  not-run passed     passed  passed  -    -/34/34         
+B05   S009  not-run not-run    not-run passed  -    -/-/31          
+B05   S010  not-run passed     passed  passed  -    -/7/8           
+B05   S011  not-run passed     passed  passed  -    -/11/9          
+B05   S012  not-run passed     passed  passed  -    -/5/5           
+B05   S013  not-run passed     passed  passed  -    -/13/12         
+B05   S014  not-run passed     passed  passed  -    -/6/6           
+B05   S015  not-run passed     passed  passed  -    -/6/6           
+B05   S016  not-run passed     passed  passed  -    -/6/5           
+B05   S017  not-run passed     passed  passed  -    -/8/9           
+B05   S018  not-run passed     passed  passed  -    -/14/14         
+B05   S019  not-run passed     passed  passed  -    -/5/5           
+B05   S020  not-run passed     passed  passed  -    -/10/10         
+B05   S021  not-run passed     passed  passed  -    -/6/7           
+B05   S022  not-run passed     passed  passed  -    -/22/22         
+B05   S023  not-run passed     passed  passed  -    -/32/28         
+B05   S042  failed  failed     failed  passed  34   4/12/11         Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//li[contains(@class, 'slot') and contains(., 'Question A')]/
+B05   S043  failed  failed     failed  passed  21   4/13/14         Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//li[contains(@class, 'slot') and contains(., 'Question A')]/
+B05   S044  failed  failed     failed  passed  7    4/10/29         Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//li[contains(@class, 'slot') and contains(., 'Question1 text
+B05   S045  failed  failed     failed  passed  7    4/10/5          Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//li[contains(@class, 'slot') and contains(., 'Question3 text
+B05   S046  failed  failed     failed  passed  7    4/10/10         Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//li[contains(@class, 'slot') and contains(., 'Question3 text
+B05   S047  failed  failed     failed  passed  10   4/10/5          Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//li[contains(@class, 'slot') and contains(., 'TF1')]//a[cont
+B06   S001  not-run passed     passed  passed  -    -/12/12         
+B06   S002  passed  passed     passed  passed  -    17/19/16        
+B06   S003  not-run passed     passed  passed  -    -/19/20         
+B06   S004  not-run passed     passed  passed  -    -/21/19         
+B06   S005  passed  passed     passed  passed  -    21/22/21        
+B06   S006  passed  passed     passed  passed  -    9/9/9           
+B06   S007  passed  passed     passed  passed  -    22/23/22        
+B06   S008  passed  passed     passed  passed  -    33/34/34        
+B06   S009  not-run not-run    not-run passed  -    -/-/31          
+B06   S010  passed  passed     passed  passed  -    8/8/8           
+B06   S011  passed  passed     passed  passed  -    9/10/9          
+B06   S012  passed  passed     passed  passed  -    5/5/5           
+B06   S013  not-run passed     passed  passed  -    -/12/12         
+B06   S014  passed  passed     passed  passed  -    5/6/6           
+B06   S015  passed  passed     passed  passed  -    6/6/6           
+B06   S016  passed  passed     passed  passed  -    6/5/5           
+B06   S017  passed  passed     passed  passed  -    9/8/9           
+B06   S018  passed  passed     passed  passed  -    16/14/14        
+B06   S019  not-run passed     passed  passed  -    -/5/5           
+B06   S020  not-run passed     passed  passed  -    -/10/10         
+B06   S021  passed  passed     passed  passed  -    5/5/7           
+B06   S022  not-run passed     passed  passed  -    -/22/22         
+B06   S023  not-run passed     passed  passed  -    -/34/28         
+B06   S048  passed  passed     passed  passed  -    9/11/8          
+B06   S049  passed  passed     passed  passed  -    10/11/10        
+B06   S050  passed  passed     passed  passed  -    11/10/10        
+B06   S051  passed  passed     passed  passed  -    12/12/12        
+B06   S052  passed  passed     passed  passed  -    12/12/12        
+B06   S053  passed  passed     passed  passed  -    14/12/10        
+B07   S001  not-run passed     passed  passed  -    -/10/12         
+B07   S002  not-run passed     passed  passed  -    -/17/16         
+B07   S003  not-run passed     passed  passed  -    -/18/20         
+B07   S004  not-run passed     passed  passed  -    -/19/19         
+B07   S005  not-run passed     passed  passed  -    -/25/21         
+B07   S006  not-run passed     passed  passed  -    -/10/9          
+B07   S007  not-run passed     passed  passed  -    -/22/22         
+B07   S008  not-run passed     passed  passed  -    -/33/34         
+B07   S009  not-run not-run    not-run passed  -    -/-/31          
+B07   S010  not-run passed     passed  passed  -    -/8/8           
+B07   S011  not-run passed     passed  passed  -    -/10/9          
+B07   S012  not-run passed     passed  passed  -    -/7/5           
+B07   S013  not-run passed     passed  passed  -    -/13/12         
+B07   S014  not-run passed     passed  passed  -    -/5/6           
+B07   S015  not-run passed     passed  passed  -    -/6/6           
+B07   S016  not-run passed     passed  passed  -    -/5/5           
+B07   S017  not-run passed     passed  passed  -    -/9/9           
+B07   S018  not-run passed     passed  passed  -    -/14/14         
+B07   S019  not-run passed     passed  passed  -    -/5/5           
+B07   S020  not-run passed     passed  passed  -    -/10/10         
+B07   S021  not-run passed     passed  passed  -    -/5/7           
+B07   S022  not-run passed     passed  passed  -    -/22/22         
+B07   S023  not-run passed     passed  passed  -    -/28/28         
+B07   S024  passed  failed     failed  passed  8    5/3/5           Facebook\WebDriver\Exception\ElementNotInteractableException: element not interactable
+  (Session info: chrome=157.0.8103.38)
+B07   S025  passed  failed     failed  passed  9    5/4/5           Facebook\WebDriver\Exception\ElementNotInteractableException: element not interactable
+  (Session info: chrome=157.0.8103.38)
+B07   S026  passed  failed     failed  passed  9    7/4/8           Facebook\WebDriver\Exception\ElementNotInteractableException: element not interactable
+  (Session info: chrome=157.0.8103.38)
+B07   S027  passed  failed     failed  passed  3    4/3/4           Facebook\WebDriver\Exception\ElementNotInteractableException: element not interactable
+  (Session info: chrome=157.0.8103.38)
+B07   S028  passed  failed     failed  passed  3    8/3/8           Facebook\WebDriver\Exception\ElementNotInteractableException: element not interactable
+  (Session info: chrome=157.0.8103.38)
+B07   S029  passed  failed     failed  passed  3    6/4/6           Facebook\WebDriver\Exception\ElementNotInteractableException: element not interactable
+  (Session info: chrome=157.0.8103.38)
+B08   S001  not-run passed     not-run passed  -    -/-/12          
+B08   S002  not-run passed     not-run passed  -    -/-/16          
+B08   S003  not-run passed     not-run passed  -    -/-/20          
+B08   S004  not-run passed     not-run passed  -    -/-/19          
+B08   S005  passed  passed     passed  passed  -    21/21/21        
+B08   S006  not-run passed     not-run passed  -    -/-/9           
+B08   S007  passed  passed     passed  passed  -    22/22/22        
+B08   S008  not-run passed     not-run passed  -    -/-/34          
+B08   S009  not-run not-run    not-run passed  -    -/-/31          
+B08   S010  not-run passed     not-run passed  -    -/-/8           
+B08   S011  not-run passed     not-run passed  -    -/-/9           
+B08   S012  not-run passed     not-run passed  -    -/-/5           
+B08   S013  not-run passed     not-run passed  -    -/-/12          
+B08   S014  not-run passed     not-run passed  -    -/-/6           
+B08   S015  not-run passed     not-run passed  -    -/-/6           
+B08   S016  not-run passed     not-run passed  -    -/-/5           
+B08   S017  not-run passed     not-run passed  -    -/-/9           
+B08   S018  not-run passed     not-run passed  -    -/-/14          
+B08   S019  passed  passed     passed  passed  -    5/5/5           
+B08   S020  passed  passed     passed  passed  -    10/10/10        
+B08   S021  not-run passed     not-run passed  -    -/-/7           
+B08   S022  not-run passed     not-run passed  -    -/-/22          
+B08   S023  not-run passed     not-run passed  -    -/-/28          
+B08   S054  passed  passed     passed  passed  -    17/16/17        
+B08   S055  passed  passed     passed  passed  -    9/9/9           
+B08   S056  passed  passed     passed  passed  -    9/9/9           
+B08   S057  passed  passed     passed  passed  -    11/10/10        
+B08   S058  passed  passed     passed  passed  -    9/10/9          
+B09   S001  not-run passed     not-run passed  -    -/-/12          
+B09   S002  not-run passed     not-run passed  -    -/-/16          
+B09   S003  not-run passed     not-run passed  -    -/-/20          
+B09   S004  not-run passed     not-run passed  -    -/-/19          
+B09   S005  not-run passed     not-run passed  -    -/-/21          
+B09   S006  not-run passed     not-run passed  -    -/-/9           
+B09   S007  not-run passed     not-run passed  -    -/-/22          
+B09   S008  not-run passed     not-run passed  -    -/-/34          
+B09   S009  not-run not-run    not-run passed  -    -/-/31          
+B09   S010  not-run passed     not-run passed  -    -/-/8           
+B09   S011  not-run passed     not-run passed  -    -/-/9           
+B09   S012  not-run passed     not-run passed  -    -/-/5           
+B09   S013  not-run passed     not-run passed  -    -/-/12          
+B09   S014  not-run passed     not-run passed  -    -/-/6           
+B09   S015  not-run passed     not-run passed  -    -/-/6           
+B09   S016  not-run passed     not-run passed  -    -/-/5           
+B09   S017  not-run passed     not-run passed  -    -/-/9           
+B09   S018  not-run passed     not-run passed  -    -/-/14          
+B09   S019  not-run passed     not-run passed  -    -/-/5           
+B09   S020  not-run passed     not-run passed  -    -/-/10          
+B09   S021  not-run passed     not-run passed  -    -/-/7           
+B09   S022  not-run passed     not-run passed  -    -/-/22          
+B09   S023  not-run passed     not-run passed  -    -/-/28          
+B09   S059  passed  failed     passed  passed  -    8/8/8           
+B09   S060  passed  failed     passed  passed  -    36/37/36        
+B09   S061  passed  failed     passed  passed  -    16/15/15        
+B09   S062  passed  failed     passed  passed  -    28/27/28        
+B09   S063  passed  failed     passed  passed  -    32/31/32        
+B10   S001  not-run passed     not-run passed  -    -/-/12          
+B10   S002  not-run passed     not-run passed  -    -/-/16          
+B10   S003  not-run passed     not-run passed  -    -/-/20          
+B10   S004  not-run passed     not-run passed  -    -/-/19          
+B10   S005  not-run passed     not-run passed  -    -/-/21          
+B10   S006  not-run passed     not-run passed  -    -/-/9           
+B10   S007  not-run passed     not-run passed  -    -/-/22          
+B10   S008  not-run passed     not-run passed  -    -/-/34          
+B10   S009  not-run not-run    not-run passed  -    -/-/31          
+B10   S010  not-run passed     not-run passed  -    -/-/8           
+B10   S011  not-run passed     not-run passed  -    -/-/9           
+B10   S012  not-run passed     not-run passed  -    -/-/5           
+B10   S013  not-run passed     not-run passed  -    -/-/12          
+B10   S014  not-run passed     not-run passed  -    -/-/6           
+B10   S015  not-run passed     not-run passed  -    -/-/6           
+B10   S016  not-run passed     not-run passed  -    -/-/5           
+B10   S017  not-run passed     not-run passed  -    -/-/9           
+B10   S018  not-run passed     not-run passed  -    -/-/14          
+B10   S019  not-run passed     not-run passed  -    -/-/5           
+B10   S020  not-run passed     not-run passed  -    -/-/10          
+B10   S021  not-run passed     not-run passed  -    -/-/7           
+B10   S022  not-run passed     not-run passed  -    -/-/22          
+B10   S023  not-run passed     not-run passed  -    -/-/28          
+B10   S064  passed  failed     passed  passed  -    7/7/6           
+B10   S065  passed  failed     passed  passed  -    9/9/9           
+B10   S066  passed  failed     passed  passed  -    15/14/14        
+B10   S067  passed  failed     passed  passed  -    12/12/14        
+B10   S068  passed  failed     passed  passed  -    2/2/2           
+B10   S069  passed  passed     passed  passed  -    11/12/12        
+B11   S001  not-run passed     not-run passed  -    -/-/12          
+B11   S002  not-run passed     not-run passed  -    -/-/16          
+B11   S003  not-run passed     not-run passed  -    -/-/20          
+B11   S004  not-run passed     not-run passed  -    -/-/19          
+B11   S005  not-run passed     not-run passed  -    -/-/21          
+B11   S006  not-run passed     not-run passed  -    -/-/9           
+B11   S007  not-run passed     not-run passed  -    -/-/22          
+B11   S008  not-run passed     not-run passed  -    -/-/34          
+B11   S009  not-run not-run    not-run passed  -    -/-/31          
+B11   S010  not-run passed     not-run passed  -    -/-/8           
+B11   S011  not-run passed     not-run passed  -    -/-/9           
+B11   S012  not-run passed     not-run passed  -    -/-/5           
+B11   S013  not-run passed     not-run passed  -    -/-/12          
+B11   S014  not-run passed     not-run passed  -    -/-/6           
+B11   S015  not-run passed     not-run passed  -    -/-/6           
+B11   S016  not-run passed     not-run passed  -    -/-/5           
+B11   S017  not-run passed     not-run passed  -    -/-/9           
+B11   S018  not-run passed     not-run passed  -    -/-/14          
+B11   S019  not-run passed     not-run passed  -    -/-/5           
+B11   S020  not-run passed     not-run passed  -    -/-/10          
+B11   S021  not-run passed     not-run passed  -    -/-/7           
+B11   S022  not-run passed     not-run passed  -    -/-/22          
+B11   S023  not-run passed     not-run passed  -    -/-/28          
+B11   S070  passed  failed     passed  passed  -    17/11/11        
+B11   S071  passed  failed     passed  passed  -    12/13/13        
+B11   S072  passed  failed     passed  passed  -    10/10/10        
+B11   S073  passed  failed     passed  passed  -    14/10/11        
+B11   S074  passed  failed     passed  passed  -    10/10/10        
+B11   S075  passed  failed     passed  passed  -    34/35/34        
+B12   S001  passed  failed     passed  passed  -    10/10/12        
+B12   S002  not-run passed     not-run passed  -    -/-/16          
+B12   S003  not-run passed     not-run passed  -    -/-/20          
+B12   S004  not-run passed     not-run passed  -    -/-/19          
+B12   S005  not-run passed     not-run passed  -    -/-/21          
+B12   S006  not-run passed     not-run passed  -    -/-/9           
+B12   S007  not-run passed     not-run passed  -    -/-/22          
+B12   S008  not-run passed     not-run passed  -    -/-/34          
+B12   S009  not-run not-run    not-run passed  -    -/-/31          
+B12   S010  not-run passed     not-run passed  -    -/-/8           
+B12   S011  not-run passed     not-run passed  -    -/-/9           
+B12   S012  not-run passed     not-run passed  -    -/-/5           
+B12   S013  not-run passed     not-run passed  -    -/-/12          
+B12   S014  not-run passed     not-run passed  -    -/-/6           
+B12   S015  not-run passed     not-run passed  -    -/-/6           
+B12   S016  not-run passed     not-run passed  -    -/-/5           
+B12   S017  not-run passed     not-run passed  -    -/-/9           
+B12   S018  not-run passed     not-run passed  -    -/-/14          
+B12   S019  not-run passed     not-run passed  -    -/-/5           
+B12   S020  not-run passed     not-run passed  -    -/-/10          
+B12   S021  not-run passed     not-run passed  -    -/-/7           
+B12   S022  not-run passed     not-run passed  -    -/-/22          
+B12   S023  not-run passed     not-run passed  -    -/-/28          
+B12   S076  passed  failed     passed  passed  -    13/13/13        
+B12   S077  passed  failed     passed  passed  -    14/14/14        
+B12   S078  passed  failed     passed  passed  -    24/23/24        
+B12   S079  passed  failed     passed  passed  -    11/11/11        
+B12   S080  passed  failed     passed  passed  -    8/9/8           
+B12   S081  passed  failed     passed  passed  -    10/9/10         
+B13   S001  not-run passed     not-run passed  -    -/-/12          
+B13   S002  not-run passed     not-run passed  -    -/-/16          
+B13   S003  not-run passed     not-run passed  -    -/-/20          
+B13   S004  not-run passed     not-run passed  -    -/-/19          
+B13   S005  not-run passed     not-run passed  -    -/-/21          
+B13   S006  not-run passed     not-run passed  -    -/-/9           
+B13   S007  not-run passed     not-run passed  -    -/-/22          
+B13   S008  not-run passed     not-run passed  -    -/-/34          
+B13   S009  not-run not-run    not-run passed  -    -/-/31          
+B13   S010  not-run passed     not-run passed  -    -/-/8           
+B13   S011  not-run passed     not-run passed  -    -/-/9           
+B13   S012  not-run passed     not-run passed  -    -/-/5           
+B13   S013  not-run passed     not-run passed  -    -/-/12          
+B13   S014  not-run passed     not-run passed  -    -/-/6           
+B13   S015  not-run passed     not-run passed  -    -/-/6           
+B13   S016  not-run passed     not-run passed  -    -/-/5           
+B13   S017  not-run passed     not-run passed  -    -/-/9           
+B13   S018  not-run passed     not-run passed  -    -/-/14          
+B13   S019  not-run passed     not-run passed  -    -/-/5           
+B13   S020  not-run passed     not-run passed  -    -/-/10          
+B13   S021  not-run passed     not-run passed  -    -/-/7           
+B13   S022  not-run passed     not-run passed  -    -/-/22          
+B13   S023  not-run passed     not-run passed  -    -/-/28          
+B13   S082  failed  failed     passed  passed  -    12/10/9         
+B13   S083  failed  failed     passed  passed  -    17/10/11        
+B13   S084  failed  failed     passed  passed  -    13/11/12        
+B13   S085  failed  failed     passed  passed  -    11/12/11        
+B13   S086  failed  failed     passed  passed  -    13/10/10        
+B13   S087  failed  failed     passed  passed  -    16/14/14        
+B15   S091  not-run not-run    failed  passed  3    -/2/2           Behat\Mink\Exception\ElementNotFoundException: Css matching locator ".add_block_button" not found.
+B15   S092  not-run not-run    not-run not-run -    -/-/-           
+B15   S093  not-run not-run    failed  passed  4    -/11/5          Behat\Mink\Exception\ElementNotFoundException: Css matching locator ".add_block_button" not found.
+B15   S094  not-run not-run    failed  passed  5    -/2/2           Behat\Mink\Exception\ElementNotFoundException: Css matching locator ".add_block_button" not found.
+B16   S095  not-run not-run    passed  not-run -    -/4/-           
+B16   S096  not-run not-run    failed  passed  3    -/5/5           Behat\Mink\Exception\ExpectationException: The 'NodeElement' selector type is not registered.
+B16   S097  not-run not-run    failed  passed  2    -/5/4           Behat\Mink\Exception\ExpectationException: The 'NodeElement' selector type is not registered.
+B16   S098  not-run not-run    failed  passed  2    -/4/4           Behat\Mink\Exception\ExpectationException: The 'NodeElement' selector type is not registered.
+B17   S095  not-run not-run    passed  not-run -    -/10/-          
+B17   S099  not-run not-run    passed  not-run -    -/10/-          
+B17   S100  not-run not-run    failed  passed  6    -/10/6          Facebook\WebDriver\Exception\ElementNotInteractableException: element not interactable
+  (Session info: chrome=157.0.8103.38)
+B17   S101  not-run not-run    failed  passed  10   -/10/5          Facebook\WebDriver\Exception\ElementNotInteractableException: element not interactable
+  (Session info: chrome=157.0.8103.38)
+B25   S125  not-run not-run    failed  passed  8    -/3/4           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//div[contains(concat(' ', normalize-space(@class), ' '), ' o
+B25   S126  not-run not-run    failed  passed  8    -/3/4           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//div[contains(concat(' ', normalize-space(@class), ' '), ' o
+B25   S127  not-run not-run    failed  passed  8    -/3/4           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//div[contains(concat(' ', normalize-space(@class), ' '), ' o
+B25   S128  not-run not-run    failed  passed  8    -/3/5           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//div[contains(concat(' ', normalize-space(@class), ' '), ' o
+B26   S129  not-run not-run    failed  passed  10   -/2/4           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//h3[normalize-space(.) = 'Grouping 1']/following-sibling::ta
+B27   S130  not-run not-run    passed  not-run -    -/2/-           
+B27   S131  not-run not-run    failed  passed  1    -/9/4           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//div[contains(concat(' ', @class, ' '), ' usermenu ')]//butt
+B27   S132  not-run not-run    failed  passed  2    -/9/5           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//div[contains(concat(' ', @class, ' '), ' usermenu ')]//butt
+B27   S133  not-run not-run    passed  not-run -    -/2/-           
+B28   S134  not-run not-run    failed  passed  5    -/5/5           Facebook\WebDriver\Exception\ElementClickInterceptedException: element click intercepted: Element <input type="text" data-region="input" dat
+B28   S135  not-run not-run    failed  passed  9    -/6/6           Facebook\WebDriver\Exception\ElementClickInterceptedException: element click intercepted: Element <input type="text" data-region="input" dat
+B28   S136  not-run not-run    failed  passed  8    -/6/8           Facebook\WebDriver\Exception\ElementClickInterceptedException: element click intercepted: Element <input type="text" data-region="input" dat
+B28   S137  not-run not-run    failed  passed  5    -/5/8           Facebook\WebDriver\Exception\ElementClickInterceptedException: element click intercepted: Element <input type="text" data-region="input" dat
+B29   S054  not-run not-run    failed  passed  5    -/17/17         Behat\Mink\Exception\ExpectationException: The "Site administration" node can not be expanded
+B29   S138  not-run not-run    failed  passed  9    -/17/13         Behat\Mink\Exception\ExpectationException: The "Site pages" node can not be expanded
+B29   S139  not-run not-run    failed  passed  9    -/17/11         Behat\Mink\Exception\ExpectationException: The "Site pages" node can not be expanded
+B29   S140  not-run not-run    passed  not-run -    -/3/-           
+B30   S141  not-run not-run    failed  passed  1    -/9/4           Behat\Mink\Exception\ExpectationException: "File picker" filepicker can not be found
+B30   S142  not-run not-run    failed  passed  2    -/11/6          Behat\Mink\Exception\ExpectationException: "Feature file" filepicker can not be found
+B30   S143  not-run not-run    failed  passed  2    -/11/6          Behat\Mink\Exception\ExpectationException: "Feature file" filepicker can not be found
+B30   S144  not-run not-run    failed  passed  3    -/9/4           Behat\Mink\Exception\ExpectationException: "File picker" filepicker can not be found
+B31   S145  not-run not-run    failed  passed  9    -/20/18         Behat\Mink\Exception\ExpectationException: "Category A" category can not be found
+B31   S146  not-run not-run    failed  passed  12   -/23/20         Behat\Mink\Exception\ExpectationException: "Category A child" category can not be found
+B32   S147  not-run not-run    failed  passed  6    -/13/8          Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Submit" not found.
+B32   S148  not-run not-run    failed  passed  6    -/13/9          Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Submit" not found.
+B34   S153  not-run not-run    failed  passed  5    -/2/2           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//a[@class='action'][./descendant::*[contains(., 'Define new 
+B34   S154  not-run not-run    failed  passed  5    -/2/3           Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//a[@class='action'][./descendant::*[contains(., 'Define new 
+B34   S155  not-run not-run    failed  passed  5    -/12/12         Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//a[@class='action'][./descendant::*[contains(., 'Define new 
+B34   S156  not-run not-run    failed  passed  5    -/11/15         Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//a[@class='action'][./descendant::*[contains(., 'Define new 
+B35   S157  not-run not-run    failed  passed  8    -/4/4           Behat\Mink\Exception\ElementNotFoundException: Xpath matching locator "//table[@class='rolecap']/descendant::input[@type='radio'][@name='mod
+B35   S158  not-run not-run    failed  passed  10   -/4/4           Behat\Mink\Exception\ElementNotFoundException: Xpath matching locator "//table[@class='rolecap']/descendant::input[@type='radio'][@name='enr
+B35   S159  not-run not-run    failed  passed  9    -/3/3           Behat\Mink\Exception\ElementNotFoundException: Xpath matching locator "//table[@class='rolecap']/descendant::input[@type='radio'][@name='mod
+B35   S160  not-run not-run    failed  passed  12   -/20/14         Behat\Mink\Exception\ElementNotFoundException: Xpath matching locator "//table[@class='rolecap']/descendant::input[@type='radio'][@name='enr
+B37   S162  not-run not-run    failed  passed  8    -/12/19         Behat\Mink\Exception\ElementNotFoundException: Icon matching locator "[[deletecomment]]" in the "'//*[contains(concat(' ', normalize-space(@
+B38   S163  not-run not-run    failed  passed  6    -/12/7          Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//ul//li//ul//li[@class='tool-lp-menu-item']//a[contains(.,'D
+B38   S164  not-run not-run    failed  passed  6    -/12/7          Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//ul//li//ul//li[@class='tool-lp-menu-item']//a[contains(.,'E
+B38   S165  not-run not-run    failed  passed  6    -/12/7          Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//ul//li//ul//li[@class='tool-lp-menu-item']//a[contains(.,'E
+B38   S166  not-run not-run    failed  passed  8    -/10/6          Behat\Mink\Exception\ElementNotFoundException: Xpath_element matching locator "//ul//li//ul//li[@class='tool-lp-menu-item']//a[contains(.,'E
+B39   S167  not-run not-run    passed  not-run -    -/2/-           
+B39   S168  not-run not-run    failed  passed  4    -/12/8          Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Enrol selected users and cohorts" not found.
+B39   S169  not-run not-run    failed  passed  3    -/20/25         Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Enrol selected users and cohorts" not found.
+B39   S170  not-run not-run    failed  passed  12   -/15/14         Behat\Mink\Exception\ElementNotFoundException: Button matching locator "Enrol selected users and cohorts" not found.
+B44   S043  not-run not-run    passed  passed  -    -/14/14         
+B44   S178  not-run not-run    failed  passed  8    -/10/5          Behat\Mink\Exception\ElementNotFoundException: Link matching locator "Edit heading ''" not found.
+B44   S179  not-run not-run    passed  not-run -    -/4/-           
+B44   S180  not-run not-run    failed  passed  11   -/10/5          Behat\Mink\Exception\ElementNotFoundException: Link matching locator "Edit heading ''" not found.
+
+FAULTS (reproduced = at the adapted state with the fix reverted the linked scenario fails, and passes without the revert; * = alternative target of the same fix, run separately)
+fault mdl         scen  linked     repro healthy faulted fail@ target@ vs target wall s failing step
+F01   MDL-83772   S001  B12        NO    passed  passed  -     8       n/a       10     
+F01*  MDL-83772   S079  B12        yes   passed  failed  25    24      near (+1) 11     I should not see "Unsaved changes" in the "region-main" "region"
+F02   MDL-85551   S002  B06        NO    passed  passed  -     18      n/a       16     
+F03   MDL-86489   S003  B03        yes   passed  failed  11    11      at        10     the "region-main" "region" should meet accessibility standards with "best-practice" extra tests
+F04   MDL-86648   S004  B03        yes   passed  failed  16    17      near (-1) 19     I press "Save"
+F05   MDL-51447   S005  B06,B08    yes   passed  failed  30    29      near (+1) 21     I should see "0 of 1" in the "Activity completion" "table_row"
+F06   MDL-87059   S006  B06        yes   passed  failed  11    8       at (+3)   15     I should see "Short name already exists" in the "Short name" "form_row"
+F07   MDL-87927   S007  B06,B08    NO    passed  passed  -     20      n/a       22     
+F08   MDL-74519   S008  B06        yes   passed  failed  40    40      at        36     
+F09   MDL-66780   S009  B06        yes   passed  failed  20    20      at        29     
+F10   MDL-88083   S010  B06        yes   passed  failed  10    8       near (+2) 7      the following should exist in the "Table listing all Assignment activities" table:
+F11   MDL-88592   S011  B06        yes   passed  failed  16    9       later (+7)15     I click on "Quiz 1" "link" in the "Select question bank" "dialogue"
+F12   MDL-83688   S012  B06        yes   passed  failed  11    11      at        36     I should see "0"
+F13   MDL-88514   S013  B03        yes   passed  failed  24    15      later (+9)16     I should see "Edit submission"
+F14   MDL-88962   S014  B06        yes   passed  failed  9     9       at        12     "Test forum name moved before Third forum name." "text" should exist in the ".toast-wrapper" "css_element"
+F15   MDL-88945   S015  B06        yes   passed  failed  11    11      at        6      the field "Width" matches value "650"
+F16   MDL-88957   S016  B06        yes   passed  failed  5     5       at        11     "Category added." "toast_message" should exist
+F17   MDL-89200   S017  B06        yes   passed  failed  9     9       at        13     I should see "is already running and cannot be scheduled to run ASAP"
+F18   MDL-89618   S018  B06        yes   passed  failed  34    34      at        12     I should see "Attempt submitted." in the ".alert-success" "css_element"
+F19   MDL-89250   S019  B08        yes   passed  failed  10    7       later (+3)11     I should see "Collapse all" in the "region-main" "region"
+F20   MDL-89496   S019  B08        NO    passed  passed  -     8       n/a       4      
+F21   MDL-89868   S020  B08        yes   passed  failed  10    10      at        5      the "href" attribute of "#courseindexsection4-title" "css_element" should contain "#section-4"
+F22   MDL-89902   S021  B06        NO    passed  passed  -     6       n/a       5      
+F23   MDL-89960   S022  B03        yes   passed  failed  26    26      at        22     I should see "Marker 1 comment"
+F24   MDL-89960   S023  B03        yes   passed  failed  40    36      later (+4)25     I should not see "Marker comment (Teacher 2)"
+
+(break, fault) COMBINATIONS (the break bites in arm B's starting state in the fault's scenario AND the fault reproduces there; valid = also fails at the target step under the exact step rule)
+(27 manifest-linked combinations plus 311 cross-product combinations in which the break was run in the fault's scenario; listed below: the linked ones and any combination where the break bites; the rest have a break that passes in that scenario)
+break fault scen  linked brk strict brk core fault valid strict valid core brk step    fault step vs target
+B12   F01   S001  yes    NO         NO       NO    NO           NO         n/a         n/a
+B12   F01   S079  yes    NO         NO       yes   NO           NO         n/a         near
+B06   F02   S002  yes    NO         NO       NO    NO           NO         n/a         n/a
+B03   F03   S003  yes    NO         NO       yes   NO           NO         n/a         at
+B03   F04   S004  yes    NO         NO       yes   NO           NO         n/a         near
+B06   F05   S005  yes    NO         NO       yes   NO           NO         n/a         near
+B08   F05   S005  yes    NO         NO       yes   NO           NO         n/a         near
+B06   F06   S006  yes    NO         NO       yes   NO           NO         n/a         at
+B06   F07   S007  yes    NO         NO       NO    NO           NO         n/a         n/a
+B08   F07   S007  yes    NO         NO       NO    NO           NO         n/a         n/a
+B06   F08   S008  yes    NO         NO       yes   NO           NO         n/a         at
+B06   F09   S009  yes    NO         NO       yes   NO           NO         n/a         at
+B06   F10   S010  yes    NO         NO       yes   NO           NO         n/a         near
+B06   F11   S011  yes    NO         NO       yes   NO           NO         n/a         later
+B06   F12   S012  yes    NO         NO       yes   NO           NO         n/a         at
+B03   F13   S013  yes    NO         NO       yes   NO           NO         n/a         later
+B06   F14   S014  yes    NO         NO       yes   NO           NO         n/a         at
+B06   F15   S015  yes    NO         NO       yes   NO           NO         n/a         at
+B06   F16   S016  yes    NO         NO       yes   NO           NO         n/a         at
+B06   F17   S017  yes    NO         NO       yes   NO           NO         n/a         at
+B06   F18   S018  yes    NO         NO       yes   NO           NO         n/a         at
+B08   F19   S019  yes    NO         NO       yes   NO           NO         n/a         later
+B08   F20   S019  yes    NO         NO       NO    NO           NO         n/a         n/a
+B08   F21   S020  yes    NO         NO       yes   NO           NO         n/a         at
+B06   F22   S021  yes    NO         NO       NO    NO           NO         n/a         n/a
+B03   F23   S022  yes    NO         NO       yes   NO           NO         n/a         at
+B03   F24   S023  yes    NO         NO       yes   NO           NO         n/a         later
+B13   C007  S085  no     NO         NO       yes   NO           NO         n/a         at
+B12   X001  S076  no     NO         NO       yes   NO           NO         n/a         at
+B12   X002  S078  no     NO         NO       yes   NO           NO         n/a         at
+B12   X003  S077  no     NO         NO       yes   NO           NO         n/a         at
+B12   X004  S078  no     NO         NO       yes   NO           NO         n/a         at
+B12   X004  S080  no     NO         NO       yes   NO           NO         n/a         at
+B12   X005  S081  no     NO         NO       yes   NO           NO         n/a         at
+B10   X007  S065  no     NO         NO       yes   NO           NO         n/a         at
+B10   X007  S066  no     NO         NO       yes   NO           NO         n/a         at
+B10   X007  S067  no     NO         NO       yes   NO           NO         n/a         at
+B11   X008  S071  no     NO         NO       yes   NO           NO         n/a         at
+B11   X008  S073  no     NO         NO       yes   NO           NO         n/a         at
+B11   X009  S072  no     NO         NO       yes   NO           NO         n/a         at
+B11   X009  S074  no     NO         NO       yes   NO           NO         n/a         at
+B01   X010  S028  no     NO         yes      yes   NO           yes        n/a         at
+B07   X010  S028  no     yes        yes      yes   yes          yes        n/a         at
+B01   X010  S029  no     NO         yes      yes   NO           yes        n/a         at
+B07   X010  S029  no     yes        yes      yes   yes          yes        n/a         at
+B01   X011  S025  no     NO         yes      yes   NO           yes        n/a         at
+B07   X011  S025  no     yes        yes      yes   yes          yes        n/a         at
+B09   X012  S060  no     NO         NO       yes   NO           NO         n/a         at
+B09   X012  S061  no     NO         NO       yes   NO           NO         n/a         at
+B09   X012  S062  no     NO         NO       yes   NO           NO         n/a         at
+B09   X012  S063  no     NO         NO       yes   NO           NO         n/a         at
+B05   X013  S043  no     NO         yes      yes   NO           yes        n/a         at
+B04   X014  S036  no     NO         yes      yes   NO           yes        n/a         at
+B04   X014  S037  no     NO         yes      yes   NO           yes        n/a         at
+B04   X014  S041  no     NO         yes      yes   NO           yes        n/a         at
+B10   X015  S064  no     NO         NO       yes   NO           NO         n/a         at
+B10   X015  S067  no     NO         NO       yes   NO           NO         n/a         at
+B30   C760  S141  no     NO         yes      yes   NO           yes        n/a         at
+B30   C760  S144  no     NO         yes      yes   NO           yes        n/a         at
+B38   X016  S163  no     NO         yes      yes   NO           yes        n/a         at
+B38   X017  S165  no     NO         yes      yes   NO           yes        n/a         at
+B34   X018  S153  no     NO         yes      yes   NO           yes        n/a         at
+B34   X018  S154  no     NO         yes      yes   NO           yes        n/a         at
+B34   X018  S155  no     NO         yes      yes   NO           yes        n/a         at
+B34   X018  S156  no     NO         yes      yes   NO           yes        n/a         at
+B25   X020  S125  no     NO         yes      yes   NO           yes        n/a         at
+B15   X021  S094  no     NO         yes      yes   NO           yes        n/a         at
+B15   X022  S091  no     NO         yes      yes   NO           yes        n/a         at
+B27   X023  S131  no     NO         yes      yes   NO           yes        n/a         at
+B35   X024  S157  no     NO         yes      yes   NO           yes        n/a         at
+B35   X024  S159  no     NO         yes      yes   NO           yes        n/a         at
+B28   X025  S134  no     NO         yes      yes   NO           yes        n/a         at
+B28   X025  S137  no     NO         yes      yes   NO           yes        n/a         at
+B39   X025  S170  no     NO         yes      yes   NO           yes        n/a         at
+B29   X026  S138  no     NO         yes      yes   NO           yes        n/a         at
+B29   X026  S139  no     NO         yes      yes   NO           yes        n/a         at
+
+NEVER EXECUTED (Behat reported no scenario, every round): S009 before:B06, S009 broken:B01, S009 broken:B03, S009 broken:B04, S009 broken:B05, S009 broken:B06, S009 broken:B07, S009 broken:B08, S009 broken:B09, S009 broken:B10, S009 broken:B11, S009 broken:B12, S009 broken:B13, S092 broken-steps:B15. S009 carries @_cross_browser: Moodle's generated Behat configuration does not list its feature, so the original rounds ran no scenario. Since wave 2 it runs under study-behat-cross-browser.yml (healthy and F09 only; its break and before states were not re-run, no break bites there).
+
+WAVE-2 FAULT CANDIDATES (real bug-fix commits screened for the scenarios where a break bites; origin mined unless stated; every candidate tried is listed)
+candidates 928: tried 370 (accepted 26, rejected after running 344, awaiting confirmation 0); not run: static revert failure 328, not yet scheduled 230
+id    origin  mdl        status    probed failed reason / scenarios failing
+C007  mined   MDL-85718  accepted  3      1      S085
+C009  mined   MDL-85312  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C015  mined   MDL-83256  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C016  mined   MDL-86363  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C018  mined   MDL-86202  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S086:passed, S087:passed)
+C025  mined   MDL-86521  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C026  mined   MDL-86003  rejected  16     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S065:passed, S066:passed, S067:passed, S068:passed, S076:passed, S077:passed, S078:passed, S079:passed, S080:passed, S081:passed)
+C032  mined   MDL-86520  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S046:passed)
+C033  mined   MDL-86520  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S086:passed, S087:passed)
+C035  mined   MDL-81514  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C036  mined   MDL-81514  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C039  mined   MDL-86736  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C040  mined   MDL-86382  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C041  mined   MDL-86800  rejected  16     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S065:passed, S066:passed, S067:passed, S068:passed, S076:passed, S077:passed, S078:passed, S079:passed, S080:passed, S081:passed)
+C044  mined   MDL-86332  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C045  mined   MDL-85554  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C048  mined   MDL-86912  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C053  mined   MDL-86855  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C058  mined   MDL-85036  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C061  mined   MDL-85835  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S083:passed, S084:passed, S085:passed)
+C063  mined   MDL-86323  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S083:passed, S084:passed, S085:passed)
+C073  mined   MDL-87412  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C075  mined   MDL-87415  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C076  mined   MDL-72833  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C078  mined   MDL-87529  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C083  mined   MDL-85653  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S046:passed)
+C084  mined   MDL-86609  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C085  mined   MDL-86609  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S045:passed)
+C090  mined   MDL-87736  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C093  mined   MDL-87694  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C094  mined   MDL-87694  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C096  mined   MDL-87825  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C097  mined   MDL-87757  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C101  mined   MDL-87874  rejected  7      0      screening: the adapter refused to build the faulted state, no scenario ran: Patch touches schema/version files (golden DB would not match): public/lib/db/install.xml
+C103  mined   MDL-87874  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C106  mined   MDL-86985  rejected  16     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S065:passed, S066:passed, S067:passed, S068:passed, S076:passed, S077:passed, S078:passed, S079:passed, S080:passed, S081:passed)
+C107  mined   MDL-87441  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C108  mined   MDL-86809  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S041:passed)
+C109  mined   MDL-87452  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S086:passed, S087:passed)
+C113  mined   MDL-60912  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C118  mined   MDL-79324  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C125  mined   MDL-86616  rejected  6      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed, S045:passed, S046:passed, S047:passed)
+C127  mined   MDL-88197  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C129  mined   MDL-66415  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C131  mined   MDL-88270  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C133  mined   MDL-87560  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C138  mined   MDL-88343  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C141  mined   MDL-88403  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C142  mined   MDL-80321  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S086:passed, S087:passed)
+C144  mined   MDL-88605  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C146  mined   MDL-68682  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S086:passed, S087:passed)
+C148  mined   MDL-88432  rejected  6      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed, S027:passed, S028:passed, S029:passed)
+C149  mined   MDL-88658  rejected  16     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S065:passed, S066:passed, S067:passed, S068:passed, S076:passed, S077:passed, S078:passed, S079:passed, S080:passed, S081:passed)
+C153  mined   MDL-87291  rejected  16     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S065:passed, S066:passed, S067:passed, S068:passed, S076:passed, S077:passed, S078:passed, S079:passed, S080:passed, S081:passed)
+C156  mined   MDL-88833  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C159  mined   MDL-88710  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C165  mined   MDL-88354  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C166  mined   MDL-79755  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C172  mined   MDL-84915  rejected  16     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S065:passed, S066:passed, S067:passed, S068:passed, S076:passed, S077:passed, S078:passed, S079:passed, S080:passed, S081:passed)
+C179  mined   MDL-86170  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C180  mined   MDL-89252  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C189  mined   MDL-89337  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C190  mined   MDL-88583  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C192  mined   MDL-75699  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S083:passed, S084:passed, S085:passed)
+C195  mined   MDL-77349  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S046:passed)
+C201  mined   MDL-89238  rejected  13     0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed, S045:passed, S046:passed, S047:passed, S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+C202  mined   MDL-89694  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C206  mined   MDL-89765  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S046:passed)
+C207  mined   MDL-89765  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S046:passed)
+C208  mined   MDL-89821  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C211  mined   MDL-89881  rejected  6      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed, S027:passed, S028:passed, S029:passed)
+C215  mined   MDL-88922  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C217  mined   MDL-90012  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C218  mined   MDL-87084  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C222  mined   MDL-90067  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C226  mined   MDL-90067  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C227  mined   MDL-90067  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C228  mined   MDL-90067  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C229  mined   MDL-90067  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C233  mined   MDL-79681  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C234  mined   MDL-79681  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C238  mined   MDL-70058  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S071:passed, S072:passed, S073:passed)
+C239  mined   MDL-72703  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C245  mined   MDL-80706  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed)
+C249  mined   MDL-80537  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S046:passed)
+C252  mined   MDL-80392  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C254  mined   MDL-74500  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C262  mined   MDL-78370  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C263  mined   MDL-78370  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C264  mined   MDL-78370  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C266  mined   MDL-80865  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed)
+C273  mined   MDL-52891  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C275  mined   MDL-79027  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C281  mined   MDL-81127  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C287  mined   MDL-80488  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S086:passed, S087:passed)
+C290  mined   MDL-78885  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C293  mined   MDL-78885  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C299  mined   MDL-80765  rejected  12     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S063:passed, S064:passed, S065:passed, S067:passed, S068:passed, S076:passed, S078:passed, S080:passed, S081:passed)
+C303  mined   MDL-81320  rejected  13     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S066:passed, S067:passed, S068:passed, S076:passed, S078:passed, S079:passed, S080:passed)
+C310  mined   MDL-70829  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C311  mined   MDL-70829  rejected  14     0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S065:passed, S067:passed, S068:passed, S076:passed, S077:passed, S078:passed, S079:passed, S081:passed)
+C313  mined   MDL-70829  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C319  mined   MDL-81525  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C320  mined   MDL-81525  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C328  mined   MDL-81274  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed)
+C330  mined   MDL-81564  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S076:passed)
+C336  mined   MDL-81423  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C337  mined   MDL-81530  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S083:passed, S084:passed, S085:passed)
+C362  mined   MDL-81749  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C363  mined   MDL-81739  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S083:passed, S084:passed, S085:passed)
+C371  mined   MDL-68676  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C374  mined   MDL-79758  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C376  mined   MDL-82090  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C377  mined   MDL-82282  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C378  mined   MDL-82401  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C380  mined   MDL-82481  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed)
+C384  mined   MDL-82620  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C386  mined   MDL-82608  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S001:passed, S076:passed, S078:passed)
+C401  mined   MDL-82663  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C402  mined   MDL-82488  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed)
+C409  mined   MDL-83008  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S036:passed, S037:passed, S040:passed)
+C412  mined   MDL-83094  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed)
+C415  mined   MDL-83082  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C424  mined   MDL-79288  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S059:passed)
+C433  mined   MDL-83430  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S073:passed, S074:passed, S075:passed)
+C434  mined   MDL-83430  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S073:passed, S075:passed)
+C436  mined   MDL-83602  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S073:passed, S074:passed, S075:passed)
+C437  mined   MDL-82877  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed)
+C439  mined   MDL-82932  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S060:passed, S061:passed, S062:passed)
+C441  mined   MDL-83211  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C444  mined   MDL-82931  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed)
+C445  mined   MDL-83776  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed)
+C447  mined   MDL-82657  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C448  mined   MDL-83778  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S044:passed, S046:passed)
+C450  mined   MDL-83711  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C459  mined   MDL-82273  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C460  mined   MDL-79122  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C461  mined   MDL-81952  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C469  mined   MDL-83832  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S044:passed, S046:passed)
+C478  mined   MDL-84117  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C486  mined   MDL-84193  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S044:passed, S046:passed)
+C487  mined   MDL-82237  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C513  mined   MDL-84578  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C524  mined   MDL-80091  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C528  mined   MDL-84753  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S001:passed, S076:passed, S078:passed)
+C529  mined   MDL-84753  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S060:passed, S061:passed, S062:passed)
+C541  mined   MDL-84952  rejected  6      0      screening: the faulted build passed every probed scenario that ran (S001:passed, S079:passed, S082:passed, S083:passed, S084:passed, S085:passed)
+C542  mined   MDL-80813  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C548  mined   MDL-85012  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S040:passed, S041:passed)
+C551  mined   MDL-84303  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C558  mined   MDL-85179  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S001:passed, S060:passed, S061:passed)
+C559  mined   MDL-85195  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C565  mined   MDL-85407  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S060:passed, S061:passed, S062:passed)
+C566  mined   MDL-85168  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C571  mined   MDL-85449  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S070:passed)
+C596  mined   MDL-85069  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S045:passed)
+C606  mined   MDL-85863  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S024:passed, S025:passed, S026:passed)
+C611  mined   MDL-85246  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C613  mined   MDL-85257  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S046:passed)
+C615  mined   MDL-79540  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S042:passed, S043:passed, S044:passed)
+C617  mined   MDL-85922  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S037:passed, S040:passed, S041:passed)
+X001  seeded  -          accepted  2      1      S076
+X002  seeded  -          accepted  2      1      S078
+X003  seeded  -          accepted  2      1      S077
+X004  seeded  -          accepted  2      2      S078,S080
+X005  seeded  -          accepted  1      1      S081
+X006  seeded  -          rejected  4      0      screening: PHP/Moodle exception from an incomplete revert in S064, S065, S066, S067 (Exception: Moodle exception: Exception - Call to a member function get_context() on null More information about this error Exception - Call to a member functio); failures in no other scenario are suspected consequences of the same crash, not the original bug's behaviour
+X007  seeded  -          accepted  3      3      S065,S066,S067
+X008  seeded  -          accepted  2      2      S071,S073
+X009  seeded  -          accepted  2      2      S072,S074
+X010  seeded  -          accepted  3      2      S028,S029
+X011  seeded  -          accepted  3      1      S025
+X012  seeded  -          accepted  4      4      S060,S061,S062,S063
+X013  seeded  -          accepted  6      1      S043
+X014  seeded  -          accepted  4      3      S036,S037,S041
+X015  seeded  -          accepted  2      2      S064,S067
+C623  mined   MDL-76251  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C625  mined   MDL-76729  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C626  mined   MDL-69690  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S125:passed, S126:passed, S127:passed, S128:passed)
+C628  mined   MDL-76354  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C629  mined   MDL-76314  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C630  mined   MDL-76415  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C631  mined   MDL-77368  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C632  mined   MDL-72727  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C637  mined   MDL-77227  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S157:passed, S158:passed, S159:passed, S160:passed)
+C640  mined   MDL-78054  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C642  mined   MDL-73138  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C644  mined   MDL-64648  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C645  mined   MDL-78478  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C646  mined   MDL-78263  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C648  mined   MDL-78544  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C653  mined   MDL-78302  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C656  mined   MDL-65887  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S125:passed, S126:passed, S127:passed, S128:passed)
+C657  mined   MDL-74429  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C661  mined   MDL-78795  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C664  mined   MDL-79340  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S153:passed, S154:passed, S155:passed, S156:passed)
+C665  mined   MDL-79480  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C666  mined   MDL-79247  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C667  mined   MDL-79557  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C668  mined   MDL-79320  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C671  mined   MDL-79856  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S157:passed, S158:passed, S159:passed, S160:passed)
+C672  mined   MDL-76694  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S162:passed)
+C673  mined   MDL-80002  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C676  mined   MDL-79325  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C680  mined   MDL-80232  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C682  mined   MDL-80575  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C684  mined   MDL-80498  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C685  mined   MDL-80060  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C686  mined   MDL-73010  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C687  mined   MDL-80202  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C688  mined   MDL-80673  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C689  mined   MDL-79930  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C691  mined   MDL-67772  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C693  mined   MDL-80183  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C695  mined   MDL-77965  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C697  mined   MDL-80160  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S157:passed, S158:passed, S159:passed, S160:passed)
+C699  mined   MDL-81146  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C704  mined   MDL-77838  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C705  mined   MDL-81406  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C707  mined   MDL-81060  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C708  mined   MDL-80195  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C711  mined   MDL-70829  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S125:passed, S126:passed, S127:passed, S128:passed)
+C712  mined   MDL-70829  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C714  mined   MDL-70829  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C715  mined   MDL-81525  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C716  mined   MDL-81574  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C717  mined   MDL-81287  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C718  mined   MDL-81761  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S153:passed, S154:passed, S155:passed, S156:passed)
+C719  mined   MDL-81577  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C720  mined   MDL-81750  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C723  mined   MDL-81349  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C726  mined   MDL-81265  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S125:passed, S126:passed, S127:passed, S128:passed)
+C728  mined   MDL-82643  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C729  mined   MDL-82862  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C735  mined   MDL-83653  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C736  mined   MDL-83641  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C738  mined   MDL-83341  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C739  mined   MDL-83979  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C740  mined   MDL-83377  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C741  mined   MDL-84147  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C742  mined   MDL-84148  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C744  mined   MDL-83989  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C746  mined   MDL-84613  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C748  mined   MDL-84743  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C750  mined   MDL-84877  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C751  mined   MDL-83550  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S153:passed, S154:passed, S155:passed, S156:passed)
+C752  mined   MDL-83856  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S153:passed, S154:passed, S155:passed, S156:passed)
+C753  mined   MDL-84893  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C754  mined   MDL-84997  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C755  mined   MDL-85078  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C758  mined   MDL-82658  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C760  mined   MDL-83713  accepted  4      2      S141,S144
+C761  mined   MDL-85311  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C762  mined   MDL-85169  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C763  mined   MDL-84817  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C764  mined   MDL-84899  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C765  mined   MDL-84899  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C766  mined   MDL-83350  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C767  mined   MDL-84996  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C768  mined   MDL-83487  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C769  mined   MDL-84978  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C772  mined   MDL-85467  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C773  mined   MDL-72123  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C774  mined   MDL-85773  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C775  mined   MDL-85514  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C776  mined   MDL-83752  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S125:passed, S126:passed, S127:passed, S128:passed)
+C778  mined   MDL-85040  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C779  mined   MDL-83558  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C780  mined   MDL-85504  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C781  mined   MDL-86137  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S157:passed, S158:passed, S159:passed, S160:passed)
+C782  mined   MDL-85231  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C783  mined   MDL-85231  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C784  mined   MDL-85231  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C785  mined   MDL-85794  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C786  mined   MDL-85795  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C787  mined   MDL-86168  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C788  mined   MDL-84010  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C789  mined   MDL-86205  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C790  mined   MDL-86010  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C793  mined   MDL-73671  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C794  mined   MDL-86534  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C799  mined   MDL-86703  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C803  mined   MDL-80447  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C805  mined   MDL-81514  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C807  mined   MDL-86800  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S094:passed)
+C808  mined   MDL-86800  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C809  mined   MDL-86800  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S125:passed, S126:passed, S127:passed, S128:passed)
+C811  mined   MDL-86762  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C812  mined   MDL-86767  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C814  mined   MDL-86455  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C815  mined   MDL-86840  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C816  mined   MDL-86840  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C817  mined   MDL-86998  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C818  mined   MDL-86998  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C819  mined   MDL-86765  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C822  mined   MDL-85535  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C824  mined   MDL-51152  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C825  mined   MDL-51152  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C827  mined   MDL-77162  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C829  mined   MDL-86639  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C830  mined   MDL-87289  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C831  mined   MDL-87104  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C833  mined   MDL-87552  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C834  mined   MDL-76437  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S153:passed, S154:passed, S155:passed, S156:passed)
+C836  mined   MDL-87113  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C837  mined   MDL-87597  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C839  mined   MDL-87482  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C841  mined   MDL-78112  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C842  mined   MDL-87456  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S125:passed, S126:passed, S127:passed, S128:passed)
+C844  mined   MDL-87949  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S153:passed, S154:passed, S155:passed, S156:passed)
+C845  mined   MDL-29421  rejected  8      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed, S153:passed, S154:passed, S155:passed, S156:passed)
+C846  mined   MDL-87955  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C847  mined   MDL-87548  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C848  mined   MDL-87795  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C849  mined   MDL-87320  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C850  mined   MDL-86989  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C852  mined   MDL-87822  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C854  mined   MDL-88348  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C855  mined   MDL-88390  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C856  mined   MDL-88360  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C857  mined   MDL-88133  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C858  mined   MDL-87455  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S125:passed, S126:passed, S127:passed, S128:passed)
+C859  mined   MDL-87958  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C860  mined   MDL-88861  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C861  mined   MDL-88897  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C862  mined   MDL-88932  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C863  mined   MDL-70346  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C865  mined   MDL-88264  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C868  mined   MDL-88248  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C869  mined   MDL-88175  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S163:passed, S164:passed, S165:passed, S166:passed)
+C871  mined   MDL-89207  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C872  mined   MDL-89444  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C873  mined   MDL-89434  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C874  mined   MDL-89434  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C875  mined   MDL-89439  rejected  3      0      screening: the faulted build passed every probed scenario that ran (S168:passed, S169:passed, S170:passed)
+C876  mined   MDL-72220  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C877  mined   MDL-89671  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C878  mined   MDL-89620  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C880  mined   MDL-89800  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C881  mined   MDL-88803  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C882  mined   MDL-88803  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C883  mined   MDL-89264  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C884  mined   MDL-89174  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C885  mined   MDL-89306  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C887  mined   MDL-88803  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C888  mined   MDL-89890  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+C889  mined   MDL-89127  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C890  mined   MDL-90060  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S157:passed, S158:passed, S159:passed, S160:passed)
+C891  mined   MDL-89891  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C892  mined   MDL-87486  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S141:passed, S142:passed, S143:passed, S144:passed)
+C893  mined   MDL-89925  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S157:passed, S158:passed, S159:passed, S160:passed)
+C894  mined   MDL-89924  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S157:passed, S158:passed, S159:passed, S160:passed)
+C895  mined   MDL-89933  rejected  4      0      screening: the faulted build passed every probed scenario that ran (S134:passed, S135:passed, S136:passed, S137:passed)
+C896  mined   MDL-90134  rejected  1      0      screening: the faulted build passed every probed scenario that ran (S129:passed)
+C898  mined   MDL-90276  rejected  2      0      screening: the faulted build passed every probed scenario that ran (S147:passed, S148:passed)
+X016  seeded  -          accepted  1      1      S163
+X017  seeded  -          accepted  1      1      S165
+X018  seeded  -          accepted  4      4      S153,S154,S155,S156
+X019  seeded  -          rejected  2      0      screening: the faulted build failed, but not at the declared step in any scenario (S157: step 6 'I set the field "Advanced role override" to "Student (3)"'; S159: step 7 'I set the field "Advanced role override" to "Student (3)"')
+X020  seeded  -          accepted  1      1      S125
+X021  seeded  -          accepted  1      1      S094
+X022  seeded  -          accepted  1      1      S091
+X023  seeded  -          accepted  1      1      S131
+X024  seeded  -          accepted  2      2      S157,S159
+X025  seeded  -          accepted  3      3      S134,S137,S170
+X026  seeded  -          accepted  2      2      S138,S139
+F01   mined   MDL-83772  rejected  14     0      screening: the faulted build passed every probed scenario that ran (S060:passed, S061:passed, S062:passed, S063:passed, S064:passed, S065:passed, S066:passed, S067:passed, S068:passed, S076:passed, S077:passed, S078:passed, S080:passed, S081:passed)
+F06   mined   MDL-87059  rejected  7      0      screening: PHP/Moodle exception from an incomplete revert in S070, S075, S082 (Exception: Moodle exception: Exception - Call to undefined method core_customfield\api::is_shortname_unique() More information about this error Exception - Cal); failures in S071, S072, S073, S074 are suspected consequences of the same crash, not the original bug's behaviour
+F16   mined   MDL-88957  rejected  7      0      screening: the faulted build passed every probed scenario that ran (S070:passed, S071:passed, S072:passed, S073:passed, S074:passed, S075:passed, S082:passed)
+F15   mined   MDL-88945  rejected  8      0      screening: the faulted build passed every probed scenario that ran (S001:passed, S079:passed, S082:passed, S083:passed, S084:passed, S085:passed, S086:passed, S087:passed)
+
+SEEDED FAULTS (origin seeded; written by Claude Code subagent a568d86d854923a72, parent session 357f3273-83ee-4cb0-a178-67a18b547786, model per transcript claude-sonnet-5-5, transcript sha256 61d0cb57cce3e929...; reads before the freeze commits: manifest seeded_provenance; intent and expected failing step written to the manifest before the first run, written_at)
+id    kind             status    expected      observed in the screening run (scenario@step) / reason
+X001  wrong value      accepted  S076          S076@17 as expected
+X002  missing update   accepted  S078          S078@24 as expected
+X003  wrong condition  accepted  S077          S077@19 as expected
+X004  wrong value      accepted  S080          S080@14 as expected
+X005  wrong value      accepted  S081          S081@14 as expected
+X006  wrong condition  rejected  S064          screening: PHP/Moodle exception from an incomplete revert in S064, S065, S066, S067 (Exception: Moodle exception: Exception - Call to a member function get_context() on null More information about this error Exception - Call to a member functio); failures in no other scenario are suspected consequences of the same crash, not the original bug's behaviour
+X007  wrong condition  accepted  S065          S065@16 as expected
+X008  missing update   accepted  S071          S071@11 as expected
+X009  missing update   accepted  S072          S072@10 as expected
+X010  wrong condition  accepted  S028          S028@4 as expected
+X011  wrong value      accepted  S025          S025@13 as expected
+X012  wrong condition  accepted  S061          S061@14 as expected
+X013  wrong value      accepted  S043          S043@13 as expected
+X014  wrong condition  accepted  S041          S041@6 as expected
+X015  wrong condition  accepted  S064          S064@13 as expected
+X016  wrong condition  accepted  S163          S163@8 as expected
+X017  missing update   accepted  S165          S165@11 as expected
+X018  wrong condition  accepted  S153          S153@8 as expected
+X019  wrong condition  rejected  S157          screening: the faulted build failed, but not at the declared step in any scenario (S157: step 6 'I set the field "Advanced role override" to "Student (3)"'; S159: step 7 'I set the field "Advanced role override" to "Student (3)"')
+X020  wrong value      accepted  S125          S125@16 as expected
+X021  wrong condition  accepted  S094          S094@6 as expected
+X022  wrong value      accepted  S091          S091@4 as expected
+X023  wrong condition  accepted  S131          S131@3 as expected
+X024  wrong value      accepted  S157          S157@9 as expected
+X025  wrong condition  accepted  S134          S134@8 as expected
+X026  wrong condition  accepted  S138          S138@10 as expected
+
+WAVE-2 ACCEPTED FAULTS (target = first failing step of the screening run, frozen with a timestamp before pairing; confirmation = independent rerun)
+fault origin  scen  target@ confirm@ vs target frozen at             target step
+C007  mined   S085  14      14       at        2026-11-16T00:15:30Z  I click on "Create link" "button" in the "Create link" "dialogue"
+X001  seeded  S076  17      17       at        2026-11-16T00:15:30Z  I should see "The test is on My Field, Field 1 description, and the input" in the "data_adv_form" "region"
+X002  seeded  S078  24      24       at        2026-11-16T00:15:30Z  I should not see "New header!"
+X003  seeded  S077  19      19       at        2026-11-16T00:15:30Z  I should see "Their field" in the "data_adv_form" "region"
+X004  seeded  S078  14      14       at        2026-11-16T00:15:30Z  I should see "New footer!"
+X004  seeded  S080  14      14       at        2026-11-16T00:15:30Z  I should see "New footer!"
+X005  seeded  S081  14      14       at        2026-11-16T00:15:30Z  I should see "Student entry 1 and Some content 1 details!"
+X007  seeded  S065  16      16       at        2026-11-16T00:15:30Z  the "Delete" item should exist in the "Actions" action menu of the "Saved preset by teacher1" "table_row"
+X007  seeded  S066  8       8        at        2026-11-16T00:15:30Z  the "Edit" item should not exist in the "Actions" action menu of the "Saved preset 1" "table_row"
+X007  seeded  S067  13      13       at        2026-11-16T00:15:30Z  the "Delete" item should not exist in the "Actions" action menu of the "Saved preset 1" "table_row"
+X008  seeded  S071  11      11       at        2026-11-16T00:15:30Z  I should see "Edited field"
+X008  seeded  S073  12      12       at        2026-11-16T00:15:30Z  I should see "Edited number field"
+X009  seeded  S072  10      10       at        2026-11-16T00:15:30Z  I should not see "Test field"
+X009  seeded  S074  11      11       at        2026-11-16T00:15:30Z  I wait until "Number field" "text" does not exist
+X010  seeded  S028  4       4        at        2026-11-16T00:15:30Z  I should not see "The search currently only finds frog-related content"
+X010  seeded  S029  4       4        at        2026-11-16T00:15:30Z  ".notifywarning" "css_element" should not exist
+X011  seeded  S025  13      13       at        2026-11-16T00:15:30Z  "Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete"
+X012  seeded  S060  22      22       at        2026-11-16T00:15:30Z  "Actions" "button" should exist in the ".imagegallery-single" "css_element"
+X012  seeded  S061  14      14       at        2026-11-16T00:15:30Z  "Actions" "button" should exist in the ".journal-single" "css_element"
+X012  seeded  S062  22      22       at        2026-11-16T00:15:30Z  "Actions" "button" should exist in the ".proposals-single" "css_element"
+X012  seeded  S063  23      23       at        2026-11-16T00:15:30Z  "Actions" "button" should exist in the ".resources-single" "css_element"
+X013  seeded  S043  13      13       at        2026-11-16T00:15:30Z  I should see "Questions: 3"
+X014  seeded  S036  8       8        at        2026-11-16T00:15:30Z  the manual completion button for "Test choice manual" should be disabled
+X014  seeded  S037  15      15       at        2026-11-16T00:15:30Z  the manual completion button for "Test choice manual" should be disabled
+X014  seeded  S041  6       6        at        2026-11-16T00:15:30Z  the manual completion button for "Music history" should be disabled
+X015  seeded  S064  13      13       at        2026-11-16T00:15:30Z  the "Delete" item should exist in the "Actions" action menu of the "Saved preset 1" "table_row"
+X015  seeded  S067  13      13       at        2026-11-16T00:15:30Z  the "Delete" item should not exist in the "Actions" action menu of the "Saved preset 1" "table_row"
+C760  mined   S141  0       0        at        2026-11-16T03:04:45Z  I am on the "filepicker_hideif_disabledif_form" "core_form > Fixture" page logged in as "admin"
+C760  mined   S144  2       2        at        2026-11-16T03:04:45Z  I am on the "filepicker_hideif_disabledif_form" "core_form > Fixture" page logged in as "admin"
+X016  seeded  S163  8       8        at        2026-11-16T02:23:07Z  I should see "C1"
+X017  seeded  S165  11      11       at        2026-11-16T02:23:07Z  I should see "Science Year-3 Edited"
+X018  seeded  S153  8       8        at        2026-11-16T02:23:07Z  I should see "Criterion name can not be empty"
+X018  seeded  S154  12      12       at        2026-11-16T02:23:07Z  I should see "Comment 1"
+X018  seeded  S155  13      13       at        2026-11-16T02:23:07Z  I grade by filling the marking guide with:
+X018  seeded  S156  9       9        at        2026-11-16T02:23:07Z  I click on "Edit the current form definition" "link"
+X020  seeded  S125  16      16       at        2026-11-16T02:23:07Z  "Delete submission" "button" should not exist
+X021  seeded  S094  6       6        at        2026-11-16T02:23:07Z  I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block"
+X022  seeded  S091  4       4        at        2026-11-16T02:23:07Z  I should see "Teacher One" in the "Logged in user" "block"
+X023  seeded  S131  3       3        at        2026-11-16T02:23:07Z  I should see "Current session"
+X024  seeded  S157  9       9        at        2026-11-16T02:23:07Z  "mod/forum:editanypost" capability has "Prevent" permission
+X024  seeded  S159  10      10       at        2026-11-16T02:23:07Z  "mod/forum:editanypost" capability has "Prevent" permission
+X025  seeded  S134  8       8        at        2026-11-16T02:41:18Z  I should see "You can't block Teacher 1"
+X025  seeded  S137  8       8        at        2026-11-16T02:41:18Z  I should see "Are you sure you want to block Student 2?"
+X025  seeded  S170  8       8        at        2026-11-16T02:41:18Z  I click on "Block" "button" in the "[data-region='confirm-dialogue']" "css_element"
+X026  seeded  S138  10      10       at        2026-11-16T02:41:18Z  I should not see "Content bank"
+X026  seeded  S139  10      10       at        2026-11-16T02:41:18Z  I should see "Content bank"
+
+SUMMARY: breaks reproduced strict 1/29 usable (core 21); faults reproduced 19/24 (primary targets; alternative targets run: 1, reproduced 1); fault failing step vs target (primary): 12 at, 3 near, 4 earlier/later
+valid pairs strict 3/338 (distinct faults 2, distinct breaks 1; class i 3); valid pairs core 29/338 (distinct faults 15)
+
+VALID PAIRS (every valid combination under the exact step rule, before the ordering criterion; the gate needs >= 4, target 12)
+valid combinations: strict 3, core-only 26; by class i 29, ii 0; distinct breaks 14, distinct faults 15; by origin mined 2, seeded 27
+#   break class bite   scen  fault origin  target@ fail@   vs     target step
+1   B07   i     strict S028  X010  seeded  4       4       at     I should not see "The search currently only finds frog-related content"
+2   B07   i     strict S029  X010  seeded  4       4       at     ".notifywarning" "css_element" should not exist
+3   B07   i     strict S025  X011  seeded  13      13      at     "Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete"
+4   B01   i     core   S028  X010  seeded  4       4       at     I should not see "The search currently only finds frog-related content"
+5   B01   i     core   S029  X010  seeded  4       4       at     ".notifywarning" "css_element" should not exist
+6   B01   i     core   S025  X011  seeded  13      13      at     "Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete"
+7   B04   i     core   S036  X014  seeded  8       8       at     the manual completion button for "Test choice manual" should be disabled
+8   B04   i     core   S037  X014  seeded  15      15      at     the manual completion button for "Test choice manual" should be disabled
+9   B04   i     core   S041  X014  seeded  6       6       at     the manual completion button for "Music history" should be disabled
+10  B05   i     core   S043  X013  seeded  13      13      at     I should see "Questions: 3"
+11  B15   i     core   S094  X021  seeded  6       6       at     I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block"
+12  B15   i     core   S091  X022  seeded  4       4       at     I should see "Teacher One" in the "Logged in user" "block"
+13  B25   i     core   S125  X020  seeded  16      16      at     "Delete submission" "button" should not exist
+14  B27   i     core   S131  X023  seeded  3       3       at     I should see "Current session"
+15  B28   i     core   S134  X025  seeded  8       8       at     I should see "You can't block Teacher 1"
+16  B28   i     core   S137  X025  seeded  8       8       at     I should see "Are you sure you want to block Student 2?"
+17  B29   i     core   S138  X026  seeded  10      10      at     I should not see "Content bank"
+18  B29   i     core   S139  X026  seeded  10      10      at     I should see "Content bank"
+19  B30   i     core   S141  C760  mined   0       0       at     I am on the "filepicker_hideif_disabledif_form" "core_form > Fixture" page logged in as "admin"
+20  B30   i     core   S144  C760  mined   2       2       at     I am on the "filepicker_hideif_disabledif_form" "core_form > Fixture" page logged in as "admin"
+21  B34   i     core   S153  X018  seeded  8       8       at     I should see "Criterion name can not be empty"
+22  B34   i     core   S154  X018  seeded  12      12      at     I should see "Comment 1"
+23  B34   i     core   S155  X018  seeded  13      13      at     I grade by filling the marking guide with:
+24  B34   i     core   S156  X018  seeded  9       9       at     I click on "Edit the current form definition" "link"
+25  B35   i     core   S157  X024  seeded  9       9       at     "mod/forum:editanypost" capability has "Prevent" permission
+26  B35   i     core   S159  X024  seeded  10      10      at     "mod/forum:editanypost" capability has "Prevent" permission
+27  B38   i     core   S163  X016  seeded  8       8       at     I should see "C1"
+28  B38   i     core   S165  X017  seeded  11      11      at     I should see "Science Year-3 Edited"
+29  B39   i     core   S170  X025  seeded  8       8       at     I click on "Block" "button" in the "[data-region='confirm-dialogue']" "css_element"
+
+EXCLUDED PAIRS (valid under the first report's rule: break = whole developer test half reverted, failing step within 2 steps of the target; not valid now): 21
+break class scen  fault origin  target@ fail@  reason
+B12   ii    S079  F01   mined   24      25     the break no longer bites in arm B's starting state (broken-steps:B12 passes); the faulted run fails at step 25, the target is step 24 (near): exact rule, no tolerance
+B13   ii    S085  C007  mined   14      14     the break no longer bites in arm B's starting state (broken-steps:B13 passes)
+B12   ii    S076  X001  seeded  17      17     the break no longer bites in arm B's starting state (broken-steps:B12 passes)
+B12   ii    S078  X002  seeded  24      24     the break no longer bites in arm B's starting state (broken-steps:B12 passes)
+B12   ii    S077  X003  seeded  19      19     the break no longer bites in arm B's starting state (broken-steps:B12 passes)
+B12   ii    S078  X004  seeded  14      14     the break no longer bites in arm B's starting state (broken-steps:B12 passes)
+B12   ii    S080  X004  seeded  14      14     the break no longer bites in arm B's starting state (broken-steps:B12 passes)
+B12   ii    S081  X005  seeded  14      14     the break no longer bites in arm B's starting state (broken-steps:B12 passes)
+B10   ii    S065  X007  seeded  16      16     the break no longer bites in arm B's starting state (broken-steps:B10 passes)
+B10   ii    S066  X007  seeded  8       8      the break no longer bites in arm B's starting state (broken-steps:B10 passes)
+B10   ii    S067  X007  seeded  13      13     the break no longer bites in arm B's starting state (broken-steps:B10 passes)
+B11   ii    S071  X008  seeded  11      11     the break no longer bites in arm B's starting state (broken-steps:B11 passes)
+B11   ii    S073  X008  seeded  12      12     the break no longer bites in arm B's starting state (broken-steps:B11 passes)
+B11   ii    S072  X009  seeded  10      10     the break no longer bites in arm B's starting state (broken-steps:B11 passes)
+B11   ii    S074  X009  seeded  11      11     the break no longer bites in arm B's starting state (broken-steps:B11 passes)
+B09   ii    S060  X012  seeded  22      22     the break no longer bites in arm B's starting state (broken-steps:B09 passes)
+B09   ii    S061  X012  seeded  14      14     the break no longer bites in arm B's starting state (broken-steps:B09 passes)
+B09   ii    S062  X012  seeded  22      22     the break no longer bites in arm B's starting state (broken-steps:B09 passes)
+B09   ii    S063  X012  seeded  23      23     the break no longer bites in arm B's starting state (broken-steps:B09 passes)
+B10   ii    S064  X015  seeded  13      13     the break no longer bites in arm B's starting state (broken-steps:B10 passes)
+B10   ii    S067  X015  seeded  13      13     the break no longer bites in arm B's starting state (broken-steps:B10 passes)
+
+BREAKS THAT NO LONGER BITE in arm B's starting state (whole-half bite before, none now): B09 (broken-steps:B09 passes in all 28 scenarios run; whole-half bite in 5); B10 (broken-steps:B10 passes in all 29 scenarios run; whole-half bite in 5); B11 (broken-steps:B11 passes in all 29 scenarios run; whole-half bite in 6); B12 (broken-steps:B12 passes in all 29 scenarios run; whole-half bite in 7); B13 (broken-steps:B13 passes in all 29 scenarios run; whole-half bite in 6)
+
+ORDERING-EXCLUDED PAIRS (valid under the exact rule, but the fault's target step is before the step where the break bites, so adapted steps cannot affect detection; amendment class-i-first-v3): 4 of 29 valid pairs
+#   break class bite   scen  fault origin  target@ fail@   vs     target step
+1   B05   i     core   S043  X013  seeded  13      13      at     I should see "Questions: 3"   [target 13 < bite 21]
+2   B30   i     core   S141  C760  mined   0       0       at     I am on the "filepicker_hideif_disabledif_form" "core_form > Fixture" page logged in as "admin"   [target 0 < bite 1]
+3   B30   i     core   S144  C760  mined   2       2       at     I am on the "filepicker_hideif_disabledif_form" "core_form > Fixture" page logged in as "admin"   [target 2 < bite 3]
+4   B39   i     core   S170  X025  seeded  8       8       at     I click on "Block" "button" in the "[data-region='confirm-dialogue']" "css_element"   [target 8 < bite 12]
+
+SELECTION RULE class-i-first-v3 (not written before every model result: model-driven smoke trials preceded it, listed in results/moodle-timeline.txt, with the exact commit times): class (i) first (all valid class (i) pairs, at most 3 per break), then class (ii) pairs (at most 2 per break) up to 16 in total; no two pairs share the same fault and scenario; step rule exact (same Behat index or same step text).
+SELECTED PAIRS: 16 pairs over 8 breaks (by class: class i 16; by break: B04 3, B07 3, B15 2, B25 1, B27 1, B28 2, B29 2, B34 2; by origin: seeded 16; strict/core: core 13, strict 3)
+#   break class bite   scen  fault origin  target@ fail@   vs     target step
+1   B07   i     strict S028  X010  seeded  4       4       at     I should not see "The search currently only finds frog-related content"
+2   B07   i     strict S025  X011  seeded  13      13      at     "Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete"
+3   B07   i     strict S029  X010  seeded  4       4       at     ".notifywarning" "css_element" should not exist
+4   B04   i     core   S036  X014  seeded  8       8       at     the manual completion button for "Test choice manual" should be disabled
+5   B04   i     core   S037  X014  seeded  15      15      at     the manual completion button for "Test choice manual" should be disabled
+6   B04   i     core   S041  X014  seeded  6       6       at     the manual completion button for "Music history" should be disabled
+7   B15   i     core   S094  X021  seeded  6       6       at     I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block"
+8   B15   i     core   S091  X022  seeded  4       4       at     I should see "Teacher One" in the "Logged in user" "block"
+9   B25   i     core   S125  X020  seeded  16      16      at     "Delete submission" "button" should not exist
+10  B27   i     core   S131  X023  seeded  3       3       at     I should see "Current session"
+11  B28   i     core   S134  X025  seeded  8       8       at     I should see "You can't block Teacher 1"
+12  B28   i     core   S137  X025  seeded  8       8       at     I should see "Are you sure you want to block Student 2?"
+13  B29   i     core   S138  X026  seeded  10      10      at     I should not see "Content bank"
+14  B29   i     core   S139  X026  seeded  10      10      at     I should see "Content bank"
+15  B34   i     core   S153  X018  seeded  8       8       at     I should see "Criterion name can not be empty"
+16  B34   i     core   S154  X018  seeded  12      12      at     I should see "Comment 1"
+
+WORDING OF THE SELECTION (counts from the selected pairs above)
+"strict" counts pairs: 3 of 16 selected pairs are strict (before state passes, start state fails, pin passes). Only 1 of the 8 selected breaks is strict (B07); the other 7 breaks contribute core pairs only.
+The 13 core pairs have no passing before state (before state of their scenario: failed 3, not-run 10). For them the break is not "the effect of the named UI change"; it is the old step definitions from before the developers' fix, run against the current UI at the pin. The MDL id and date of each UI commit are listed under UI COMMITS below (B25, B27, B28, B29 and B34 are 2019-2021 changes).
+
+PER-PAIR STRUCTURE of the selected pairs (static; Behat indices are 0-based over Background + scenario steps at the pin)
+bite = step where the break bites in arm B's starting state; target = the fault's target step; distance = target - bite (selection rule v3 requires >= 0).
+in changed step = the target step text matches the annotation of a step definition in the developers' fix (hunks of Bxx.test.diff, taken on the pin side from Bxx.broken-steps.patch; helpers followed through same-file callers to depth 3, named-selector keys by quoted name) -> "target in a repaired step"; otherwise "downstream".
+kind = visible-or-existence (should see / should not see / should exist / should not exist / should appear (after), I do not see) or other. dup = how often the target step text occurs in the scenario (1 = unique).
+#  break scen  fault bite   bite@ target@ dist changed step      position                  kind                  dup  target step
+1  B07   S028  X010  strict 3     4       1    no                downstream                visible-or-existence  1    I should not see "The search currently only finds frog-related content"
+2  B07   S025  X011  strict 9     13      4    no                downstream                visible-or-existence  1    "Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete"
+3  B07   S029  X010  strict 3     4       1    no                downstream                visible-or-existence  1    ".notifywarning" "css_element" should not exist
+4  B04   S036  X014  core   8     8       0    yes (definition)  target in a repaired step other                 1    the manual completion button for "Test choice manual" should be disabled
+5  B04   S037  X014  core   15    15      0    yes (definition)  target in a repaired step other                 1    the manual completion button for "Test choice manual" should be disabled
+6  B04   S041  X014  core   6     6       0    yes (definition)  target in a repaired step other                 1    the manual completion button for "Music history" should be disabled
+7  B15   S094  X021  core   5     6       1    no                downstream                visible-or-existence  1    I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block"
+8  B15   S091  X022  core   3     4       1    no                downstream                visible-or-existence  1    I should see "Teacher One" in the "Logged in user" "block"
+9  B25   S125  X020  core   8     16      8    no                downstream                visible-or-existence  1    "Delete submission" "button" should not exist
+10 B27   S131  X023  core   1     3       2    no                downstream                visible-or-existence  1    I should see "Current session"
+11 B28   S134  X025  core   5     8       3    no                downstream                visible-or-existence  1    I should see "You can't block Teacher 1"
+12 B28   S137  X025  core   5     8       3    no                downstream                visible-or-existence  1    I should see "Are you sure you want to block Student 2?"
+13 B29   S138  X026  core   9     10      1    no                downstream                visible-or-existence  1    I should not see "Content bank"
+14 B29   S139  X026  core   9     10      1    no                downstream                visible-or-existence  1    I should see "Content bank"
+15 B34   S153  X018  core   5     8       3    no                downstream                visible-or-existence  1    I should see "Criterion name can not be empty"
+16 B34   S154  X018  core   5     12      7    no                downstream                visible-or-existence  1    I should see "Comment 1"
+TOTALS (16 pairs): target in a repaired step 3, downstream 13; kind visible-or-existence 13, other 3; target text unique 16, repeated in the scenario (ambiguous) 0; distance 0: 3, > 0: 13, < 0: 0; sum of distances 36.
+By break (pairs / in a repaired step): B07 3/0, B04 3/3, B15 2/0, B25 1/0, B27 1/0, B28 2/0, B29 2/0, B34 2/0
+NOTE: the 3 pairs with the target in a repaired step are B04.X014@S036, B04.X014@S037, B04.X014@S041: 1 break(s) (B04), 1 fault(s) (X014), one repair per model and repetition. They are not independent pairs (one repair serves all of them) and are reported separately from the 13 downstream pairs.
+DUPLICATE TARGET TEXT AND THE EXACT RULE: the rule (stepClass in v1-report.mjs, atTarget in scripts/analysis/moodle-oracle.mjs, step_class in mining/record_candidates.py) is an OR: a failing step is "at" the target when it has the target's Behat index OR the same step text; there is no index-first order. The target index itself is resolved once per fault (resolveTarget: text hits sorted by distance to the nominal index, nearest wins, else the nominal index). A failure at another occurrence of a repeated target text would therefore also count as "at". The target index is the first failing step of the screening run, so an occurrence before it passed there; only a later occurrence can be confused with the target.
+AMBIGUOUS PAIRS: none (the target step text occurs once in every selected scenario).
+LIMIT: 13 of the 16 selected targets are visible-text or existence assertions; the other 3 are not (B04.X014@S036: "the manual completion button for "Test choice manual" should be disabled"; B04.X014@S037: "the manual completion button for "Test choice manual" should be disabled"; B04.X014@S041: "the manual completion button for "Music history" should be disabled"). Whether a repaired locator still finds the right element is therefore mostly tested through what the page shows, not through an interaction.
+
+UI COMMITS of the selected breaks (MDL id, commit, committer date, before state of the selected scenarios; "before" = old UI + old tests, a patch at the pin)
+B07  MDL-87834   9105de4c33 2026-06-24; before: S025 passed, S028 passed, S029 passed
+B04  MDL-87662   6200c31f94 2026-02-10; before: S036 failed, S037 failed, S041 failed
+B15  MDL-85281   88dbf8a0d9 2025-05-26; before: S091 not-run, S094 not-run
+B25  MDL-71915   e0f584d64c 2021-12-04; before: S125 not-run
+B27  MDL-69588   306a778855 2021-08-25; before: S131 not-run
+B28  MDL-58579   6cce0bf42e 2021-08-24; before: S134 not-run, S137 not-run
+B29  MDL-70846   e3690a392d 2021-06-03; before: S138 not-run, S139 not-run
+B34  MDL-66999   cacf692578 2019-12-12; before: S153 not-run, S154 not-run

@@ -1,0 +1,148 @@
+diff --git a/public/course/format/classes/output/local/content/section.php b/public/course/format/classes/output/local/content/section.php
+index 889a092b2be5a16b16010732f279ca6efe4cee89..26f2aa45446fc17e8fad2c22eb558d46861116a8 100644
+--- a/public/course/format/classes/output/local/content/section.php
++++ b/public/course/format/classes/output/local/content/section.php
+@@ -334,14 +334,6 @@ class section implements named_templatable, renderable {
+             !$section->is_delegated()
+         );
+ 
+-        // The collapsemenu attribute is deprecated since Moodle 5.3. The collapse/expand all sections
+-        // toggle is now exported by \core_courseformat\output\local\content and rendered above the
+-        // section list. It is kept here only for course formats and themes still overriding the
+-        // core_courseformat/local/content template with a version that does not render the toggle.
+-        // It must always be set: \core_courseformat\output\local\content exports a collapsemenu
+-        // attribute too, and Mustache would otherwise fall back to it for every section.
+-        $data->collapsemenu = ($data->num === 0 && !$data->iscoursedisplaymultipage);
+-
+         $data->contentcollapsed = $this->is_section_collapsed();
+ 
+         if ($format->is_section_current($section)) {
+diff --git a/public/course/format/templates/local/content.mustache b/public/course/format/templates/local/content.mustache
+index 71017cc633b18058fb0ec13fb4471424d4b5fb81..2a96cfab6870304ca7729811cca8386509d0f085 100644
+--- a/public/course/format/templates/local/content.mustache
++++ b/public/course/format/templates/local/content.mustache
+@@ -176,6 +176,7 @@
+     {{#collapsemenu}}
+         <div class="d-flex justify-content-end mb-1">
+             <button type="button"
++                    id="collapsesections"
+                     class="section-collapsemenu aabtn"
+                     aria-expanded="true"
+                     data-toggle="toggleall"
+@@ -194,22 +195,12 @@
+     <ul class="{{format}} section-list{{#collapsemenu}} has-collapsemenu{{/collapsemenu}}" data-for="course_sectionlist">
+         {{#initialsection}}
+             {{$ core_courseformat/local/content/section }}
+-                {{!
+-                    The deprecated collapse/expand all sections toggle inside the section content is
+-                    suppressed here because this template renders it above the section list instead.
+-                    Formats and themes overriding this template with an older version will not suppress
+-                    it, and will keep the previous behaviour.
+-                }}
+-                {{< core_courseformat/local/content/section }}
+-                    {{$ core_courseformat/local/content/section/collapsemenu }}{{/ core_courseformat/local/content/section/collapsemenu }}
+-                {{/ core_courseformat/local/content/section }}
++                {{> core_courseformat/local/content/section }}
+             {{/ core_courseformat/local/content/section }}
+         {{/initialsection}}
+         {{#sections}}
+             {{$ core_courseformat/local/content/section }}
+-                {{< core_courseformat/local/content/section }}
+-                    {{$ core_courseformat/local/content/section/collapsemenu }}{{/ core_courseformat/local/content/section/collapsemenu }}
+-                {{/ core_courseformat/local/content/section }}
++                {{> core_courseformat/local/content/section }}
+             {{/ core_courseformat/local/content/section }}
+         {{/sections}}
+     </ul>
+@@ -223,9 +214,7 @@
+         <ul class="{{format}} section-list">
+         {{#singlesection}}
+             {{$ core_courseformat/local/content/section }}
+-                {{< core_courseformat/local/content/section }}
+-                    {{$ core_courseformat/local/content/section/collapsemenu }}{{/ core_courseformat/local/content/section/collapsemenu }}
+-                {{/ core_courseformat/local/content/section }}
++                {{> core_courseformat/local/content/section }}
+             {{/ core_courseformat/local/content/section }}
+         {{/singlesection}}
+         </ul>
+diff --git a/public/course/format/templates/local/content/section/content.mustache b/public/course/format/templates/local/content/section/content.mustache
+index 871a6a593736aaaa32d073c32dd202a2682400ca..3cec078481d44af750b430fc04388123db2ca920 100644
+--- a/public/course/format/templates/local/content/section/content.mustache
++++ b/public/course/format/templates/local/content/section/content.mustache
+@@ -19,9 +19,6 @@
+ 
+     The internal content of a section.
+ 
+-    The "collapsemenu" context value is deprecated since Moodle 5.3. The collapse/expand all sections
+-    toggle is now part of the core_courseformat/local/content template.
+-
+     Example context (json):
+     {
+         "num": 3,
+@@ -118,30 +115,6 @@
+             {{> core_courseformat/local/content/section/badges }}
+         {{/ core_courseformat/local/content/section/badges }}
+     </div>
+-    {{!
+-        @deprecated since Moodle 5.3. The collapse/expand all sections toggle is now rendered by the
+-        core_courseformat/local/content template, above the section list. The markup below is only kept
+-        so that course formats and themes overriding core_courseformat/local/content (but not this
+-        template) keep working. The core content template suppresses it by overriding this block.
+-    }}
+-    {{$ core_courseformat/local/content/section/collapsemenu }}
+-        {{#collapsemenu}}
+-            {{^displayonesection}}
+-                <div class="flex-fill d-flex justify-content-end me-2 align-self-start mt-2">
+-                    <a id="collapsesections"
+-                       class="section-collapsemenu"
+-                       href="#"
+-                       aria-expanded="true"
+-                       role="button"
+-                       data-toggle="toggleall"
+-                    >
+-                        <span class="collapseall text-nowrap">{{#str}}collapseall{{/str}}</span>
+-                        <span class="expandall text-nowrap">{{#str}}expandall{{/str}}</span>
+-                    </a>
+-                </div>
+-            {{/displayonesection}}
+-        {{/collapsemenu}}
+-    {{/ core_courseformat/local/content/section/collapsemenu }}
+     {{#controlmenu}}
+         {{^displayonesection}}
+             {{$ core_courseformat/local/content/section/controlmenu }}
+diff --git a/public/theme/boost/scss/moodle/course.scss b/public/theme/boost/scss/moodle/course.scss
+index d9ed93d1c9ba8ec3ed0a70f5434a9da7a917db47..8088957a4b52e072f61d43b30daab7567d231bf8 100644
+--- a/public/theme/boost/scss/moodle/course.scss
++++ b/public/theme/boost/scss/moodle/course.scss
+@@ -52,15 +52,9 @@ $divider-hover-color: $primary !default;
+     }
+ }
+ 
+-// Expand all/Collapse all toggle above the section list.
++// Expand all/Collapse all toggle in the section header.
+ .section-collapsemenu {
+     @include collapsemenu-toggle;
+-}
+-
+-// The toggle is only rendered as a button since Moodle 5.3. Course formats and themes overriding the
+-// core_courseformat/local/content template with an older version still render it as a link inside the
+-// first section, and must keep the previous appearance.
+-button.section-collapsemenu {
+     padding: map-get($spacers, 2) .75rem;
+     // The custom property, not the SCSS variable: this toggle sits on the page rather than in a card, and gray 600
+     // only reaches 3.35:1 there once the page is dark. The light value is unchanged.
+@@ -74,14 +68,6 @@ button.section-collapsemenu {
+     }
+ }
+ 
+-// Deprecated since Moodle 5.3. Course formats and themes overriding the
+-// core_courseformat/local/content/section/content template with a version older than Moodle 5.3 still
+-// render the toggle inside the first section. Hide it when the section list is already preceded by the
+-// toggle, so that it is not displayed twice.
+-.section-list.has-collapsemenu .section-collapsemenu {
+-    display: none;
+-}
+-
+ // Expand all/Collapse all toggle in the course index drawer.
+ .courseindex-collapsemenu {
+     @include collapsemenu-toggle;

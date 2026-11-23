@@ -1,0 +1,113 @@
+diff --git a/public/lib/tests/behat/behat_navigation.php b/public/lib/tests/behat/behat_navigation.php
+index 6d68d73591a8477941f6ec23967d7611fd24c9f7..d21728e52a6c1191ee095093a78efe6c97e51030 100644
+--- a/public/lib/tests/behat/behat_navigation.php
++++ b/public/lib/tests/behat/behat_navigation.php
+@@ -1539,18 +1539,13 @@ class behat_navigation extends behat_base {
+      * @Given I turn editing mode on
+      */
+     public function i_turn_editing_mode_on() {
+-        $this->set_editing_mode_field(1);
++        $this->execute('behat_forms::i_set_the_field_to', [get_string('editmode'), 1]);
+ 
+         if (!$this->running_javascript()) {
+             $this->execute('behat_general::i_click_on', [
+                 get_string('setmode', 'core'),
+                 'button',
+             ]);
+-        } else {
+-            // Toggling the field only dispatches the change event; core/edit_switch's own ajax
+-            // call and its redirect-on-success both still need to settle before body's "editing"
+-            // class reflects the new state, otherwise this check can read it mid-navigation.
+-            $this->wait_for_pending_js();
+         }
+ 
+         if (!$this->is_editing_on()) {
+@@ -1564,18 +1559,13 @@ class behat_navigation extends behat_base {
+      * @Given I turn editing mode off
+      */
+     public function i_turn_editing_mode_off() {
+-        $this->set_editing_mode_field(0);
++        $this->execute('behat_forms::i_set_the_field_to', [get_string('editmode'), 0]);
+ 
+         if (!$this->running_javascript()) {
+             $this->execute('behat_general::i_click_on', [
+                 get_string('setmode', 'core'),
+                 'button',
+             ]);
+-        } else {
+-            // Toggling the field only dispatches the change event; core/edit_switch's own ajax
+-            // call and its redirect-on-success both still need to settle before body's "editing"
+-            // class reflects the new state, otherwise this check can read it mid-navigation.
+-            $this->wait_for_pending_js();
+         }
+ 
+         if ($this->is_editing_on()) {
+@@ -1583,25 +1573,6 @@ class behat_navigation extends behat_base {
+         }
+     }
+ 
+-    /**
+-     * Sets the edit mode switch field, waiting first for any in-flight React mount to settle.
+-     *
+-     * core/editswitch mounts the switch as a React component (core/EditModeSwitch), which replaces
+-     * the server-rendered NonJS fallback node once its own ESM import resolves. On a page doing a
+-     * lot of other concurrent React mounting (for example the dashboard, straight after a
+-     * block-configuration save), that swap can leave the element unsettled for a moment. Waiting for
+-     * pending JS here, before locating the field, lets that mount finish first so the field lookup
+-     * itself does not need its own retry loop.
+-     *
+-     * @param int $value 1 to turn editing on, 0 to turn it off.
+-     */
+-    protected function set_editing_mode_field(int $value): void {
+-        if ($this->running_javascript()) {
+-            $this->wait_for_pending_js();
+-        }
+-        $this->execute('behat_forms::i_set_the_field_to', [get_string('editmode'), $value]);
+-    }
+-
+     /**
+      * The named item should exist in the named dropdown.
+      *
+diff --git a/public/theme/boost/tests/behat/editmode_switch.feature b/public/theme/boost/tests/behat/editmode_switch.feature
+deleted file mode 100644
+index dd726c4686c2b5f8750dd903c2c15bd2ee99a084..0000000000000000000000000000000000000000
+--- a/public/theme/boost/tests/behat/editmode_switch.feature
++++ /dev/null
+@@ -1,37 +0,0 @@
+-@theme_boost
+-Feature: Edit mode switch
+-  In order to safely toggle editing on a page
+-  As a teacher
+-  I need the Edit mode switch to keep working after it moved onto the design system Switch component
+-
+-  Background:
+-    Given the following "courses" exist:
+-      | fullname | shortname |
+-      | Course 1 | C1        |
+-    And the following "users" exist:
+-      | username | firstname | lastname |
+-      | teacher1 | Teacher   | One      |
+-    And the following "course enrolments" exist:
+-      | user     | course | role           |
+-      | teacher1 | C1     | editingteacher |
+-
+-  @javascript
+-  Scenario: Turning editing mode on and off with JavaScript enabled
+-    Given I log in as "teacher1"
+-    And I am on "Course 1" course homepage
+-    And ".mds-switch" "css_element" should exist
+-    And "Edit mode" "field" should exist
+-    When I turn editing mode on
+-    Then the field "Edit mode" matches value "1"
+-    And I turn editing mode off
+-    And the field "Edit mode" matches value "0"
+-
+-  Scenario: Turning editing mode on and off without JavaScript falls back to the noscript submit
+-    Given I log in as "teacher1"
+-    And I am on "Course 1" course homepage
+-    And ".mds-switch" "css_element" should exist
+-    And "Edit mode" "field" should exist
+-    When I turn editing mode on
+-    Then the field "Edit mode" matches value "1"
+-    And I turn editing mode off
+-    And the field "Edit mode" matches value "0"

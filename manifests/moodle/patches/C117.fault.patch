@@ -1,0 +1,141 @@
+diff --git a/public/lib/questionlib.php b/public/lib/questionlib.php
+index 448c4d7442790e4bb348decdb2d4e00273729b54..7bf8175aeafb67d7050023e67b68f98ad1544191 100644
+--- a/public/lib/questionlib.php
++++ b/public/lib/questionlib.php
+@@ -699,9 +699,8 @@ function move_question_set_references(int $oldcategoryid, int $newcatgoryid,
+                 && $oldcategoryid !== $newcatgoryid
+             ) {
+                 $filter['filter']['category']['values'][0] = $newcatgoryid;
++                $setreference->filtercondition = json_encode($filter);
+             }
+-            $filter['cat'] = implode(',', [$filter['filter']['category']['values'][0], $newcontextid]);
+-            $setreference->filtercondition = json_encode($filter);
+             $DB->update_record('question_set_references', $setreference);
+         }
+         $setreferences->close();
+diff --git a/public/question/classes/question_reference_manager.php b/public/question/classes/question_reference_manager.php
+index 5c4c7c527c11b343e9f0567b145a867ea977d5f1..165c21cc895c6293008af2b77c354342badd6995 100644
+--- a/public/question/classes/question_reference_manager.php
++++ b/public/question/classes/question_reference_manager.php
+@@ -142,33 +142,4 @@ class question_reference_manager {
+         }
+         return $filtercondition;
+     }
+-
+-    /**
+-     * Ensure consistency of filter 'cat' parameter and questioncontextid in all set references.
+-     *
+-     * Some set references may have been moved to a different context, but the filter condition not updated with the context ID.
+-     * Since the filter condition is JSON-encoded, we have to check each set reference record for inconsistencies.
+-     *
+-     * This is used in a CLI script to fix bad data due to MDL-86691.
+-     *
+-     * @return int The number of records that were updated.
+-     * @todo Deprecate in Moodle 6.0 (MDL-87844) for removal in 7.0 (MDL-87845).
+-     */
+-    public static function fix_set_references_category_context(): int {
+-        global $DB;
+-        $updates = 0;
+-        $sets = $DB->get_recordset('question_set_references');
+-        foreach ($sets as $set) {
+-            $filtercondition = json_decode($set->filtercondition, true);
+-            [$catid, $catcontext] = explode(',', $filtercondition['cat']);
+-            if ($catcontext != $set->questionscontextid) {
+-                $filtercondition['cat'] = implode(',', [$catid, $set->questionscontextid]);
+-                $set->filtercondition = json_encode($filtercondition);
+-                $DB->update_record('question_set_references', $set);
+-                $updates++;
+-            }
+-        }
+-        $sets->close();
+-        return $updates;
+-    }
+ }
+diff --git a/public/question/cli/fix_set_references_category_context.php b/public/question/cli/fix_set_references_category_context.php
+deleted file mode 100644
+index 737855e3107d8cbe953f2e3929e69ee544bc70cd..0000000000000000000000000000000000000000
+--- a/public/question/cli/fix_set_references_category_context.php
++++ /dev/null
+@@ -1,64 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * Fix bad set reference data due to MDL-86691.
+- *
+- * @todo Deprecate in Moodle 6.0 (MDL-87844) for removal in 7.0 (MDL-87845).
+- *
+- * @package   core_question
+- * @copyright 2026 onwards Catalyst IT EU {@link https://catalyst-eu.net}
+- * @author    Mark Johnson <mark.johnson@catalyst-eu.net>
+- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-define('CLI_SCRIPT', true);
+-
+-require(__DIR__ . '/../../config.php');
+-require_once($CFG->libdir . '/clilib.php');
+-
+-[$options, $unrecognized] = cli_get_params(['help' => false], ['h' => 'help']);
+-
+-if ($unrecognized) {
+-    $unrecognized = implode("\n  ", $unrecognized);
+-    cli_error(get_string('cliunknowoption', 'admin', $unrecognized), 2);
+-}
+-
+-if ($options['help']) {
+-    $help = <<<EOF
+-Fix bad set reference data
+-
+-Due to MDL-86691, some question set reference records may have the wrong contextid stored in their filter condition after
+-upgrading to Moodle 5.x. This checks all records in the question_set_references table and corrects any that are needed.
+-It is not necessary if you upgraded to 5.x with the fix for MDL-86691 already in place.
+-
+-Options:
+--h, --help  Print out this help
+-
+-Example:
+-\$sudo -u www-data /usr/bin/php question/cli/fix_set_references_category_context.php
+-EOF;
+-
+-    echo $help;
+-    exit(0);
+-}
+-
+-cli_writeln('Checking for incorrect context IDs in question_set_references...');
+-
+-$fixcount = core_question\question_reference_manager::fix_set_references_category_context();
+-
+-cli_writeln("Found and fixed {$fixcount} incorrect records.");
+-
+-exit(0);
+diff --git a/public/question/editlib.php b/public/question/editlib.php
+index 9f29c22f3db1e8e5aa3afbf3fb4ce33afddb776c..e64498307dcbc9e5721c48d8cd9ac7099a4882eb 100644
+--- a/public/question/editlib.php
++++ b/public/question/editlib.php
+@@ -321,12 +321,7 @@ function question_build_edit_resources($edittab, $baseurl, $params,
+         $catparts = explode(',', $pagevars['cat']);
+         if (!$catparts[0] || (false !== array_search($catparts[1], $contextlistarr)) ||
+                 !$DB->count_records_select("question_categories", "id = ? AND contextid = ?", array($catparts[0], $catparts[1]))) {
+-            $exception = 'invalidcategory';
+-            if ($edittab === 'editq') {
+-                // If this might be due to MDL-86691, return a message including fix instructions.
+-                $exception = 'invalidcategoryeditq';
+-            }
+-            throw new \moodle_exception($exception, 'question');
++            throw new \moodle_exception('invalidcategory', 'question');
+         }
+     } else {
+         $category = $defaultcategory;

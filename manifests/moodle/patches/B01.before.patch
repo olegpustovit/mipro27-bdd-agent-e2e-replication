@@ -1,0 +1,118 @@
+diff --git a/public/lang/en/search.php b/public/lang/en/search.php
+index 3e5282dd68daa42a3f5557e2b45e440aeb5c4c1b..b176317d568c65b41fd5d817db5d034c2c3d6a84 100644
+--- a/public/lang/en/search.php
++++ b/public/lang/en/search.php
+@@ -98,7 +98,6 @@ $string['optimize'] = 'Optimize';
+ $string['order'] = 'Results order';
+ $string['order_location'] = 'Prioritise results related to {$a}';
+ $string['order_relevance'] = 'Most relevant results first';
+-$string['performsearch'] = 'Perform search';
+ $string['priority'] = 'Priority';
+ $string['priority_reindexing'] = 'Reindexing';
+ $string['priority_normal'] = 'Normal';
+diff --git a/public/lib/classes/output/core_renderer.php b/public/lib/classes/output/core_renderer.php
+index ffed583270e011de8255967f9c44252d7760b9de..e7090d803a73407fb0f29cbb90008b5ab631c94a 100644
+--- a/public/lib/classes/output/core_renderer.php
++++ b/public/lib/classes/output/core_renderer.php
+@@ -3171,8 +3171,7 @@ EOD;
+             'hiddenfields' => (object) ['name' => 'context', 'value' => $this->page->context->id],
+             'inputname' => 'q',
+             'searchstring' => get_string('search'),
+-            'grouplabel' => get_string('sitewidesearch', 'search'),
+-        ];
++            ];
+         return $this->render_from_template('core/search_input_navbar', $data);
+     }
+ 
+diff --git a/public/lib/templates/search_input_navbar.mustache b/public/lib/templates/search_input_navbar.mustache
+index b23f5f823dec06ad22ce2ab61c654258a7ab31f1..fcf9a5d11dbe39e99c7bf023d69beb692a7c4b87 100644
+--- a/public/lib/templates/search_input_navbar.mustache
++++ b/public/lib/templates/search_input_navbar.mustache
+@@ -38,10 +38,8 @@
+             {{#hiddenfields}}
+                 <input type="hidden" name="{{ name }}" value="{{ value }}">
+             {{/hiddenfields}}
+-            <div class="input-group" {{#grouplabel}}role="group" aria-labelledby="searchgrouplabel-{{uniqid}}"{{/grouplabel}}>
+-                {{#grouplabel}}
+-                    <span id="searchgrouplabel-{{uniqid}}" class="visually-hidden">{{{ . }}}</span>
+-                {{/grouplabel}}
++            <div class="input-group">
++
+                 <input type="text"
+                     id="searchinput-{{uniqid}}"
+                     class="form-control withclear"
+@@ -59,13 +57,12 @@
+                     data-bs-toggle="collapse"
+                     href="#searchform-navbar"
+                     role="button"
+-                    title="{{#str}} closebuttontitle {{/str}}"
+                 >
+                     <span class="visually-hidden">{{#str}} closebuttontitle {{/str}}</span>
+                 </a>
+-                <button type="submit" class="btn btn-submit" data-action="submit" title="{{#str}}performsearch, search{{/str}}">
++                <button type="submit" class="btn btn-submit" data-action="submit">
+                     {{#pix}} a/search, core {{/pix}}
+-                    <span class="visually-hidden">{{#str}}performsearch, search{{/str}}</span>
++                    <span class="visually-hidden">{{{ searchstring }}}</span>
+                 </button>
+             </div>
+         </form>
+diff --git a/public/message/templates/message_drawer_view_overview_header.mustache b/public/message/templates/message_drawer_view_overview_header.mustache
+index ea6f24a0dfce0358bbcc68dbf1ab62d9fbdf3219..8a8dfede24c5f6e5f5cc5ff97486eacef1a503d2 100644
+--- a/public/message/templates/message_drawer_view_overview_header.mustache
++++ b/public/message/templates/message_drawer_view_overview_header.mustache
+@@ -35,8 +35,7 @@
+ }}
+ <div class="border-bottom p-1 px-sm-2" aria-hidden="false" {{^isdrawer}}data-in-panel="true"{{/isdrawer}} data-region="view-overview">
+     <div class="d-flex align-items-center">
+-        <div class="input-group simplesearchform" role="group" aria-labelledby="messageoverviewgrouplabel">
+-            <span class="visually-hidden" id="messageoverviewgrouplabel">{{#str}}searchcombined, message{{/str}}</span>
++        <div class="input-group simplesearchform">
+             <input
+                 type="text"
+                 class="form-control"
+diff --git a/public/message/templates/message_drawer_view_search_header.mustache b/public/message/templates/message_drawer_view_search_header.mustache
+index 8b6657cd9346c4a50475ff9475915898dc0f9e7e..40071f33a61bd78e9816d460d25f50bd56314672 100644
+--- a/public/message/templates/message_drawer_view_search_header.mustache
++++ b/public/message/templates/message_drawer_view_search_header.mustache
+@@ -45,8 +45,7 @@
+         >
+             {{> core_message/message_drawer_icon_back }}
+         </a>
+-        <div class="input-group simplesearchform" role="group" aria-labelledby="messagesearchgrouplabel">
+-            <span class="visually-hidden" id="messagesearchgrouplabel">{{#str}}searchcombined, message{{/str}}</span>
++        <div class="input-group simplesearchform">
+             <input
+                 type="text"
+                 class="form-control"
+@@ -58,8 +57,7 @@
+                 class="btn btn-submit icon-no-margin"
+                 type="button"
+                 data-action="search"
+-                aria-label="{{#str}} performsearch, core_search {{/str}}"
+-                title="{{#str}} performsearch, core_search {{/str}}"
++                aria-label="{{#str}} search, core_search {{/str}}"
+             >
+                 <span data-region="search-icon-container">
+                     {{#pix}} a/search, core {{/pix}}
+@@ -70,4 +68,4 @@
+             </button>
+         </div>
+     </div>
+-</div>
++</div>
+\ No newline at end of file
+diff --git a/public/search/tests/behat/behat_search.php b/public/search/tests/behat/behat_search.php
+index 3e86a07497b5d441829c51d821c2b5fd72a38be0..87ce44392734f1d4d3b0dd9ee6b5321f8041b75f 100644
+--- a/public/search/tests/behat/behat_search.php
++++ b/public/search/tests/behat/behat_search.php
+@@ -57,8 +57,7 @@ class behat_search extends behat_base {
+ 
+         // Submit the form.
+         $this->execute("behat_general::i_click_on_in_the",
+-            [get_string('performsearch', 'search'), 'button', '#usernavigation', 'css_element']
+-        );
++            [get_string('search', 'core'), 'button', '#usernavigation', 'css_element']);
+     }
+ 
+     /**

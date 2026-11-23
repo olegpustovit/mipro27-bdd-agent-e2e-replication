@@ -1,0 +1,35 @@
+diff --git a/public/customfield/amd/src/form.js b/public/customfield/amd/src/form.js
+index 37bb4627f18d4553bcef2ab68af1932abd417a47..d73c0563310ef6ddfe3d43d9cc5131554f2bc946 100644
+--- a/public/customfield/amd/src/form.js
++++ b/public/customfield/amd/src/form.js
+@@ -285,7 +285,6 @@ const setupSortableLists = rootNode => {
+         } else if (afterElement.attr('data-field-name')) {
+             return getString('afterfield', 'customfield', afterElement.attr('data-field-name'));
+         } else {
+-            // Empty string signals sortable_list to skip this destination.
+             return Promise.resolve('');
+         }
+     };
+diff --git a/public/lib/amd/src/sortable_list.js b/public/lib/amd/src/sortable_list.js
+index 1eaf0c5df04844820c53cc31a9f4cab8fc984e93..4cd031e5482b38870c767e9bf1417f04c924f868 100644
+--- a/public/lib/amd/src/sortable_list.js
++++ b/public/lib/amd/src/sortable_list.js
+@@ -662,8 +662,6 @@ define([
+      *
+      * Note that we use "after" in the label for better UX
+      *
+-     * Returning an empty or whitespace-only string will omit this destination from the dialogue.
+-     *
+      * @public
+      * @param {jQuery} parentElement
+      * @param {jQuery} afterElement
+@@ -724,9 +722,6 @@ define([
+                     return this.getDestinationName(parentElement, afterElement);
+                 }, this))
+                 .then(function(txt) {
+-                    if (typeof txt === 'string' && txt.trim() === '') {
+-                        return destinations;
+-                    }
+                     var li = $('<li/>').appendTo(destinations);
+                     var a = $('<a href="#"/>').attr('data-core_sortable_list-quickmove', 1).appendTo(li);
+                     a.data('parent-element', parentElement).data('before-element', beforeElement).text(txt);

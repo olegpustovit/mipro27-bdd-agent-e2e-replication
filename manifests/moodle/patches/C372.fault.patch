@@ -1,0 +1,38 @@
+diff --git a/public/lib/editor/tiny/amd/src/editor.js b/public/lib/editor/tiny/amd/src/editor.js
+index 3f59087a3cf28d97461c179e1df930d3f0abe92b..9ab41d931ca913d13534df83923ebdd4f70adfa3 100644
+--- a/public/lib/editor/tiny/amd/src/editor.js
++++ b/public/lib/editor/tiny/amd/src/editor.js
+@@ -23,7 +23,7 @@
+ 
+ import jQuery from 'jquery';
+ import Pending from 'core/pending';
+-import {getDefaultConfiguration, getDefaultQuickbarsSelectionToolbar} from './defaults';
++import {getDefaultConfiguration} from './defaults';
+ import {getTinyMCE, baseUrl} from './loader';
+ import * as Options from './options';
+ import {addToolbarButton, addToolbarButtons, addToolbarSection,
+@@ -309,11 +309,6 @@ const getStandardConfig = async(target, tinyMCE, options, plugins) => {
+         // eslint-disable-next-line camelcase
+         quickbars_insert_toolbar: '',
+ 
+-        // If the target element is too small, disable the quickbars selection toolbar.
+-        // The quickbars selection toolbar is not displayed correctly if the target element is too small.
+-        // See: https://github.com/tinymce/tinymce/issues/9693.
+-        quickbars_selection_toolbar: target.rows > 5 ? getDefaultQuickbarsSelectionToolbar() : false,
+-
+         // Override the standard block formats property (removing h1 & h2).
+         // https://www.tiny.cloud/docs/tinymce/6/user-formatting-options/#block_formats
+         // eslint-disable-next-line camelcase
+@@ -531,10 +526,8 @@ const getEditorConfiguration = async(target, tinyMCE, options, pluginValues) =>
+             .replaceAll(/\| *\|/g, '|');
+     }
+ 
+-    if (instanceConfig.quickbars_selection_toolbar !== false) {
+-        // eslint-disable-next-line camelcase
+-        instanceConfig.quickbars_selection_toolbar = instanceConfig.quickbars_selection_toolbar.replace('h2 h3', 'h3 h4 h5 h6');
+-    }
++    // eslint-disable-next-line camelcase
++    instanceConfig.quickbars_selection_toolbar = instanceConfig.quickbars_selection_toolbar.replace('h2 h3', 'h3 h4 h5 h6');
+ 
+     // Next we call the `configure` function for any plugin which defines it.
+     // We pass the current instanceConfig in here, to allow them to make certain changes to the global configuration.

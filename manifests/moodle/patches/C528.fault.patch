@@ -1,0 +1,50 @@
+diff --git a/public/mod/data/field.php b/public/mod/data/field.php
+index c03fbbaffa6c5395ac0e0a09469171937ab6f20b..6f614c615a2a9f929080f0fd04628156aded8d8b 100644
+--- a/public/mod/data/field.php
++++ b/public/mod/data/field.php
+@@ -426,7 +426,7 @@ if (($mode == 'new') && (!empty($newtype))) { // Adding a new field.
+ 
+     echo '<div class="sortdefault">';
+     echo '<form id="sortdefault" action="'.$CFG->wwwroot.'/mod/data/field.php" method="get">';
+-    echo '<div class="d-flex flex-column flex-md-row flex-wrap align-items-md-center gap-2">';
++    echo '<div>';
+     echo '<input type="hidden" name="d" value="'.$data->id.'" />';
+     echo '<input type="hidden" name="mode" value="sort" />';
+     echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+@@ -467,7 +467,7 @@ if (($mode == 'new') && (!empty($newtype))) { // Adding a new field.
+                      1 => get_string('descending', 'data'));
+     echo html_writer::label(get_string('sortby'), 'menudefaultsortdir', false, array('class' => 'accesshide'));
+     echo html_writer::select($options, 'defaultsortdir', $data->defaultsortdir, false, ['class' => 'form-select']);
+-    echo '<input type="submit" class="btn btn-secondary" value="'.get_string('save', 'data').'" />';
++    echo '<input type="submit" class="btn btn-secondary ms-1" value="'.get_string('save', 'data').'" />';
+     echo '</div>';
+     echo '</form>';
+ 
+diff --git a/public/mod/data/field/textarea/field.class.php b/public/mod/data/field/textarea/field.class.php
+index 6f7ee67cf98413e4721c3c1d4d2080769e8cf826..fda42054937855d17605dacf1310de1f6a5d61be 100644
+--- a/public/mod/data/field/textarea/field.class.php
++++ b/public/mod/data/field/textarea/field.class.php
+@@ -242,7 +242,7 @@ class data_field_textarea extends data_field_base {
+             'rows="'.$this->field->param3 . '" class="form-control" data-fieldtype="editor" ' .
+             'cols="'.$this->field->param2.'" spellcheck="true">'.s($text).'</textarea></div>';
+         $str .= '<div><label class="accesshide" for="' . $field . '_content1">' . get_string('format') . '</label>';
+-        $str .= '<select id="' . $field . '_content1" name="'.$field.'_content1" class="form-select mt-2">';
++        $str .= '<select id="' . $field . '_content1" name="'.$field.'_content1">';
+         foreach ($formats as $key=>$desc) {
+             $selected = ($format == $key) ? 'selected="selected"' : '';
+             $str .= '<option value="'.s($key).'" '.$selected.'>'.$desc.'</option>';
+diff --git a/public/mod/data/styles.css b/public/mod/data/styles.css
+index 88a050d98c4ef7924fb0d473e013f7544b457b05..d86ef19d4ac9835546ebcd54f43ba40e78de0b66 100644
+--- a/public/mod/data/styles.css
++++ b/public/mod/data/styles.css
+@@ -60,6 +60,10 @@
+     margin: 1em 0;
+ }
+ 
++.path-mod-data-field .sortdefault select {
++    margin-left: 1em;
++}
++
+ .path-mod-data-field .fieldname,
+ .path-mod-data-field .fielddescription {
+     width: 300px;

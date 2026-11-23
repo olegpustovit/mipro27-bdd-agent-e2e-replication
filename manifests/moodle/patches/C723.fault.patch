@@ -1,0 +1,15 @@
+diff --git a/public/group/group_form.php b/public/group/group_form.php
+index 96b5450ffd9c230ee5dba95a1b2265f080f65ace..0a639a396a7f39d9ff7985b8009df1e047775ffe 100644
+--- a/public/group/group_form.php
++++ b/public/group/group_form.php
+@@ -182,8 +182,8 @@ class group_form extends moodleform {
+         } else {
+             $idnumber = '';
+         }
+-        if ($data['id'] && $group = $DB->get_record('groups', ['id' => $data['id']])) {
+-            if ($group->name != $name) {
++        if ($data['id'] and $group = $DB->get_record('groups', array('id'=>$data['id']))) {
++            if (core_text::strtolower($group->name) != core_text::strtolower($name)) {
+                 if (groups_get_group_by_name($COURSE->id,  $name)) {
+                     $errors['name'] = get_string('groupnameexists', 'group', $name);
+                 }

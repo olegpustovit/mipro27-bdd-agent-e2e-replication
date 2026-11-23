@@ -1,0 +1,28 @@
+diff --git a/lib/form/amd/src/collapsesections.js b/lib/form/amd/src/collapsesections.js
+index 416ce26812f4d3488f50114acb36ffe149aa9ac7..1877a0f4c3cd01130577996d802bfc312fc261dd 100644
+--- a/lib/form/amd/src/collapsesections.js
++++ b/lib/form/amd/src/collapsesections.js
+@@ -78,9 +78,21 @@ export const init = collapsesections => {
+     // When the collapse menu is toggled, update each form container to match.
+     collapsemenu.addEventListener('click', () => {
+         if (collapsemenu.classList.contains(CLASSES.COLLAPSED)) {
+-            formContainers.forEach(container => Collapse.getInstance(container).show());
++            const pendingPromiseToggle = new Pending('core_form/collapsesections:toggle-on');
++            formContainers.forEach((container, index, array) => {
++                Collapse.getInstance(container).show();
++                if (index === array.length - 1) {
++                    pendingPromiseToggle.resolve();
++                }
++            });
+         } else {
+-            formContainers.forEach(container => Collapse.getInstance(container).hide());
++            const pendingPromiseToggle = new Pending('core_form/collapsesections:toggle-off');
++            formContainers.forEach((container, index, array) => {
++                Collapse.getInstance(container).hide();
++                if (index === array.length - 1) {
++                    pendingPromiseToggle.resolve();
++                }
++            });
+         }
+     });
+ 

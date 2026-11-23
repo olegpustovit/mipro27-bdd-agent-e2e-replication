@@ -1,0 +1,43 @@
+diff --git a/public/lib/amd/src/datafilter.js b/public/lib/amd/src/datafilter.js
+index e2aeb723a1b30eded0efa7d1aa3a177434619c22..8dffe4b9406d36136664ea58efac1ef034de6917 100644
+--- a/public/lib/amd/src/datafilter.js
++++ b/public/lib/amd/src/datafilter.js
+@@ -21,6 +21,7 @@
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ 
++import CourseFilter from 'core/datafilter/filtertypes/courseid';
+ import GenericFilter from 'core/datafilter/filtertype';
+ import {getStrings} from 'core/str';
+ import Notification from 'core/notification';
+@@ -43,7 +44,9 @@ export default class {
+         this.filterSet = filterSet;
+         this.applyCallback = applyCallback;
+         // Keep a reference to all of the active filters.
+-        this.activeFilters = {};
++        this.activeFilters = {
++            courseid: new CourseFilter('courseid', filterSet),
++        };
+     }
+ 
+     /**
+diff --git a/public/user/amd/src/participants_filter.js b/public/user/amd/src/participants_filter.js
+index 8348fc0486dc7426e1f4c219ba47bb0898861054..6255c4723eef9f5c86e9ef9abbc4c0e08fc79e3d 100644
+--- a/public/user/amd/src/participants_filter.js
++++ b/public/user/amd/src/participants_filter.js
+@@ -22,7 +22,6 @@
+  */
+ 
+ import CoreFilter from 'core/datafilter';
+-import CourseFilter from 'core/datafilter/filtertypes/courseid';
+ import * as DynamicTable from 'core_table/dynamic';
+ import Selectors from 'core/datafilter/selectors';
+ import Notification from 'core/notification';
+@@ -53,7 +52,6 @@ export const init = filterRegionId => {
+             })
+             .catch(Notification.exception);
+     });
+-    coreFilter.activeFilters.courseid = new CourseFilter('courseid', filterSet);
+     coreFilter.init();
+ 
+     /**

@@ -1,0 +1,78 @@
+diff --git a/public/grade/grading/form/guide/classes/grades/grader/gradingpanel/external/fetch.php b/public/grade/grading/form/guide/classes/grades/grader/gradingpanel/external/fetch.php
+index 35cba95e0b40753a5ef0a38004f318225901dca0..17d03ac35c4d1ff03bf6d386a32f21c60978a1a6 100644
+--- a/public/grade/grading/form/guide/classes/grades/grader/gradingpanel/external/fetch.php
++++ b/public/grade/grading/form/guide/classes/grades/grader/gradingpanel/external/fetch.php
+@@ -203,7 +203,7 @@ class fetch extends external_api {
+                         $definitionid,
+                         'remark',
+                         $filling['remark'],
+-                        (int) FORMAT_HTML
++                        (int) $filling['remarkformat']
+                     );
+                 }
+ 
+diff --git a/public/grade/grading/form/guide/lib.php b/public/grade/grading/form/guide/lib.php
+index c800a70879a93bfacadda2471c66b68f3e7275c0..e5ebb6d1aa7d8af88214c9479cbf0bd7823b5f91 100644
+--- a/public/grade/grading/form/guide/lib.php
++++ b/public/grade/grading/form/guide/lib.php
+@@ -857,19 +857,16 @@ class gradingform_guide_instance extends gradingform_instance {
+         parent::update($data);
+ 
+         foreach ($data['criteria'] as $criterionid => $record) {
+-            // Hardcoding/defaulting to html format for new/existing record
+-            $record['remarkformat'] = FORMAT_HTML;
+-
+             if (!array_key_exists($criterionid, $currentgrade['criteria'])) {
+                 $newrecord = array('instanceid' => $this->get_id(), 'criterionid' => $criterionid,
+-                    'score' => $record['score'], 'remarkformat' => $record['remarkformat']);
++                    'score' => $record['score'], 'remarkformat' => FORMAT_MOODLE);
+                 if (isset($record['remark'])) {
+                     $newrecord['remark'] = $record['remark'];
+                 }
+                 $DB->insert_record('gradingform_guide_fillings', $newrecord);
+             } else {
+                 $newrecord = array('id' => $currentgrade['criteria'][$criterionid]['id']);
+-                foreach (array('score', 'remark', 'remarkformat') as $key) {
++                foreach (array('score', 'remark'/*, 'remarkformat' TODO */) as $key) {
+                     if (isset($record[$key]) && $currentgrade['criteria'][$criterionid][$key] != $record[$key]) {
+                         $newrecord[$key] = $record[$key];
+                     }
+diff --git a/public/grade/grading/form/rubric/classes/grades/grader/gradingpanel/external/fetch.php b/public/grade/grading/form/rubric/classes/grades/grader/gradingpanel/external/fetch.php
+index 823760a0bd4f571d926ac234bbbe626acb964f5a..9e231d9afc3881f8cfce6a2118401531d28a0ce5 100644
+--- a/public/grade/grading/form/rubric/classes/grades/grader/gradingpanel/external/fetch.php
++++ b/public/grade/grading/form/rubric/classes/grades/grader/gradingpanel/external/fetch.php
+@@ -196,7 +196,7 @@ class fetch extends external_api {
+                         $definitionid,
+                         'remark',
+                         $filling['remark'],
+-                        (int) FORMAT_HTML
++                        (int) $filling['remarkformat']
+                     );
+                 }
+ 
+diff --git a/public/grade/grading/form/rubric/lib.php b/public/grade/grading/form/rubric/lib.php
+index 25d74a98a0b1ae9c98f89dcbd8cf7fa843d8fbe2..b34fac44675c0ac932f8e9a74629fd28b825b753 100644
+--- a/public/grade/grading/form/rubric/lib.php
++++ b/public/grade/grading/form/rubric/lib.php
+@@ -863,19 +863,16 @@ class gradingform_rubric_instance extends gradingform_instance {
+         $currentgrade = $this->get_rubric_filling();
+         parent::update($data);
+         foreach ($data['criteria'] as $criterionid => $record) {
+-            // Hardcoding/defaulting to html format for new/existing record
+-            $record['remarkformat'] = FORMAT_HTML;
+-
+             if (!array_key_exists($criterionid, $currentgrade['criteria'])) {
+                 $newrecord = array('instanceid' => $this->get_id(), 'criterionid' => $criterionid,
+-                    'levelid' => $record['levelid'], 'remarkformat' => $record['remarkformat']);
++                    'levelid' => $record['levelid'], 'remarkformat' => FORMAT_MOODLE);
+                 if (isset($record['remark'])) {
+                     $newrecord['remark'] = $record['remark'];
+                 }
+                 $DB->insert_record('gradingform_rubric_fillings', $newrecord);
+             } else {
+                 $newrecord = array('id' => $currentgrade['criteria'][$criterionid]['id']);
+-                foreach (array('levelid', 'remark', 'remarkformat') as $key) {
++                foreach (array('levelid', 'remark'/*, 'remarkformat' */) as $key) {
+                     // TODO MDL-31235 format is not supported yet
+                     if (isset($record[$key]) && $currentgrade['criteria'][$criterionid][$key] != $record[$key]) {
+                         $newrecord[$key] = $record[$key];

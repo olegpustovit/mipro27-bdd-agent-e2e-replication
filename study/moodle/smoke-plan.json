@@ -1,0 +1,89 @@
+{
+ "plan": "moodle-smoke-r1",
+ "models": [
+  "claude-haiku-5-5"
+ ],
+ "drivers": [
+  "omp"
+ ],
+ "prompts": {},
+ "pinPatterns": [
+  "adapters/moodle/*.mjs",
+  "docker/moodle/behat/*",
+  "docker/moodle/versions.json",
+  "manifests/moodle.yaml",
+  "manifests/moodle/patches/*",
+  "scripts/moodle/*.mjs",
+  "scripts/ledger/*.mjs",
+  "scripts/drivers/*.mjs",
+  "scripts/codex-boundary.mjs",
+  "scripts/mcp-browser.mjs",
+  "package.json"
+ ],
+ "tasks": [
+  {
+   "key": "repair:moodle/B12/claude-haiku-5-5/r1",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w1",
+    "--break",
+    "B12",
+    "--model",
+    "claude-haiku-5-5",
+    "--rep",
+    "1",
+    "--sample",
+    "S079"
+   ]
+  },
+  {
+   "key": "smoke:moodle/moodle-smoke-r1/arm-a",
+   "cmd": [
+    "node",
+    "scripts/moodle/campaign-run.mjs",
+    "--worker",
+    "w3",
+    "--pairs",
+    "B12.F01@S079",
+    "--arms",
+    "A"
+   ]
+  },
+  {
+   "key": "smoke:moodle/moodle-smoke-r1/arm-b-claude-haiku-5-5",
+   "cmd": [
+    "node",
+    "scripts/moodle/campaign-run.mjs",
+    "--worker",
+    "w1",
+    "--pairs",
+    "B12.F01@S079",
+    "--arms",
+    "B",
+    "--models",
+    "claude-haiku-5-5",
+    "--reps",
+    "1"
+   ]
+  },
+  {
+   "key": "smoke:moodle/moodle-smoke-r1/arm-c-claude-haiku-5-5",
+   "cmd": [
+    "node",
+    "scripts/moodle/campaign-run.mjs",
+    "--worker",
+    "w2",
+    "--pairs",
+    "B12.F01@S079",
+    "--arms",
+    "C",
+    "--models",
+    "claude-haiku-5-5",
+    "--reps",
+    "1"
+   ]
+  }
+ ]
+}

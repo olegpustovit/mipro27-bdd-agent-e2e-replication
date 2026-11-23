@@ -1,0 +1,39 @@
+diff --git a/public/mod/assign/backup/moodle2/backup_assign_stepslib.php b/public/mod/assign/backup/moodle2/backup_assign_stepslib.php
+index 0d07e275468a91f7e0242e0050e50e246c588a68..df98b7632b187c7a4752958e211c593fa04434ba 100644
+--- a/public/mod/assign/backup/moodle2/backup_assign_stepslib.php
++++ b/public/mod/assign/backup/moodle2/backup_assign_stepslib.php
+@@ -55,7 +55,7 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
+ 
+     /**
+      * Define the structure for the assign activity
+-     * @return backup_nested_element
++     * @return void
+      */
+     protected function define_structure() {
+ 
+@@ -272,8 +272,6 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
+         // These file areas don't have an itemid.
+         $assign->annotate_files('mod_assign', 'intro', null);
+         $assign->annotate_files('mod_assign', 'introattachment', null);
+-        $assign->annotate_files('mod_assign', 'activityattachment', null);
+-
+         $this->annotate_plugin_config_files($assign, 'assignsubmission');
+         $this->annotate_plugin_config_files($assign, 'assignfeedback');
+ 
+diff --git a/public/mod/assign/backup/moodle2/restore_assign_stepslib.php b/public/mod/assign/backup/moodle2/restore_assign_stepslib.php
+index 7608bd9ef29f76466dfc364232439c993e961f1b..0d8b9d0f897a929038291d1a0bd436871f8a7893 100644
+--- a/public/mod/assign/backup/moodle2/restore_assign_stepslib.php
++++ b/public/mod/assign/backup/moodle2/restore_assign_stepslib.php
+@@ -481,11 +481,11 @@ class restore_assign_activity_structure_step extends restore_activity_structure_
+ 
+     /**
+      * Once the database tables have been fully restored, restore the files
++     * @return void
+      */
+     protected function after_execute() {
+         $this->add_related_files('mod_assign', 'intro', null);
+         $this->add_related_files('mod_assign', 'introattachment', null);
+-        $this->add_related_files('mod_assign', 'activityattachment', null);
+ 
+         $this->add_plugin_config_files('assignsubmission');
+         $this->add_plugin_config_files('assignfeedback');

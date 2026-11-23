@@ -1,0 +1,36 @@
+diff --git a/public/blocks/myoverview/templates/course-action-menu.mustache b/public/blocks/myoverview/templates/course-action-menu.mustache
+index 3f3f2da4ca5ecc595d8c5d5ede4ac71e966bd561..7a820cd08ced60cebf373ccb770209ff9b78d0a4 100644
+--- a/public/blocks/myoverview/templates/course-action-menu.mustache
++++ b/public/blocks/myoverview/templates/course-action-menu.mustache
+@@ -30,8 +30,8 @@
+         data-bs-toggle="dropdown"
+         aria-haspopup="true"
+         aria-expanded="false">
+-        <i class="icon fa fa-ellipsis-v fa-fw m-0" title="{{#str}} aria:courseactions, block_myoverview {{/str}} {{fullname}}" aria-hidden="true"></i>
+-        <span class="visually-hidden">{{#str}} aria:courseactions, block_myoverview {{/str}} {{fullname}}</span>
++        <i class="icon fa fa-ellipsis-v fa-fw m-0" title="{{#str}} aria:courseactions, block_myoverview {{/str}} {{{fullname}}}" aria-hidden="true"></i>
++        <span class="visually-hidden">{{#str}} aria:courseactions, block_myoverview {{/str}} {{{fullname}}}</span>
+     </button>
+     <div class="dropdown-menu dropdown-menu-end">
+         <a class="dropdown-item {{#isfavourite}}hidden{{/isfavourite}}" href="#"
+diff --git a/public/lib/classes/external/exporter.php b/public/lib/classes/external/exporter.php
+index c6a3aabf76565107024b6195d3a976854bab01b0..f9dc0084ab4ee04bd1c2b95c48cd0110607aff60 100644
+--- a/public/lib/classes/external/exporter.php
++++ b/public/lib/classes/external/exporter.php
+@@ -169,14 +169,8 @@ abstract class exporter {
+                             $formatparams['striplinks'], $formatparams['options']);
+                     }
+                 } else {
+-                    $data->$property = clean_string(
+-                        \core_external\util::format_string(
+-                            $data->$property,
+-                            $formatparams['context'],
+-                            $formatparams['striplinks'],
+-                            $formatparams['options']
+-                        )
+-                    );
++                    $data->$property = \core_external\util::format_string($data->$property, $formatparams['context'],
++                            $formatparams['striplinks'], $formatparams['options']);
+                 }
+             }
+         }

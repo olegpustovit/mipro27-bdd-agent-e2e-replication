@@ -1,0 +1,13 @@
+diff --git a/public/question/bank/managecategories/classes/external/move_category.php b/public/question/bank/managecategories/classes/external/move_category.php
+index 398c088aa28fd1962c4e4be49d4561a1306c4c31..4e233083861d11253b86792a1a6eb42769a41ff3 100644
+--- a/public/question/bank/managecategories/classes/external/move_category.php
++++ b/public/question/bank/managecategories/classes/external/move_category.php
+@@ -149,7 +149,7 @@ class move_category extends external_api {
+                 !is_null($origincategory->idnumber)
+                 && !$manager->idnumber_is_unique_in_context($origincategory->idnumber, $targetparent->contextid)
+             ) {
+-                $transaction->rollback(new moodle_exception('idnumberexists', 'qbank_managecategories'));
++                throw new moodle_exception('idnumberexists', 'qbank_managecategories');
+             }
+             $originstateupdate->fields->contextid = $targetparent->contextid;
+         }

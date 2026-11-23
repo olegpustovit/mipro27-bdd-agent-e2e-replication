@@ -1,0 +1,36 @@
+diff --git a/public/question/type/questiontypebase.php b/public/question/type/questiontypebase.php
+index 95d6ec29cc84be28eb47bae8f006d71b557c879b..fd470ab816b98507f6e9170b5ccb7dd590db28fa 100644
+--- a/public/question/type/questiontypebase.php
++++ b/public/question/type/questiontypebase.php
+@@ -911,7 +911,7 @@ class question_type {
+      *                         specific information (it is passed by reference).
+      */
+     public function get_question_options($question) {
+-        global $DB;
++        global $DB, $OUTPUT;
+ 
+         if (!isset($question->options)) {
+             $question->options = new stdClass();
+@@ -928,8 +928,9 @@ class question_type {
+                     $question->options->$field = $extra_data->$field;
+                 }
+             } else {
+-                debugging('Failed to load question options from the table ' .
++                echo $OUTPUT->notification('Failed to load question options from the table ' .
+                         $question_extension_table . ' for questionid ' . $question->id);
++                return false;
+             }
+         }
+ 
+@@ -944,8 +945,9 @@ class question_type {
+                     WHERE qa.question = ?
+                     ORDER BY qa.id", array($question->id));
+             if (!$answers) {
+-                debugging('Failed to load question answers from the table ' .
+-                        $answerextensiontable . ' for questionid ' . $question->id);
++                echo $OUTPUT->notification('Failed to load question answers from the table ' .
++                        $answerextensiontable . 'for questionid ' . $question->id);
++                return false;
+             }
+         } else {
+             // Don't check for success or failure because some question types do

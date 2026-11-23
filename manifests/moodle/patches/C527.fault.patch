@@ -1,0 +1,91 @@
+diff --git a/public/backup/moodle2/restore_qtype_plugin.class.php b/public/backup/moodle2/restore_qtype_plugin.class.php
+index 4b80a13a0223351fef31b64da9d952dc8538284a..1832913355bfdad3c7db0cd68a55fbc990b84390 100644
+--- a/public/backup/moodle2/restore_qtype_plugin.class.php
++++ b/public/backup/moodle2/restore_qtype_plugin.class.php
+@@ -197,7 +197,8 @@ abstract class restore_qtype_plugin extends restore_plugin {
+                 $this->questionanswercacheid = $newquestionid;
+                 // Cache all cleaned answers for a simple text match.
+                 foreach ($answers as $answer) {
+-                    $clean = core_text::trim_ctrl_chars($answer->answer); // Clean CTRL chars.
++                    // MDL-30018: Clean in the same way as {@link xml_writer::xml_safe_utf8()}.
++                    $clean = preg_replace('/[\x-\x8\xb-\xc\xe-\x1f\x7f]/is','', $answer->answer); // Clean CTRL chars.
+                     $clean = preg_replace("/\r\n|\r/", "\n", $clean); // Normalize line ending.
+                     $this->questionanswercache[$clean] = $answer->id;
+                 }
+diff --git a/public/backup/moodle2/restore_stepslib.php b/public/backup/moodle2/restore_stepslib.php
+index dbd58f6080b2fa316ed3872a46186282a49b118f..f24c7c3921e737a017ac3ea2086ad357bbe9f6e1 100644
+--- a/public/backup/moodle2/restore_stepslib.php
++++ b/public/backup/moodle2/restore_stepslib.php
+@@ -5572,7 +5572,8 @@ class restore_create_categories_and_questions extends restore_structure_step {
+                 $potentialhints = $DB->get_records('question_hints',
+                         array('questionid' => $newquestionid), '', 'id, hint');
+                 foreach ($potentialhints as $potentialhint) {
+-                    $cleanhint = core_text::trim_ctrl_chars($potentialhint->hint); // Clean CTRL chars.
++                    // Clean in the same way than {@link xml_writer::xml_safe_utf8()}.
++                    $cleanhint = preg_replace('/[\x-\x8\xb-\xc\xe-\x1f\x7f]/is','', $potentialhint->hint); // Clean CTRL chars.
+                     $cleanhint = preg_replace("/\r\n|\r/", "\n", $cleanhint); // Normalize line ending.
+                     if ($cleanhint === $data->hint) {
+                         $newitemid = $data->id;
+diff --git a/public/backup/util/xml/xml_writer.class.php b/public/backup/util/xml/xml_writer.class.php
+index 35be10db1fd79b295c9260bc5cc7233958e9953d..1dbd3545906cd925703bd427d0fa97095858b66b 100644
+--- a/public/backup/util/xml/xml_writer.class.php
++++ b/public/backup/util/xml/xml_writer.class.php
+@@ -254,14 +254,14 @@ class xml_writer {
+     }
+ 
+     /**
+-     * Perform some UTF-8 cleaning, stripping the control chars (\x00-\x1f)
+-     * but tabs (\x09), newlines (\xa) and returns (\xd). The delete control
++     * Perform some UTF-8 cleaning, stripping the control chars (\x0-\x1f)
++     * but tabs (\x9), newlines (\xa) and returns (\xd). The delete control
+      * char (\x7f) is also included. All them are forbiden in XML 1.0 specs.
+      * The expression below seems to be UTF-8 safe too because it simply
+      * ignores the rest of characters. Also normalize linefeeds and return chars.
+      */
+     protected function xml_safe_utf8($content) {
+-        $content = core_text::trim_ctrl_chars($content ?? '');
++        $content = preg_replace('/[\x-\x8\xb-\xc\xe-\x1f\x7f]/is', '', $content ?? ''); // clean CTRL chars.
+         $content = preg_replace("/\r\n|\r/", "\n", $content); // Normalize line&return=>line
+         return fix_utf8($content);
+     }
+diff --git a/public/lib/classes/text.php b/public/lib/classes/text.php
+index 88246669913d948fc941ef5421da91cf879774bc..8437762884831959417d96ae5477fe0b0eb2c246 100644
+--- a/public/lib/classes/text.php
++++ b/public/lib/classes/text.php
+@@ -683,16 +683,4 @@ class core_text {
+ 
+         return mb_convert_case($text, MB_CASE_TITLE, 'UTF-8');
+     }
+-
+-    /**
+-     * Trims control characters out of a string.
+-     * Example: (\x00-\x1f) and (\x7f)
+-     *
+-     * @param string $text Input string
+-     * @return string Cleaned string value
+-     */
+-    public static function trim_ctrl_chars(string $text): string {
+-        // Remove control characters text.
+-        return preg_replace('/[\x00-\x08\x0b-\x0c\x0e-\x1f\x7f]/i', '', $text);
+-    }
+ }
+diff --git a/public/question/type/match/backup/moodle2/restore_qtype_match_plugin.class.php b/public/question/type/match/backup/moodle2/restore_qtype_match_plugin.class.php
+index f6a144087fe0cfa0f096510aba31af4822ef6f3b..67e9353bc4d97cad77e7b48c110ed4e257cc604b 100644
+--- a/public/question/type/match/backup/moodle2/restore_qtype_match_plugin.class.php
++++ b/public/question/type/match/backup/moodle2/restore_qtype_match_plugin.class.php
+@@ -157,10 +157,13 @@ class restore_qtype_match_plugin extends restore_qtype_plugin {
+                 $this->questionsubcacheid = $newquestionid;
+                 // Cache all cleaned answers and questiontext.
+                 foreach ($potentialsubs as $potentialsub) {
+-                    $cleanquestion = core_text::trim_ctrl_chars($potentialsub->questiontext); // Clean CTRL chars.
++                    // Clean in the same way than {@link xml_writer::xml_safe_utf8()}.
++                    $cleanquestion = preg_replace('/[\x-\x8\xb-\xc\xe-\x1f\x7f]/is',
++                            '', $potentialsub->questiontext); // Clean CTRL chars.
+                     $cleanquestion = preg_replace("/\r\n|\r/", "\n", $cleanquestion); // Normalize line ending.
+ 
+-                    $cleananswer = core_text::trim_ctrl_chars($potentialsub->answertext); // Clean CTRL chars.
++                    $cleananswer = preg_replace('/[\x-\x8\xb-\xc\xe-\x1f\x7f]/is',
++                            '', $potentialsub->answertext); // Clean CTRL chars.
+                     $cleananswer = preg_replace("/\r\n|\r/", "\n", $cleananswer); // Normalize line ending.
+ 
+                     $this->questionsubcache[$cleanquestion][$cleananswer] = $potentialsub->id;

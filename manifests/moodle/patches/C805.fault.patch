@@ -1,0 +1,342 @@
+diff --git a/public/course/classes/output/actionbar/group_selector.php b/public/course/classes/output/actionbar/group_selector.php
+index a439497c46b26c41778ba185e46ba2d8f8ee67fc..df0b35697cea4ecd1db0b60b2ea883824a390c30 100644
+--- a/public/course/classes/output/actionbar/group_selector.php
++++ b/public/course/classes/output/actionbar/group_selector.php
+@@ -35,18 +35,8 @@ class group_selector extends comboboxsearch {
+      * The class constructor.
+      *
+      * @param stdClass $context The context object.
+-     * @param bool $participationonly Only include participation groups?
+      */
+-    public function __construct(
+-        /**
+-         * @var stdClass The context object.
+-         */
+-        private stdClass $context,
+-        /**
+-         * @var bool Only include participation groups?
+-         */
+-        protected bool $participationonly = true,
+-    ) {
++    public function __construct(private stdClass $context) {
+         $this->activegroup = $this->get_active_group();
+         $this->label = $this->get_label();
+ 
+@@ -110,20 +100,22 @@ class group_selector extends comboboxsearch {
+         if ($this->context->contextlevel === CONTEXT_MODULE) {
+             $cm = get_coursemodule_from_id(false, $this->context->instanceid);
+             $groupingid = $cm->groupingid;
++            $participationonly = true;
+         } else {
+             $cm = null;
+             $groupingid = $course->defaultgroupingid;
++            $participationonly = false;
+         }
+ 
+         $allowedgroups = groups_get_all_groups(
+             courseid: $course->id,
+             userid: $userid,
+             groupingid: $groupingid,
+-            participationonly: $this->participationonly,
++            participationonly: $participationonly
+         );
+ 
+         if ($cm) {
+-            return groups_get_activity_group($cm, true, $allowedgroups, $this->participationonly);
++            return groups_get_activity_group($cm, true, $allowedgroups);
+         }
+         return groups_get_course_group($course, true, $allowedgroups);
+     }
+diff --git a/public/group/amd/src/comboboxsearch/group.js b/public/group/amd/src/comboboxsearch/group.js
+index 4626cd49e42ea159cef86eb2a1fd09ffc34646b3..d21cd94c8d57b674f980915d3bb6b537cb3a09b6 100644
+--- a/public/group/amd/src/comboboxsearch/group.js
++++ b/public/group/amd/src/comboboxsearch/group.js
+@@ -175,7 +175,6 @@ export default class GroupSearch extends search_combobox {
+                     id: group.id,
+                     name: group.name,
+                     groupimageurl: group.groupimageurl,
+-                    participation: group.participation,
+                 };
+             })
+         );
+diff --git a/public/group/classes/external/get_groups_for_selector.php b/public/group/classes/external/get_groups_for_selector.php
+index 3e12a82019248c00119afc0b31d71c2db45d7c20..cb2a9ee40c2454cd81423745b9e870f1a9fd4761 100644
+--- a/public/group/classes/external/get_groups_for_selector.php
++++ b/public/group/classes/external/get_groups_for_selector.php
+@@ -85,7 +85,7 @@ class get_groups_for_selector extends external_api {
+             $cm = get_coursemodule_from_id('', $params['cmid']);
+             $groupmode = groups_get_activity_groupmode($cm, $course);
+             $groupingid = $cm->groupingid;
+-            $participationonly = false;
++            $participationonly = true;
+         } else {
+             $context = context_course::instance($params['courseid']);
+             $groupmode = $course->groupmode;
+@@ -130,22 +130,19 @@ class get_groups_for_selector extends external_api {
+                 ]);
+             }
+ 
+-            $mappedgroups = array_map(function ($group) use ($context, $OUTPUT) {
++            $mappedgroups = array_map(function($group) use ($context, $OUTPUT) {
+                 if ($group->id) { // Particular group. Get the group picture if it exists, otherwise return a generic image.
+                     $picture = get_group_picture_url($group, $group->courseid, true) ??
+                         moodle_url::make_pluginfile_url($context->get_course_context()->id, 'group', 'generated', $group->id,
+                             '/', 'group.svg');
+-                    $participation = $group->participation;
+                 } else { // All participants.
+                     $picture = $OUTPUT->image_url('g/g1');
+-                    $participation = true;
+                 }
+ 
+                 return (object) [
+                     'id' => $group->id,
+                     'name' => format_string($group->name, true, ['context' => $context]),
+                     'groupimageurl' => $picture->out(false),
+-                    'participation' => $participation,
+                 ];
+             }, $groupsmenu);
+         }
+@@ -178,7 +175,6 @@ class get_groups_for_selector extends external_api {
+             'id' => new external_value(PARAM_ALPHANUM, 'An ID for the group', VALUE_REQUIRED),
+             'name' => new external_value(PARAM_TEXT, 'The full name of the group', VALUE_REQUIRED),
+             'groupimageurl' => new external_value(PARAM_URL, 'Group image URL', VALUE_OPTIONAL),
+-            'participation' => new external_value(PARAM_BOOL, 'Is this a participation group?', VALUE_REQUIRED),
+         ];
+         return new external_single_structure($groupfields);
+     }
+diff --git a/public/group/templates/comboboxsearch/resultitem.mustache b/public/group/templates/comboboxsearch/resultitem.mustache
+index cccccbfa5169fc15b354c52a27b7c5009d55fa98..b9c9ddbcfe890bc14ef394e1a844736ab8250866 100644
+--- a/public/group/templates/comboboxsearch/resultitem.mustache
++++ b/public/group/templates/comboboxsearch/resultitem.mustache
+@@ -37,11 +37,6 @@
+             <span class="d-block w-100 p-0 text-wrap text-break">
+                 {{name}}
+             </span>
+-            {{^participation}}
+-                <span class="d-block w-100 pull-left text-truncate small text-secondary-emphasis">
+-                    {{#str}} nonparticipation, group {{/str}}
+-                </span>
+-            {{/participation}}
+         </div>
+     {{/content}}
+ {{/core/local/comboboxsearch/resultitem}}
+diff --git a/public/group/templates/comboboxsearch/resultset.mustache b/public/group/templates/comboboxsearch/resultset.mustache
+index b87b90c99818e6dd6fcb13a374124fda742a235d..fe077b9841d0b246516712a206f3d137f31ef38b 100644
+--- a/public/group/templates/comboboxsearch/resultset.mustache
++++ b/public/group/templates/comboboxsearch/resultset.mustache
+@@ -28,20 +28,12 @@
+             {
+                 "id": 2,
+                 "name": "Foo bar",
+-                "link": "http://foo.bar/grade/report/grader/index.php?id=42&userid=2",
+-                "participation": true
++                "link": "http://foo.bar/grade/report/grader/index.php?id=42&userid=2"
+             },
+             {
+                 "id": 3,
+                 "name": "Bar Foo",
+-                "link": "http://foo.bar/grade/report/grader/index.php?id=42&userid=3",
+-                "participation": true
+-            },
+-            {
+-                "id": 4,
+-                "name": "Baz Bar Foo",
+-                "link": "http://foo.bar/grade/report/grader/index.php?id=43&userid=2",
+-                "participation": false
++                "link": "http://foo.bar/grade/report/grader/index.php?id=42&userid=3"
+             }
+         ],
+         "instance": 25,
+diff --git a/public/lib/grouplib.php b/public/lib/grouplib.php
+index cecbb97ebef2f1140c5df9cdeb3531e963331b3d..01e60f4553eb09db58561a8a2ac6e1751f0f067d 100644
+--- a/public/lib/grouplib.php
++++ b/public/lib/grouplib.php
+@@ -833,17 +833,11 @@ function groups_list_to_menu($groups) {
+  * Own groups are removed from allowed groups
+  * @param array $allowedgroups All groups user is allowed to see
+  * @param array $usergroups Groups user belongs to
+- * @param bool $splitparticipation If true, split each optgroup into "Participation" and "Non-participation" optgroups.
+  * @return array
+  */
+-function groups_sort_menu_options($allowedgroups, $usergroups, bool $splitparticipation = false) {
+-    $nonparticipationgroups = [];
+-    $useroptions = [];
++function groups_sort_menu_options($allowedgroups, $usergroups) {
++    $useroptions = array();
+     if ($usergroups) {
+-        if ($splitparticipation) {
+-            [$usergroups, $usernonparticipation] = groups_split_participation_groups($usergroups);
+-            $nonparticipationgroups = array_merge($nonparticipationgroups, $usernonparticipation);
+-        }
+         $useroptions = groups_list_to_menu($usergroups);
+ 
+         // Remove user groups from other groups list.
+@@ -852,54 +846,21 @@ function groups_sort_menu_options($allowedgroups, $usergroups, bool $splitpartic
+         }
+     }
+ 
+-    $allowedoptions = [];
++    $allowedoptions = array();
+     if ($allowedgroups) {
+-        if ($splitparticipation) {
+-            [$allowedgroups, $allowednonparticipation] = groups_split_participation_groups($allowedgroups);
+-            $nonparticipationgroups = array_merge($nonparticipationgroups, $allowednonparticipation);
+-        }
+         $allowedoptions = groups_list_to_menu($allowedgroups);
+     }
+ 
+     if ($useroptions && $allowedoptions) {
+-        $options = [
+-            1 => [
+-                get_string('mygroups', 'group') => $useroptions,
+-            ],
+-            2 => [
+-                get_string('othergroups', 'group') => $allowedoptions,
+-            ],
+-        ];
++        return array(
++            1 => array(get_string('mygroups', 'group') => $useroptions),
++            2 => array(get_string('othergroups', 'group') => $allowedoptions)
++        );
+     } else if ($useroptions) {
+-        $options = $useroptions;
++        return $useroptions;
+     } else {
+-        $options = $allowedoptions;
+-    }
+-    if ($nonparticipationgroups) {
+-        $options[3] = [
+-            get_string('nonparticipation', 'group') => groups_list_to_menu($nonparticipationgroups),
+-        ];
+-    }
+-    return $options;
+-}
+-
+-/**
+- * Split the list of groups into participation and non-participation groups.
+- *
+- * @param array $groups List of group records
+- * @return array[] Menu options for the records, split into "Participation" and "Non-participation" optgroups.
+- */
+-function groups_split_participation_groups(array $groups): array {
+-    $participation = [];
+-    $nonparticipation = [];
+-    foreach ($groups as $group) {
+-        if ($group->participation) {
+-            $participation[] = $group;
+-        } else {
+-            $nonparticipation[] = $group;
+-        }
++        return $allowedoptions;
+     }
+-    return [$participation, $nonparticipation];
+ }
+ 
+ /**
+@@ -973,20 +934,9 @@ function groups_allgroups_course_menu($course, $urlroot, $update = false, $activ
+  *   selecting this option does not prevent groups_get_activity_group from
+  *   returning 0; it will still do that if the user has chosen 'all participants'
+  *   in another activity, or not chosen anything.)
+- * @param bool $participationonly By default, this menu will only contain groups with the "participation"
+- *   flag set true. Setting this argument to false will return all groups that the user is allowed to see.
+- *   This should only be used for cases such as a teacher wanting to filter submissions by group, not for
+- *   students choosing a group to submit their work under, otherwise it negates the point of the participation
+- *   flag.
+  * @return mixed void or string depending on $return param
+  */
+-function groups_print_activity_menu(
+-    $cm,
+-    $urlroot,
+-    $return = false,
+-    $hideallparticipants = false,
+-    bool $participationonly = true,
+-) {
++function groups_print_activity_menu($cm, $urlroot, $return=false, $hideallparticipants=false) {
+     global $USER, $OUTPUT;
+ 
+     if ($urlroot instanceof moodle_url) {
+@@ -1016,23 +966,22 @@ function groups_print_activity_menu(
+ 
+     $usergroups = array();
+     if ($groupmode == VISIBLEGROUPS or $aag) {
+-        // Any group in grouping.
+-        $allowedgroups = groups_get_all_groups($cm->course, 0, $cm->groupingid, 'g.*', false, $participationonly);
++        $allowedgroups = groups_get_all_groups($cm->course, 0, $cm->groupingid, 'g.*', false, true); // Any group in grouping.
+         // Get user's own groups and put to the top.
+-        $usergroups = groups_get_all_groups($cm->course, $USER->id, $cm->groupingid, 'g.*', false, $participationonly);
++        $usergroups = groups_get_all_groups($cm->course, $USER->id, $cm->groupingid, 'g.*', false, true);
+     } else {
+         // Only assigned groups.
+-        $allowedgroups = groups_get_all_groups($cm->course, $USER->id, $cm->groupingid, 'g.*', false, $participationonly);
++        $allowedgroups = groups_get_all_groups($cm->course, $USER->id, $cm->groupingid, 'g.*', false, true);
+     }
+ 
+-    $activegroup = groups_get_activity_group($cm, true, $allowedgroups, $participationonly);
++    $activegroup = groups_get_activity_group($cm, true, $allowedgroups);
+ 
+     $groupsmenu = array();
+     if ((!$allowedgroups or $groupmode == VISIBLEGROUPS or $aag) and !$hideallparticipants) {
+         $groupsmenu[0] = get_string('allparticipants');
+     }
+ 
+-    $groupsmenu += groups_sort_menu_options($allowedgroups, $usergroups, !$participationonly);
++    $groupsmenu += groups_sort_menu_options($allowedgroups, $usergroups);
+ 
+     if ($groupmode == VISIBLEGROUPS) {
+         $grouplabel = get_string('groupsvisible');
+@@ -1119,21 +1068,13 @@ function groups_get_course_group($course, $update=false, $allowedgroups=null) {
+ /**
+  * Returns group active in activity, changes the group by default if 'group' page param present
+  *
++ * @category group
+  * @param stdClass|cm_info $cm course module object
+  * @param bool $update change active group if group param submitted
+  * @param array $allowedgroups list of groups user may access (INTERNAL, to be used only from groups_print_activity_menu())
+- * @param bool $participationonly By default, only allow groups with the "participation"
+- *   flag set true. Setting this argument to false will allow setting a non-participation group as the active group.
+- *   This should be used with care, and only for users who should be able to see non-participation groups within an activity.
+  * @return mixed false if groups not used, int if groups used, 0 means all groups (access must be verified in SEPARATE mode)
+- * @category group
+  */
+-function groups_get_activity_group(
+-    $cm,
+-    $update = false,
+-    $allowedgroups = null,
+-    bool $participationonly = true,
+-) {
++function groups_get_activity_group($cm, $update=false, $allowedgroups=null) {
+     global $USER, $SESSION;
+ 
+     if (!$groupmode = groups_get_activity_groupmode($cm)) {
+@@ -1148,9 +1089,9 @@ function groups_get_activity_group(
+ 
+     if (!is_array($allowedgroups)) {
+         if ($groupmode == VISIBLEGROUPS or $groupmode === 'aag') {
+-            $allowedgroups = groups_get_all_groups($cm->course, 0, $cm->groupingid, 'g.*', false, $participationonly);
++            $allowedgroups = groups_get_all_groups($cm->course, 0, $cm->groupingid, 'g.*', false, true);
+         } else {
+-            $allowedgroups = groups_get_all_groups($cm->course, $USER->id, $cm->groupingid, 'g.*', false, $participationonly);
++            $allowedgroups = groups_get_all_groups($cm->course, $USER->id, $cm->groupingid, 'g.*', false, true);
+         }
+     }
+ 
+diff --git a/public/theme/boost/scss/moodle/dropdown.scss b/public/theme/boost/scss/moodle/dropdown.scss
+index 33ce91729b1dcdc71b73a8f87389dbccd3a951a1..aa37fbd78e57174f84435b10a171460ce159b033 100644
+--- a/public/theme/boost/scss/moodle/dropdown.scss
++++ b/public/theme/boost/scss/moodle/dropdown.scss
+@@ -44,13 +44,12 @@
+ }
+ 
+ // Add dropdown menu items styles for each theme color mantainning default hover colour for contrast.
+-@each $color, $value in map-merge($theme-colors, $utilities-text-emphasis-colors) {
++@each $color, $value in $theme-colors {
+     .dropdown-item {
+         &:hover,
+         &:focus {
+             &.text-#{$color},
+-            a.text-#{$color},
+-            span.text-#{$color} {
++            a.text-#{$color} {
+                 color: $dropdown-link-hover-color !important; /* stylelint-disable-line declaration-no-important */
+             }
+         }

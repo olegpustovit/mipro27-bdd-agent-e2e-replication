@@ -1,0 +1,25 @@
+Per 12-scenario suite run: agent 4490934 tokens, 368772 uncached+output, 12.0 min sequential; scripts 0 tokens, 1.4 min
+Repair per transition: tokens [ 307434, 1149221 ] uncached+output [ 44650, 95397 ] minutes [ '5.0', '7.3' ]
+Break-even, tokens: one mean repair (728328) equals 0.2 agent suite runs; on uncached+output 0.2.
+Break-even, time: the agent suite costs 10.6 min more per run, so one mean repair (6.2 min agent time) equals 0.6 suite runs.
+Sensitivity: construction cost of step code unmeasured; each unit of it moves break-even by its token cost / agent suite tokens. Scripted-arm tokens are repair only.
+
+Hybrid replay by stage kind/revision (script first, agent only on script failure):
+healthy-v0 {"n":11,"scriptPass":11,"scriptFail":0,"agentPassAfterFail":0,"agentFailAfterFail":0,"agentUnresolved":0,"missing":0,"agentRunsTok":0}
+fault-v0 {"n":24,"scriptPass":0,"scriptFail":24,"agentPassAfterFail":0,"agentFailAfterFail":23,"agentUnresolved":1,"missing":0,"agentRunsTok":6725453}
+healthy-v1 {"n":12,"scriptPass":5,"scriptFail":7,"agentPassAfterFail":6,"agentFailAfterFail":0,"agentUnresolved":1,"missing":0,"agentRunsTok":2925397}
+healthy-v2 {"n":35,"scriptPass":35,"scriptFail":0,"agentPassAfterFail":0,"agentFailAfterFail":0,"agentUnresolved":0,"missing":0,"agentRunsTok":0}
+fault-v2 {"n":24,"scriptPass":0,"scriptFail":24,"agentPassAfterFail":0,"agentFailAfterFail":21,"agentUnresolved":3,"missing":0,"agentRunsTok":10165658}
+Initial suite after change to v1: 0/12 (raw keys caseId,code,scenarioCount,timedOut,actions,elapsedMs,failures,stderr)
+Initial suite after change to v2: 0/12 (raw keys caseId,code,scenarioCount,timedOut,actions,elapsedMs,failures,stderr)
+
+Adjudicated: {"healthy|runtime|true_pass":49,"healthy|runtime|false_alarm":4,"healthy|runtime|action_failure":7,"fault|runtime|supported_detection":43,"fault|runtime|action_failure":1,"fault|runtime|no_opportunity":4}
+
+Agent healthy runs: contract witnessed but verdict not pass: 0 of 60
+Agent healthy false-alarm candidates by case: {"profile-name":3,"transfer-request":1,"social-like":2,"social-comment":3,"auth-logout":1,"bank-delete":1}
+  healthy-v0-1/profile-name/runtime fail | {"status":"fail","reason":"Signed in as Heath93 (home shows Ted P / @Heath93). On My Account, set First Name to 'Study' and clicked Save. The First Name field reads 'Study', but the sidebar 
+  healthy-v0-1/transfer-request/runtime unresolved | {"status":"unresolved","reason":"Signed in as Heath93 and the home page showed @Heath93, so the first Then was observed. The Request flow then stalled: the first Sign In click did not submit
+  healthy-v0-1/social-like/runtime unresolved | {"status":"unresolved","reason":"Signed in as Heath93; home shows '@Heath93'. Could not reach transaction 1xfcAhNDZK4 before the 240s/80-call budget. Opened feed items, all with other IDs: E
+  healthy-v1-1/social-like/runtime unresolved | {"status":"unresolved","reason":"Sign-in as Heath93 succeeded and the home page shows @Heath93, so the first Then passed. The next When, open transaction 1xfcAhNDZK4, could not be completed 
+  healthy-v1-1/social-comment/runtime unresolved | {"status":"unresolved","reason":"Sign-in succeeded (URL /, heading shows @Heath93; the authenticated-home Then passed). Could not reach transaction 1xfcAhNDZK4 through the visible UI: opened
+  healthy-v2-1/auth-logout/runtime fail | {"status":"fail","reason":"Sign-in with Heath93/s3cret initially left the page on /signin; the second Continue click reached / showing 'Ted P' and '@Heath93', so the home-identity check pass

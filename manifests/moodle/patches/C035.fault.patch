@@ -1,0 +1,26 @@
+diff --git a/public/mod/assign/classes/output/grading_actionmenu.php b/public/mod/assign/classes/output/grading_actionmenu.php
+index f4cfcd5a4fd1ae173976c09f1972bf40fb3c000f..c17cbf9e86f83f7fbeb9283a634907ff02122cc6 100644
+--- a/public/mod/assign/classes/output/grading_actionmenu.php
++++ b/public/mod/assign/classes/output/grading_actionmenu.php
+@@ -146,7 +146,7 @@ class grading_actionmenu implements templatable, renderable {
+         $data['initialselector'] = $initialselector->export_for_template($output);
+ 
+         if (groups_get_activity_groupmode($cm, $course)) {
+-            $gs = new group_selector($PAGE->context, false);
++            $gs = new group_selector($PAGE->context);
+             $data['groupselector'] = $gs->export_for_template($output);
+         }
+ 
+diff --git a/public/mod/assign/gradingtable.php b/public/mod/assign/gradingtable.php
+index e3cdf020724eae00522459f245ba11f2fb6d64cf..fc3e2fbd4841a55edde9b802b4a24883a5e1b1be 100644
+--- a/public/mod/assign/gradingtable.php
++++ b/public/mod/assign/gradingtable.php
+@@ -109,7 +109,7 @@ class assign_grading_table extends table_sql implements renderable {
+         $this->define_baseurl($url);
+ 
+         // Do some business - then set the sql.
+-        $currentgroup = groups_get_activity_group($assignment->get_course_module(), true, participationonly: false);
++        $currentgroup = groups_get_activity_group($assignment->get_course_module(), true);
+ 
+         if ($rowoffset) {
+             $this->rownum = $rowoffset - 1;

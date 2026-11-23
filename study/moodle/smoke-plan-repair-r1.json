@@ -1,0 +1,181 @@
+{
+ "plan": "moodle-smoke-repair-r1",
+ "models": [
+  "gpt-6-luna",
+  "gpt-5.6-terra",
+  "claude-haiku-5-5"
+ ],
+ "drivers": [
+  "codex",
+  "omp"
+ ],
+ "prompts": {},
+ "pinPatterns": [
+  "adapters/moodle/*.mjs",
+  "docker/moodle/behat/*",
+  "docker/moodle/versions.json",
+  "manifests/moodle.yaml",
+  "manifests/moodle/patches/*",
+  "scripts/moodle/*.mjs",
+  "scripts/ledger/*.mjs",
+  "scripts/drivers/*.mjs",
+  "scripts/codex-boundary.mjs",
+  "scripts/mcp-browser.mjs",
+  "package.json"
+ ],
+ "tasks": [
+  {
+   "key": "repair:moodle/B01/gpt-6-luna/r1#3",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w1",
+    "--break",
+    "B01",
+    "--model",
+    "gpt-6-luna",
+    "--rep",
+    "1",
+    "--sample",
+    "S028"
+   ]
+  },
+  {
+   "key": "repair:moodle/B01/gpt-5.6-terra/r1#3",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w2",
+    "--break",
+    "B01",
+    "--model",
+    "gpt-5.6-terra",
+    "--rep",
+    "1",
+    "--sample",
+    "S028"
+   ]
+  },
+  {
+   "key": "repair:moodle/B01/claude-haiku-5-5/r1",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w3",
+    "--break",
+    "B01",
+    "--model",
+    "claude-haiku-5-5",
+    "--rep",
+    "1",
+    "--sample",
+    "S028"
+   ]
+  },
+  {
+   "key": "repair:moodle/B12/gpt-6-luna/r1#3",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w1",
+    "--break",
+    "B12",
+    "--model",
+    "gpt-6-luna",
+    "--rep",
+    "1",
+    "--sample",
+    "S076"
+   ]
+  },
+  {
+   "key": "repair:moodle/B12/gpt-5.6-terra/r1#3",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w2",
+    "--break",
+    "B12",
+    "--model",
+    "gpt-5.6-terra",
+    "--rep",
+    "1",
+    "--sample",
+    "S076"
+   ]
+  },
+  {
+   "key": "repair:moodle/B12/claude-haiku-5-5/r1#4",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w3",
+    "--break",
+    "B12",
+    "--model",
+    "claude-haiku-5-5",
+    "--rep",
+    "1",
+    "--sample",
+    "S076"
+   ]
+  },
+  {
+   "key": "smoke:moodle/moodle-smoke-repair-r1/arm-b-gpt-6-luna",
+   "cmd": [
+    "node",
+    "scripts/moodle/campaign-run.mjs",
+    "--worker",
+    "w1",
+    "--pairs",
+    "B12.X001@S076,B01.X010@S028",
+    "--arms",
+    "B",
+    "--models",
+    "gpt-6-luna",
+    "--reps",
+    "1"
+   ]
+  },
+  {
+   "key": "smoke:moodle/moodle-smoke-repair-r1/arm-b-gpt-5.6-terra",
+   "cmd": [
+    "node",
+    "scripts/moodle/campaign-run.mjs",
+    "--worker",
+    "w2",
+    "--pairs",
+    "B12.X001@S076,B01.X010@S028",
+    "--arms",
+    "B",
+    "--models",
+    "gpt-5.6-terra",
+    "--reps",
+    "1"
+   ]
+  },
+  {
+   "key": "smoke:moodle/moodle-smoke-repair-r1/arm-b-claude-haiku-5-5",
+   "cmd": [
+    "node",
+    "scripts/moodle/campaign-run.mjs",
+    "--worker",
+    "w3",
+    "--pairs",
+    "B12.X001@S076,B01.X010@S028",
+    "--arms",
+    "B",
+    "--models",
+    "claude-haiku-5-5",
+    "--reps",
+    "1"
+   ]
+  }
+ ]
+}

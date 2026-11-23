@@ -1,0 +1,26 @@
+diff --git a/public/lib/classes/api/token_manager.php b/public/lib/classes/api/token_manager.php
+index dae516a9ad959fa5e493a46484b62d1a29ecf5e8..0272c7e023562a271019c337ce187f11d8e4ed2b 100644
+--- a/public/lib/classes/api/token_manager.php
++++ b/public/lib/classes/api/token_manager.php
+@@ -102,7 +102,7 @@ class token_manager {
+      * @return string The token to present to the user, as {@see self::TOKEN_PREFIX}<key>.
+      * @throws moodle_exception If the expiry is out of range, or a scope is missing or unknown.
+      */
+-    public function issue_token(
++    public function create_token(
+         string $name,
+         int $userid,
+         array $scopes,
+diff --git a/public/user/personalaccesstokens.php b/public/user/personalaccesstokens.php
+index ba61090e0885cdf480ca2c4b18f35c6d87a3e7ca..b5e96b0a81c90da1914b4bc8582e02c56219cde2 100644
+--- a/public/user/personalaccesstokens.php
++++ b/public/user/personalaccesstokens.php
+@@ -101,7 +101,7 @@ if ($action === 'create') {
+         $scopes = $form->get_submitted_scopes((array) $data);
+         $expirytime = $form->get_expiry_time($data);
+ 
+-        $token = $manager->issue_token(
++        $token = $manager->create_token(
+             $data->name,
+             (int) $USER->id,
+             $scopes,

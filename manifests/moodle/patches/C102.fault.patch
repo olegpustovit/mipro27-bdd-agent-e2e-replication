@@ -1,0 +1,23 @@
+diff --git a/public/mod/quiz/classes/quiz_attempt.php b/public/mod/quiz/classes/quiz_attempt.php
+index 9ce3e75fc12e75514f256494efd739cbdaf54eb2..7ca3a2d6cfbaff20862b0c71215c15683eb6c177 100644
+--- a/public/mod/quiz/classes/quiz_attempt.php
++++ b/public/mod/quiz/classes/quiz_attempt.php
+@@ -1643,7 +1643,6 @@ class quiz_attempt {
+      * @param bool $studentisonline is the student currently interacting with Moodle?
+      */
+     public function handle_if_time_expired($timestamp, $studentisonline) {
+-        global $DB;
+ 
+         $timeclose = $this->get_access_manager($timestamp)->get_end_time($this->attempt);
+ 
+@@ -1678,10 +1677,8 @@ class quiz_attempt {
+         // Transition to the appropriate state.
+         switch ($this->quizobj->get_quiz()->overduehandling) {
+             case 'autosubmit':
+-                $transaction = $DB->start_delegated_transaction();
+                 $this->process_submit($timestamp, false, $studentisonline ? $timestamp : $timeclose, $studentisonline);
+                 $this->process_grade_submission($studentisonline ? $timestamp : $timeclose);
+-                $transaction->allow_commit();
+                 return;
+ 
+             case 'graceperiod':

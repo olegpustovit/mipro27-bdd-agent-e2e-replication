@@ -1,0 +1,51 @@
+diff --git a/public/mod/quiz/classes/output/edit_renderer.php b/public/mod/quiz/classes/output/edit_renderer.php
+index 643abd89f478fcbf0b9d2d74839f27ca632b51f7..d148c4186d3e2d9f3fc70355f2e3e9612ade2eeb 100644
+--- a/public/mod/quiz/classes/output/edit_renderer.php
++++ b/public/mod/quiz/classes/output/edit_renderer.php
+@@ -73,7 +73,7 @@ class edit_renderer extends \plugin_renderer_base {
+         $output .= html_writer::start_div('mod_quiz-edit-top-controls');
+ 
+         $output .= html_writer::start_div('d-flex justify-content-between flex-wrap mb-1');
+-        $output .= html_writer::start_div('d-flex align-items-center justify-content-around');
++        $output .= html_writer::start_div('d-flex flex-column justify-content-around');
+         $output .= $this->quiz_information($structure);
+         $output .= html_writer::end_tag('div');
+         $output .= $this->maximum_grade_input($structure, $pageurl);
+@@ -194,14 +194,14 @@ class edit_renderer extends \plugin_renderer_base {
+      */
+     public function maximum_grade_input($structure, \moodle_url $pageurl) {
+         $output = '';
+-        $output .= html_writer::start_div('maxgrade', ['class' => 'mt-2 mt-sm-0']);
++        $output .= html_writer::start_div('maxgrade');
+         $output .= html_writer::start_tag('form', ['method' => 'post', 'action' => 'edit.php',
+                 'class' => 'quizsavegradesform']);
+-        $output .= html_writer::start_tag('fieldset', ['class' => 'invisiblefieldset d-flex align-items-center']);
++        $output .= html_writer::start_tag('fieldset', ['class' => 'invisiblefieldset']);
+         $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
+         $output .= html_writer::input_hidden_params($pageurl);
+         $output .= html_writer::tag('label', get_string('maximumgrade') . ' ',
+-                ['for' => 'inputmaxgrade', 'class' => 'd-inline-block w-auto mb-0']);
++                ['for' => 'inputmaxgrade', 'class' => 'd-inline-block w-auto']);
+         $output .= html_writer::empty_tag('input', ['type' => 'text', 'id' => 'inputmaxgrade',
+                 'name' => 'maxgrade', 'size' => ($structure->get_decimal_places_for_grades() + 2),
+                 'value' => $structure->formatted_quiz_grade(),
+diff --git a/public/mod/quiz/styles.css b/public/mod/quiz/styles.css
+index c8f6c67def15b015064616d8d0c79a0b329f7483..bdb8c0978c89ba36b26b1e6fffdfea9276e7e118 100644
+--- a/public/mod/quiz/styles.css
++++ b/public/mod/quiz/styles.css
+@@ -521,6 +521,15 @@ table.quizreviewsummary td.cell {
+     min-height: 2.85em;
+ }
+ 
++@media (max-width: 576px) {
++    #page-mod-quiz-edit .maxgrade {
++        margin-bottom: 0.6em;
++    }
++    #page-mod-quiz-edit .maxgrade .form-control {
++        display: inline-block;
++        vertical-align: middle;
++    }
++}
+ #page-mod-quiz-edit .maxgrade label {
+     display: inline;
+ }

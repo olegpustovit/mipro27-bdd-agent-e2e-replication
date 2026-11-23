@@ -1,0 +1,80 @@
+diff --git a/public/course/classes/management_renderer.php b/public/course/classes/management_renderer.php
+index c91a5463d06b9062a781d4a3e00f9d27a9c3d1bb..f350ed4971ccd29ab6e656346c06a05a982c85e7 100644
+--- a/public/course/classes/management_renderer.php
++++ b/public/course/classes/management_renderer.php
+@@ -334,10 +334,6 @@ class core_course_management_renderer extends plugin_renderer_base {
+             $actions = \core_course\management\helper::get_category_listitem_actions($category);
+         }
+         $menu = new action_menu();
+-        $label = get_string('actionsmenu');
+-        $actionicon = $this->output->pix_icon('t/edit_menu', '') . html_writer::span($label, 'visually-hidden');
+-        $menu->set_menu_trigger($actionicon, 'iconsmall actionmenu');
+-        $menu->triggerattributes['title'] = $label;
+         $menu->attributes['class'] .= ' category-item-actions item-actions';
+         $hasitems = false;
+         foreach ($actions as $key => $action) {
+diff --git a/public/lib/behat/classes/partial_named_selector.php b/public/lib/behat/classes/partial_named_selector.php
+index 705259219402eee05dfbf62f504087c9bb323fb5..444111225583d1d68fae04fcb9954380c96fa37b 100644
+--- a/public/lib/behat/classes/partial_named_selector.php
++++ b/public/lib/behat/classes/partial_named_selector.php
+@@ -157,7 +157,7 @@ XPATH
+     descendant::*[
+         contains(concat(' ', normalize-space(@class), ' '), ' dropdown-toggle ')
+             and
+-        (contains(normalize-space(.), %locator%) or descendant::*[%titleMatch%] or %ariaLabelMatch%)
++        (contains(normalize-space(.), %locator%) or descendant::*[%titleMatch%])
+     ]
+ ]
+ XPATH
+diff --git a/public/lib/classes/output/action_menu.php b/public/lib/classes/output/action_menu.php
+index d13f2259466492df31974287603cf181b79e8497..77ad2148fcda199e33933ab7bbe74132842a0773 100644
+--- a/public/lib/classes/output/action_menu.php
++++ b/public/lib/classes/output/action_menu.php
+@@ -218,8 +218,7 @@ class action_menu implements renderable, templatable {
+         }
+         $label = $triggername ?? get_string('actions');
+         $triggerclasses = self::DEFAULT_KEBAB_TRIGGER_CLASSES . ' ' . $extraclasses;
+-        $icon = $output->pix_icon('i/menu', '') . html_writer::span($label, 'visually-hidden');
+-        $this->triggerattributes += ['title' => $label];
++        $icon = $output->pix_icon('i/menu', $label);
+         $this->set_menu_trigger($icon, $triggerclasses);
+     }
+ 
+diff --git a/public/lib/templates/action_menu_trigger.mustache b/public/lib/templates/action_menu_trigger.mustache
+index d5b97454881d24cef9595b35e1c68636fe34f303..e162a7c6c8b538edfde0adcf8e7d9e7c3fe6a5b2 100644
+--- a/public/lib/templates/action_menu_trigger.mustache
++++ b/public/lib/templates/action_menu_trigger.mustache
+@@ -88,7 +88,7 @@
+         tabindex="0"
+         class="{{triggerextraclasses}} dropdown-toggle icon-no-margin"
+         id="action-menu-toggle-{{instance}}"
+-        {{#title}}aria-label="{{title}}"{{/title}}
++        aria-label="{{title}}"
+         data-bs-toggle="dropdown"
+         role="{{triggerrole}}"
+         aria-haspopup="true"
+@@ -102,7 +102,7 @@
+         {{{menutrigger}}}
+             {{#icon}}
+                 {{#pix}}
+-                    {{key}},{{component}}
++                    {{key}},{{component}},{{title}}
+                 {{/pix}}
+             {{/icon}}
+             {{#rawicon}}{{{.}}}{{/rawicon}}
+diff --git a/public/reportbuilder/classes/table/system_report_table.php b/public/reportbuilder/classes/table/system_report_table.php
+index b44b613acaa3107558efd566d225ccc4d8225575..139fc7c2a7db7fc123a38d9ab503cedc03c846b5 100644
+--- a/public/reportbuilder/classes/table/system_report_table.php
++++ b/public/reportbuilder/classes/table/system_report_table.php
+@@ -257,7 +257,10 @@ class system_report_table extends base_report_table {
+         global $OUTPUT;
+ 
+         $menu = new action_menu();
+-        $menu->set_kebab_trigger(get_string('actions', 'core_reportbuilder'));
++        $menu->set_menu_trigger(
++            $OUTPUT->pix_icon('i/menu', get_string('actions', 'core_reportbuilder')),
++            'btn btn-icon d-flex no-caret',
++        );
+ 
+         $actions = array_filter($this->report->get_actions(), function($action) use ($row) {
+             // Only return dividers and action items who can be displayed for current users.

@@ -1,0 +1,15 @@
+diff --git a/public/question/editlib.php b/public/question/editlib.php
+index 9f29c22f3db1e8e5aa3afbf3fb4ce33afddb776c..35b213159cccf7f43c5506e92395ed5872a9fdb6 100644
+--- a/public/question/editlib.php
++++ b/public/question/editlib.php
+@@ -105,9 +105,8 @@ function get_questions_category(object $category, bool $noparent, bool $recurse
+     $questions = $DB->get_records_sql($sql, $params);
+     // Iterate through questions, getting stuff we need.
+     $qresults = [];
+-    foreach ($questions as $question) {
++    foreach($questions as $key => $question) {
+         $question->export_process = $export;
+-        $question->categoryobject = $category;
+         $qtype = question_bank::get_qtype($question->qtype, false);
+         if ($export && $qtype->name() === 'missingtype') {
+             // Unrecognised question type. Skip this question when exporting.

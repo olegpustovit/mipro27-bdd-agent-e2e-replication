@@ -1,0 +1,35 @@
+diff --git a/public/question/type/essay/edit_essay_form.php b/public/question/type/essay/edit_essay_form.php
+index 0fe2d5a30e180d57ddfd5350fc764767744f4ec2..dc035ef1adcd19963620111b1f929303ef269220 100644
+--- a/public/question/type/essay/edit_essay_form.php
++++ b/public/question/type/essay/edit_essay_form.php
+@@ -57,24 +57,21 @@ class qtype_essay_edit_form extends question_edit_form {
+ 
+         // Create a text box that can be enabled/disabled for max/min word limits options.
+         $wordlimitoptions = ['size' => '6', 'maxlength' => '6'];
+-
+-        $strminwordlimit = get_string('minwordlimit', 'qtype_essay');
++        $mingrp[] = $mform->createElement('text', 'minwordlimit', '', $wordlimitoptions);
++        $mform->setType('minwordlimit', PARAM_INT);
+         $mingrp[] = $mform->createElement('checkbox', 'minwordenabled', '', get_string('enable'));
+         $mform->setDefault('minwordenabled', 0);
+-        $mingrp[] = $mform->createElement('text', 'minwordlimit', '', $wordlimitoptions + ['aria-label' => $strminwordlimit]);
+-        $mform->setType('minwordlimit', PARAM_INT);
+-        $mform->addGroup($mingrp, 'mingroup', $strminwordlimit, ' ', false);
++        $mform->addGroup($mingrp, 'mingroup', get_string('minwordlimit', 'qtype_essay'), ' ', false);
+         $mform->addHelpButton('mingroup', 'minwordlimit', 'qtype_essay');
+         $mform->disabledIf('minwordlimit', 'minwordenabled', 'notchecked');
+         $mform->hideIf('mingroup', 'responserequired', 'eq', '0');
+         $mform->hideIf('mingroup', 'responseformat', 'eq', 'noinline');
+ 
+-        $strmaxwordlimit = get_string('maxwordlimit', 'qtype_essay');
++        $maxgrp[] = $mform->createElement('text', 'maxwordlimit', '', $wordlimitoptions);
++        $mform->setType('maxwordlimit', PARAM_INT);
+         $maxgrp[] = $mform->createElement('checkbox', 'maxwordenabled', '', get_string('enable'));
+         $mform->setDefault('maxwordenabled', 0);
+-        $maxgrp[] = $mform->createElement('text', 'maxwordlimit', '', $wordlimitoptions + ['aria-label' => $strmaxwordlimit]);
+-        $mform->setType('maxwordlimit', PARAM_INT);
+-        $mform->addGroup($maxgrp, 'maxgroup', $strmaxwordlimit, ' ', false);
++        $mform->addGroup($maxgrp, 'maxgroup', get_string('maxwordlimit', 'qtype_essay'), ' ', false);
+         $mform->addHelpButton('maxgroup', 'maxwordlimit', 'qtype_essay');
+         $mform->disabledIf('maxwordlimit', 'maxwordenabled', 'notchecked');
+         $mform->hideIf('maxgroup', 'responserequired', 'eq', '0');

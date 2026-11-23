@@ -1,0 +1,61 @@
+diff --git a/public/mod/quiz/classes/output/edit_renderer.php b/public/mod/quiz/classes/output/edit_renderer.php
+index 643abd89f478fcbf0b9d2d74839f27ca632b51f7..dd5af9a17294845beece44fad822319bf50109d6 100644
+--- a/public/mod/quiz/classes/output/edit_renderer.php
++++ b/public/mod/quiz/classes/output/edit_renderer.php
+@@ -769,7 +769,7 @@ class edit_renderer extends \plugin_renderer_base {
+         $question = $structure->get_question_in_slot($slot);
+         $bank = $structure->get_source_bank($slot);
+ 
+-        if ($bank?->issharedbank && question_has_capability_on($question, 'view')) {
++        if ($bank?->issharedbank) {
+             $bankurl = (new \moodle_url('/question/edit.php',
+                 [
+                     'cmid' => $bank->cminfo->id,
+@@ -1121,21 +1121,12 @@ class edit_renderer extends \plugin_renderer_base {
+                 'badge bg-danger text-white ms-3'
+             );
+         } else {
+-            $canedit = question_has_capability_on($question->questionid, 'edit');
+-            $instancename = $canedit ? $editicon . $instancename : $instancename;
+-            // Display the link, if the user has permission to edit. Otherwise, just display the name and icon.
+-            $questionname = $icon . html_writer::tag('span', $instancename, ['class' => 'instancename']);
+-            if ($canedit) {
+-                $output .= html_writer::link(
+-                    $editurl,
+-                    $questionname,
+-                    [
+-                        'title' => get_string('editquestion', 'quiz') . ' ' . $title,
+-                    ],
+-                );
+-            } else {
+-                $output .= $questionname;
+-            }
++
++            // Display the link itself.
++            $activitylink = $icon . html_writer::tag('span', $editicon . $instancename, ['class' => 'instancename']);
++            $output .= html_writer::link($editurl, $activitylink,
++                ['title' => get_string('editquestion', 'quiz') . ' ' . $title]);
++
+         }
+ 
+         return $output;
+diff --git a/public/mod/quiz/templates/question_slot.mustache b/public/mod/quiz/templates/question_slot.mustache
+index fe24e3ccc3059187087bfed7da635f9c23750b6c..a6c4fb680b8ae196804e891ac4c6f2bb4d7d34cb 100644
+--- a/public/mod/quiz/templates/question_slot.mustache
++++ b/public/mod/quiz/templates/question_slot.mustache
+@@ -57,13 +57,9 @@
+         <div>{{{questionname}}}</div>
+         {{#issharedbank}}
+             <div class="sharedbank">
+-                {{#bankurl}}
+-                    <a href="{{bankurl}}">
+-                {{/bankurl}}
++                <a href="{{bankurl}}">
+                     <span class="badge bg-primary text-light ms-2 mt-1">{{{bankname}}}</span>
+-                {{#bankurl}}
+-                    </a>
+-                {{/bankurl}}
++                </a>
+             </div>
+         {{/issharedbank}}
+     </div>

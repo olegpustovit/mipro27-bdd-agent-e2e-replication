@@ -1,0 +1,30 @@
+diff --git a/public/mod/assign/locallib.php b/public/mod/assign/locallib.php
+index b64e7f4f073ead6c09f68d1ae0e05f3c17b5c753..7ec26a78f59c19d7e4e40085aa83094aaa7a5bc2 100644
+--- a/public/mod/assign/locallib.php
++++ b/public/mod/assign/locallib.php
+@@ -7324,7 +7324,6 @@ class assign {
+         global $USER;
+         $userid = core_user::is_real_user($userfrom->id) ? $userfrom->id : $USER->id;
+         $uniqueid = $this->get_uniqueid_for_user($userid);
+-        $oldforcelang = force_current_language($userto->lang);
+         self::send_assignment_notification($userfrom,
+                                            $userto,
+                                            $messagetype,
+@@ -7338,7 +7337,6 @@ class assign {
+                                            $this->is_blind_marking(),
+                                            $uniqueid,
+                                            $extrainfo);
+-        force_current_language($oldforcelang);
+     }
+ 
+     /**
+@@ -7387,9 +7385,7 @@ class assign {
+             $user = $USER;
+         }
+         // Prepare extra data for submission receipt notification.
+-        $oldforcelang = force_current_language($user->lang);
+         $extrainfo = $this->get_submission_summaries_for_messages($submission);
+-        force_current_language($oldforcelang);
+         if ($submission->userid == $USER->id) {
+             $this->send_notification(core_user::get_noreply_user(),
+                                      $user,

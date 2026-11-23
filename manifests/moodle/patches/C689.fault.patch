@@ -1,0 +1,108 @@
+diff --git a/public/mod/forum/db/caches.php b/public/mod/forum/db/caches.php
+index beba7334d3c62c8c7a4beac02b4b55fda157fea1..ecfd9e385033ec65b5333837a4ebd00ce3149184 100644
+--- a/public/mod/forum/db/caches.php
++++ b/public/mod/forum/db/caches.php
+@@ -32,13 +32,4 @@ $definitions = [
+         'simpledata' => true,
+         'staticacceleration' => true
+     ],
+-    'forum_count_discussions' => [
+-        'mode' => cache_store::MODE_REQUEST,
+-        'simplekeys' => true,
+-        'simpledata' => true,
+-        'staticacceleration' => true,
+-        'invalidationevents' => [
+-            'changesinforumdiscussions',
+-        ],
+-    ],
+ ];
+diff --git a/public/mod/forum/lib.php b/public/mod/forum/lib.php
+index 0bf12a8f8c0a606e3ecc1300ca860330d919947a..ea474a104d84a08781dcf8552b36209b326275e0 100644
+--- a/public/mod/forum/lib.php
++++ b/public/mod/forum/lib.php
+@@ -1484,6 +1484,7 @@ function forum_count_discussion_replies($forumid, $forumsort = "", $limit = -1,
+  * @global object
+  * @global object
+  * @global object
++ * @staticvar array $cache
+  * @param object $forum
+  * @param object $cm
+  * @param object $course
+@@ -1492,21 +1493,13 @@ function forum_count_discussion_replies($forumid, $forumsort = "", $limit = -1,
+ function forum_count_discussions($forum, $cm, $course) {
+     global $CFG, $DB, $USER;
+ 
+-    $cache = cache::make('mod_forum', 'forum_count_discussions');
+-    $cachedcounts = $cache->get($course->id);
+-    if ($cachedcounts === false) {
+-        $cachedcounts = [];
+-    }
++    static $cache = array();
+ 
+     $now = floor(time() / 60) * 60; // DB Cache Friendly.
+ 
+     $params = array($course->id);
+ 
+-    if (!isset($cachedcounts[$forum->id])) {
+-        // Initialize the cachedcounts for this forum id to 0 by default. After the
+-        // database query, if there are discussions then it should update the count.
+-        $cachedcounts[$forum->id] = 0;
+-
++    if (!isset($cache[$course->id])) {
+         if (!empty($CFG->forum_enabletimedposts)) {
+             $timedsql = "AND d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)";
+             $params[] = $now;
+@@ -1524,24 +1517,26 @@ function forum_count_discussions($forum, $cm, $course) {
+ 
+         if ($counts = $DB->get_records_sql($sql, $params)) {
+             foreach ($counts as $count) {
+-                $cachedcounts[$count->id] = $count->dcount;
++                $counts[$count->id] = $count->dcount;
+             }
+-
+-            $cache->set($course->id, $cachedcounts);
++            $cache[$course->id] = $counts;
+         } else {
+-            $cache->set($course->id, $cachedcounts);
+-            return $cachedcounts[$forum->id];
++            $cache[$course->id] = array();
+         }
+     }
+ 
++    if (empty($cache[$course->id][$forum->id])) {
++        return 0;
++    }
++
+     $groupmode = groups_get_activity_groupmode($cm, $course);
+ 
+     if ($groupmode != SEPARATEGROUPS) {
+-        return $cachedcounts[$forum->id];
++        return $cache[$course->id][$forum->id];
+     }
+ 
+     if (has_capability('moodle/site:accessallgroups', context_module::instance($cm->id))) {
+-        return $cachedcounts[$forum->id];
++        return $cache[$course->id][$forum->id];
+     }
+ 
+     require_once($CFG->dirroot.'/course/lib.php');
+@@ -3135,9 +3130,6 @@ function forum_add_discussion($discussion, $mform=null, $unused=null, $userid=nu
+         forum_trigger_content_uploaded_event($post, $cm, 'forum_add_discussion');
+     }
+ 
+-    // Clear the discussion count cache just in case it's in the same request.
+-    \cache_helper::purge_by_event('changesinforumdiscussions');
+-
+     return $post->discussion;
+ }
+ 
+@@ -3198,9 +3190,6 @@ function forum_delete_discussion($discussion, $fulldelete, $course, $cm, $forum)
+     $event->add_record_snapshot('forum_discussions', $discussion);
+     $event->trigger();
+ 
+-    // Clear the discussion count cache just in case it's in the same request.
+-    \cache_helper::purge_by_event('changesinforumdiscussions');
+-
+     return $result;
+ }
+ 

@@ -1,0 +1,290 @@
+diff --git a/public/lib/js/esm/src/nav/Nav.tsx b/public/lib/js/esm/src/nav/Nav.tsx
+index f16f9f25845842a9e1a00dd02ef0dbb79e670b9c..eb7f205a247db93e1694459927de7a82129b7151 100644
+--- a/public/lib/js/esm/src/nav/Nav.tsx
++++ b/public/lib/js/esm/src/nav/Nav.tsx
+@@ -83,32 +83,6 @@ export interface NavProps {
+ const isNodeActive = (node: NavNode): boolean =>
+     node.active || node.children.some(isNodeActive);
+ 
+-/**
+- * Returns a copy of the given nodes with `active` recomputed against a specific href, recursively.
+- *
+- * The server computes `active` once, from the page's URL, which can't reflect a tab Bootstrap
+- * later activates client-side. Without this, the pane Bootstrap controls and the pill React highlights can disagree.
+- *
+- * @param nodes The nodes to recompute.
+- * @param activeHref The href of the tab Bootstrap reports as active.
+- * @returns A new node array with `active` set to `node.href === activeHref` throughout.
+- */
+-const withActiveHref = (nodes: NavNode[], activeHref: string): NavNode[] => nodes.map((node) => ({
+-    ...node,
+-    active: node.href === activeHref,
+-    children: withActiveHref(node.children, activeHref),
+-}));
+-
+-/**
+- * Checks whether any node, or one of its descendants, has the given href.
+- *
+- * @param nodes The nodes to search.
+- * @param href The href to look for.
+- * @returns True if some node in the tree has that href.
+- */
+-const hasNodeWithHref = (nodes: NavNode[], href: string): boolean =>
+-    nodes.some((node) => node.href === href || hasNodeWithHref(node.children, href));
+-
+ /**
+  * Attribute names excluded from toAttributeRecord()'s output because they're already handled
+  * explicitly by DropdownItems (id, via item.id).
+@@ -243,7 +217,7 @@ function DropdownSubmenu({node, istablist = false}: {node: NavNode; istablist?:
+             >
+                 {node.text}
+             </a>
+-            <div className="dropdown-menu" id={menuId} role={istablist ? 'none' : 'menu'} aria-labelledby={toggleId}>
++            <div className="dropdown-menu" id={menuId} role="menu" aria-labelledby={toggleId}>
+                 <DropdownItems items={node.children} istablist={istablist} />
+             </div>
+         </div>
+@@ -283,11 +257,6 @@ function DropdownItems(
+                     return <DropdownSubmenu key={item.key} node={item} istablist={istablist} />;
+                 }
+ 
+-                let ariaSelected: 'true' | 'false' | undefined;
+-                if (istablist) {
+-                    ariaSelected = item.active ? 'true' : 'false';
+-                }
+-
+                 return (
+                     <a
+                         key={item.key}
+@@ -295,12 +264,8 @@ function DropdownItems(
+                         className={`dropdown-item${item.active ? ' active' : ''}`}
+                         href={item.href ?? '#'}
+                         title={item.title ?? undefined}
+-                        aria-current={!istablist && item.active ? 'page' : undefined}
+-                        aria-selected={ariaSelected}
+-                        // Bootstrap's Tab component only fires "shown.bs.tab" (and sets aria-selected) for elements whose role
+-                        // is exactly "tab". An overflowed tablist item still needs data-bs-toggle="tab" to switch panes, so it
+-                        // must also carry role="tab".
+-                        role={istablist ? 'tab' : 'menuitem'}
++                        aria-current={item.active ? 'page' : undefined}
++                        role="menuitem"
+                         data-bs-toggle={istablist ? 'tab' : undefined}
+                         data-text={istablist ? item.text : undefined}
+                         // React owns this item's active state via item.active above regardless of
+@@ -365,10 +330,7 @@ function PillDropdownToggle(
+     const menu = isValidElement(children)
+         ? cloneElement(children as ReactElement<{id?: string; role?: string; 'aria-labelledby'?: string}>, {
+             id: menuId,
+-            // A role="menu" may only own menuitems, but an istablist dropdown holds role="tab"
+-            // items (see DropdownItems). role="none" keeps the container out of the accessibility
+-            // tree so those tabs stay owned by the enclosing role="tablist".
+-            role: istablist ? 'none' : 'menu',
++            role: 'menu',
+             'aria-labelledby': toggleId,
+         })
+         : children;
+@@ -529,48 +491,13 @@ const MEASURED_CLASS = 'secondarynav-measured';
+ export default function Nav(
+     {items, morelabel, istablist, navbarstyle, measuredclass = MEASURED_CLASS, navlabel}: NavProps,
+ ) {
+-    const menuRef = useRef<HTMLUListElement>(null);
+-
+-    // Bootstrap's Tab component (data-bs-toggle="tab") can activate a tab client-side. React never hears about
+-    // that on its own. Track the href Bootstrap actually activates and use it to override the server's `active` flags.
+-    // Seeded from location.hash on mount (rather than left null until the first shown.bs.tab event) because the
+-    // browser never sends the hash to the server.
+-    const [activeOverrideHref, setActiveOverrideHref] = useState<string | null>(() => {
+-        if (!istablist) {
+-            return null;
+-        }
+-        const hash = window.location.hash;
+-        return hash && hasNodeWithHref(items, hash) ? hash : null;
+-    });
+-
+-    useEffect(() => {
+-        if (!istablist) {
+-            return undefined;
+-        }
+-
+-        const handleShown = (event: Event) => {
+-            const target = event.target;
+-            if (!(target instanceof HTMLElement) || !menuRef.current?.contains(target)) {
+-                return;
+-            }
+-            const href = target.getAttribute('href');
+-            if (href && href !== '#') {
+-                setActiveOverrideHref(href);
+-            }
+-        };
+-
+-        document.addEventListener('shown.bs.tab', handleShown);
+-        return () => document.removeEventListener('shown.bs.tab', handleShown);
+-    }, [istablist]);
+-
+-    const effectiveItems = istablist && activeOverrideHref ? withActiveHref(items, activeOverrideHref) : items;
+-
+     // Dividers are a dropdown-only concept (see DropdownItems); the server side export already
+     // drops them at the top level, but guard here too so one could never render as a bare pill.
+-    const toplevel = effectiveItems.filter((item) => !item.divider);
++    const toplevel = items.filter((item) => !item.divider);
+     const forced = toplevel.filter((item) => item.forceintomoremenu);
+     const rest = toplevel.filter((item) => !item.forceintomoremenu);
+ 
++    const menuRef = useRef<HTMLUListElement>(null);
+     // The landmark, when one is rendered. The measurement below sizes the menu against the React
+     // mount point, so it must resolve the container from whichever element is outermost here
+     // rather than from the <ul>, whose parent is the landmark once there is one.
+diff --git a/public/theme/boost/amd/src/loader.js b/public/theme/boost/amd/src/loader.js
+index d26cb210d16c0f5faceddd0cf7eeffa3e5fc02cf..5346cb7673d04ac7e6343bf0c92d751348da65c1 100644
+--- a/public/theme/boost/amd/src/loader.js
++++ b/public/theme/boost/amd/src/loader.js
+@@ -30,143 +30,26 @@ import {DefaultAllowlist} from 'bootstrap/util/sanitizer';
+ import setupBootstrapPendingChecks from './pending';
+ import SelectorEngine from './bootstrap/dom/selector-engine';
+ 
+-/**
+- * CSS selector matching only the secondary navigation's own tablist, e.g. admin/search.php's
+- * category tabs. Deliberately narrower than "[data-bs-toggle=tab]" alone, which also matches
+- * unrelated Bootstrap tabs elsewhere on the page.
+- */
+-const SECONDARY_NAV_TAB_SELECTOR = '.secondary-navigation [role="tablist"] [data-bs-toggle="tab"]';
+-
+ /**
+  * Rember the last visited tabs.
+  */
+ const rememberTabs = () => {
+-    // Tabs already present in the DOM when this runs, e.g. admin settings page tabs. Kept
+-    // separate from SECONDARY_NAV_TAB_SELECTOR so that tabs mounted later elsewhere on the page
+-    // (e.g. the activity chooser) are not picked up by the delegated listener below.
+-    const pageTabs = new Set(document.querySelectorAll('a[data-bs-toggle="tab"]'));
+-
+-    // Delegate on the document rather than binding to each tab trigger directly.
+-    document.addEventListener('shown.bs.tab', (e) => {
+-        if (!pageTabs.has(e.target) && !e.target.matches(SECONDARY_NAV_TAB_SELECTOR)) {
+-            return;
+-        }
++    const tabTriggerList = document.querySelectorAll('a[data-bs-toggle="tab"]');
++    [...tabTriggerList].map(tabTriggerEl => tabTriggerEl.addEventListener('shown.bs.tab', (e) => {
+         var hash = e.target.getAttribute('href');
+         if (history.replaceState) {
+             history.replaceState(null, null, hash);
+         } else {
+             location.hash = hash;
+         }
+-    });
+-
++    }));
+     const hash = window.location.hash;
+-    if (!hash) {
+-        return;
+-    }
+-
+-    /**
+-     * Find the tab whose href is the current hash.
+-     *
+-     * Compares attribute values rather than building a selector from the hash, so a fragment
+-     * that isn't a valid CSS identifier can't throw and take the rest of the theme's boot with it.
+-     *
+-     * @param {ParentNode} root Where to look for tabs.
+-     * @returns {Element|null} The matching tab, if any.
+-     */
+-    const findTab = (root) => [...root.querySelectorAll('[role="tablist"] [href^="#"]')]
+-        .find((tab) => tab.getAttribute('href') === hash) ?? null;
+-
+-    /**
+-     * Close the "More" dropdown if activating the given tab left it forced open.
+-     *
+-     * Bootstrap's Tab treats a tab inside a .dropdown as a dropdown item and adds .show to the
+-     * dropdown's menu when it activates, without going through the Dropdown API. Nothing else
+-     * closes that menu on page load, so it would stay open over the page.
+-     *
+-     * @param {Element} tab The tab element that was just activated.
+-     */
+-    const closeStrayDropdown = (tab) => {
+-        const outerElem = tab.closest('.dropdown');
+-        const menu = outerElem && outerElem.querySelector(':scope > .dropdown-menu');
+-        if (!menu || !menu.classList.contains('show')) {
+-            return;
+-        }
+-        menu.classList.remove('show');
+-        const toggle = outerElem.querySelector(':scope > .dropdown-toggle');
+-        if (toggle) {
+-            toggle.setAttribute('aria-expanded', 'false');
+-        }
+-    };
+-
+-    /**
+-     * Switch to the pane matching location.hash.
+-     *
+-     * Used when the tab is already marked active (e.g. React rendered it from the hash), where
+-     * Bootstrap's Tab.show() returns early without touching the panes, so the pane is left on
+-     * the default tab. The Tab API can't be used to correct that, hence the direct class toggle.
+-     */
+-    const forceActivatePane = () => {
+-        let id = hash.slice(1);
+-        try {
+-            id = decodeURIComponent(id);
+-        } catch (e) {
+-            // Malformed escape sequence, fall back to the raw fragment.
+-        }
+-        const pane = document.getElementById(id);
+-        if (!pane) {
+-            return;
+-        }
+-        const previousPane = pane.parentElement?.querySelector(':scope > .tab-pane.active');
+-        if (pane === previousPane) {
+-            return;
+-        }
+-        previousPane?.classList.remove('active', 'show');
+-        pane.classList.add('active', 'show');
+-    };
+-
+-    /**
+-     * Select the given tab.
+-     *
+-     * @param {Element} tab The tab matching location.hash.
+-     */
+-    const selectTab = (tab) => {
+-        if (tab.classList.contains('active')) {
+-            forceActivatePane();
+-        } else {
++    if (hash) {
++        const tab = document.querySelector('[role="tablist"] [href="' + hash + '"]');
++        if (tab) {
+             tab.click();
+         }
+-        closeStrayDropdown(tab);
+-    };
+-
+-    const existingTab = findTab(document);
+-    if (existingTab) {
+-        selectTab(existingTab);
+-        return;
+-    }
+-
+-    // The matching tab is not in the DOM yet, e.g. the secondary navigation's React tablist is
+-    // still mounting. Watch only that container, and only for added nodes, until it appears.
+-    const secondaryNav = document.querySelector('.secondary-navigation');
+-    if (!secondaryNav) {
+-        return;
+     }
+-    const observer = new MutationObserver((mutations) => {
+-        for (const mutation of mutations) {
+-            for (const node of mutation.addedNodes) {
+-                if (!(node instanceof Element)) {
+-                    continue;
+-                }
+-                const tab = findTab(node) ?? (node.matches('[role="tablist"] [href^="#"]') && findTab(node.parentNode));
+-                if (tab) {
+-                    observer.disconnect();
+-                    selectTab(tab);
+-                    return;
+-                }
+-            }
+-        }
+-    });
+-    observer.observe(secondaryNav, {childList: true, subtree: true});
+-    setTimeout(() => observer.disconnect(), 5000);
+ };
+ 
+ /**

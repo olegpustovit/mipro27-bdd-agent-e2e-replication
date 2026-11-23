@@ -1,0 +1,39 @@
+diff --git a/public/completion/classes/manager.php b/public/completion/classes/manager.php
+index 58dc7a3643b7adb6b4497cc9cbb6dcfda75d011a..43a68a1687d6665ed7d074f4b119ae4d476389c6 100644
+--- a/public/completion/classes/manager.php
++++ b/public/completion/classes/manager.php
+@@ -291,9 +291,6 @@ class manager {
+      */
+     public static function can_edit_bulk_completion($courseorid, $cm = null) {
+         if ($cm) {
+-            if (!plugin_supports('mod', $cm->modname, FEATURE_COMPLETION, true)) {
+-                return false;
+-            }
+             return $cm->uservisible && has_capability('moodle/course:manageactivities', $cm->context);
+         }
+         $coursecontext = context_course::instance(is_object($courseorid) ? $courseorid->id : $courseorid);
+diff --git a/public/lib/moodlelib.php b/public/lib/moodlelib.php
+index c0d7af6c49f71940759aa6775fb0182ce7972945..7e55478b0fcad52fb3c4237cbc1984d6ae54920a 100644
+--- a/public/lib/moodlelib.php
++++ b/public/lib/moodlelib.php
+@@ -420,8 +420,6 @@ define('FEATURE_CONTROLS_GRADE_VISIBILITY', 'controlsgradevisbility');
+ /** True if module supports plagiarism plugins */
+ define('FEATURE_PLAGIARISM', 'plagiarism');
+ 
+-/** True if module supports completion (true by default) */
+-define('FEATURE_COMPLETION', 'completion_enabled');
+ /** True if module has code to track whether somebody viewed it */
+ define('FEATURE_COMPLETION_TRACKS_VIEWS', 'completion_tracks_views');
+ /** True if module has custom completion rules */
+diff --git a/public/mod/subsection/lib.php b/public/mod/subsection/lib.php
+index be8e8fbd66b09d9e9f0c292ca919d51a924abcbd..5ae90a9a94e106285bb2c1eaa50c4de20780a5d0 100644
+--- a/public/mod/subsection/lib.php
++++ b/public/mod/subsection/lib.php
+@@ -37,7 +37,6 @@ function subsection_supports($feature) {
+         FEATURE_GROUPS => false,
+         FEATURE_GROUPINGS => false,
+         FEATURE_MOD_INTRO => false,
+-        FEATURE_COMPLETION => false,
+         FEATURE_COMPLETION_TRACKS_VIEWS => false,
+         FEATURE_GRADE_HAS_GRADE => false,
+         FEATURE_GRADE_OUTCOMES => false,

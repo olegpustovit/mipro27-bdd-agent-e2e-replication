@@ -1,0 +1,107 @@
+diff --git a/public/question/type/ddwtos/amd/src/ddwtos.js b/public/question/type/ddwtos/amd/src/ddwtos.js
+index 3fd6bad9c2544ce1e4eda08d7b25ac4a16f62d67..941e992b9bd8d4bf3864124d48bba96365e5c028 100644
+--- a/public/question/type/ddwtos/amd/src/ddwtos.js
++++ b/public/question/type/ddwtos/amd/src/ddwtos.js
+@@ -101,27 +101,17 @@ define([
+             maxWidth = 0,
+             maxHeight = 0;
+ 
+-        // Reset all items to natural sizing and find max width.
+-        dragDropItems.each(function(i, drag) {
+-            $(drag).css({'width': '', 'height': '', 'lineHeight': ''});
+-        });
+-
++        // Find the maximum size of any drag in this groups.
+         dragDropItems.each(function(i, drag) {
+             maxWidth = Math.max(maxWidth, Math.ceil(drag.offsetWidth));
++            maxHeight = Math.max(maxHeight, Math.ceil(0 + drag.offsetHeight));
+         });
+ 
+-        // The width we will want to set is a bit bigger than this.
++        // The size we will want to set is a bit bigger than this.
+         maxWidth += 8;
+-
+-        // Set width, then measure wrapped heights.
+-        dragDropItems.each(function(i, drag) {
+-            $(drag).width(maxWidth);
+-            maxHeight = Math.max(maxHeight, drag.offsetHeight);
+-        });
+         maxHeight += 2;
+-
+         thisQ.questionDragDropWidthHeight[group] = {maxWidth: maxWidth, maxHeight: maxHeight};
+-        // Set each drag and drop to the final size.
++        // Set each drag home to that size.
+         dragDropItems.each(function(i, drag) {
+             thisQ.setElementSize(drag, maxWidth, maxHeight);
+         });
+@@ -209,7 +199,7 @@ define([
+      * @param {int} height
+      */
+     DragDropToTextQuestion.prototype.setElementSize = function(element, width, height) {
+-        $(element).width(width).height(height);
++        $(element).width(width).height(height).css('lineHeight', height + 'px');
+     };
+ 
+     /**
+diff --git a/public/question/type/ddwtos/styles.css b/public/question/type/ddwtos/styles.css
+index 8da83663aeffb59b5172268ccb56fce973f147c6..79ed926bb8a1a2392695fb7f73911680eec7f093 100644
+--- a/public/question/type/ddwtos/styles.css
++++ b/public/question/type/ddwtos/styles.css
+@@ -5,16 +5,6 @@
+ 
+ .que.ddwtos .draghome {
+     margin-bottom: 1em;
+-    display: inline-flex;
+-    align-items: center;
+-    justify-content: center;
+-    text-align: center;
+-    background: transparent;
+-    border: 1px solid #000;
+-    cursor: move;
+-    overflow-wrap: break-word;
+-    white-space: normal;
+-    line-height: normal;
+ }
+ 
+ .que.ddwtos .answertext {
+@@ -22,15 +12,10 @@
+ }
+ 
+ .que.ddwtos .drop.active {
+-    display: inline-flex;
+-    align-items: center;
+-    justify-content: center;
++    display: inline-block;
+     text-align: center;
+     border: 1px solid #000;
+     margin-bottom: 2px;
+-    overflow-wrap: break-word;
+-    white-space: normal;
+-    line-height: normal;
+ }
+ 
+ .que.ddwtos .drop {
+@@ -41,6 +26,14 @@
+     height: 0;
+ }
+ 
++.que.ddwtos .draghome {
++    display: inline-block;
++    text-align: center;
++    background: transparent;
++    border: 1px solid #000;
++    cursor: move;
++}
++
+ .que.ddwtos.qtype_ddwtos-readonly .draghome {
+     cursor: default;
+ }
+@@ -57,7 +50,7 @@
+ 
+ .que.ddwtos .draghome.dragplaceholder.active {
+     visibility: hidden;
+-    display: inline-flex;
++    display: inline-block;
+ }
+ 
+ .que.ddwtos .draghome.placed {

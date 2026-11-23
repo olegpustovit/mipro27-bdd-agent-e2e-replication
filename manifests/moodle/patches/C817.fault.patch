@@ -1,0 +1,65 @@
+diff --git a/public/message/templates/notification_preferences.mustache b/public/message/templates/notification_preferences.mustache
+index 7a28d6002d23ab4db2df178e0f522c3b82782fe8..58ad3bfde1a05d977e98b7962c63369d5b1272e8 100644
+--- a/public/message/templates/notification_preferences.mustache
++++ b/public/message/templates/notification_preferences.mustache
+@@ -69,7 +69,7 @@
+     }
+ }}
+ <div class="preferences-page-container">
+-    <h2 id="notificationpreferencesheading">{{#str}} notificationpreferences, message {{/str}}</h2>
++    <h2>{{#str}} notificationpreferences, message {{/str}}</h2>
+     <div class="checkbox-container" data-region="disable-notification-container">
+         <input id="disable-notifications"
+            type="checkbox"
+@@ -79,12 +79,10 @@
+         {{> core/loading }}
+     </div>
+     <div class="preferences-container {{#disableall}}disabled{{/disableall}}" data-user-id="{{userid}}">
+-        <table class="table preference-table" aria-labelledby="notificationpreferencesheading">
++        <table class="table preference-table">
+             <thead>
+                 <tr>
+-                    <th scope="col">
+-                        <span class="visually-hidden">{{#str}}preference, message{{/str}}</span>
+-                    </th>
++                    <th>{{{displayname}}}</th>
+                     {{#processors}}
+                         {{> message/notification_preferences_processor }}
+                     {{/processors}}
+diff --git a/public/message/templates/notification_preferences_component_notification.mustache b/public/message/templates/notification_preferences_component_notification.mustache
+index 17f5889cca87ba4a37efb9dca4640b4c2231cb8c..11e5823a759967cb4ef4e0511c26e238f7c29f09 100644
+--- a/public/message/templates/notification_preferences_component_notification.mustache
++++ b/public/message/templates/notification_preferences_component_notification.mustache
+@@ -48,7 +48,7 @@
+     }
+ }}
+ <tr class="preference-row" data-region="preference-row" data-preference-key="{{{preferencekey}}}">
+-    <th class="preference-name fw-normal" scope="row">{{{displayname}}}</th>
++    <td class="preference-name">{{{displayname}}}</td>
+     {{#processors}}
+         <td {{^userconfigured}}class="disabled"{{/userconfigured}} data-processor-name="{{name}}">
+             {{#supportsprocessor}}
+@@ -67,8 +67,8 @@
+                                     {{^userconfigured}} disabled="true" data-unconfigured="1" aria-describedby="{{{preferencekey}}}_{{{name}}}_unconfigured"{{/userconfigured}}
+                                     {{#enabled}}checked{{/enabled}}
+                                 >
+-                                <label for="{{{preferencekey}}}_{{{name}}}" class="visually-hidden">
+-                                    {{enabledlabel}}
++                                <label for="{{{preferencekey}}}_{{{name}}}" class="form-check-label"
++                                       title="{{enabledlabel}}" >
+                                 </label>
+                                 {{^userconfigured}}
+                                     <span id="{{{preferencekey}}}_{{{name}}}_unconfigured" class="visually-hidden">
+diff --git a/public/message/templates/notification_preferences_processor.mustache b/public/message/templates/notification_preferences_processor.mustache
+index 0d0d29dd02bf2ede590c738303508e9a485c49bf..e194362b5a21837bc0ce3455028d431a038e6bcf 100644
+--- a/public/message/templates/notification_preferences_processor.mustache
++++ b/public/message/templates/notification_preferences_processor.mustache
+@@ -41,7 +41,7 @@
+         "contextid": 3
+     }
+ }}
+-<th {{^userconfigured}}class="unconfigured"{{/userconfigured}} data-processor-name="{{name}}" scope="col">
++<th {{^userconfigured}}class="unconfigured"{{/userconfigured}} data-processor-name="{{name}}">
+     {{#hassettings}}
+         <a href="#"
+             data-processor-setting

@@ -1,0 +1,44 @@
+diff --git a/public/customfield/classes/field_controller.php b/public/customfield/classes/field_controller.php
+index a87155416928cf6f4552d06d721fef1490ff323e..b790dc90397083941f57f2a5b448f2eb178373eb 100644
+--- a/public/customfield/classes/field_controller.php
++++ b/public/customfield/classes/field_controller.php
+@@ -255,15 +255,11 @@ abstract class field_controller {
+     /**
+      * Returns the field name formatted according to configuration context.
+      *
+-     * @param bool $escape
+      * @return string
+      */
+-    public function get_formatted_name(bool $escape = true): string {
++    public function get_formatted_name(): string {
+         $context = $this->get_handler()->get_configuration_context();
+-        return format_string($this->get('name'), true, [
+-            'context' => $context,
+-            'escape' => $escape,
+-        ]);
++        return format_string($this->get('name'), true, ['context' => $context]);
+     }
+ 
+     /**
+diff --git a/public/reportbuilder/classes/local/helpers/custom_fields.php b/public/reportbuilder/classes/local/helpers/custom_fields.php
+index 9c929c175cbc29048778c599afc65256ec8616eb..98c28abe1272659d6055f4efd2c979d783e81814 100644
+--- a/public/reportbuilder/classes/local/helpers/custom_fields.php
++++ b/public/reportbuilder/classes/local/helpers/custom_fields.php
+@@ -137,7 +137,7 @@ class custom_fields {
+ 
+                 $columns[] = (new column(
+                     'customfield_' . $field->get('shortname'),
+-                    new lang_string('customfieldcolumn', 'core_reportbuilder', $field->get_formatted_name(false)),
++                    new lang_string('customfieldcolumn', 'core_reportbuilder', $field->get_formatted_name()),
+                     $this->entityname
+                 ))
+                     ->add_join($this->get_table_join($field))
+@@ -236,7 +236,7 @@ class custom_fields {
+                 $filter = (new filter(
+                     $this->get_filter_class_type($datacontroller),
+                     'customfield_' . $field->get('shortname'),
+-                    new lang_string('customfieldcolumn', 'core_reportbuilder', $field->get_formatted_name(false)),
++                    new lang_string('customfieldcolumn', 'core_reportbuilder', $field->get_formatted_name()),
+                     $this->entityname,
+                     $customdatasql,
+                     $customdataparams,

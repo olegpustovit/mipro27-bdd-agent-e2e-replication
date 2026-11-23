@@ -1,0 +1,45 @@
+diff --git a/public/lib/grade/grade_scale.php b/public/lib/grade/grade_scale.php
+index f6fec4bcb27ffb01db6bc3a9aeacd927e6278b70..0693037af58025a327f729ef931ae632af777e0f 100644
+--- a/public/lib/grade/grade_scale.php
++++ b/public/lib/grade/grade_scale.php
+@@ -312,10 +312,10 @@ class grade_scale extends grade_object {
+     /**
+      * Static function returning all global scales
+      *
+-     * @return grade_scale[]|false
++     * @return object
+      */
+     public static function fetch_all_global() {
+-        return grade_scale::fetch_all(['courseid' => 0]);
++        return grade_scale::fetch_all(array('courseid'=>0));
+     }
+ 
+     /**
+diff --git a/public/mod/assign/settings.php b/public/mod/assign/settings.php
+index 7e5de7fa7618df18a7162d2f29fbacc36d8ef4a9..e431198f90db9fe984a267109fc37579e525eb50 100644
+--- a/public/mod/assign/settings.php
++++ b/public/mod/assign/settings.php
+@@ -205,17 +205,14 @@ if ($ADMIN->fulltree) {
+                                                     ]);
+     $settings->add($setting);
+ 
+-    $name = new lang_string('defaultgradescale', 'mod_assign');
+-    $description = new lang_string('defaultgradescale_help', 'mod_assign');
+-
+-    $choices = ['' => new lang_string('choosedots')];
++    /** @var grade_scale[] $scales */
+     $scales = grade_scale::fetch_all_global();
+-    if ($scales !== false) {
+-        foreach ($scales as $scale) {
+-            $choices[$scale->id] = $scale->get_name();
+-        }
++    $choices = ['' => new lang_string('choosedots')];
++    foreach ($scales as $scale) {
++        $choices[$scale->id] = $scale->get_name();
+     }
+-
++    $name = new lang_string('defaultgradescale', 'mod_assign');
++    $description = new lang_string('defaultgradescale_help', 'mod_assign');
+     if (count($choices) > 1) {
+         $setting = new admin_setting_configselect('mod_assign/defaultgradescale',
+             $name,

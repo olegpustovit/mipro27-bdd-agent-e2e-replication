@@ -1,0 +1,39 @@
+diff --git a/public/lib/editor/tiny/plugins/recordrtc/amd/src/base_recorder.js b/public/lib/editor/tiny/plugins/recordrtc/amd/src/base_recorder.js
+index 8c41c964f15f608cd8fc8be5486a256341a4d0a6..5bda2f2784d2061aedb18ec641567349861255e4 100644
+--- a/public/lib/editor/tiny/plugins/recordrtc/amd/src/base_recorder.js
++++ b/public/lib/editor/tiny/plugins/recordrtc/amd/src/base_recorder.js
+@@ -413,34 +413,6 @@ export default class {
+             this.cleanupStream();
+             this.requestRecordingStop();
+         });
+-        this.player.addEventListener('error', this.handlePlayerError.bind(this));
+-        this.player.addEventListener('loadedmetadata', this.handlePlayerLoadedMetadata.bind(this));
+-    }
+-
+-    /**
+-     * Handle the player `error` event.
+-     *
+-     * This event is called when the player throws an error.
+-     */
+-    handlePlayerError() {
+-        const error = this.player.error;
+-        if (error) {
+-            const message = `An error occurred: ${error.message || 'Unknown error'}. Please try again.`;
+-            addToast(message, {type: error});
+-            // Disable the upload button.
+-            this.setUploadButtonState(false);
+-        }
+-    }
+-
+-    /**
+-     * Handles the event when the player's metadata has been loaded.
+-     */
+-    handlePlayerLoadedMetadata() {
+-        if (isFinite(this.player.duration)) {
+-            // Note: In Chrome, you need to seek to activate the error listener
+-            // if an issue arises after inserting the recorded audio into the player source.
+-            this.player.currentTime = 0.1;
+-        }
+     }
+ 
+     /**

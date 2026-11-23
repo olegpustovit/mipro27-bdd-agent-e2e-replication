@@ -1,0 +1,1199 @@
+diff --git a/mod/quiz/attempt.php b/mod/quiz/attempt.php
+index 659f6d2a2a2d1e11a6a8f5bf9e7442b316085d86..7e6b9a376e5438e25b682c9681b90029b7914f40 100644
+--- a/mod/quiz/attempt.php
++++ b/mod/quiz/attempt.php
+@@ -47,8 +47,6 @@ $PAGE->set_url($attemptobj->attempt_url(null, $page));
+ // During quiz attempts, the browser back/forwards buttons should force a reload.
+ $PAGE->set_cacheable(false);
+ 
+-$PAGE->set_secondary_active_tab("modulepage");
+-
+ // Check login.
+ require_login($attemptobj->get_course(), false, $attemptobj->get_cm());
+ 
+diff --git a/mod/quiz/classes/output/edit_renderer.php b/mod/quiz/classes/output/edit_renderer.php
+index 98060155f00dce65f0926123f79f9a731302d80c..9298b583a1165088dfa1e2621f312d198e788b2e 100644
+--- a/mod/quiz/classes/output/edit_renderer.php
++++ b/mod/quiz/classes/output/edit_renderer.php
+@@ -57,6 +57,11 @@ class edit_renderer extends \plugin_renderer_base {
+         \core_question\local\bank\question_edit_contexts $contexts, \moodle_url $pageurl, array $pagevars) {
+         $output = '';
+ 
++        // Page title.
++        $output .= $this->heading_with_help(get_string('editingquizx', 'quiz',
++                format_string($quizobj->get_quiz_name())), 'editingquiz', 'quiz', '',
++                get_string('basicideasofquiz', 'quiz'), 2);
++
+         // Information at the top.
+         $output .= $this->quiz_state_warnings($structure);
+ 
+diff --git a/mod/quiz/classes/output/overridesaction.php b/mod/quiz/classes/output/overridesaction.php
+deleted file mode 100644
+index 7a678bf6df8aa30077564ff55da94fe31a9067bf..0000000000000000000000000000000000000000
+--- a/mod/quiz/classes/output/overridesaction.php
++++ /dev/null
+@@ -1,98 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace mod_quiz\output;
+-
+-use moodle_url;
+-use renderable;
+-use renderer_base;
+-use templatable;
+-use url_select;
+-
+-/**
+- * Render overrides action
+- *
+- * @package mod_quiz
+- * @copyright 2021 Sujith Haridasan <sujith@moodle.com>
+- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-class overridesaction implements renderable, templatable {
+-    /** @var int */
+-    private $cmid;
+-
+-    /** @var string */
+-    private $mode;
+-
+-    /** @var bool */
+-    private $canedit;
+-
+-    /** @var array */
+-    private $options;
+-
+-    /**
+-     * overridesaction constructor.
+-     *
+-     * @param int $cmid The course module id.
+-     * @param string $mode The mode passed for the overrides url.
+-     * @param bool $canedit Does the user have capabilities to list overrides.
+-     * @param array $options The options passed to single button.
+-     */
+-    public function __construct(int $cmid, string $mode, bool $canedit, array $options) {
+-        $this->cmid = $cmid;
+-        $this->mode = $mode;
+-        $this->canedit = $canedit;
+-        $this->options = $options;
+-    }
+-
+-    /**
+-     * Get the data for the template
+-     *
+-     * @param renderer_base $output renderer_base object.
+-     * @return array data for the template.
+-     */
+-    public function export_for_template(renderer_base $output): array {
+-        global $PAGE;
+-
+-        $useroverride = new moodle_url('/mod/quiz/overrides.php', ['cmid' => $this->cmid, 'mode' => 'user']);
+-        $groupoverride = new moodle_url('/mod/quiz/overrides.php', ['cmid' => $this->cmid, 'mode' => 'group']);
+-
+-        $menu = [
+-            $useroverride->out(false) => get_string('useroverrides', 'quiz'),
+-            $groupoverride->out(false) => get_string('groupoverrides', 'quiz')
+-        ];
+-
+-        $urlselect = new url_select($menu, $PAGE->url->out(false), null, 'quizoverrides');
+-
+-        $overridesbuttonurl =
+-            new moodle_url('/mod/quiz/overrideedit.php', ['cmid' => $this->cmid, 'action' => 'add' . $this->mode]);
+-        if ($this->mode === 'group') {
+-            $overridesbutton = new \single_button($overridesbuttonurl, get_string( 'addnewgroupoverride', 'quiz'),
+-                'post', true);
+-        } else {
+-            $overridesbutton = new \single_button($overridesbuttonurl, get_string( 'addnewuseroverride', 'quiz'),
+-                'get', true);
+-        }
+-        if (isset($this->options['disabled'])) {
+-            $overridesbutton->disabled = true;
+-        }
+-
+-        return [
+-            'overrides' => $urlselect->export_for_template($output),
+-            'canedit' => $this->canedit,
+-            'overridesbtn' => $overridesbutton->export_for_template($output),
+-        ];
+-    }
+-}
+diff --git a/mod/quiz/classes/output/overwriteedit.php b/mod/quiz/classes/output/overwriteedit.php
+deleted file mode 100644
+index 3e65eec9c1fd6a685edbe53c0de9871770d8ddba..0000000000000000000000000000000000000000
+--- a/mod/quiz/classes/output/overwriteedit.php
++++ /dev/null
+@@ -1,68 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace mod_quiz\output;
+-
+-use renderable;
+-use renderer_base;
+-use templatable;
+-use moodle_url;
+-
+-/**
+- * Render the tertiary elements for the edit page
+- *
+- * @package mod_quiz
+- * @copyright 2021 Sujith Haridasan <sujith@moodle.com>
+- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-class overwriteedit implements templatable, renderable {
+-
+-    /** @var int */
+-    private $cmid;
+-
+-    /** @var bool */
+-    private $quizhasquestion;
+-
+-    /**
+-     * overwriteedit constructor.
+-     *
+-     * @param int $cmid The course module id.
+-     * @param bool $quizhasquestion Check if quiz has question.
+-     */
+-    public function __construct(int $cmid, bool $quizhasquestion) {
+-        $this->cmid = $cmid;
+-        $this->quizhasquestion = $quizhasquestion;
+-    }
+-
+-    /**
+-     * Provides the data for the template.
+-     *
+-     * @param renderer_base $output renderer_base object
+-     * @return array data for the template
+-     */
+-    public function export_for_template(renderer_base $output): array {
+-        $data = [];
+-        $data = [
+-                'back' => (new moodle_url('/mod/quiz/view.php', ['id' => $this->cmid]))->out(false),
+-        ];
+-        if ($this->quizhasquestion) {
+-            $data['previewlink'] =
+-                (new moodle_url('/mod/quiz/startattempt.php', ['cmid' => $this->cmid, 'sesskey' => sesskey()]))->out(false);
+-            $data['previewquiz'] = get_string('previewquiz', 'mod_quiz');
+-        }
+-        return $data;
+-    }
+-}
+diff --git a/mod/quiz/classes/output/overwritepreview.php b/mod/quiz/classes/output/overwritepreview.php
+deleted file mode 100644
+index 741c043783c93b931c64893a902a06388a2fd65d..0000000000000000000000000000000000000000
+--- a/mod/quiz/classes/output/overwritepreview.php
++++ /dev/null
+@@ -1,65 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace mod_quiz\output;
+-
+-use renderable;
+-use renderer_base;
+-use templatable;
+-use moodle_url;
+-
+-/**
+- * Output the preview action area of this activity
+- *
+- * @package mod_quiz
+- * @copyright 2021 Sujith Haridasan <sujith@moodle.com>
+- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-class overwritepreview implements templatable, renderable {
+-
+-    /** @var int */
+-    private $cmid;
+-
+-    /** @var bool */
+-    private $canedit;
+-
+-    /**
+-     * overwritepreview constructor.
+-     *
+-     * @param int $cmid The course module id.
+-     * @param bool $canedit Can edit the quiz.
+-     */
+-    public function __construct(int $cmid, bool $canedit) {
+-        $this->cmid = $cmid;
+-        $this->canedit = $canedit;
+-    }
+-
+-    /**
+-     * Provide data for the template
+-     *
+-     * @param renderer_base $output
+-     * @return array data for the template
+-     */
+-    public function export_for_template(renderer_base $output): array {
+-        $data = [
+-            'back' => (new moodle_url('/mod/quiz/view.php', ['id' => $this->cmid]))->out(false),
+-        ];
+-        if ($this->canedit) {
+-            $data['editlink'] = (new moodle_url('/mod/quiz/edit.php', ['cmid' => $this->cmid]))->out(false);
+-        }
+-        return $data;
+-    }
+-}
+diff --git a/mod/quiz/classes/output/previeweditaction.php b/mod/quiz/classes/output/previeweditaction.php
+deleted file mode 100644
+index 185d0610f5e94516a9b0eb6a7a4a281622953ff7..0000000000000000000000000000000000000000
+--- a/mod/quiz/classes/output/previeweditaction.php
++++ /dev/null
+@@ -1,99 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace mod_quiz\output;
+-
+-use moodle_url;
+-use renderer_base;
+-use templatable;
+-use renderable;
+-
+-/**
+- * Render view action with preview and edit buttons
+- *
+- * @package mod_quiz
+- * @copyright 2021 Sujith Haridasan <sujith@moodle.com>
+- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-class previeweditaction implements templatable, renderable {
+-    /** @var int */
+-    private $cmid;
+-
+-    /** @var bool */
+-    private $canedit;
+-
+-    /** @var bool */
+-    private $canattempt;
+-
+-    /** @var bool */
+-    private $canpreview;
+-
+-    /** @var bool */
+-    private $quizhasquestions;
+-
+-    /** @var int */
+-    private $attempts;
+-
+-    /**
+-     * previeweditaction constructor.
+-     *
+-     * @param int $cmid The course module id.
+-     * @param bool $canedit Can edit the quiz.
+-     * @param bool $canattempt can attempt the quiz.
+-     * @param bool $canpreview Can preview the quiz.
+-     * @param bool $quizhasquestions If quiz has questions.
+-     * @param int $attempts The attempts made.
+-     */
+-    public function __construct(int $cmid, bool $canedit, bool $canattempt,
+-            bool $canpreview, bool $quizhasquestions, int $attempts) {
+-        $this->cmid = $cmid;
+-        $this->canedit = $canedit;
+-        $this->canattempt = $canattempt;
+-        $this->canpreview = $canpreview;
+-        $this->quizhasquestions = $quizhasquestions;
+-        $this->attempts = $attempts;
+-    }
+-
+-    /**
+-     * Provide data for the template
+-     *
+-     * @param renderer_base $output renderer_base objects.
+-     * @return array data for template
+-     */
+-    public function export_for_template(renderer_base $output): array {
+-        $data = [];
+-        if ($this->quizhasquestions) {
+-            if ($this->canpreview) {
+-                $data['previewlink'] = (new moodle_url('/mod/quiz/startattempt.php',
+-                    ['attempt' => $this->attempts, 'cmid' => $this->cmid, 'sesskey' => sesskey()]))->out(false);
+-                $data['previewquiz'] = get_string('previewquiz', 'mod_quiz');
+-            }
+-
+-            if ($this->canedit) {
+-                $data['editlink'] = (new moodle_url('/mod/quiz/edit.php', ['cmid' => $this->cmid]))->out(false);
+-            }
+-
+-            if ($this->canattempt && !$this->canpreview) {
+-                $data['attemptlink'] =
+-                    (new moodle_url('/mod/quiz/startattempt.php', ['cmid' => $this->cmid, 'sesskey' => sesskey()]))->out(false);
+-            }
+-        } else {
+-            $data['addquestionlink'] = (new moodle_url('/mod/quiz/edit.php', ['cmid' => $this->cmid]))->out(false);
+-        }
+-
+-        return $data;
+-    }
+-}
+diff --git a/mod/quiz/edit.php b/mod/quiz/edit.php
+index 7eb23f764fcf60dde967b9402d66fce78dde559a..53c8805599b3397dd6b5c0f6b308833691071938 100644
+--- a/mod/quiz/edit.php
++++ b/mod/quiz/edit.php
+@@ -59,7 +59,6 @@ $defaultcategory = $defaultcategoryobj->id . ',' . $defaultcategoryobj->contexti
+ $quizhasattempts = quiz_has_attempts($quiz->id);
+ 
+ $PAGE->set_url($thispageurl);
+-$PAGE->set_secondary_active_tab("modulepage");
+ 
+ // Get the course object and related bits.
+ $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
+@@ -187,14 +186,8 @@ $node = $PAGE->settingsnav->find('mod_quiz_edit', navigation_node::TYPE_SETTING)
+ if ($node) {
+     $node->make_active();
+ }
+-
+-$overwriteedit = new \mod_quiz\output\overwriteedit($cmid, quiz_has_questions($quiz->id));
+-
+ echo $OUTPUT->header();
+ 
+-$renderer = $PAGE->get_renderer('mod_quiz');
+-echo $renderer->overwrite_edit_action($overwriteedit);
+-
+ // Initialise the JavaScript.
+ $quizeditconfig = new stdClass();
+ $quizeditconfig->url = $thispageurl->out(true, array('qbanktool' => '0'));
+diff --git a/mod/quiz/index.php b/mod/quiz/index.php
+index 035b6ada1e134d45e4685eebb32bc95c48f33d55..6c87002f62c915d34e9aa8ae59929d896fe20565 100644
+--- a/mod/quiz/index.php
++++ b/mod/quiz/index.php
+@@ -47,10 +47,7 @@ $PAGE->navbar->add($strquizzes);
+ $PAGE->set_title($strquizzes);
+ $PAGE->set_heading($course->fullname);
+ echo $OUTPUT->header();
+-
+-if (!$PAGE->has_secondary_navigation()) {
+-    echo $OUTPUT->heading($strquizzes, 2);
+-}
++echo $OUTPUT->heading($strquizzes, 2);
+ 
+ // Get all the appropriate data.
+ if (!$quizzes = get_all_instances_in_course("quiz", $course)) {
+diff --git a/mod/quiz/lang/en/deprecated.txt b/mod/quiz/lang/en/deprecated.txt
+index 4f40eaa307bfb6959890201c1be0644912e739f5..c7714ff45ead084de74fd8fc00a213845ac4be34 100644
+--- a/mod/quiz/lang/en/deprecated.txt
++++ b/mod/quiz/lang/en/deprecated.txt
+@@ -3,4 +3,3 @@ completionpassdesc,mod_quiz
+ completionpass_help,mod_quiz
+ completiondetail:passgrade,mod_quiz
+ gradetopassnotset,mod_quiz
+-basicideasofquiz,mod_quiz
+diff --git a/mod/quiz/lang/en/quiz.php b/mod/quiz/lang/en/quiz.php
+index 0e5e0810f09f26bd8cd57f5e5b75a822af64f58d..a9ff295c6b675aa715d006f6959458564966dc4e 100644
+--- a/mod/quiz/lang/en/quiz.php
++++ b/mod/quiz/lang/en/quiz.php
+@@ -100,7 +100,6 @@ $string['attemptincomplete'] = 'That attempt (by {$a}) is not yet completed.';
+ $string['attemptlast'] = 'Last attempt';
+ $string['attemptnumber'] = 'Attempt';
+ $string['attemptquiznow'] = 'Attempt quiz now';
+-$string['attemptquiz'] = 'Attempt quiz';
+ $string['attemptreviewtitle'] = '{$a}: Attempt review';
+ $string['attemptreviewtitlepaged'] = '{$a->name}: Attempt review (page {$a->currentpage} of {$a->totalpages})';
+ $string['attempts'] = 'Attempts';
+@@ -125,6 +124,7 @@ $string['back'] = 'Back to preview question';
+ $string['backtocourse'] = 'Back to the course';
+ $string['backtoquestionlist'] = 'Back to question list';
+ $string['backtoquiz'] = 'Back to quiz editing';
++$string['basicideasofquiz'] = 'The basic ideas of quiz-making';
+ $string['bestgrade'] = 'Best grade';
+ $string['bothattempts'] = 'Show students with and without attempts';
+ $string['browsersecurity'] = 'Browser security';
+@@ -686,7 +686,7 @@ $string['popupnotice'] = 'Students will see this quiz in a secure window';
+ $string['preprocesserror'] = 'Error occurred during pre-processing!';
+ $string['preview'] = 'Preview';
+ $string['previewquestion'] = 'Preview question';
+-$string['previewquiz'] = 'Preview quiz';
++$string['previewquiz'] = 'Preview {$a}';
+ $string['previewquiznow'] = 'Preview quiz now';
+ $string['previous'] = 'Previous state';
+ $string['privacy:metadata:core_question'] = 'The quiz activity stores question usage information in the core_question subsystem.';
+@@ -1065,4 +1065,3 @@ $string['completionpassdesc'] = 'Student must achieve a passing grade to complet
+ $string['completionpass_help'] = 'If enabled, this activity is considered complete when the student receives a pass grade (as specified in the Grade section of the quiz settings) or higher.';
+ $string['completiondetail:passgrade'] = 'Receive a pass grade';
+ $string['gradetopassnotset'] = 'This quiz does not yet have a grade to pass set. It may be set in the Grade section of the quiz settings.';
+-$string['basicideasofquiz'] = 'The basic ideas of quiz-making';
+diff --git a/mod/quiz/lib.php b/mod/quiz/lib.php
+index 875bbbc89db54ea9b92e55e553cc570a6eff379a..09f21acd12fe00cb4160f15ff0c528f6da4756f0 100644
+--- a/mod/quiz/lib.php
++++ b/mod/quiz/lib.php
+@@ -1724,9 +1724,15 @@ function quiz_extend_settings_navigation($settings, $quiznode) {
+     }
+ 
+     if (has_any_capability(['mod/quiz:manageoverrides', 'mod/quiz:viewoverrides'], $PAGE->cm->context)) {
+-        $url = new moodle_url('/mod/quiz/overrides.php', array('cmid' => $PAGE->cm->id, 'mode' => 'user'));
+-        $node = navigation_node::create(get_string('overrides', 'quiz'),
+-                    $url, navigation_node::TYPE_SETTING, null, 'mod_quiz_useroverrides');
++        $url = new moodle_url('/mod/quiz/overrides.php', array('cmid'=>$PAGE->cm->id));
++        $node = navigation_node::create(get_string('groupoverrides', 'quiz'),
++                new moodle_url($url, array('mode'=>'group')),
++                navigation_node::TYPE_SETTING, null, 'mod_quiz_groupoverrides');
++        $quiznode->add_node($node, $beforekey);
++
++        $node = navigation_node::create(get_string('useroverrides', 'quiz'),
++                new moodle_url($url, array('mode'=>'user')),
++                navigation_node::TYPE_SETTING, null, 'mod_quiz_useroverrides');
+         $quiznode->add_node($node, $beforekey);
+     }
+ 
+@@ -1735,8 +1741,7 @@ function quiz_extend_settings_navigation($settings, $quiznode) {
+                 new moodle_url('/mod/quiz/edit.php', array('cmid'=>$PAGE->cm->id)),
+                 navigation_node::TYPE_SETTING, null, 'mod_quiz_edit',
+                 new pix_icon('t/edit', ''));
+-        $editquiznode = $quiznode->add_node($node, $beforekey);
+-        $editquiznode->set_show_in_secondary_navigation(false);
++        $quiznode->add_node($node, $beforekey);
+     }
+ 
+     if (has_capability('mod/quiz:preview', $PAGE->cm->context)) {
+@@ -1745,12 +1750,9 @@ function quiz_extend_settings_navigation($settings, $quiznode) {
+         $node = navigation_node::create(get_string('preview', 'quiz'), $url,
+                 navigation_node::TYPE_SETTING, null, 'mod_quiz_preview',
+                 new pix_icon('i/preview', ''));
+-        $previewnode = $quiznode->add_node($node, $beforekey);
+-        $previewnode->set_show_in_secondary_navigation(false);
++        $quiznode->add_node($node, $beforekey);
+     }
+ 
+-    question_extend_settings_navigation($quiznode, $PAGE->cm->context)->trim_if_empty();
+-
+     if (has_any_capability(array('mod/quiz:viewreports', 'mod/quiz:grade'), $PAGE->cm->context)) {
+         require_once($CFG->dirroot . '/mod/quiz/report/reportlib.php');
+         $reportlist = quiz_report_list($PAGE->cm->context);
+@@ -1759,7 +1761,7 @@ function quiz_extend_settings_navigation($settings, $quiznode) {
+                 array('id' => $PAGE->cm->id, 'mode' => reset($reportlist)));
+         $reportnode = $quiznode->add_node(navigation_node::create(get_string('results', 'quiz'), $url,
+                 navigation_node::TYPE_SETTING,
+-                null, null, new pix_icon('i/report', '')));
++                null, null, new pix_icon('i/report', '')), $beforekey);
+ 
+         foreach ($reportlist as $report) {
+             $url = new moodle_url('/mod/quiz/report.php',
+@@ -1769,6 +1771,8 @@ function quiz_extend_settings_navigation($settings, $quiznode) {
+                     null, 'quiz_report_' . $report, new pix_icon('i/item', '')));
+         }
+     }
++
++    question_extend_settings_navigation($quiznode, $PAGE->cm->context)->trim_if_empty();
+ }
+ 
+ /**
+diff --git a/mod/quiz/overrideedit.php b/mod/quiz/overrideedit.php
+index 2b6a5f8d99748bc06de4e1a5e06e336a5bbe7080..00ab21b47d71d58d89c08c83bab421be87550b22 100644
+--- a/mod/quiz/overrideedit.php
++++ b/mod/quiz/overrideedit.php
+@@ -66,9 +66,6 @@ if ($overrideid) {
+ 
+ $PAGE->set_url($url);
+ 
+-// Activate the secondary nav tab.
+-$PAGE->set_secondary_active_tab("mod_quiz_useroverrides");
+-
+ require_login($course, false, $cm);
+ 
+ $context = context_module::instance($cm->id);
+diff --git a/mod/quiz/overrides.php b/mod/quiz/overrides.php
+index 55e677863d86397c0e9c460eb8fc63c90ee4e250..3e49d90abde2d9d4ac0c8f6e0efab44926755076 100644
+--- a/mod/quiz/overrides.php
++++ b/mod/quiz/overrides.php
+@@ -70,9 +70,6 @@ $PAGE->set_title($title);
+ $PAGE->set_heading($course->fullname);
+ $PAGE->activityheader->disable();
+ 
+-// Activate the secondary nav tab.
+-$PAGE->set_secondary_active_tab("mod_quiz_useroverrides");
+-
+ // Delete orphaned group overrides.
+ $sql = 'SELECT o.id
+           FROM {quiz_overrides} o
+@@ -307,32 +304,32 @@ echo $OUTPUT->header();
+ echo $OUTPUT->heading($title);
+ 
+ // Output the table and button.
+-$output = '';
+-
+-$output .= html_writer::start_tag('div', ['id' => 'quizoverrides']);
++echo html_writer::start_tag('div', ['id' => 'quizoverrides']);
+ if (count($table->data)) {
+-    $output .= html_writer::table($table);
++    echo html_writer::table($table);
+ } else {
+     if ($groupmode) {
+-        $output .= $OUTPUT->notification(get_string('overridesnoneforgroups', 'quiz'), 'info', false);
++        echo $OUTPUT->notification(get_string('overridesnoneforgroups', 'quiz'), 'info', false);
+     } else {
+-        $output .= $OUTPUT->notification(get_string('overridesnoneforusers', 'quiz'), 'info', false);
++        echo $OUTPUT->notification(get_string('overridesnoneforusers', 'quiz'), 'info', false);
+     }
+ }
+ if ($hasinactive) {
+-    $output .= $OUTPUT->notification(get_string('inactiveoverridehelp', 'quiz'), 'info', false);
++    echo $OUTPUT->notification(get_string('inactiveoverridehelp', 'quiz'), 'info', false);
+ }
+ 
+-$addbutton = '';
+-$options = [];
+ if ($canedit) {
+-    $output .= html_writer::start_tag('div', ['class' => 'buttons']);
++    echo html_writer::start_tag('div', ['class' => 'buttons']);
++    $options = [];
+     if ($groupmode) {
+         if (empty($groups)) {
+             // There are no groups.
+-            $output .= $OUTPUT->notification(get_string('groupsnone', 'quiz'), 'error');
++            echo $OUTPUT->notification(get_string('groupsnone', 'quiz'), 'error');
+             $options['disabled'] = true;
+         }
++        echo $OUTPUT->single_button($overrideediturl->out(true,
++                ['action' => 'addgroup', 'cmid' => $cm->id]),
++                get_string('addnewgroupoverride', 'quiz'), 'post', $options);
+     } else {
+         $users = [];
+         // See if there are any students in the quiz.
+@@ -350,22 +347,17 @@ if ($canedit) {
+ 
+         if (empty($users)) {
+             // There are no students.
+-            $output .= $OUTPUT->notification($nousermessage, 'error');
++            echo $OUTPUT->notification($nousermessage, 'error');
+             $options['disabled'] = true;
+         }
++        echo $OUTPUT->single_button($overrideediturl->out(true,
++                ['action' => 'adduser', 'cmid' => $cm->id]),
++                get_string('addnewuseroverride', 'quiz'), 'get', $options);
+     }
+-    $output .= html_writer::end_tag('div');
++    echo html_writer::end_tag('div');
+ }
+ 
+-$output .= html_writer::end_tag('div');
+-
+-// Outputs overrides action.
+-$overridesaction = new \mod_quiz\output\overridesaction($cmid, $mode, $canedit, $options);
+-$renderer = $PAGE->get_renderer('mod_quiz');
+-echo $renderer->overrides_action($overridesaction);
+-
+-// Now output what we captured after the overrides action.
+-echo $output;
++echo html_writer::end_tag('div');
+ 
+ // Finish the page.
+ echo $OUTPUT->footer();
+diff --git a/mod/quiz/renderer.php b/mod/quiz/renderer.php
+index f52a680b96daadb4b560ab5dd37804517c5697a0..32ba23ba1934219b115dca4c48ddf825f2efc226 100644
+--- a/mod/quiz/renderer.php
++++ b/mod/quiz/renderer.php
+@@ -449,17 +449,8 @@ class mod_quiz_renderer extends plugin_renderer_base {
+      */
+     public function attempt_page($attemptobj, $page, $accessmanager, $messages, $slots, $id,
+             $nextpage) {
+-        $context = $attemptobj->get_quizobj()->get_context();
+-        $cmid = $attemptobj->get_quizobj()->get_cmid();
+-        $canedit = has_capability('mod/quiz:manage', $context);
+-        $overwritepreview = new \mod_quiz\output\overwritepreview($cmid, $canedit);
+-
+         $output = '';
+         $output .= $this->header();
+-
+-        $renderer = $this->page->get_renderer('mod_quiz');
+-        $output .= $renderer->overwrite_preview_action($overwritepreview);
+-
+         $output .= $this->quiz_notices($messages);
+         $output .= $this->countdown_timer($attemptobj, time());
+         $output .= $this->attempt_form($attemptobj, $page, $slots, $id, $nextpage);
+@@ -549,7 +540,7 @@ class mod_quiz_renderer extends plugin_renderer_base {
+     protected function attempt_navigation_buttons($page, $lastpage, $navmethod = 'free') {
+         $output = '';
+ 
+-        $output .= html_writer::start_tag('div', array('class' => 'submitbtns mb-4'));
++        $output .= html_writer::start_tag('div', array('class' => 'submitbtns'));
+         if ($page > 0 && $navmethod == 'free') {
+             $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'previous',
+                     'value' => get_string('navigateprevious', 'quiz'), 'class' => 'mod_quiz-prev-nav btn btn-secondary',
+@@ -634,7 +625,7 @@ class mod_quiz_renderer extends plugin_renderer_base {
+     public function access_messages($messages) {
+         $output = '';
+         foreach ($messages as $message) {
+-            $output .= html_writer::tag('p', $message, ['class' => 'float-left']) . "\n";
++            $output .= html_writer::tag('p', $message) . "\n";
+         }
+         return $output;
+     }
+@@ -686,19 +677,21 @@ class mod_quiz_renderer extends plugin_renderer_base {
+         foreach ($slots as $slot) {
+             // Add a section headings if we need one here.
+             $heading = $attemptobj->get_heading_before_slot($slot);
+-            if (!is_null($heading) && empty($heading)) {
++            if ($heading) {
++                $heading = format_string($heading);
++            }
++            $sections = $attemptobj->get_quizobj()->get_sections();
++            if (!is_null($heading) && empty($heading) && count($sections) > 1) {
+                 $heading = get_string('sectionnoname', 'quiz');
++                $heading = \html_writer::span($heading, 'dimmed_text');
+             }
++
+             if ($heading) {
+-                $cell = new html_table_cell(format_string($heading));
++                $cell = new html_table_cell($heading);
+                 $cell->header = true;
+                 $cell->colspan = $tablewidth;
+                 $table->data[] = array($cell);
+-                $classes = 'quizsummaryheading';
+-                if ($heading === get_string('sectionnoname', 'quiz')) {
+-                    $classes .= ' dimmed_text';
+-                }
+-                $table->rowclasses[] = $classes;
++                $table->rowclasses[] = 'quizsummaryheading';
+             }
+ 
+             // Don't display information items.
+@@ -806,14 +799,10 @@ class mod_quiz_renderer extends plugin_renderer_base {
+      */
+     public function view_page($course, $quiz, $cm, $context, $viewobj) {
+         $output = '';
+-        $output .= $this->view_information($quiz, $cm, $context, $viewobj->infomessages, $viewobj->quizhasquestions);
++        $output .= $this->view_information($quiz, $cm, $context, $viewobj->infomessages);
+         $output .= $this->view_table($quiz, $context, $viewobj);
+         $output .= $this->view_result_info($quiz, $context, $cm, $viewobj);
+         $output .= $this->box($this->view_page_buttons($viewobj), 'quizattempt');
+-        // Output any access messages.
+-        if ($viewobj->infomessages) {
+-            $output .= $this->box($this->access_messages($viewobj->infomessages), 'quizinfo');
+-        }
+         return $output;
+     }
+ 
+@@ -825,11 +814,27 @@ class mod_quiz_renderer extends plugin_renderer_base {
+      * @return string HTML to output.
+      */
+     public function view_page_buttons(mod_quiz_view_object $viewobj) {
++        global $CFG;
+         $output = '';
+ 
+         if (!$viewobj->quizhasquestions) {
+-            $output .= $this->generate_no_questions_message();
++            $output .= $this->no_questions_message($viewobj->canedit, $viewobj->editurl);
+         }
++
++        $output .= $this->access_messages($viewobj->preventmessages);
++
++        if ($viewobj->buttontext) {
++            $output .= $this->start_attempt_button($viewobj->buttontext,
++                    $viewobj->startattempturl, $viewobj->preflightcheckform,
++                    $viewobj->popuprequired, $viewobj->popupoptions);
++        }
++
++        if ($viewobj->showbacktocourse) {
++            $output .= $this->single_button($viewobj->backtocourseurl,
++                    get_string('backtocourse', 'quiz'), 'get',
++                    array('class' => 'continuebutton'));
++        }
++
+         return $output;
+     }
+ 
+@@ -885,13 +890,9 @@ class mod_quiz_renderer extends plugin_renderer_base {
+      * @param object $quiz the quiz settings.
+      * @param object $cm the course_module object.
+      * @param object $context the quiz context.
+-     * @deprecated since Moodle 4.0 MDL-71915 - please do not use this function any more.
+-     *
+      * @return string HTML to output.
+      */
+     public function no_questions_message($canedit, $editurl) {
+-        debugging('no_questions_message() is deprecated, please use generate_no_questions_message() instead.', DEBUG_DEVELOPER);
+-
+         $output = html_writer::start_tag('div', array('class' => 'card text-center mb-3'));
+         $output .= html_writer::start_tag('div', array('class' => 'card-body'));
+ 
+@@ -905,21 +906,6 @@ class mod_quiz_renderer extends plugin_renderer_base {
+         return $output;
+     }
+ 
+-    /**
+-     * Generate a message saying that this quiz has no questions
+-     *
+-     * @return string HTML to output.
+-     */
+-    public function generate_no_questions_message() {
+-        $output = html_writer::start_tag('div', array('class' => 'text-left   mb-3'));
+-
+-        $output .= $this->notification(get_string('noquestions', 'quiz'), 'warning', false);
+-
+-        $output .= html_writer::end_tag('div');
+-
+-        return $output;
+-    }
+-
+     /**
+      * Outputs an error message for any guests accessing the quiz
+      *
+@@ -928,11 +914,10 @@ class mod_quiz_renderer extends plugin_renderer_base {
+      * @param int $cm Course Module ID
+      * @param int $context The page contect ID
+      * @param array $messages Array containing any messages
+-     * @param bool $quizhasquestions If quiz has questions
+      */
+-    public function view_page_guest($course, $quiz, $cm, $context, $messages, $quizhasquestions = false) {
++    public function view_page_guest($course, $quiz, $cm, $context, $messages) {
+         $output = '';
+-        $output .= $this->view_information($quiz, $cm, $context, $messages, $quizhasquestions);
++        $output .= $this->view_information($quiz, $cm, $context, $messages);
+         $guestno = html_writer::tag('p', get_string('guestsno', 'quiz'));
+         $liketologin = html_writer::tag('p', get_string('liketologin'));
+         $referer = get_local_referer(false);
+@@ -948,12 +933,11 @@ class mod_quiz_renderer extends plugin_renderer_base {
+      * @param int $cm Course Module ID
+      * @param int $context The page contect ID
+      * @param array $messages Array containing any messages
+-     * @param bool $quizhasquestions If quiz has questions
+      */
+-    public function view_page_notenrolled($course, $quiz, $cm, $context, $messages, $quizhasquestions = false) {
++    public function view_page_notenrolled($course, $quiz, $cm, $context, $messages) {
+         global $CFG;
+         $output = '';
+-        $output .= $this->view_information($quiz, $cm, $context, $messages, $quizhasquestions);
++        $output .= $this->view_information($quiz, $cm, $context, $messages);
+         $youneedtoenrol = html_writer::tag('p', get_string('youneedtoenrol', 'quiz'));
+         $button = html_writer::tag('p',
+                 $this->continue_button($CFG->wwwroot . '/course/view.php?id=' . $course->id));
+@@ -968,20 +952,29 @@ class mod_quiz_renderer extends plugin_renderer_base {
+      * @param object $cm the course_module object.
+      * @param context $context the quiz context.
+      * @param array $messages any access messages that should be described.
+-     * @param bool $quizhasquestions does quiz has questions added.
+      * @return string HTML to output.
+      */
+-    public function view_information($quiz, $cm, $context, $messages, bool $quizhasquestions = false) {
++    public function view_information($quiz, $cm, $context, $messages) {
++        global $USER;
++
+         $output = '';
+ 
+-        // Print the preview, quiz buttons for tertiary nav.
+-        $canedit = has_capability('mod/quiz:manage', $context);
+-        $canpreview = has_capability('mod/quiz:preview', $context);
+-        $canattempt = has_capability('mod/quiz:attempt', $context);
+-        $previeweditaction = new \mod_quiz\output\previeweditaction($cm->id, $canedit, $canattempt, $canpreview, $quizhasquestions,
+-            $quiz->attempts);
+-        $renderer = $this->page->get_renderer('mod_quiz');
+-        $output .= $renderer->preview_edit_action($previeweditaction);
++        // Print quiz name.
++        $output .= $this->heading(format_string($quiz->name));
++
++        // Print any activity information (eg completion requirements / dates).
++        $cminfo = cm_info::create($cm);
++        $completiondetails = \core_completion\cm_completion_details::get_instance($cminfo, $USER->id);
++        $activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);
++        $output .= $this->output->activity_information($cminfo, $completiondetails, $activitydates);
++
++        // Print quiz description.
++        $output .= $this->quiz_intro($quiz, $cm);
++
++        // Output any access messages.
++        if ($messages) {
++            $output .= $this->box($this->access_messages($messages), 'quizinfo');
++        }
+ 
+         // Show number of attempts summary to those who can view reports.
+         if (has_capability('mod/quiz:viewreports', $context)) {
+@@ -1367,46 +1360,6 @@ class mod_quiz_renderer extends plugin_renderer_base {
+                     array('id' => 'connection-error', 'style' => 'display: none;', 'role' => 'alert')) .
+                     html_writer::tag('div', $ok, array('id' => 'connection-ok', 'style' => 'display: none;', 'role' => 'alert'));
+     }
+-
+-    /**
+-     * Get the rendered HTML for the action area of view.php
+-     *
+-     * @param \mod_quiz\output\previeweditaction $previeweditaction previeweditaction object.
+-     * @return string rendered HTML for the action area of view.php
+-     */
+-    public function preview_edit_action(\mod_quiz\output\previeweditaction $previeweditaction):string {
+-        return $this->render_from_template('mod_quiz/quiz_preview_edit_action', $previeweditaction->export_for_template($this));
+-    }
+-
+-    /**
+-     * Get the rendered HTML for the action area of preview page
+-     *
+-     * @param \mod_quiz\output\overwritepreview $overwritepreview overwritepreview object.
+-     * @return string rendered HTML for the preview page
+-     */
+-    public function overwrite_preview_action(\mod_quiz\output\overwritepreview $overwritepreview): string {
+-        return $this->render_from_template('mod_quiz/quiz_preview_action', $overwritepreview->export_for_template($this));
+-    }
+-
+-    /**
+-     * Get the rendered HTML for the action area of the edit page.
+-     *
+-     * @param \mod_quiz\output\overwriteedit $overwriteedit overwriteedit object.
+-     * @return string rendered HTML for the edit page
+-     */
+-    public function overwrite_edit_action(\mod_quiz\output\overwriteedit $overwriteedit): string {
+-        return $this->render_from_template('mod_quiz/quiz_edit_action', $overwriteedit->export_for_template($this));
+-    }
+-
+-    /**
+-     * Get rendered HTML for the action area of the overrides page.
+-     *
+-     * @param \mod_quiz\output\overridesaction $overridesaction the overridesaction object.
+-     * @return string rendered HTML string from the template.
+-     */
+-    public function overrides_action(\mod_quiz\output\overridesaction $overridesaction): string {
+-        return $this->render_from_template('mod_quiz/quiz_overrides', $overridesaction->export_for_template($this));
+-    }
+ }
+ 
+ 
+diff --git a/mod/quiz/report/default.php b/mod/quiz/report/default.php
+index 03725fbd31fcfd26e8543a44dc22ef69a4e22512..55ce4356f88acd8f6adaa5a7b29e180b9a7187d7 100644
+--- a/mod/quiz/report/default.php
++++ b/mod/quiz/report/default.php
+@@ -68,9 +68,7 @@ abstract class quiz_default_report {
+         $PAGE->set_heading($course->fullname);
+         echo $OUTPUT->header();
+         $context = context_module::instance($cm->id);
+-        if (!$PAGE->has_secondary_navigation()) {
+-            echo $OUTPUT->heading(format_string($quiz->name, true, array('context' => $context)));
+-        }
++        echo $OUTPUT->heading(format_string($quiz->name, true, array('context' => $context)));
+         if (!empty($CFG->enableplagiarism)) {
+             require_once($CFG->libdir . '/plagiarismlib.php');
+             echo plagiarism_update_status($course, $cm);
+diff --git a/mod/quiz/review.php b/mod/quiz/review.php
+index 40f746e661b79deb0a457db35c9f5f00a744ea27..7998c05b4b44c16ce07afad41c778c4dab875700 100644
+--- a/mod/quiz/review.php
++++ b/mod/quiz/review.php
+@@ -42,7 +42,6 @@ if ($page !== 0) {
+     $url->param('showall', $showall);
+ }
+ $PAGE->set_url($url);
+-$PAGE->set_secondary_active_tab("modulepage");
+ 
+ $attemptobj = quiz_create_attempt_handling_errors($attemptid, $cmid);
+ $attemptobj->preload_all_attempt_step_users();
+diff --git a/mod/quiz/summary.php b/mod/quiz/summary.php
+index 64186e6428840e9bbbbe00648983d95b0bf7d382..911fa7d991a93875bc677d1cce1b8785eef45f53 100644
+--- a/mod/quiz/summary.php
++++ b/mod/quiz/summary.php
+@@ -32,7 +32,6 @@ $cmid = optional_param('cmid', null, PARAM_INT);
+ $PAGE->set_url('/mod/quiz/summary.php', array('attempt' => $attemptid));
+ // During quiz attempts, the browser back/forwards buttons should force a reload.
+ $PAGE->set_cacheable(false);
+-$PAGE->set_secondary_active_tab("modulepage");
+ 
+ $attemptobj = quiz_create_attempt_handling_errors($attemptid, $cmid);
+ 
+diff --git a/mod/quiz/templates/quiz_edit_action.mustache b/mod/quiz/templates/quiz_edit_action.mustache
+deleted file mode 100644
+index ef64bb254207ad37d5b8707dab1e7712ccb3c0e5..0000000000000000000000000000000000000000
+--- a/mod/quiz/templates/quiz_edit_action.mustache
++++ /dev/null
+@@ -1,39 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template mod_quiz/quiz_edit_action
+-    Actions bar at the top of the quiz edit page UI.
+-    Classes required for JS:
+-    * none
+-    Data attributes required for JS:
+-    * none
+-    Context variables required for this template:
+-    * see mod/quiz/classes/output/overwriteedit.php
+-    Example context (json):
+-    {
+-        "back": "http://localhost/mod/quiz/view.php?id=2",
+-        "previewlink": "http://localhost/mod/quiz/startattempt.php?cmid=2&sesskey=G8FPNoJz9r"
+-    }
+-}}
+-<div class="container-fluid mb-3">
+-    <div class="row">
+-        <a class="btn btn-secondary" href="{{back}}">{{#str}}back, core {{/str}}</a>
+-        {{#previewlink}}
+-            <a class="btn btn-secondary ml-2" href="{{previewlink}}">{{#str}}previewquiz, quiz{{/str}}</a>
+-        {{/previewlink}}
+-    </div>
+-</div>
+diff --git a/mod/quiz/templates/quiz_overrides.mustache b/mod/quiz/templates/quiz_overrides.mustache
+deleted file mode 100644
+index f0037d669a855c2f48d51eda40ebcaaf1c778a87..0000000000000000000000000000000000000000
+--- a/mod/quiz/templates/quiz_overrides.mustache
++++ /dev/null
+@@ -1,75 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template mod_quiz/quiz_overrides
+-    Actions bar at the top of the overrides page UI.
+-    Classes required for JS:
+-    * none
+-    Data attributes required for JS:
+-    * none
+-    Context variables required for this template:
+-    * see mod/quiz/classes/output/overridesaction.php
+-    Example context (json):
+-    {
+-        "overrides": {
+-            "options": [{
+-                    "name": "User overrides",
+-                    "value": "/mod/quiz/overrides.php?cmid=71&mode=user"
+-                },
+-                {
+-                    "name": "Group overrrides",
+-                    "value": "/mod/quiz/overrides.php?cmid=71&mode=group"
+-                }
+-            ]
+-        },
+-        "canedit": true,
+-        "overridesbtn": {
+-            "id": "single_button1234",
+-            "method": "get",
+-            "url": "http://localhost/moodle/mod/quiz/overrideedit.php",
+-            "lablel": "Add user override",
+-            "classes": "singlebutton",
+-            "disabled": false,
+-            "params": [
+-                {
+-                    "name": "cmid",
+-                    "value": "73"
+-                },
+-                {
+-                    "name": "action",
+-                    "value": "adduser"
+-                }
+-            ]
+-        }
+-    }
+-}}
+-<div class="container-fluid mb-3">
+-    <div class="row">
+-        {{#overrides}}
+-            <div class="col-xs-6">
+-                {{>core/url_select}}
+-            </div>
+-        {{/overrides}}
+-        {{#canedit}}
+-            {{#overridesbtn}}
+-                <div class="ml-2">
+-                    {{>core/single_button}}
+-                </div>
+-            {{/overridesbtn}}
+-        {{/canedit}}
+-    </div>
+-</div>
+diff --git a/mod/quiz/templates/quiz_preview_action.mustache b/mod/quiz/templates/quiz_preview_action.mustache
+deleted file mode 100644
+index 5be58935eede9b48dda34569c74684204ca5959e..0000000000000000000000000000000000000000
+--- a/mod/quiz/templates/quiz_preview_action.mustache
++++ /dev/null
+@@ -1,39 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template mod_quiz/quiz_preview_action
+-    Action bar at the top of the quiz attempt page UI.
+-    Classes required for JS:
+-    * none
+-    Data attributes required for JS:
+-    * none
+-    Context variables required for this template:
+-    * see mod/quiz/classes/output/overwritepreview.php
+-    Example context (json):
+-    {
+-        "back": "http://localhost/mod/quiz/view.php?id=2",
+-        "editlink": "http://localhost/mod/quiz/edit.php?cmid=3"
+-    }
+-}}
+-<div class="container-fluid mb-3">
+-    <div class="row">
+-        <a class="btn btn-secondary" href="{{back}}">{{#str}}back, core {{/str}}</a>
+-        {{#editlink}}
+-            <a class="btn btn-primary ml-2" href="{{editlink}}">{{#str}}editquiz, quiz{{/str}}</a>
+-        {{/editlink}}
+-    </div>
+-</div>
+diff --git a/mod/quiz/templates/quiz_preview_edit_action.mustache b/mod/quiz/templates/quiz_preview_edit_action.mustache
+deleted file mode 100644
+index 12f6f655435e62e6adb37dd145cd4ac14f09906f..0000000000000000000000000000000000000000
+--- a/mod/quiz/templates/quiz_preview_edit_action.mustache
++++ /dev/null
+@@ -1,49 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template mod_quiz/quiz_preview_edit_action
+-    Actions bar at the top of the quiz view page
+-    Classes required for JS:
+-    * none
+-    Data attributes required for JS:
+-    * none
+-    Context variables required for this template:
+-    * see mod/quiz/classes/output/previeweditaction.php
+-    Example context (json):
+-    {
+-        "previewlink": "http://localhost/mod/quiz/startattempt.php?cmid=2&sesskey=G8FPNoJz9r",
+-        "editlink": "http://localhost/mod/quiz/edit.php?cmid=3",
+-        "attemptlink": "http://localhost/mod/quiz/startattempt.php?cmid=5&sesskey=psqFTeG0Hi",
+-        "addquestionlink": "http://localhost/mod/quiz/edit.php?cmid=3"
+-    }
+-}}
+-<div class="container-fluid mb-3">
+-    <div class="row">
+-        {{#previewlink}}
+-            <a class="btn btn-secondary mr-2" href="{{previewlink}}">{{#str}}previewquiz, quiz{{/str}}</a>
+-        {{/previewlink}}
+-        {{#editlink}}
+-            <a class="btn btn-primary mr-2" href="{{editlink}}">{{#str}}editquiz, quiz{{/str}}</a>
+-        {{/editlink}}
+-        {{#attemptlink}}
+-            <a class="btn btn-primary" href="{{attemptlink}}">{{#str}}attemptquiz, quiz{{/str}}</a>
+-        {{/attemptlink}}
+-        {{#addquestionlink}}
+-            <a class="btn btn-primary" href="{{addquestionlink}}">{{#str}}addquestion, quiz{{/str}}</a>
+-        {{/addquestionlink}}
+-    </div>
+-</div>
+diff --git a/mod/quiz/upgrade.txt b/mod/quiz/upgrade.txt
+index e93b435745d87cf49d5d31ef75bb25c38eb231b0..8a3c88256d11a7bdeab37a0b7243b617175f0c09 100644
+--- a/mod/quiz/upgrade.txt
++++ b/mod/quiz/upgrade.txt
+@@ -8,10 +8,6 @@ This files describes API changes in the quiz code.
+   - quiz_send_notification_messages() in mod/quiz/locallib.php
+ * The completionpass criteria has been moved to core as 'completionpassgrade'. Refer to completion/upgrade.txt for
+   further information.
+-* New argument quizhasquestions has been added to public methods: view_information, view_page_notenrolled and view_page_guest
+-  in mod/quiz/renderer.php.
+-* The function no_questions_message() in class mod_quiz_renderer is deprecated. Please use generate_no_questions_message()
+-  in the same class.
+ * quiz_slots has been updated as a part of https://docs.moodle.org/dev/Question_bank_improvements_for_Moodle_4.0
+   The fields removed will be now manage by a new table in core_question:
+   - question_set_reference -> Records where a specific question is used.
+diff --git a/mod/quiz/view.php b/mod/quiz/view.php
+index f2180017aa79d297cd550b8aa0c55f68c5c22a51..d2c4f8a25425b2fa0293cde0c1f1209d081686e4 100644
+--- a/mod/quiz/view.php
++++ b/mod/quiz/view.php
+@@ -254,11 +254,11 @@ echo $OUTPUT->header();
+ 
+ if (isguestuser()) {
+     // Guests can't do a quiz, so offer them a choice of logging in or going back.
+-    echo $output->view_page_guest($course, $quiz, $cm, $context, $viewobj->infomessages, $viewobj->quizhasquestions);
++    echo $output->view_page_guest($course, $quiz, $cm, $context, $viewobj->infomessages);
+ } else if (!isguestuser() && !($canattempt || $canpreview
+           || $viewobj->canreviewmine)) {
+     // If they are not enrolled in this course in a good enough role, tell them to enrol.
+-    echo $output->view_page_notenrolled($course, $quiz, $cm, $context, $viewobj->infomessages, $viewobj->quizhasquestions);
++    echo $output->view_page_notenrolled($course, $quiz, $cm, $context, $viewobj->infomessages);
+ } else {
+     echo $output->view_page($course, $quiz, $cm, $context, $viewobj);
+ }

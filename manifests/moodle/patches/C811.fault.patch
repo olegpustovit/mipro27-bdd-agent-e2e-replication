@@ -1,0 +1,60 @@
+diff --git a/public/repository/flickr/lib.php b/public/repository/flickr/lib.php
+index 3fcc87109dfa075d4f7ccaac1af92bd13d11c3e6..7f33ae18dcfdceee4c281de620be4ad32ddd1a1e 100644
+--- a/public/repository/flickr/lib.php
++++ b/public/repository/flickr/lib.php
+@@ -236,11 +236,10 @@ class repository_flickr extends repository {
+                 if (substr($p->title, strlen($p->title) - strlen($format)) != $format) {
+                     $p->title .= $format;
+                 }
+-                $source = $this->flickr->get_photo_url($p->id);
+ 
+                 // Perform a HEAD request to the image to obtain it's Content-Length.
+                 $curl = new curl();
+-                $curl->head($source);
++                $curl->head($p->url_o);
+ 
+                 $ret['list'][] = [
+                     'title' => $p->title,
+@@ -249,7 +248,7 @@ class repository_flickr extends repository {
+                     'thumbnail' => $p->url_sq,
+                     'datecreated' => $p->dateupload,
+                     'datemodified' => $p->lastupdate,
+-                    'url' => $source,
++                    'url' => $p->url_o,
+                     'author' => $p->ownername,
+                     'size' => (int)($curl->get_info()['download_content_length']),
+                     'image_width' => $p->width_o,
+@@ -299,26 +298,14 @@ class repository_flickr extends repository {
+         return $this->flickr->get_photo_url($photoid);
+     }
+ 
+-    #[\Override]
++    /**
++     *
++     * @param string $photoid
++     * @param string $file
++     * @return string
++     */
+     public function get_file($photoid, $file = '') {
+-        global $CFG;
+-
+-        $url = $this->flickr->get_photo_url($photoid);
+-
+-        $path = $this->prepare_file($file);
+-        $c = new curl();
+-        $c->setopt([
+-            'CURLOPT_USERAGENT' => flickr_client::user_agent(),
+-        ]);
+-
+-        $result = $c->download_one($url, null, [
+-            'filepath' => $path,
+-            'timeout' => $CFG->repositorygetfiletimeout,
+-        ]);
+-        if ($result !== true) {
+-            throw new moodle_exception('errorwhiledownload', 'repository', '', $result);
+-        }
+-        return ['path' => $path, 'url' => $url];
++        return parent::get_file($this->flickr->get_photo_url($photoid), $file);
+     }
+ 
+     /**

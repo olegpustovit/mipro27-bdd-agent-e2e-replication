@@ -1,0 +1,70 @@
+diff --git a/public/customfield/field/number/classes/data_controller.php b/public/customfield/field/number/classes/data_controller.php
+index 7e1a6015caabe5a38ef5ed3aee99bcdddf9a5c35..ff79f0da0525fc3d39c031aee0e4ae7f28612fd8 100644
+--- a/public/customfield/field/number/classes/data_controller.php
++++ b/public/customfield/field/number/classes/data_controller.php
+@@ -66,18 +66,7 @@ class data_controller extends \core_customfield\data_controller {
+             return;
+         }
+ 
+-        // Required for subsequent input field comparison rule.
+-        $mform->addElement('hidden', "{$elementname}_maximum", SQL_INT_MAX + 1);
+-        $mform->setType("{$elementname}_maximum", PARAM_INT);
+-
+-        // Number input field.
+         $mform->addElement('float', $elementname, $this->get_field()->get_formatted_name());
+-        $mform->addRule(
+-            [$elementname, "{$elementname}_maximum"],
+-            get_string('maximumvalueerror', 'customfield_number', SQL_INT_MAX),
+-            'compare',
+-            'lt',
+-        );
+         if (!$this->get('id')) {
+             $mform->setDefault($elementname, $this->get_default_value());
+         }
+diff --git a/public/customfield/field/number/classes/field_controller.php b/public/customfield/field/number/classes/field_controller.php
+index 956518929f4fa506e7ae9ee5b752ef578803452e..e4bea8259bcd4bab9b5652be4cc9203115d2821f 100644
+--- a/public/customfield/field/number/classes/field_controller.php
++++ b/public/customfield/field/number/classes/field_controller.php
+@@ -50,42 +50,20 @@ class field_controller  extends \core_customfield\field_controller {
+             }
+         }
+ 
+-        // Required for subsequent input field comparison rule.
+-        $mform->addElement('hidden', "maximum", SQL_INT_MAX + 1);
+-        $mform->setType("maximum", PARAM_INT);
+-
+         // Default value.
+         $mform->addElement('float', 'configdata[defaultvalue]', get_string('defaultvalue', 'core_customfield'));
+-        $mform->addRule(
+-            ['configdata[defaultvalue]', 'maximum'],
+-            get_string('maximumvalueerror', 'customfield_number', SQL_INT_MAX),
+-            'compare',
+-            'lt',
+-        );
+         if ($this->get_configdata_property('defaultvalue') === null) {
+             $mform->setDefault('configdata[defaultvalue]', '');
+         }
+ 
+         // Minimum value.
+         $mform->addElement('float', 'configdata[minimumvalue]', get_string('minimumvalue', 'customfield_number'));
+-        $mform->addRule(
+-            ['configdata[minimumvalue]', 'maximum'],
+-            get_string('maximumvalueerror', 'customfield_number', SQL_INT_MAX),
+-            'compare',
+-            'lt',
+-        );
+         if ($this->get_configdata_property('minimumvalue') === null) {
+             $mform->setDefault('configdata[minimumvalue]', '');
+         }
+ 
+         // Maximum value.
+         $mform->addElement('float', 'configdata[maximumvalue]', get_string('maximumvalue', 'customfield_number'));
+-        $mform->addRule(
+-            ['configdata[maximumvalue]', 'maximum'],
+-            get_string('maximumvalueerror', 'customfield_number', SQL_INT_MAX),
+-            'compare',
+-            'lt',
+-        );
+         if ($this->get_configdata_property('maximumvalue') === null) {
+             $mform->setDefault('configdata[maximumvalue]', '');
+         }

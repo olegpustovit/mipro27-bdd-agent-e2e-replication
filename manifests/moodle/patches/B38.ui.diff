@@ -1,0 +1,2024 @@
+diff --git a/admin/tool/lp/amd/src/menubar.js b/admin/tool/lp/amd/src/menubar.js
+index 0434b567dc227e160398e36baa9152ec980aa342..76595fe17d8f13e6c52741ccdc8b49bc06bdd295 100644
+--- a/admin/tool/lp/amd/src/menubar.js
++++ b/admin/tool/lp/amd/src/menubar.js
+@@ -258,7 +258,7 @@ define(['jquery'], function($) {
+     Menubar.prototype.setOpenDirection = function() {
+         var pos = this.menuRoot.offset();
+         var isRTL = $(document.body).hasClass('dir-rtl');
+-        var openLeft = false;
++        var openLeft = true;
+         var heightmenuRoot = this.rootMenus.outerHeight();
+         var widthmenuRoot = this.rootMenus.outerWidth();
+         // Sometimes the menuMinWidth is not enough to figure out if menu exceeds the window width.
+diff --git a/admin/tool/lp/styles.css b/admin/tool/lp/styles.css
+index e811b9a66d0d0555110217e3c24c5531be439431..73e7313b5a279aca7af9cb4562524f8c92a29bb0 100644
+--- a/admin/tool/lp/styles.css
++++ b/admin/tool/lp/styles.css
+@@ -181,7 +181,8 @@
+ }
+ 
+ .tool-lp-menu.tool-lp-menu-open-left .tool-lp-sub-menu {
+-    margin-left: -120px;
++    left: auto;
++    right: 0;
+ }
+ 
+ /** This highlighting is copied from bootstrap - but can be overridden by a theme */
+diff --git a/admin/tool/lp/templates/action_selector.mustache b/admin/tool/lp/templates/action_selector.mustache
+index 1f307a7b1386cc58638d6534f0472bb64a93321a..7ebb157389d8b2c92603bbe29910bef5f0d9389d 100644
+--- a/admin/tool/lp/templates/action_selector.mustache
++++ b/admin/tool/lp/templates/action_selector.mustache
+@@ -15,6 +15,8 @@
+     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ }}
+ {{!
++    @template tool_lp/action_selector
++
+     Select an action to execute.
+ 
+     Classes required for JS:
+@@ -28,18 +30,29 @@
+     * choices - List of possible actions
+     * confirm - Text for button confirms
+     * cancel -  Text for button cancel
+- }}
++
++    Example context (json):
++    {
++        "message": "Message",
++        "choices": [
++            { "value": "1", "text": "One" },
++            { "value": "2", "text": "Two" }
++        ],
++        "confirm": "Confirm",
++        "cancel": "Cancel"
++    }
++}}
+ <div data-region="action-selector">
+     <div data-region="action-selector-message">
+        {{message}}<br>
+     </div><br>
+     <div data-region="action-selector-radio-buttons">
+        {{#choices}}
+-        <input id="action-selection-option-{{value}}" type="radio" name="choice" value="{{value}}"/><label for="action-selection-option-{{value}}">{{text}}</label><br>
++        <input id="action-selection-option-{{value}}" type="radio" class="m-r-1" name="choice" value="{{value}}"/><label for="action-selection-option-{{value}}">{{text}}</label><br>
+        {{/choices}}
+     </div><br>
+     <div data-region="action_selector-buttons">
+-       <input type="button" data-action="action-selector-confirm" value="{{confirm}}"/>
+-       <input type="button" data-action="action-selector-cancel" value="{{cancel}}"/>
++       <input type="button" data-action="action-selector-confirm" class="btn btn-primary" value="{{confirm}}"/>
++       <input type="button" data-action="action-selector-cancel" class="btn btn-secondary" value="{{cancel}}"/>
+     </div>
+ </div>
+diff --git a/admin/tool/lp/templates/comment_area.mustache b/admin/tool/lp/templates/comment_area.mustache
+index e2ac064620034493b0bf747d18b8236fe8b407e1..a93697a6f6911287ef6aa27e2ae2c18e2763e88b 100644
+--- a/admin/tool/lp/templates/comment_area.mustache
++++ b/admin/tool/lp/templates/comment_area.mustache
+@@ -45,6 +45,7 @@
+     * template
+     * uniqid
+ 
++    // This template has no example context because it would trigger real updates to the DB.
+     Example context (json):
+     {
+     }
+diff --git a/admin/tool/lp/templates/competencies_move_tree.mustache b/admin/tool/lp/templates/competencies_move_tree.mustache
+index d6ae8e6bca26156c0c3f0626dcf8877dce6540d3..06b5e242a26e09a8f3f99aeea35cd11b63b30a9f 100644
+--- a/admin/tool/lp/templates/competencies_move_tree.mustache
++++ b/admin/tool/lp/templates/competencies_move_tree.mustache
+@@ -15,6 +15,8 @@
+     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ }}
+ {{!
++    @template tool_lp/competencies_move_tree
++
+     Manage competencies template.
+ 
+     Classes required for JS:
+@@ -25,6 +27,16 @@
+     Context variables required for this template:
+     * framework -
+     * competencies - array of objects containing id, shortname, idnumber, sortorder, parentid, competencyframeworkid, path
++
++    Example context (json):
++    {
++        "framework": {
++            "shortname":"framework"
++        },
++        "competencies": [
++            { "name": "Competency", "id": 1 }
++        ]
++    }
+ }}
+ <div data-region="competencymovetree" >
+ <label>{{#str}}selectcompetencymovetarget, tool_lp{{/str}}</label>
+@@ -41,7 +53,8 @@
+ </ul>
+ </div>
+ 
+-<div data-region="move-buttons">
+-    <input type="button" data-action="move" value="{{#str}}move{{/str}}"/>
+-    <input type="button" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
++<div data-region="move-buttons" class="pull-xs-right">
++    <input type="button" data-action="move" class="btn btn-primary" value="{{#str}}move{{/str}}"/>
++    <input type="button" data-action="cancel" class="btn btn-secondary" value="{{#str}}cancel{{/str}}"/>
+ </div>
++<div class="clearfix"></div>
+diff --git a/admin/tool/lp/templates/competencies_tree.mustache b/admin/tool/lp/templates/competencies_tree.mustache
+index 75c228218d4461b26ecccd9629a74d26efd32061..73ded30c9796c8c08a377d484c8c9a761f8d38a9 100644
+--- a/admin/tool/lp/templates/competencies_tree.mustache
++++ b/admin/tool/lp/templates/competencies_tree.mustache
+@@ -1,3 +1,54 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competencies_tree
++
++    Recursively build a competencies tree.
++
++    Classes required for JS:
++
++    Data attibutes required for JS:
++    * data-enhance=movetree
++
++    Context variables required for this template:
++    * id, shortname, idnumber, sortorder, parentid, competencyframeworkid, path, children
++
++    Example context (json):
++    {
++        "id": 1,
++        "shortname": "short",
++        "idnumber": "SHORT",
++        "sortorder": 1,
++        "parentid": 0,
++        "competencyframeworkid": 1,
++        "path": "/",
++        "haschildren": true,
++        "children": [{
++            "id": 2,
++            "shortname": "child",
++            "idnumber": "CHILD",
++            "sortorder": 1,
++            "parentid": 1,
++            "competencyframeworkid": 1,
++            "path": "/1/",
++            "children": []
++        }]
++    }
++}}
+ <li data-id="{{id}}">
+     {{#canmanage}}
+     <span draggable="true">
+diff --git a/admin/tool/lp/templates/competencies_tree_root.mustache b/admin/tool/lp/templates/competencies_tree_root.mustache
+index d138fe177a269bf40750ab2396702358b853dbfe..ed911f769847fc0470d79fd5b50879c315c87900 100644
+--- a/admin/tool/lp/templates/competencies_tree_root.mustache
++++ b/admin/tool/lp/templates/competencies_tree_root.mustache
+@@ -1,4 +1,49 @@
+-<ul data-enhance="tree">
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competencies_tree_root
++
++    Recursively build a competencies tree.
++
++    Classes required for JS:
++
++    Data attibutes required for JS:
++    * data-enhance=movetree
++
++    Context variables required for this template:
++    * id, shortname, idnumber, sortorder, parentid, competencyframeworkid, path, children
++
++    Example context (json):
++    {
++        "shortname": "short",
++        "haschildren": true,
++        "competencies": [{
++            "id": 2,
++            "shortname": "child",
++            "idnumber": "CHILD",
++            "sortorder": 1,
++            "parentid": 1,
++            "competencyframeworkid": 1,
++            "path": "/1/",
++            "children": []
++        }]
++    }
++}}
++<ul data-enhance="tree" class="competency-tree">
+     <li><span>{{{shortname}}}</span>
+         <ul>
+             {{#competencies}}
+diff --git a/admin/tool/lp/templates/competency_grader.mustache b/admin/tool/lp/templates/competency_grader.mustache
+index 6b4704203c6616184ad16989672b5a4bb4703f72..20060b740db4b259a36de6bd1f8fcab9b875be1f 100644
+--- a/admin/tool/lp/templates/competency_grader.mustache
++++ b/admin/tool/lp/templates/competency_grader.mustache
+@@ -1,26 +1,59 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competency_grader
++
++    Template for grading a competency.
++
++    Classes required for JS:
++      None
++
++    Data required for JS:
++    * ratings - list of value, name selected for valid ratings
++
++    Example context (json):
++    {
++        "ratings": [
++            {"name": "Bad", "value": 0, "selected": true},
++            {"name": "OK", "value": 1},
++            {"name": "Good", "value": 2}
++        ]
++    }
++}}
+ <div class="competency-grader" data-region="competency-grader">
+     <form>
+         <div class="content">
+             <div data-region="rating">
+                 <label for="rating_{{uniqid}}">{{#str}}rating, tool_lp{{/str}}</label>
+-                <select name="rating" id="rating_{{uniqid}}">
++                <select name="rating" id="rating_{{uniqid}}" class="custom-select">
+                     {{#ratings}}
+                         <option value="{{value}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+                     {{/ratings}}
+                 </select>
+             </div>
+-            <div data-region="comment">
++            <div data-region="comment" class="m-t-1">
+                 <label for="comment_{{uniqid}}">{{#str}}ratecomment, tool_lp{{/str}}</label>
+-                <textarea name="comment" id="comment_{{uniqid}}"></textarea>
++                <textarea name="comment" id="comment_{{uniqid}}" class="form-control m-b-1"></textarea>
+             </div>
+         </div>
+-        <div data-region="footer">
+-            <div class="pull-right">
+-                <input type="button" data-action="rate" value="{{#str}}rate, tool_lp{{/str}}" class="btn">
+-            </div>
+-            <div>
+-                <button data-action="cancel" class="btn btn-link">{{#str}}cancel{{/str}}</button>
+-            </div>
++        <div data-region="footer" class="pull-xs-right">
++            <input type="button" data-action="rate" value="{{#str}}rate, tool_lp{{/str}}" class="btn btn-primary">
++            <button data-action="cancel" class="btn btn-secondary">{{#str}}cancel{{/str}}</button>
+         </div>
++        <div class="clearfix"></div>
+     </form>
+ </div>
+diff --git a/admin/tool/lp/templates/competency_path.mustache b/admin/tool/lp/templates/competency_path.mustache
+index f756098b65fd9d8931ee8149aa9e375a952e4d75..96afe156dcf3424956ff06ac50fe9e3f38259773 100644
+--- a/admin/tool/lp/templates/competency_path.mustache
++++ b/admin/tool/lp/templates/competency_path.mustache
+@@ -15,6 +15,8 @@
+     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ }}
+ {{!
++    @template tool_lp/competency_path
++
+     Competency path template.
+ 
+     Classes required for JS:
+@@ -24,18 +26,33 @@
+     * framework - The competency framework
+       * id - competency id
+       * name - competency idnumber
+-      * first - true if node is in first position
+-      * last - true if node is in last position
+-      * position - the position of the node in the list
+ 
+     * ancestors - array of nodes
+       * id - competency id
+       * name - competency idnumber
+       * first - true if node is in first position
+       * last - true if node is in last position
+-      * position - the position of the node in the list
+ 
+     * pluginbaseurl - base url of plugin tool_lp
++
++    Example context (json):
++    {
++        "framework": {
++            "id": "1",
++            "name": "Framework"
++        },
++        "ancestors": [
++            {
++                "id": "1",
++                "name": "C1"
++            },
++            {
++                "id": "1",
++                "name": "C2",
++                "last": true
++            }
++        ]
++    }
+ }}
+ <nav id="competency-path-{{uniqid}}">
+     <small>
+diff --git a/admin/tool/lp/templates/competency_picker.mustache b/admin/tool/lp/templates/competency_picker.mustache
+index 916522b5f7bbec0c215e7992d8645525eb8944cc..f9693d0884247b5039e9df896121c3f79d237c48 100644
+--- a/admin/tool/lp/templates/competency_picker.mustache
++++ b/admin/tool/lp/templates/competency_picker.mustache
+@@ -1,20 +1,75 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competency_picker
++
++    Show a competency tree and allow picking a competency.
++
++    Context variables required for this template:
++    * frameworks - array of competency framework
++      * id
++      * shortname
++      * idnumber
++      * selected
++
++    * framework - competency framework
++      * id
++      * name
++      * shortname
++      * idnumber
++
++    * competencies - array of nodes
++      * id - competency id
++      * name - competency idnumber
++      * children - array of children
++      * haschildren - boolean
++
++    Example context (json):
++    {
++        "frameworks": [
++            {
++                "id": "1",
++                "shortname": "Framework",
++                "idnumber": "F1"
++            }
++        ],
++        "competencies": [
++        ]
++    }
++}}
+ <div data-region="competencylinktree">
+ {{^singleFramework}}
+ <h3>{{#str}}competencyframeworks, tool_lp{{/str}}</h3>
+-<select data-action="chooseframework">
++<select data-action="chooseframework" class="custom-select">
+ {{#frameworks}}
+ <option value="{{id}}" {{#selected}}selected="selected"{{/selected}}>{{{shortname}}} <em>{{idnumber}}</em></option>
+ {{/frameworks}}
+ </select>
+ {{/singleFramework}}
+-<h3>{{#str}}locatecompetency, tool_lp{{/str}}</h3>
++<h3 class="m-t-1">{{#str}}locatecompetency, tool_lp{{/str}}</h3>
+ 
+-<form data-region="filtercompetencies" data-frameworkid="{{framework.id}}">
+-    <label class="accesshide" for="filter{{uniqid}}">{{#str}}search, tool_lp{{/str}}</label>
+-    <input type="text" id="filter{{uniqid}}" placeholder="{{#str}}search, tool_lp{{/str}}" value="{{search}}">
+-    <button>{{#pix}}a/search, ,{{#str}}search{{/str}}{{/pix}}</button>
++<form data-region="filtercompetencies" class="form-inline" data-frameworkid="{{framework.id}}">
++    <div class="form-group">
++        <label class="accesshide" for="filter{{uniqid}}">{{#str}}search, tool_lp{{/str}}</label>
++        <input type="text" class="form-control" id="filter{{uniqid}}" placeholder="{{#str}}search, tool_lp{{/str}}" value="{{search}}">
++        <button class="btn btn-secondary">{{#pix}}a/search, ,{{#str}}search{{/str}}{{/pix}}</button>
++    </div>
+ </form>
+-<ul data-enhance="linktree" style="display: none;">
++<ul data-enhance="linktree" style="display: none;" class="m-t-1 competency-tree">
+     <li><span>{{{framework.shortname}}}</span>
+         <ul>
+             {{#competencies}}
+@@ -23,8 +78,9 @@
+         </ul>
+     </li>
+ </ul>
+-<div data-region="link-buttons">
+-    <input type="button" data-action="add" value="{{#str}}add{{/str}}"/>
+-    <input type="button" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
++<div data-region="link-buttons" class="m-t-1 pull-xs-right">
++    <input type="button" class="btn btn-primary" data-action="add" value="{{#str}}add{{/str}}"/>
++    <input type="button" class="btn btn-secondary" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
+ </div>
++<div class="clearfix"></div>
+ </div>
+diff --git a/admin/tool/lp/templates/competency_picker_competencyform.mustache b/admin/tool/lp/templates/competency_picker_competencyform.mustache
+index e255dfdb36858454faeff8a60ddd9a4798bdc4a0..08b38efe44f16864d317ecc18223a7f455eb4f1d 100644
+--- a/admin/tool/lp/templates/competency_picker_competencyform.mustache
++++ b/admin/tool/lp/templates/competency_picker_competencyform.mustache
+@@ -1,12 +1,57 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competency_picker_competencyform
++
++    Show a competency tree and allow picking a competency.
++
++    Context variables required for this template:
++    * framework - The competency framework
++      * id
++      * name
++      * shortname
++
++    * competencies - array of nodes
++      * id - competency id
++      * name - competency idnumber
++      * children - array of children
++      * haschildren - boolean
++
++    Example context (json):
++    {
++        "framework": {
++            "id": "1",
++            "name": "Framework"
++        },
++        "competencies": [
++        ]
++    }
++}}
+ <div data-region="competencylinktree">
+ <h3>{{#str}}locatecompetency, tool_lp{{/str}}</h3>
+ 
+-<form data-region="filtercompetencies" data-frameworkid="{{framework.id}}">
+-    <label class="accesshide" for="filter{{uniqid}}">{{#str}}search, tool_lp{{/str}}</label>
+-    <input type="text" id="filter{{uniqid}}" placeholder="{{#str}}search, tool_lp{{/str}}" value="{{search}}">
+-    <button>{{#pix}}a/search, ,{{#str}}search{{/str}}{{/pix}}</button>
++<form data-region="filtercompetencies" class="form-inline" data-frameworkid="{{framework.id}}">
++    <div class="form-group">
++        <label class="accesshide" for="filter{{uniqid}}">{{#str}}search, tool_lp{{/str}}</label>
++        <input type="text" class="form-control" id="filter{{uniqid}}" placeholder="{{#str}}search, tool_lp{{/str}}" value="{{search}}">
++        <button class="btn btn-secondary">{{#pix}}a/search, ,{{#str}}search{{/str}}{{/pix}}</button>
++    </div>
+ </form>
+-<ul data-enhance="linktree" style="display: none;">
++<ul data-enhance="linktree" style="display: none;" class="m-t-1 competency-tree">
+     <li data-id="0"><span>{{{framework.shortname}}}</span>
+         <ul>
+             {{#competencies}}
+@@ -15,8 +60,9 @@
+         </ul>
+     </li>
+ </ul>
+-<div data-region="link-buttons">
+-    <input type="button" data-action="add" value="{{#str}}select{{/str}}"/>
+-    <input type="button" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
++<div data-region="link-buttons" class="m-t-1 pull-xs-right">
++    <input type="button" class="btn btn-primary" data-action="add" value="{{#str}}select{{/str}}"/>
++    <input type="button" class="btn btn-secondary" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
+ </div>
++<div class="clearfix"></div>
+ </div>
+diff --git a/admin/tool/lp/templates/competency_picker_user_plans.mustache b/admin/tool/lp/templates/competency_picker_user_plans.mustache
+index bddebc90b608e00c9b9fd214ba2eacade720e89c..7ee035dd164c425d1757f7ad38c58c2a7df3b973 100644
+--- a/admin/tool/lp/templates/competency_picker_user_plans.mustache
++++ b/admin/tool/lp/templates/competency_picker_user_plans.mustache
+@@ -1,22 +1,80 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competency_picker_user_plans
++
++    Show a competency tree and allow picking a competency.
++
++    Context variables required for this template:
++    * singlePlan - boolean
++
++    * plans - array of plans
++      * id
++      * selected
++      * name
++
++    * plan
++      * id
++      * name
++
++    * competencies - array of nodes
++      * id - competency id
++      * name - competency idnumber
++      * children - array of children
++      * haschildren - boolean
++
++    Example context (json):
++    {
++        "singlePlan": false,
++        "plans": [
++            {
++                "id": "1",
++                "name": "Plan"
++            }
++        ],
++        "plan": {
++            "id": "1",
++            "name": "Plan"
++        },
++        "competencies": []
++    }
++}}
++
+ <div data-region="competencylinktree">
+ {{^singlePlan}}
+     <h3>{{#str}}learningplans, tool_lp{{/str}}</h3>
+-    <select data-action="chooseplan">
++    <select data-action="chooseplan" class="custom-select">
+     {{#plans}}
+         <option value="{{id}}" {{#selected}}selected="selected"{{/selected}}>{{{name}}}</option>
+     {{/plans}}
+     </select>
+ {{/singlePlan}}
+ 
+-<h3>{{#str}}locatecompetency, tool_lp{{/str}}</h3>
++<h3 class="m-t-1">{{#str}}locatecompetency, tool_lp{{/str}}</h3>
+ 
+-<form data-region="filtercompetencies" data-planid="{{plan.id}}">
+-    <label class="accesshide" for="filter{{uniqid}}">{{#str}}search, tool_lp{{/str}}</label>
+-    <input type="text" id="filter{{uniqid}}" placeholder="{{#str}}search, tool_lp{{/str}}" value="{{search}}">
+-    <button>{{#pix}}a/search, ,{{#str}}search{{/str}}{{/pix}}</button>
++<form data-region="filtercompetencies" data-planid="{{plan.id}}" class="form-inline">
++    <div class="form-group">
++        <label class="accesshide" for="filter{{uniqid}}">{{#str}}search, tool_lp{{/str}}</label>
++        <input type="text" class="form-control" id="filter{{uniqid}}" placeholder="{{#str}}search, tool_lp{{/str}}" value="{{search}}">
++        <button class="btn btn-secondary">{{#pix}}a/search, ,{{#str}}search{{/str}}{{/pix}}</button>
++    </div>
+ </form>
+ 
+-<ul data-enhance="linktree" style="display: none;">
++<ul data-enhance="linktree" style="display: none;" class="m-t-1 competency-tree">
+     <li><span>{{{plan.name}}}</span>
+         <ul>
+             {{#competencies}}
+@@ -26,9 +84,9 @@
+     </li>
+ </ul>
+ 
+-<div data-region="link-buttons">
+-    <input type="button" data-action="add" value="{{#str}}add{{/str}}"/>
+-    <input type="button" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
++<div data-region="link-buttons" class="m-t-1 pull-xs-right">
++    <input type="button" class="btn btn-primary" data-action="add" value="{{#str}}add{{/str}}"/>
++    <input type="button" class="btn btn-secondary" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
+ </div>
+-
++<div class="clearfix"></div>
+ </div>
+diff --git a/admin/tool/lp/templates/competency_plan_navigation.mustache b/admin/tool/lp/templates/competency_plan_navigation.mustache
+index d3eb766ed1a283f8c2c349de72def1facc9d808a..21bd7af4375141fc3f117c9d112445a8d63d2042 100644
+--- a/admin/tool/lp/templates/competency_plan_navigation.mustache
++++ b/admin/tool/lp/templates/competency_plan_navigation.mustache
+@@ -1,4 +1,38 @@
+-<div class="pull-right well">
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competency_plan_navigation
++
++    Show an auto-complete for jumping to competencies in a plan.
++
++    Context variables required for this template:
++    * hascompetencies - boolean
++    * competencies - array of competencies
++      * id
++      * shortname
++      * idnumber
++      * selected
++    * userid
++    * competencyid
++    * planid
++
++    // No example context because the JS is connected to webservices
++}}
++<div class="pull-xs-right card card-block">
+ {{#hascompetencies}}
+ <span>
+ <label for="competency-nav-{{uniqid}}" class="accesshide">{{#str}}jumptocompetency, tool_lp{{/str}}</label>
+@@ -9,7 +43,6 @@
+ </select>
+ </span>
+ {{/hascompetencies}}
+-</form>
+ </div>
+ {{#js}}
+ require(['core/form-autocomplete', 'tool_lp/competency_plan_navigation'], function(autocomplete, nav) {
+diff --git a/admin/tool/lp/templates/competency_rule_config.mustache b/admin/tool/lp/templates/competency_rule_config.mustache
+index 7c64ab6504e374cac43ededee34ac5f401a9298a..b0e9db8440b36e4d0c9ed7d1603ff095ffb52c6d 100644
+--- a/admin/tool/lp/templates/competency_rule_config.mustache
++++ b/admin/tool/lp/templates/competency_rule_config.mustache
+@@ -1,3 +1,54 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competency_rule_config
++
++    Configuration dialogue for competency rules.
++
++    Context variables required for this template:
++    * config - boolean
++    * outcomes - array
++      * code
++      * name
++      * selected
++    * rules - array
++      * type
++      * name
++      * selected
++
++    Example context (json):
++    {
++        "config": true,
++        "outcomes": [
++            {
++                "code": "C1",
++                "name": "Complete",
++                "selected": true
++            }
++        ],
++        "rules": [
++            {
++                "type": "Type",
++                "name": "Something happens",
++                "selected": true
++            }
++        ]
++    }
++}}
+ <div data-region="competencyruleconfig">
+     <div data-region="content">
+ 
+@@ -6,18 +57,18 @@
+         {{/config}}
+ 
+         {{#config}}
+-        <div data-region="rule-base">
+-            <div data-region="rule-outcome">
++        <div data-region="rule-base" class="form">
++            <div data-region="rule-outcome" class="form-group">
+                 <label>{{#str}}outcome, tool_lp{{/str}}</label>
+-                <select name="outcome" ng-label="{{#str}}outcome, tool_lp{{/str}}">
++                <select name="outcome" class="custom-select" ng-label="{{#str}}outcome, tool_lp{{/str}}">
+                     {{#outcomes}}
+                     <option value="{{code}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+                     {{/outcomes}}
+                 </select>
+             </div>
+-            <div data-region="rule-type">
++            <div data-region="rule-type" class="form-group">
+                 <label>{{#str}}when, tool_lp{{/str}}</label>
+-                <select name="rule" ng-label="{{#str}}when, tool_lp{{/str}}">
++                <select name="rule" class="custom-select" ng-label="{{#str}}when, tool_lp{{/str}}">
+                     <option value="-1">{{#str}}choosedots{{/str}}</option>
+                     {{#rules}}
+                     <option value="{{type}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+@@ -30,10 +81,10 @@
+         {{/config}}
+     </div>
+ 
+-    <div data-region="footer">
++    <div data-region="footer" class="pull-xs-right">
+         {{#config}}
+-        <input type="button" data-action="save" value="{{#str}}savechanges{{/str}}"/>
++        <input type="button" class="btn btn-primary" data-action="save" value="{{#str}}savechanges{{/str}}"/>
+         {{/config}}
+-        <input type="button" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
++        <input type="button" class="btn btn-secondary" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
+     </div>
+ </div>
+diff --git a/admin/tool/lp/templates/competency_rule_points.mustache b/admin/tool/lp/templates/competency_rule_points.mustache
+index 907e73198389d2cca893335936b2d7b14faebb61..07e43920b2d4d930a2e7ddf91e3f8b5af96d178a 100644
+--- a/admin/tool/lp/templates/competency_rule_points.mustache
++++ b/admin/tool/lp/templates/competency_rule_points.mustache
+@@ -1,3 +1,43 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competency_rule_points
++
++    Configuration dialogue for competency points rule.
++
++    Context variables required for this template:
++    * children
++      * id
++      * shortname
++      * points
++    * requiredpoints
++
++    Example context (json):
++    {
++        "children": [
++            {
++                "id": "1",
++                "shortname": "Competency",
++                "points": 2
++            }
++        ],
++        "requiredpoints": 4
++    }
++}}
+ <div class="competency-rule-points">
+     <table class="table table-condensed">
+         <thead>
+@@ -13,7 +53,7 @@
+                 <th scope="row">{{{shortname}}}</th>
+                 <td>
+                     <label class="accesshide" for="pointsforcompetency-{{id}}">{{#str}}pointsgivenfor, tool_lp, {{{competency.shortname}}}{{/str}}</label>
+-                    <input id="pointsforcompetency-{{id}}" type="number" min="0" value="{{points}}" name="points" />
++                    <input id="pointsforcompetency-{{id}}" type="number" min="0" value="{{points}}" name="points" class="form-control"/>
+                 </td>
+                 <td>
+                     <label class="accesshide" for="competency-{{id}}-isrequired">{{#str}}aisrequired, tool_lp, {{{competency.shortname}}}{{/str}}</label>
+@@ -25,7 +65,7 @@
+         <tfoot>
+             <tr>
+                 <th scope="row">{{#str}}totalrequiredtocomplete, tool_lp{{/str}}</th>
+-                <td><input type="number" min="1" value="{{requiredpoints}}" name="requiredpoints" aria-label="{{#str}}totalrequiredtocomplete, tool_lp{{/str}}"></td>
++                <td><input type="number" min="1" value="{{requiredpoints}}" name="requiredpoints" aria-label="{{#str}}totalrequiredtocomplete, tool_lp{{/str}}" class="form-control"></td>
+                 <td> </td>
+             </tr>
+         </tfoot>
+diff --git a/admin/tool/lp/templates/competency_summary.mustache b/admin/tool/lp/templates/competency_summary.mustache
+index b1bca285cae447a629616e4946d1e0f0ff48b329..1ce22b16c64cf6d9d860c1f5fab8c93740c84be7 100644
+--- a/admin/tool/lp/templates/competency_summary.mustache
++++ b/admin/tool/lp/templates/competency_summary.mustache
+@@ -1,3 +1,53 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/competency_summary
++
++    Summary of a competency
++
++    Context variables required for this template:
++    * competency
++      * id
++      * shortname
++      * idnumber
++      * description
++    * framework
++      * shortname
++    * comppath array of ancestors
++    * showrelatedcompetencies boolean
++    * related
++    * showrule boolean
++    * rule
++      * outcome
++      * type
++
++    Example context (json):
++    {
++        "competency": {
++            "id": 1,
++            "shortname": "C1",
++            "idnumber": "PATH",
++            "description": "Can do something"
++        },
++        "framework": {
++            "shortname": "F1"
++        }
++    }
++}}
+ <div class='competency-heading'>
+     <h4 id="competency_link_{{competency.id}}">{{{competency.shortname}}}
+         <small>{{competency.idnumber}}</small>
+diff --git a/admin/tool/lp/templates/course_competencies_page.mustache b/admin/tool/lp/templates/course_competencies_page.mustache
+index 674eed699243aefe6939ad4075e0cb3f587c4ebc..39b061e4a90548016e18bd551da803188742e088 100644
+--- a/admin/tool/lp/templates/course_competencies_page.mustache
++++ b/admin/tool/lp/templates/course_competencies_page.mustache
+@@ -16,12 +16,14 @@
+ }}
+ {{!
+     Course competencies template.
++
++    For a full list of the context for this template see the course_competencies_page renderable.
+ }}
+ <div data-region="coursecompetenciespage">
+     <div data-region="actions" class="clearfix">
+-        <div class="pull-left">
++        <div class="pull-xs-left">
+             {{#canmanagecoursecompetencies}}
+-                <button disabled>{{#str}}addcoursecompetencies, tool_lp{{/str}}</button>
++                <button class="btn btn-secondary" disabled>{{#str}}addcoursecompetencies, tool_lp{{/str}}</button>
+             {{/canmanagecoursecompetencies}}
+         </div>
+     </div>
+@@ -55,12 +57,13 @@
+     <tr class="drag-samenode" data-id="{{competency.id}}">
+     <td>
+         {{#canmanagecoursecompetencies}}
+-        <span class="drag-handlecontainer pull-left"></span>
+-        <div class="pull-right">
++        <span class="drag-handlecontainer pull-xs-left"></span>
++        <div class="pull-xs-right">
+             <a href="#" data-action="delete-competency-link" data-id="{{competency.id}}">
+                 {{#pix}}t/delete, core, {{#str}}delete{{/str}}{{/pix}}
+             </a>
+         </div>
++        <div class="clearfix"></div>
+         {{/canmanagecoursecompetencies}}
+         {{#competency}}
+             <a href="{{pluginbaseurl}}user_competency_in_course.php?courseid={{courseid}}&competencyid={{competency.id}}&userid={{gradableuserid}}"
+@@ -71,7 +74,7 @@
+             <p>{{{competency.description}}}</p>
+         {{/competency}}
+         {{#comppath}}
+-            <span class="pull-left">{{#str}}path, tool_lp{{/str}}&nbsp;</span>{{> tool_lp/competency_path }}
++            <span class="pull-xs-left">{{#str}}path, tool_lp{{/str}}&nbsp;</span>{{> tool_lp/competency_path }}
+         {{/comppath}}
+         {{#usercompetencycourse}}
+             {{#grade}}
+@@ -92,12 +95,12 @@
+         {{/canmanagecoursecompetencies}}
+         <div data-region="coursecompetencyactivities">
+         <p>
+-        <ul class="inline">
++        <ul class="inline list-inline">
+         {{#coursemodules}}
+-            <li><a href="{{url}}"><img src="{{iconurl}}"> {{name}} </a></li>
++            <li class="list-inline-item"><a href="{{url}}"><img src="{{iconurl}}"> {{name}} </a></li>
+         {{/coursemodules}}
+         {{^coursemodules}}
+-            <li><span class="alert">{{#str}}noactivities, tool_lp{{/str}}</span></li>
++            <li class="list-inline-item"><span class="alert">{{#str}}noactivities, tool_lp{{/str}}</span></li>
+         {{/coursemodules}}
+         </ul>
+         </p>
+diff --git a/admin/tool/lp/templates/course_competency_settings.mustache b/admin/tool/lp/templates/course_competency_settings.mustache
+index bc1e36105f2ab912dd500d198de72f39a8cd8f43..6992f7d4927c7f58a78d80866da9436be5adfc3f 100644
+--- a/admin/tool/lp/templates/course_competency_settings.mustache
++++ b/admin/tool/lp/templates/course_competency_settings.mustache
+@@ -1,3 +1,40 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/course_competency_settings
++
++    Select an action to execute.
++
++    Classes required for JS:
++    * none
++
++    Data attibutes required for JS:
++    * none
++
++    Context variables required for this template:
++    * courseid
++    * pushratingstouserplans
++
++    Example context (json):
++    {
++        "pushratingstouserplans": false,
++        "courseid": -1
++    }
++}}
+ <form data-region="coursecompetencysettings">
+     <input type="hidden" name="courseid" value="{{courseid}}"/>
+     <fieldset>
+@@ -12,10 +49,9 @@
+         </label>
+ 
+     </fieldset>
+-    <fieldset>
+-        <center>
+-        <input type="button" data-action="save" value="{{#str}}savechanges{{/str}}"/>
+-        <input type="button" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
+-        </center>
++    <fieldset class="pull-xs-right">
++        <input type="button" class="btn btn-primary" data-action="save" value="{{#str}}savechanges{{/str}}"/>
++        <input type="button" class="btn btn-secondary" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
+     </fieldset>
++    <div class="clearfix"></div>
+ </form>
+diff --git a/admin/tool/lp/templates/course_competency_statistics.mustache b/admin/tool/lp/templates/course_competency_statistics.mustache
+index bb4a267d81ed2b4dcb63db7af04afe662c360978..9891b57ae0f8909ed8b1c4a1433661c371959823 100644
+--- a/admin/tool/lp/templates/course_competency_statistics.mustache
++++ b/admin/tool/lp/templates/course_competency_statistics.mustache
+@@ -33,9 +33,15 @@
+     Example context (json):
+     {
+         "competencycount": 4,
++        "canbegradedincourse": true,
++        "canmanagecoursecompetencies": true,
+         "proficientcompetencycount": 3,
+         "proficientcompetencypercentage": 75,
+-        "proficientcompetencypercentageformatted": 75.0
++        "proficientcompetencypercentageformatted": 75.0,
++        "leastproficientcount": 1,
++        "leastproficient": [
++            { "id": 1, "shortname": "Comp 1", "idnumber": "C1" }
++        ]
+     }
+ 
+ }}
+diff --git a/admin/tool/lp/templates/evidence_summary.mustache b/admin/tool/lp/templates/evidence_summary.mustache
+index 64f1bc613d4d92fb14ebb60e0f191c76828b0f91..128fd9c1f2a0b2c9d5b57cf8f77717bb996d5b0b 100644
+--- a/admin/tool/lp/templates/evidence_summary.mustache
++++ b/admin/tool/lp/templates/evidence_summary.mustache
+@@ -46,7 +46,7 @@
+ }}
+ <div class="well well-small evidence" data-region="evidence" data-id="{{id}}">
+     {{#candelete}}
+-        <div class="pull-right">
++        <div class="pull-xs-right">
+             <a href="#" data-action="delete-evidence">{{#pix}}t/delete{{/pix}}</a>
+         </div>
+     {{/candelete}}
+@@ -57,7 +57,7 @@
+ {{/actionuser}}
+ <strong><time datetime="{{userdate}}">{{userdate}}</time></strong>
+ {{#grade}}
+-    <p><span class="label">{{gradename}}</span></p>
++    <p><span class="tag tag-info">{{gradename}}</span></p>
+ {{/grade}}
+ <p>{{description}}</p>
+ {{#note}}
+diff --git a/admin/tool/lp/templates/linked_courses_summary.mustache b/admin/tool/lp/templates/linked_courses_summary.mustache
+index 7208304e0dd402d3e8bfe28e925acc1f4f3b6e69..af896535854cbb29b87613cf0136cf67e3da59f8 100644
+--- a/admin/tool/lp/templates/linked_courses_summary.mustache
++++ b/admin/tool/lp/templates/linked_courses_summary.mustache
+@@ -1,3 +1,48 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/linked_courses_summary
++
++    Moodle template for the list of linked courses to a competency
++
++    Classes required for JS:
++    * none
++
++    Data attributes required for JS:
++    * none
++
++    Context variables required for this template:
++    * courses array
++      * viewurl
++      * fullname
++      * shortname
++
++    Example context (json):
++    { "courses":
++        [
++            {
++                "viewurl": "http://",
++                "fullname": "Course 1",
++                "shortname": "C1"
++            }
++        ]
++    }
++}}
++
+ <p>
+ {{#str}}coursesusingthiscompetency, tool_lp{{/str}}
+ </p>
+diff --git a/admin/tool/lp/templates/manage_competencies_page.mustache b/admin/tool/lp/templates/manage_competencies_page.mustache
+index fce2b3dad89acec3e64364cfd7ae0cb811818c6e..8349d31ad474bd4faaee70f5af9595d42042e532 100644
+--- a/admin/tool/lp/templates/manage_competencies_page.mustache
++++ b/admin/tool/lp/templates/manage_competencies_page.mustache
+@@ -38,81 +38,88 @@
+     {{/canmanage}}
+ </h2>
+ <div>{{{framework.description}}}</div>
+-<h3>{{#str}}competencies, core_competency{{/str}}</h3>
+-<div class="row-fluid">
+-<div class="span6">
+-<p>
+-<form data-region="filtercompetencies" data-frameworkid="{{framework.id}}">
+-    <label class="accesshide" for="filter{{uniqid}}">{{#str}}search, tool_lp{{/str}}</label>
+-    <input type="text" id="filter{{uniqid}}" placeholder="{{#str}}search, tool_lp{{/str}}" value="{{search}}">
+-    <button>{{#pix}}a/search, , {{#str}}search{{/str}}{{/pix}}</button>
+-</form>
+-</p>
+-<ul data-enhance="tree">
+-    {{> tool_lp/loading }}
+-</ul>
+-</div>
+-
+-<div class="span6 well">
+-<h4 data-region="selected-competency">{{#str}}selectedcompetency, tool_lp{{/str}}</h4>
+-<p data-region="competencyinfo">
+-{{#str}}nocompetencyselected, tool_lp{{/str}}
+-</p>
+-{{#canmanage}}
+-<div data-region="competencyactions">
+-<button class="btn" data-action="add">{{#pix}}t/add{{/pix}} <span data-region="term"></span></button>
+-            <span data-region="competencyactionsmenu">
+-            <ul title="{{#str}}edit{{/str}}" class="competencyactionsmenu">
+-                <li>
+-                    <a href="#">{{#str}}edit{{/str}}</a><b class="caret"></b>
+-                    <ul class="dropdown-menu">
+-                        <li>
+-                            <a href="#" data-action="edit">
+-                                {{#pix}}t/edit{{/pix}} {{#str}}edit{{/str}}
+-                            </a>
+-                        </li>
+-                        <li>
+-                            <a href="#" data-action="move">
+-                                {{#pix}}t/move{{/pix}} {{#str}}movetonewparent, tool_lp{{/str}}
+-                            </a>
+-                        </li>
+-                        <li>
+-                            <a href="#" data-action="delete">
+-                                {{#pix}}t/delete{{/pix}} {{#str}}delete{{/str}}
+-                            </a>
+-                        </li>
+-                        <li>
+-                            <a href="#" data-action="moveup">
+-                                {{#pix}}t/up{{/pix}} {{#str}}moveup{{/str}}
+-                            </a>
+-                        </li>
+-                        <li>
+-                            <a href="#" data-action="movedown">
+-                                {{#pix}}t/down{{/pix}} {{#str}}movedown{{/str}}
+-                            </a>
+-                        </li>
+-                        <li>
+-                            <a href="#" data-action="linkedcourses">
+-                                {{#pix}}t/viewdetails{{/pix}} {{#str}}linkedcourses, tool_lp{{/str}}
+-                            </a>
+-                        </li>
+-                        <li>
+-                            <a href="#" data-action="relatedcompetencies">
+-                                {{#pix}}t/add{{/pix}} {{#str}}addcrossreferencedcompetency, tool_lp{{/str}}
+-                            </a>
+-                        </li>
+-                        <li>
+-                            <a href="#" data-action="competencyrules">
+-                                {{#pix}}t/edit{{/pix}} {{#str}}competencyrule, tool_lp{{/str}}
+-                            </a>
+-                        </li>
+-                    </ul>
+-                </li>
++    <h3>{{#str}}competencies, core_competency{{/str}}</h3>
++    <div class="row-fluid">
++        <div class="span6 col-lg-6">
++            <p>
++                <form data-region="filtercompetencies" data-frameworkid="{{framework.id}}" class="form-inline">
++                    <div class="form-group">
++                        <label class="accesshide" for="filter{{uniqid}}">{{#str}}search, tool_lp{{/str}}</label>
++                        <input class="form-control" type="text" id="filter{{uniqid}}" placeholder="{{#str}}search, tool_lp{{/str}}" value="{{search}}">
++                        <button class="btn btn-secondary">{{#pix}}a/search, , {{#str}}search{{/str}}{{/pix}}</button>
++                    </div>
++                </form>
++            </p>
++            <ul data-enhance="tree" class="competency-tree">
++                {{> tool_lp/loading }}
+             </ul>
+-            </span>
+-</div>
+-</div>
+-{{/canmanage}}
++        </div>
++
++        <div class="span6 card col-lg-6">
++            <div class="card-block">
++                <div class="card-title">
++                    <h4 data-region="selected-competency">{{#str}}selectedcompetency, tool_lp{{/str}}</h4>
++                        <span data-region="competencyactionsmenu" class="pull-xs-right">
++                            <ul title="{{#str}}edit{{/str}}" class="competencyactionsmenu">
++                                <li>
++                                    <a href="#">{{#str}}edit{{/str}}</a><b class="caret"></b>
++                                    <ul class="dropdown-menu">
++                                    <li class="dropdown-item">
++                                        <a href="#" data-action="edit">
++                                            {{#pix}}t/edit{{/pix}} {{#str}}edit{{/str}}
++                                        </a>
++                                    </li>
++                                    <li class="dropdown-item">
++                                        <a href="#" data-action="move">
++                                            {{#pix}}t/move{{/pix}} {{#str}}movetonewparent, tool_lp{{/str}}
++                                        </a>
++                                    </li>
++                                    <li class="dropdown-item">
++                                        <a href="#" data-action="delete">
++                                            {{#pix}}t/delete{{/pix}} {{#str}}delete{{/str}}
++                                        </a>
++                                    </li>
++                                    <li class="dropdown-item">
++                                        <a href="#" data-action="moveup">
++                                            {{#pix}}t/up{{/pix}} {{#str}}moveup{{/str}}
++                                        </a>
++                                    </li>
++                                    <li class="dropdown-item">
++                                        <a href="#" data-action="movedown">
++                                            {{#pix}}t/down{{/pix}} {{#str}}movedown{{/str}}
++                                        </a>
++                                    </li>
++                                    <li class="dropdown-item">
++                                        <a href="#" data-action="linkedcourses">
++                                            {{#pix}}t/viewdetails{{/pix}} {{#str}}linkedcourses, tool_lp{{/str}}
++                                        </a>
++                                    </li>
++                                    <li class="dropdown-item">
++                                        <a href="#" data-action="relatedcompetencies">
++                                            {{#pix}}t/add{{/pix}} {{#str}}addcrossreferencedcompetency, tool_lp{{/str}}
++                                        </a>
++                                    </li>
++                                    <li class="dropdown-item">
++                                        <a href="#" data-action="competencyrules">
++                                            {{#pix}}t/edit{{/pix}} {{#str}}competencyrule, tool_lp{{/str}}
++                                        </a>
++                                    </li>
++                                </ul>
++                            </li>
++                        </ul>
++                    </span>
++                </div>
++                <p data-region="competencyinfo">
++                    {{#str}}nocompetencyselected, tool_lp{{/str}}
++                </p>
++                {{#canmanage}}
++                <div data-region="competencyactions">
++                    <button class="btn btn-secondary" data-action="add">{{#pix}}t/add{{/pix}} <span data-region="term"></span></button>
++                </div>
++                {{/canmanage}}
++            </div>
++        </div>
++    </div>
+ </div>
+ 
+ {{#js}}
+@@ -131,4 +138,3 @@ require(['tool_lp/tree', 'tool_lp/competencytree', 'tool_lp/competencyactions',
+ });
+ {{/js}}
+ 
+-</div>
+diff --git a/admin/tool/lp/templates/manage_competency_frameworks_page.mustache b/admin/tool/lp/templates/manage_competency_frameworks_page.mustache
+index a901f4addc93b891ce969d7c004217169ad5a478..f3d6a3e32a6bb219b0040de95b7ca7890a445b32 100644
+--- a/admin/tool/lp/templates/manage_competency_frameworks_page.mustache
++++ b/admin/tool/lp/templates/manage_competency_frameworks_page.mustache
+@@ -61,17 +61,17 @@
+                 <li>
+                     <a href="#">{{#str}}edit{{/str}}</a><b class="caret"></b>
+                     <ul class="dropdown-menu">
+-                        <li>
++                        <li class="dropdown-item">
+                             <a href="{{pluginbaseurl}}/editcompetencyframework.php?id={{id}}&amp;pagecontextid={{pagecontextid}}">
+                                 {{#pix}}t/edit{{/pix}} {{#str}}edit{{/str}}
+                             </a>
+                         </li>
+-                        <li>
++                        <li class="dropdown-item">
+                             <a data-action="duplicatecompetencyframework" href="#" data-frameworkid="{{id}}">
+                                 {{#pix}}t/copy{{/pix}} {{#str}}duplicate{{/str}}
+                             </a>
+                         </li>
+-                        <li>
++                        <li class="dropdown-item">
+                             <a data-action="deletecompetencyframework" href="#" data-frameworkid="{{id}}">
+                                 {{#pix}}t/delete{{/pix}} {{#str}}delete{{/str}}
+                             </a>
+diff --git a/admin/tool/lp/templates/manage_templates_page.mustache b/admin/tool/lp/templates/manage_templates_page.mustache
+index fbe00d69b97c5d78f501ec38e51cb499aeff5307..f0af972985cccfc03ef7b210fe4f94d21580c6fe 100644
+--- a/admin/tool/lp/templates/manage_templates_page.mustache
++++ b/admin/tool/lp/templates/manage_templates_page.mustache
+@@ -63,27 +63,27 @@
+                 <li>
+                     <a href="#">{{#str}}edit{{/str}}</a><b class="caret"></b>
+                     <ul class="dropdown-menu">
+-                        <li>
++                        <li class="dropdown-item">
+                             <a href="{{pluginbaseurl}}/edittemplate.php?id={{id}}&amp;pagecontextid={{pagecontextid}}&amp;return=templates">
+                                 {{#pix}}t/edit{{/pix}} {{#str}}edit{{/str}}
+                             </a>
+                         </li>
+-                        <li>
++                        <li class="dropdown-item">
+                             <a data-action="duplicatetemplate" data-templateid="{{id}}" href="#">
+                                 {{#pix}}t/copy{{/pix}} {{#str}}duplicate{{/str}}
+                             </a>
+                         </li>
+-                        <li>
++                        <li class="dropdown-item">
+                             <a href="{{pluginbaseurl}}/template_plans.php?id={{id}}&amp;pagecontextid={{pagecontextid}}">
+                                 {{#pix}}t/add{{/pix}} {{#str}}createlearningplans, tool_lp{{/str}}
+                             </a>
+                         </li>
+-                        <li>
++                        <li class="dropdown-item">
+                             <a href="{{pluginbaseurl}}/template_cohorts.php?id={{id}}&amp;pagecontextid={{pagecontextid}}">
+                                 {{#pix}}t/add{{/pix}} {{#str}}addcohortstosync, tool_lp{{/str}}
+                             </a>
+                         </li>
+-                        <li>
++                        <li class="dropdown-item">
+                             <a data-action="deletetemplate" data-templateid="{{id}}" href="#">
+                                 {{#pix}}t/delete{{/pix}} {{#str}}delete{{/str}}
+                             </a>
+diff --git a/admin/tool/lp/templates/no_frameworks_warning.mustache b/admin/tool/lp/templates/no_frameworks_warning.mustache
+index 40eced37ea575a4d6d9511101915515fe744e7ca..a606c4845a3983c4280bf59e9a25b041fed6d37d 100644
+--- a/admin/tool/lp/templates/no_frameworks_warning.mustache
++++ b/admin/tool/lp/templates/no_frameworks_warning.mustache
+@@ -1,3 +1,33 @@
+-<p class="alert alert-error">
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/no_frameworks_warning
++
++    No frameworks warning template.
++
++    Classes required for JS:
++      None
++
++    Context variables required for this template:
++      None
++    Example context (json):
++    {
++    }
++}}
++<p class="alert alert-danger">
+     {{#str}}nocompetencyframeworks, tool_lp{{/str}}
+ </p>
+diff --git a/admin/tool/lp/templates/plan_page.mustache b/admin/tool/lp/templates/plan_page.mustache
+index 20eb2bbcac86802b1ae7006543cb78df27872a00..d927eae542281b1ed1da077ec45ab60f3500d691 100644
+--- a/admin/tool/lp/templates/plan_page.mustache
++++ b/admin/tool/lp/templates/plan_page.mustache
+@@ -28,11 +28,11 @@
+     <div data-region="actions" class="clearfix">
+         <div class="pull-left">
+             <!-- Button to add competencies to the plan -->
+-            <button class="btn" data-action="add">{{#pix}}t/add{{/pix}} {{#str}}addcompetency, tool_lp{{/str}}</button>
++            <button class="btn btn-secondary" data-action="add">{{#pix}}t/add{{/pix}} {{#str}}addcompetency, tool_lp{{/str}}</button>
+         </div>
+     </div>
+     {{/plan.canbeedited}}
+-    <div data-region="plan-summary">
++    <div data-region="plan-summary" class="m-t-1">
+         {{{plan.description}}}
+         <dl>
+             <dt>{{#str}}status, tool_lp{{/str}}</dt>
+@@ -103,12 +103,12 @@
+     </div>
+     {{#plan.commentarea}}
+         {{#canpostorhascomments}}
+-            <div data-region="comments">
++            <div data-region="comments" class="m-t-1">
+                 {{>tool_lp/comment_area}}
+             </div>
+         {{/canpostorhascomments}}
+     {{/plan.commentarea}}
+-    <div data-region="plan-competencies">
++    <div data-region="plan-competencies" class="m-t-1">
+         <h3>{{#str}}learningplancompetencies, tool_lp{{/str}}</h3>
+         <table class="generaltable fullwidth managecompetencies">
+             <thead>
+@@ -154,21 +154,21 @@
+                                     <a href="#">{{#str}}edit{{/str}}</a><b class="caret"></b>
+                                     <ul class="dropdown-menu">
+                                         {{#usercompetency.isrequestreviewallowed}}
+-                                            <li>
++                                            <li class="dropdown-item">
+                                                 <a href="#" data-action="request-review">{{#pix}}t/edit, core{{/pix}} {{#str}}requestreview, tool_lp{{/str}}</a>
+                                             </li>
+                                         {{/usercompetency.isrequestreviewallowed}}
+                                         {{#usercompetency.iscancelreviewrequestallowed}}
+-                                            <li>
++                                            <li class="dropdown-item">
+                                                 <a href="#" data-action="cancel-review-request">{{#pix}}t/edit, core{{/pix}} {{#str}}cancelreviewrequest, tool_lp{{/str}}</a>
+                                             </li>
+                                         {{/usercompetency.iscancelreviewrequestallowed}}
+                                         {{#plan.canbeedited}}
+-                                            <li>
++                                            <li class="dropdown-item">
+                                                 <a href="#" data-action="delete-competency-link" data-id="{{competency.id}}">{{#pix}}t/delete, core{{/pix}} {{#str}}delete{{/str}}</a>
+                                             </li>
+                                         {{/plan.canbeedited}}
+-                                        <li>
++                                        <li class="dropdown-item">
+                                             <a href="#" data-action="find-courses-link" data-id="{{competency.id}}">{{#pix}}t/preview, core{{/pix}} {{#str}}findcourses, tool_lp{{/str}}</a>
+                                         </li>
+                                     </ul>
+diff --git a/admin/tool/lp/templates/plans_page.mustache b/admin/tool/lp/templates/plans_page.mustache
+index 94226c9a5bf7e671375ba3c275b15b375365d943..75bb60a4ac9bd3efe3d177b894f6a6c14eb5ff61 100644
+--- a/admin/tool/lp/templates/plans_page.mustache
++++ b/admin/tool/lp/templates/plans_page.mustache
+@@ -71,7 +71,7 @@
+                 <li>
+                     <a href="#">{{#str}}edit{{/str}}</a><b class="caret"></b>
+                     <ul class="dropdown-menu">
+-                    <li {{^canbeedited}} class="disabled" {{/canbeedited}}>
++                    <li class="{{^canbeedited}} disabled {{/canbeedited}} dropdown-item">
+                         <a href="{{#canbeedited}}
+                                     {{pluginbaseurl}}/editplan.php?id={{id}}&amp;userid={{userid}}&amp;return=plans
+                                  {{/canbeedited}}
+@@ -83,57 +83,57 @@
+                         </a>
+                     </li>
+                     {{#isreopenallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-reopen" href="#">
+                             {{#pix}}t/edit{{/pix}} {{#str}}reopenplan, tool_lp{{/str}}
+                         </a>
+                     </li>
+                     {{/isreopenallowed}}
+                     {{#iscompleteallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-complete" href="#">
+                             {{#pix}}t/edit{{/pix}} {{#str}}completeplan, tool_lp{{/str}}
+                         </a>
+                     </li>
+                     {{/iscompleteallowed}}
+                     {{#isrequestreviewallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-request-review" href="#">{{#pix}}t/edit{{/pix}} {{#str}}requestreview, tool_lp{{/str}}</a>
+                     </li>
+                     {{/isrequestreviewallowed}}
+                     {{#iscancelreviewrequestallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-cancel-review-request" href="#">{{#pix}}t/edit{{/pix}} {{#str}}cancelreviewrequest, tool_lp{{/str}}</a>
+                     </li>
+                     {{/iscancelreviewrequestallowed}}
+                     {{#isstartreviewallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-start-review" href="#">{{#pix}}t/edit{{/pix}} {{#str}}startreview, tool_lp{{/str}}</a>
+                     </li>
+                     {{/isstartreviewallowed}}
+                     {{#isstopreviewallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-stop-review" href="#">{{#pix}}t/edit{{/pix}} {{#str}}stopreview, tool_lp{{/str}}</a>
+                     </li>
+                     {{/isstopreviewallowed}}
+                     {{#isapproveallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-approve" href="#">{{#pix}}t/edit{{/pix}} {{#str}}planapprove, tool_lp{{/str}}</a>
+                     </li>
+                     {{/isapproveallowed}}
+                     {{#isunapproveallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-unapprove" href="#">{{#pix}}t/edit{{/pix}} {{#str}}planunapprove, tool_lp{{/str}}</a>
+                     </li>
+                     {{/isunapproveallowed}}
+                     {{#isunlinkallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-unlink" href="#">
+                             {{#pix}}t/edit{{/pix}} {{#str}}unlinkplantemplate, tool_lp{{/str}}
+                         </a>
+                     </li>
+                     {{/isunlinkallowed}}
+-                    <li>
++                    <li class="dropdown-item">
+                         <a data-action="plan-delete" href="#">
+                             {{#pix}}t/delete{{/pix}} {{#str}}deletethisplan, tool_lp{{/str}}
+                         </a>
+diff --git a/admin/tool/lp/templates/related_competencies.mustache b/admin/tool/lp/templates/related_competencies.mustache
+index 71967d7d89aa732deb3cb3f49bdc64a5a9c2210a..ab5d9917bbdd7022543cc805ae4a47fbd942c6fc 100644
+--- a/admin/tool/lp/templates/related_competencies.mustache
++++ b/admin/tool/lp/templates/related_competencies.mustache
+@@ -1,3 +1,51 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/related_competencies
++
++    List of related competencies.
++
++    Classes required for JS:
++    * none
++
++    Data attributes required for JS:
++    * none
++
++    Context variables required for this template:
++    * showdeleterelatedaction boolean
++    * relatedcompetencies array
++      * id int
++      * shortname string
++      * idnumber string
++
++    Example context (json):
++    {
++        "showdeleterelatedaction": false,
++        "relatedcompetencies":
++        [
++            {
++                "id": 1,
++                "shortname": "Competency",
++                "idnumber": "C1"
++            }
++        ]
++    }
++
++}}
+ <div data-region="relatedcompetencies">
+ <p>
+     <strong>{{#str}}crossreferencedcompetencies, tool_lp{{/str}}:</strong>
+@@ -6,7 +54,7 @@
+     {{#relatedcompetencies}}
+         <li>
+             {{#showdeleterelatedaction}}
+-                <div class="pull-right">
++                <div class="pull-xs-right">
+                     <a href="#" data-action="deleterelation" id="id-related-{{id}}">{{#pix}}t/delete, core, {{#str}}delete{{/str}}{{/pix}}</a>
+                 </div>
+             {{/showdeleterelatedaction}}
+diff --git a/admin/tool/lp/templates/scale_configuration_page.mustache b/admin/tool/lp/templates/scale_configuration_page.mustache
+index 6b9811948c2ee5e35341e49542f0dd1410447730..3412c2ea1683c0e3ce513f930e7cd6fa8abe0aa4 100644
+--- a/admin/tool/lp/templates/scale_configuration_page.mustache
++++ b/admin/tool/lp/templates/scale_configuration_page.mustache
+@@ -15,6 +15,8 @@
+     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ }}
+ {{!
++    @template tool_lp/scale_configuration_page
++
+     Set scale configuration for the competency framework.
+ 
+     Classes required for JS:
+@@ -30,7 +32,7 @@
+     {
+         "scales": [
+             { "id": 1, "name": "Competent" },
+-            { "id": 2, "name": "Not competent"}
++            { "id": 2, "name": "Not competent" }
+         ]
+     }
+  }}
+@@ -56,7 +58,8 @@
+ </table>
+ </div>
+ 
+-<div data-region="scale-buttons">
+-    <input type="button" data-action="close" value="{{#str}}closebuttontitle{{/str}}"/>
+-    <input type="button" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
+-</div>
+\ No newline at end of file
++<div data-region="scale-buttons" class="m-t-1 pull-xs-right">
++    <input type="button" class="btn btn-secondary" data-action="close" value="{{#str}}closebuttontitle{{/str}}"/>
++    <input type="button" class="btn btn-secondary" data-action="cancel" value="{{#str}}cancel{{/str}}"/>
++</div>
++<div class="clearfix"></div>
+diff --git a/admin/tool/lp/templates/template_competencies_page.mustache b/admin/tool/lp/templates/template_competencies_page.mustache
+index a2ebaef4b4dd03c27b470f708e38634e3f530882..a380d29276f26092ef07730107e0593e9e871858 100644
+--- a/admin/tool/lp/templates/template_competencies_page.mustache
++++ b/admin/tool/lp/templates/template_competencies_page.mustache
+@@ -28,11 +28,11 @@
+     {{#canmanagetemplatecompetencies}}
+     <div data-region="actions" class="clearfix">
+         <div class="pull-left">
+-            <button disabled>{{#str}}addtemplatecompetencies, tool_lp{{/str}}</button>
++            <button disabled class="btn btn-secondary">{{#str}}addtemplatecompetencies, tool_lp{{/str}}</button>
+         </div>
+     </div>
+     {{/canmanagetemplatecompetencies}}
+-    <h3>{{#str}}templatecompetencies, tool_lp{{/str}}</h3>
++    <h3 class="m-t-1">{{#str}}templatecompetencies, tool_lp{{/str}}</h3>
+     {{#statistics}}
+         {{> tool_lp/template_statistics }}
+     {{/statistics}}
+@@ -44,7 +44,7 @@
+                     <div class="well">
+                         {{#canmanagetemplatecompetencies}}
+                         <span class="drag-handlecontainer pull-left"></span>
+-                        <div class="pull-right">
++                        <div class="pull-xs-right">
+                             <a href="#" data-action="delete-competency-link" data-id="{{competency.id}}">{{#pix}}t/delete, core, {{#str}}delete{{/str}}{{/pix}}</a>
+                         </div>
+                         {{/canmanagetemplatecompetencies}}
+@@ -53,9 +53,9 @@
+                         {{/competency}}
+                         <strong>{{#str}}linkedcourseslist, tool_lp{{/str}}</strong>
+                         {{#hascourses}}
+-                        <ul class="inline">
++                        <ul class="inline list-inline">
+                         {{#linkedcourses}}
+-                            <li><a href="{{viewurl}}?id={{id}}">{{{fullname}}} ({{{shortname}}})</a></li>
++                            <li class="list-inline-item"><a href="{{viewurl}}?id={{id}}">{{{fullname}}} ({{{shortname}}})</a></li>
+                         {{/linkedcourses}}
+                         </ul>
+                         {{/hascourses}}
+diff --git a/admin/tool/lp/templates/template_statistics.mustache b/admin/tool/lp/templates/template_statistics.mustache
+index 85b738fcd1be180d03990967174777d7a1ab3eb7..9751cbd09ea0438d184d3766c1d98aea588d17d9 100644
+--- a/admin/tool/lp/templates/template_statistics.mustache
++++ b/admin/tool/lp/templates/template_statistics.mustache
+@@ -45,7 +45,8 @@
+     Template statistics template.
+ }}
+ {{#competencycount}}
+-<div data-region="templatestatistics" class="well">
++<div data-region="templatestatistics" class="card">
++    <div class="card-block">
+     {{< tool_lp/progress_bar}}
+         {{$progresstext}}
+             {{#str}}xcompetencieslinkedoutofy, tool_lp, { "x": "{{linkedcompetencycount}}", "y": "{{competencycount}}" } {{/str}}
+@@ -89,5 +90,6 @@
+         </div>
+     </div>
+     {{/leastproficientcount}}
++    </div>
+ </div>
+ {{/competencycount}}
+diff --git a/admin/tool/lp/templates/user_competency_course_navigation.mustache b/admin/tool/lp/templates/user_competency_course_navigation.mustache
+index a81c0f83813274f42d547ea9ad55d74a2407b7c0..533d01f3f8d0655aa71e719f211fbf2948509093 100644
+--- a/admin/tool/lp/templates/user_competency_course_navigation.mustache
++++ b/admin/tool/lp/templates/user_competency_course_navigation.mustache
+@@ -1,4 +1,41 @@
+-<div class="pull-right well">
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/user_competency_course_navigation
++
++    Show an auto-complete for jumping to competencies in a plan.
++
++    Context variables required for this template:
++    * groupselector - HTML
++    * hasusers
++    * users - array
++      * id
++      * selected
++      * fullname
++    * hascompetencies
++    * competencies - array
++      * id
++      * selected
++      * shortname
++      * idnumber
++
++    // No example context because the JS is connected to webservices
++}}
++<div class="pull-xs-right card card-block">
+ <p>{{{groupselector}}}</p>
+ <form class="user-competency-course-navigation">
+ {{#hasusers}}
+diff --git a/admin/tool/lp/templates/user_competency_summary.mustache b/admin/tool/lp/templates/user_competency_summary.mustache
+index 9097caa6bd70a4a50f9666d47b1a4c7a26427eef..0e280f63e2d15658bc98339922be9070372f9a05 100644
+--- a/admin/tool/lp/templates/user_competency_summary.mustache
++++ b/admin/tool/lp/templates/user_competency_summary.mustache
+@@ -50,10 +50,10 @@
+                 - {{reviewer.fullname}}
+             {{/isstatusinreview}}
+ 
+-            {{#isrequestreviewallowed}}<button data-action="request-review">{{#str}}requestreview, tool_lp{{/str}}</button>{{/isrequestreviewallowed}}
+-            {{#iscancelreviewrequestallowed}}<button data-action="cancel-review-request">{{#str}}cancelreviewrequest, tool_lp{{/str}}</button>{{/iscancelreviewrequestallowed}}
+-            {{#isstartreviewallowed}}<button data-action="start-review">{{#str}}startreview, tool_lp{{/str}}</button>{{/isstartreviewallowed}}
+-            {{#isstopreviewallowed}}<button data-action="stop-review">{{#str}}stopreview, tool_lp{{/str}}</button>{{/isstopreviewallowed}}
++            {{#isrequestreviewallowed}}<button class="btn btn-secondary" data-action="request-review">{{#str}}requestreview, tool_lp{{/str}}</button>{{/isrequestreviewallowed}}
++            {{#iscancelreviewrequestallowed}}<button class="btn btn-secondary" data-action="cancel-review-request">{{#str}}cancelreviewrequest, tool_lp{{/str}}</button>{{/iscancelreviewrequestallowed}}
++            {{#isstartreviewallowed}}<button class="btn btn-secondary" data-action="start-review">{{#str}}startreview, tool_lp{{/str}}</button>{{/isstartreviewallowed}}
++            {{#isstopreviewallowed}}<button class="btn btn-secondary" data-action="stop-review">{{#str}}stopreview, tool_lp{{/str}}</button>{{/isstopreviewallowed}}
+         </dd>
+         <dt>{{#str}}proficient, tool_lp{{/str}}</dt>
+         <dd>
+@@ -64,7 +64,7 @@
+         <dt>{{#str}}rating, tool_lp{{/str}}</dt>
+         <dd>{{gradename}}
+             {{#cangrade}}
+-                <button class="btn" id="rate_{{uniqid}}">{{#str}}rate, tool_lp{{/str}}</button>
++                <button class="btn btn-secondary" id="rate_{{uniqid}}">{{#str}}rate, tool_lp{{/str}}</button>
+             {{/cangrade}}
+         </dd>
+         {{#js}}
+diff --git a/admin/tool/lp/templates/user_competency_summary_in_course.mustache b/admin/tool/lp/templates/user_competency_summary_in_course.mustache
+index 3a30f7662b948e5fbb5f147aedf988381034ab6a..22cf96d60050e1b6fbb19c4ba5229ee3235e8366 100644
+--- a/admin/tool/lp/templates/user_competency_summary_in_course.mustache
++++ b/admin/tool/lp/templates/user_competency_summary_in_course.mustache
+@@ -47,12 +47,12 @@
+         <dt>{{#str}}activities, tool_lp{{/str}}</dt>
+         <dd data-region="coursecompetencyactivities">
+         <p>
+-        <ul class="inline">
++        <ul class="inline list-inline">
+         {{#coursemodules}}
+-            <li><a href="{{url}}"><img src="{{iconurl}}"> {{name}} </a></li>
++            <li class="list-inline-item"><a href="{{url}}"><img src="{{iconurl}}"> {{name}} </a></li>
+         {{/coursemodules}}
+         {{^coursemodules}}
+-            <li><span class="alert">{{#str}}noactivities, tool_lp{{/str}}</span></li>
++            <li class="list-inline-item"><span class="alert">{{#str}}noactivities, tool_lp{{/str}}</span></li>
+         {{/coursemodules}}
+         </ul>
+         </p>
+@@ -75,7 +75,7 @@
+         <dt>{{#str}}rating, tool_lp{{/str}}</dt>
+         <dd>{{gradename}}
+             {{#cangrade}}
+-                <button class="btn" id="rate_{{uniqid}}">{{#str}}rate, tool_lp{{/str}}</button>
++                <button class="btn btn-secondary" id="rate_{{uniqid}}">{{#str}}rate, tool_lp{{/str}}</button>
+             {{/cangrade}}
+         </dd>
+         {{/usercompetencycourse}}
+diff --git a/admin/tool/lp/templates/user_competency_summary_in_plan.mustache b/admin/tool/lp/templates/user_competency_summary_in_plan.mustache
+index 7c81ad2f8d1fd77b52162fd78767b6c9ec43c80e..7253af1dc39d597021e993a1c63e5223b0a59f19 100644
+--- a/admin/tool/lp/templates/user_competency_summary_in_plan.mustache
++++ b/admin/tool/lp/templates/user_competency_summary_in_plan.mustache
+@@ -61,10 +61,10 @@
+                 - {{reviewer.fullname}}
+             {{/isstatusinreview}}
+ 
+-            {{#isrequestreviewallowed}}<button data-action="request-review">{{#str}}requestreview, tool_lp{{/str}}</button>{{/isrequestreviewallowed}}
+-            {{#iscancelreviewrequestallowed}}<button data-action="cancel-review-request">{{#str}}cancelreviewrequest, tool_lp{{/str}}</button>{{/iscancelreviewrequestallowed}}
+-            {{#isstartreviewallowed}}<button data-action="start-review">{{#str}}startreview, tool_lp{{/str}}</button>{{/isstartreviewallowed}}
+-            {{#isstopreviewallowed}}<button data-action="stop-review">{{#str}}stopreview, tool_lp{{/str}}</button>{{/isstopreviewallowed}}
++            {{#isrequestreviewallowed}}<button class="btn btn-secondary" data-action="request-review">{{#str}}requestreview, tool_lp{{/str}}</button>{{/isrequestreviewallowed}}
++            {{#iscancelreviewrequestallowed}}<button class="btn btn-secondary" data-action="cancel-review-request">{{#str}}cancelreviewrequest, tool_lp{{/str}}</button>{{/iscancelreviewrequestallowed}}
++            {{#isstartreviewallowed}}<button class="btn btn-secondary" data-action="start-review">{{#str}}startreview, tool_lp{{/str}}</button>{{/isstartreviewallowed}}
++            {{#isstopreviewallowed}}<button class="btn btn-secondary" data-action="stop-review">{{#str}}stopreview, tool_lp{{/str}}</button>{{/isstopreviewallowed}}
+         </dd>
+         <dt>{{#str}}proficient, tool_lp{{/str}}</dt>
+         <dd>
+@@ -75,7 +75,7 @@
+         <dt>{{#str}}rating, tool_lp{{/str}}</dt>
+         <dd>{{gradename}}
+             {{#cangrade}}
+-                <button class="btn" id="rate_{{uniqid}}">{{#str}}rate, tool_lp{{/str}}</button>
++                <button class="btn btn-secondary" id="rate_{{uniqid}}">{{#str}}rate, tool_lp{{/str}}</button>
+             {{/cangrade}}
+         </dd>
+         {{#js}}
+diff --git a/admin/tool/lp/templates/user_evidence_list_page.mustache b/admin/tool/lp/templates/user_evidence_list_page.mustache
+index a0e14bf8ce5961f62e867c40009992dec771a21a..93f4fb92049429f4d10875694a5d28c3bea2090e 100644
+--- a/admin/tool/lp/templates/user_evidence_list_page.mustache
++++ b/admin/tool/lp/templates/user_evidence_list_page.mustache
+@@ -90,24 +90,24 @@
+                 <li>
+                     <a href="#">{{#str}}edit{{/str}}</a><b class="caret"></b>
+                     <ul class="dropdown-menu">
+-                        <li>
++                        <li class="dropdown-item">
+                             <a href="{{pluginbaseurl}}/user_evidence_edit.php?id={{id}}&amp;userid={{userid}}&amp;return=list">
+                                 {{#pix}}t/edit{{/pix}} {{#str}}editthisuserevidence, tool_lp{{/str}}
+                             </a>
+                         </li>
+                         {{#userhasplan}}
+-                        <li>
++                        <li class="dropdown-item">
+                             <a href="#" data-action="link-competency">
+                                 {{#pix}}t/add{{/pix}} {{#str}}linkcompetencies, tool_lp{{/str}}
+                             </a>
+                         </li>
+                         {{/userhasplan}}
+-                        <li>
++                        <li class="dropdown-item">
+                             <a data-action="send-competencies-review" href="#">
+                                 {{#pix}}t/edit{{/pix}} {{#str}}sendcompetenciestoreview, tool_lp{{/str}}
+                             </a>
+                         </li>
+-                        <li>
++                        <li class="dropdown-item">
+                             <a data-action="user-evidence-delete" href="#">
+                                 {{#pix}}t/delete{{/pix}} {{#str}}deletethisuserevidence, tool_lp{{/str}}
+                             </a>
+diff --git a/admin/tool/lp/templates/user_evidence_page.mustache b/admin/tool/lp/templates/user_evidence_page.mustache
+index 29f28cf0fa7c2774d5a9876ffad0a74adf4b035a..fca3723333249876f3174ac9ac316480a2294491 100644
+--- a/admin/tool/lp/templates/user_evidence_page.mustache
++++ b/admin/tool/lp/templates/user_evidence_page.mustache
+@@ -40,7 +40,7 @@
+     <div data-region="actions" class="clearfix">
+         <div class="pull-left">
+             {{#userhasplan}}
+-                <button class="btn" data-action="link-competency">{{#pix}}t/add{{/pix}} {{#str}}linkcompetencies, tool_lp{{/str}}</button>
++                <button class="btn btn-secondary m-b-1" data-action="link-competency">{{#pix}}t/add{{/pix}} {{#str}}linkcompetencies, tool_lp{{/str}}</button>
+             {{/userhasplan}}
+         </div>
+     </div>
+diff --git a/admin/tool/templatelibrary/amd/src/search.js b/admin/tool/templatelibrary/amd/src/search.js
+index 584777f38e46a679d7d992169b94734875247822..04d27b0fd778ee3045700af1107ba9954a7c815e 100644
+--- a/admin/tool/templatelibrary/amd/src/search.js
++++ b/admin/tool/templatelibrary/amd/src/search.js
+@@ -47,6 +47,8 @@ define(['jquery', 'core/ajax', 'core/log', 'core/notification', 'core/templates'
+         var searchStr = $('[data-field="search"]').val();
+ 
+         // Trigger the search.
++        document.location.hash = searchStr;
++
+         ajax.call([
+             {methodname: 'tool_templatelibrary_list_templates',
+               args: {component: componentStr, search: searchStr, themename: themename},
+@@ -83,6 +85,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/notification', 'core/templates'
+     $('[data-region="list-templates"]').on('change', '[data-field="component"]', changeHandler);
+     $('[data-region="list-templates"]').on('input', '[data-field="search"]', changeHandler);
+ 
++    $('[data-field="search"]').val(document.location.hash.replace('#', ''));
+     refreshSearch(config.theme);
+     return {};
+ });
+diff --git a/theme/boost/scss/moodle/core.scss b/theme/boost/scss/moodle/core.scss
+index 69e591894a19d1bf3d559da7e0b36dfcc20277cb..0fd7f9aeb50be8a72159e1c85dc947b4ad7a3c8c 100644
+--- a/theme/boost/scss/moodle/core.scss
++++ b/theme/boost/scss/moodle/core.scss
+@@ -2177,3 +2177,8 @@ $footer-link-color: $brand-primary !default;
+     color: $body-color;
+ }
+ 
++.competency-tree {
++    ul {
++        padding-left: 1.5rem;
++    }
++}
+diff --git a/theme/boost/templates/tool_lp/progress_bar.mustache b/theme/boost/templates/tool_lp/progress_bar.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..b7029db65120c10a927209db7fba85c383730c1c
+--- /dev/null
++++ b/theme/boost/templates/tool_lp/progress_bar.mustache
+@@ -0,0 +1,47 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tool_lp/progress_bar
++
++    Moodle progress bar template for tool_lp.
++
++    The purpose of this template is to render a progress bar with a brief description.
++
++    Classes required for JS:
++    * none
++
++    Data attributes required for JS:
++    * none
++
++    Context variables required for this template:
++    * progresstextvalue A brief text that describes the progress bar.
++    * percentagevalue The numeric value for the progress bar's percentage.
++    * percentlabelvalue The progress bar's label that shows the percentage value.
++
++    Example context (json):
++    {
++        "progresstextvalue": "Progress:",
++        "percentagevalue": "50",
++        "percentlabelvalue": "50.00 %"
++    }
++
++}}
++<div id="progress-{{uniqid}}">
++    {{$progresstext}}{{progresstextvalue}}{{/progresstext}}
++</div>
++<progress class="progress" aria-describedby="progress-{{uniqid}}"
++    value="{{$percentage}}{{percentagevalue}}{{/percentage}}" max="100"></progress>
+diff --git a/admin/tool/lp/templates/linked_courses_summary.mustache b/admin/tool/lp/templates/linked_courses_summary.mustache
+index af896535854cbb29b87613cf0136cf67e3da59f8..2e65cdb0a66586e3b6b3ab521a757be16836c6b6 100644
+--- a/admin/tool/lp/templates/linked_courses_summary.mustache
++++ b/admin/tool/lp/templates/linked_courses_summary.mustache
+@@ -35,7 +35,7 @@
+     { "courses":
+         [
+             {
+-                "viewurl": "http://",
++                "viewurl": "http://example.com",
+                 "fullname": "Course 1",
+                 "shortname": "C1"
+             }
+diff --git a/admin/tool/lp/templates/plans_page.mustache b/admin/tool/lp/templates/plans_page.mustache
+index 75bb60a4ac9bd3efe3d177b894f6a6c14eb5ff61..84a4b66d2cd9ffb851251b6627257e2be7cfef47 100644
+--- a/admin/tool/lp/templates/plans_page.mustache
++++ b/admin/tool/lp/templates/plans_page.mustache
+@@ -163,9 +163,9 @@
+ {{#js}}
+ // Initialise the JS.
+ require(['tool_lp/planactions'],
+-        function(actionsMod) {
++        function(ActionsMod) {
+ 
+-    var planActions = new actionsMod('plans');
++    var planActions = new ActionsMod('plans');
+     planActions.enhanceMenubar('.planactions');
+ });
+ 
+diff --git a/admin/tool/lp/templates/user_evidence_list_page.mustache b/admin/tool/lp/templates/user_evidence_list_page.mustache
+index 93f4fb92049429f4d10875694a5d28c3bea2090e..d24f1384712fec18fb7a0d7934c295157838ccb8 100644
+--- a/admin/tool/lp/templates/user_evidence_list_page.mustache
++++ b/admin/tool/lp/templates/user_evidence_list_page.mustache
+@@ -131,6 +131,6 @@
+ {{#js}}
+ require(['tool_lp/user_evidence_actions'], function(UserEvidenceActions) {
+     var uea = new UserEvidenceActions('list');
+-    uea.enhanceMenubar('.user-evidence-actions')
++    uea.enhanceMenubar('.user-evidence-actions');
+ });
+ {{/js}}

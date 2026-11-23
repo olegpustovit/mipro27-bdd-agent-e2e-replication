@@ -1,0 +1,70 @@
+diff --git a/public/admin/tool/cohortroles/classes/form/assign_role_cohort.php b/public/admin/tool/cohortroles/classes/form/assign_role_cohort.php
+index 81f31177e885d7afc434fddb833e8f4a8d70df0f..5b1c56d8031aa56acd2971d09ab401cfdb7b4ed9 100644
+--- a/public/admin/tool/cohortroles/classes/form/assign_role_cohort.php
++++ b/public/admin/tool/cohortroles/classes/form/assign_role_cohort.php
+@@ -63,9 +63,11 @@ class assign_role_cohort extends moodleform {
+         $mform->addElement('select', 'roleid', get_string('selectrole', 'tool_cohortroles'), $options);
+         $mform->addRule('roleid', null, 'required');
+ 
++        $context = context_system::instance();
+         $options = array(
+             'multiple' => true,
+-            'includes' => 'all',
++            'data-contextid' => $context->id,
++            'data-includes' => 'all'
+         );
+         $mform->addElement('cohort', 'cohortids', get_string('selectcohorts', 'tool_cohortroles'), $options);
+         $mform->addRule('cohortids', null, 'required');
+diff --git a/public/lib/amd/src/form-cohort-selector.js b/public/lib/amd/src/form-cohort-selector.js
+index 0930f392e281787ad3bf539f1e06672049c67c54..23d98068be82d7c3954ef90dc4fa00b636a66227 100644
+--- a/public/lib/amd/src/form-cohort-selector.js
++++ b/public/lib/amd/src/form-cohort-selector.js
+@@ -50,13 +50,11 @@ define(['core/ajax', 'jquery'], function(ajax, $) {
+             if (typeof query === "undefined") {
+                 query = '';
+             }
+-
+-            var includes = el.data('includes');
+             var contextid = el.data('contextid');
+ 
+             var searchargs = {
+                 query: query,
+-                includes: includes,
++                includes: 'parents',
+                 limitfrom: 0,
+                 limitnum: 100,
+                 context: {contextid: contextid}
+diff --git a/public/lib/form/cohort.php b/public/lib/form/cohort.php
+index 64bc0723f04544bc0e6264171fe3d375eb5500a9..bbe0c406f29ffd88272ee767bc61828ebb68e4ea 100644
+--- a/public/lib/form/cohort.php
++++ b/public/lib/form/cohort.php
+@@ -45,11 +45,6 @@ class MoodleQuickForm_cohort extends MoodleQuickForm_autocomplete {
+      */
+     protected $exclude = array();
+ 
+-    /**
+-     * @var string $includes One of self/parents/all
+-     */
+-    protected $includes = 'parents';
+-
+     /**
+      * @var int $contextid The context id to fetch cohorts in.
+      */
+@@ -91,9 +86,6 @@ class MoodleQuickForm_cohort extends MoodleQuickForm_autocomplete {
+                 $this->exclude = array($this->exclude);
+             }
+         }
+-        if (isset($options['includes'])) {
+-            $this->includes = $options['includes'];
+-        }
+         if (isset($options['requiredcapabilities'])) {
+             $this->requiredcapabilities = $options['requiredcapabilities'];
+         }
+@@ -101,7 +93,6 @@ class MoodleQuickForm_cohort extends MoodleQuickForm_autocomplete {
+         $validattributes = array(
+             'ajax' => 'core/form-cohort-selector',
+             'data-exclude' => implode(',', $this->exclude),
+-            'data-includes' => $this->includes,
+             'data-contextid' => (int)$this->contextid
+         );
+         if ($this->multiple) {

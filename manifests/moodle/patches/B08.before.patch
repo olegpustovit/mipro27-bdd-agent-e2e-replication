@@ -1,0 +1,521 @@
+diff --git a/public/lib/amd/src/edit_switch.js b/public/lib/amd/src/edit_switch.js
+index 3c49cf99f56415a1d47e1bf204a8b43254fa948a..746be157ba2c4f6e7264eeefc30e32a92887b5e1 100644
+--- a/public/lib/amd/src/edit_switch.js
++++ b/public/lib/amd/src/edit_switch.js
+@@ -110,15 +110,6 @@ const notifyEditModeSet = (container, editMode) => dispatchEvent(
+  */
+ export const init = editingSwitchId => {
+     const editSwitch = document.getElementById(editingSwitchId);
+-    if (!editSwitch || editSwitch.dataset.editSwitchInitialised) {
+-        // Either the element isn't in the DOM yet (a mount still in progress elsewhere will call
+-        // init() again once it lands), or it's already wired up: init() can be called more than
+-        // once for the same id, e.g. once eagerly via the template's own require() and again once
+-        // core/EditModeSwitch's React mount replaces the node, so this guards against double
+-        // listeners on whichever node ends up being the final one.
+-        return;
+-    }
+-    editSwitch.dataset.editSwitchInitialised = '1';
+     editSwitch.addEventListener('change', () => {
+         const pendingPromise = new Pending("core/edit_switch:toggle");
+         setEditMode(editSwitch.dataset.context, editSwitch.checked)
+diff --git a/public/lib/classes/output/core_renderer.php b/public/lib/classes/output/core_renderer.php
+index ffed583270e011de8255967f9c44252d7760b9de..b9fbfd11c155b6a8f02af080633a54f96f290a71 100644
+--- a/public/lib/classes/output/core_renderer.php
++++ b/public/lib/classes/output/core_renderer.php
+@@ -2600,28 +2600,13 @@ EOD;
+      */
+     public function edit_switch() {
+         if ($this->page->user_allowed_editing()) {
+-            // Generated once here, rather than via the template's own {{uniqid}} helper, so the
+-            // same id can be shared between the reactprops below and the NonJS fallback markup.
+-            $elementid = html_writer::random_id('editingswitch');
+-            $checked = $this->page->user_is_editing();
+             $temp = (object) [
+                 'legacyseturl' => (new moodle_url('/editmode.php'))->out(false),
+                 'pagecontextid' => $this->page->context->id,
+                 'pageurl' => $this->page->url,
+                 'sesskey' => sesskey(),
+-                'elementid' => $elementid,
+-                // JSON props for the core/EditModeSwitch React component (core/nav/PrimaryNav's
+-                // export_react_props() pattern): built server-side so the React markup and the
+-                // NonJS fallback markup below can never disagree about id/label/state.
+-                'reactprops' => json_encode([
+-                    'id' => $elementid,
+-                    'context' => $this->page->context->id,
+-                    'pageurl' => $this->page->url->out(false),
+-                    'checked' => $checked,
+-                    'label' => get_string('editmode'),
+-                ], JSON_UNESCAPED_UNICODE),
+             ];
+-            if ($checked) {
++            if ($this->page->user_is_editing()) {
+                 $temp->checked = true;
+             }
+             return $this->render_from_template('core/editswitch', $temp);
+diff --git a/public/lib/js/esm/src/EditModeSwitch.tsx b/public/lib/js/esm/src/EditModeSwitch.tsx
+deleted file mode 100644
+index c54d279aafb15533b66464ebea399209f142c2d7..0000000000000000000000000000000000000000
+--- a/public/lib/js/esm/src/EditModeSwitch.tsx
++++ /dev/null
+@@ -1,109 +0,0 @@
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * The site-wide Edit mode switch, rendered with the design system Switch component.
+- *
+- * @module     core/EditModeSwitch
+- * @copyright  2026 Matt Porritt <matt.porritt@moodle.com>
+- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-
+-import {useEffect} from 'react';
+-import {Switch} from '@moodlehq/design-system';
+-import {requireAsync} from '@moodle/lms/core/amd';
+-import Pending from '@moodle/lms/core/pending';
+-
+-/**
+- * Minimal shape of the legacy `core/edit_switch` AMD module this component drives.
+- */
+-type EditSwitchModule = {
+-    init: (editingSwitchId: string) => void;
+-};
+-
+-export interface EditModeSwitchProps {
+-    /** The id shared with the NonJS fallback markup, so behaviour attaches to the same element. */
+-    id: string;
+-    /** The contextid editing is being toggled for. */
+-    context: number;
+-    /** The URL to redirect to once the mode change is confirmed. */
+-    pageurl: string;
+-    /** Whether editing is currently on. */
+-    checked: boolean;
+-    /** The visible/accessible label, e.g. "Edit mode". */
+-    label: string;
+-}
+-
+-/**
+- * Render the Edit mode switch and wire it up to the existing core/edit_switch behaviour.
+- *
+- * Rendering moves onto the design system Switch component here, but the toggle behaviour itself
+- * (the core_change_editmode ajax call, the editModeSet event, the redirect-on-success) stays in
+- * the existing core/edit_switch AMD module: this only takes over calling its init() once mounted,
+- * exactly as the old mustache {{#js}} block used to do server-side. The ajax call reads its session
+- * key from M.cfg.sesskey, not from a form field, so no sesskey prop is passed here; the enclosing
+- * form's own hidden `sesskey` field is only there for the NonJS fallback's plain POST submission.
+- *
+- * The markup below (and the NonJS fallback in editswitch.mustache) is hand-mirrored from the
+- * design system's own Switch DOM/classes rather than generated from it. If the design system
+- * Switch component's markup or classes change, both this component and the mustache fallback
+- * need to be updated to match.
+- *
+- * @param props Component props.
+- * @returns The rendered Edit mode switch.
+- */
+-export default function EditModeSwitch({id, context, pageurl, checked, label}: EditModeSwitchProps) {
+-    useEffect(() => {
+-        let cancelled = false;
+-        // The template's own require() call (see core/editswitch) already calls init() eagerly
+-        // against the NonJS fallback markup, so the switch stays usable even if this component's
+-        // own ESM import is slow to resolve (e.g. a busy page mounting many other React components
+-        // at once) rather than being inert until this mount completes. Once this component does
+-        // mount, React has replaced that fallback node with its own, so init() is called again
+-        // here for whichever node is now in the DOM; core/edit_switch.init() is idempotent per
+-        // node, so this is a no-op if the eager call already bound the very same node.
+-        //
+-        // Wrapped in Pending so Behat's JS-ready check waits for this second bind too, rather than
+-        // considering the page ready the instant react_autoinit's own mount-tracking Pending
+-        // resolves (which happens before this effect even runs).
+-        const pending = new Pending('core/EditModeSwitch:init');
+-        requireAsync<EditSwitchModule>('core/edit_switch').then((editSwitch) => {
+-            if (!cancelled) {
+-                editSwitch.init(id);
+-            }
+-            return undefined;
+-        }).finally(() => {
+-            pending.resolve();
+-        });
+-        return () => {
+-            cancelled = true;
+-        };
+-        // Pageurl/context are read by core/edit_switch straight off the DOM node's own data
+-        // attributes/name, not passed as arguments, so only a change of id re-attaches init().
+-    }, [id]);
+-
+-    return (
+-        <Switch
+-            id={id}
+-            name="setmode"
+-            variant="enable"
+-            labelSide="start"
+-            label={label}
+-            defaultChecked={checked}
+-            data-context={context}
+-            data-pageurl={pageurl}
+-        />
+-    );
+-}
+diff --git a/public/lib/js/esm/src/swizzle.json b/public/lib/js/esm/src/swizzle.json
+index 9a9b7aeac2244bb57f7578cfa5ecc2ad04d657e0..4166cddc72c5ad2144c382ea52b85c6855476056 100644
+--- a/public/lib/js/esm/src/swizzle.json
++++ b/public/lib/js/esm/src/swizzle.json
+@@ -6,9 +6,5 @@
+   "String": {
+     "eject": "risky",
+     "wrap": "safe"
+-  },
+-  "EditModeSwitch": {
+-    "eject": "risky",
+-    "wrap": "risky"
+   }
+ }
+diff --git a/public/lib/templates/editswitch.mustache b/public/lib/templates/editswitch.mustache
+index bf05f73851a5938ebbd4c381ea07a8e9e0dde405..94d534e844029a0f6ae65cbfbaf4c34ea0f58492 100644
+--- a/public/lib/templates/editswitch.mustache
++++ b/public/lib/templates/editswitch.mustache
+@@ -18,11 +18,7 @@
+ 
+     @template core/editswitch
+ 
+-    This template renders the site-wide Edit mode switch.
+-
+-    The NonJS fallback markup below is hand-mirrored from the design system's own Switch
+-    component DOM/classes, not generated from it. If the design system Switch component's markup
+-    or classes change, this fallback and core/EditModeSwitch.tsx need to be updated to match.
++    This template renders the top navbar.
+ 
+     Example context (json):
+     {
+@@ -32,49 +28,28 @@
+         "adminedit": true,
+         "checked": "",
+         "string": "Edit on",
+-        "legacyseturl": "/editmode.php",
+-        "elementid": "editingswitch-abc123",
+-        "reactprops": "{\"id\":\"editingswitch-abc123\",\"context\":1,\"pageurl\":\"http://localhost/\",\"checked\":false,\"label\":\"Edit mode\"}"
++        "legacyseturl": "/editmode.php"
+     }
+ }}
+ <form action="{{{legacyseturl}}}" method="post" class="d-flex align-items-center editmode-switch-form ms-2">
+-    {{#reactprops}}
+-    {{#react}}
+-    {
+-        "component": "@moodle/lms/core/EditModeSwitch",
+-        "class": "d-flex align-items-center",
+-        "props": {{{reactprops}}}
+-    }
+-    <div class="mds-switch mds-switch--variant-enable mds-switch--label-start">
+-        <input type="checkbox"{{!
+-            }} role="switch"{{!
+-            }} name="setmode"{{!
+-            }}{{#checked}}{{!
+-                }} checked{{!
+-            }}{{/checked}}{{!
+-            }} class="mds-switch-input"{{!
+-            }} id="{{elementid}}"{{!
+-            }} data-context="{{{pagecontextid}}}"{{!
+-            }} data-pageurl="{{{pageurl}}}"{{!
+-        }}>
+-        <label class="mds-switch-control" for="{{elementid}}">
+-            <span class="mds-switch-indicator" aria-hidden="true">
+-                <span class="mds-switch-focus-ring">
+-                    <span class="mds-switch-track">
+-                        <span class="mds-switch-thumb">
+-                            <span class="mds-switch-icon">
+-                                <span class="mds-switch-icon-item mds-switch-icon-item--unchecked"></span>
+-                                <span class="mds-switch-icon-item mds-switch-icon-item--checked"></span>
+-                            </span>
+-                        </span>
+-                    </span>
+-                </span>
+-            </span>
+-            <span class="mds-switch-label">{{#str}} editmode {{/str}}</span>
++    <div class="input-group">
++        <label class="me-2 mb-0 form-check-label {{#checked}}text-primary{{/checked}}" for="{{uniqid}}-editingswitch">
++            {{#str}} editmode {{/str}}
+         </label>
++        <div class="form-check form-switch">
++            <input type="checkbox"{{!
++                }} name="setmode"{{!
++                }}{{#checked}}{{!
++                    }} checked{{!
++                }}{{/checked}}{{!
++                }} class="form-check-input"{{!
++                }} id="{{uniqid}}-editingswitch"{{!
++                }} data-context="{{{pagecontextid}}}"{{!
++                }} data-pageurl="{{{pageurl}}}"{{!
++            }}>
++            <span class="form-check-label">&nbsp;</span>
++        </div>
+     </div>
+-    {{/react}}
+-    {{/reactprops}}
+     <input type="hidden" name="sesskey" value="{{{sesskey}}}">
+     <input type="hidden" name="pageurl" value="{{{pageurl}}}">
+     <input type="hidden" name="context" value="{{{pagecontextid}}}">
+@@ -84,6 +59,6 @@
+ </form>
+ {{#js}}
+ require(['core/edit_switch'], function(editSwitch) {
+-    editSwitch.init('{{elementid}}');
++    editSwitch.init('{{uniqid}}-editingswitch');
+ });
+ {{/js}}
+diff --git a/public/lib/tests/behat/behat_navigation.php b/public/lib/tests/behat/behat_navigation.php
+index 6d68d73591a8477941f6ec23967d7611fd24c9f7..d21728e52a6c1191ee095093a78efe6c97e51030 100644
+--- a/public/lib/tests/behat/behat_navigation.php
++++ b/public/lib/tests/behat/behat_navigation.php
+@@ -1539,18 +1539,13 @@ class behat_navigation extends behat_base {
+      * @Given I turn editing mode on
+      */
+     public function i_turn_editing_mode_on() {
+-        $this->set_editing_mode_field(1);
++        $this->execute('behat_forms::i_set_the_field_to', [get_string('editmode'), 1]);
+ 
+         if (!$this->running_javascript()) {
+             $this->execute('behat_general::i_click_on', [
+                 get_string('setmode', 'core'),
+                 'button',
+             ]);
+-        } else {
+-            // Toggling the field only dispatches the change event; core/edit_switch's own ajax
+-            // call and its redirect-on-success both still need to settle before body's "editing"
+-            // class reflects the new state, otherwise this check can read it mid-navigation.
+-            $this->wait_for_pending_js();
+         }
+ 
+         if (!$this->is_editing_on()) {
+@@ -1564,18 +1559,13 @@ class behat_navigation extends behat_base {
+      * @Given I turn editing mode off
+      */
+     public function i_turn_editing_mode_off() {
+-        $this->set_editing_mode_field(0);
++        $this->execute('behat_forms::i_set_the_field_to', [get_string('editmode'), 0]);
+ 
+         if (!$this->running_javascript()) {
+             $this->execute('behat_general::i_click_on', [
+                 get_string('setmode', 'core'),
+                 'button',
+             ]);
+-        } else {
+-            // Toggling the field only dispatches the change event; core/edit_switch's own ajax
+-            // call and its redirect-on-success both still need to settle before body's "editing"
+-            // class reflects the new state, otherwise this check can read it mid-navigation.
+-            $this->wait_for_pending_js();
+         }
+ 
+         if ($this->is_editing_on()) {
+@@ -1583,25 +1573,6 @@ class behat_navigation extends behat_base {
+         }
+     }
+ 
+-    /**
+-     * Sets the edit mode switch field, waiting first for any in-flight React mount to settle.
+-     *
+-     * core/editswitch mounts the switch as a React component (core/EditModeSwitch), which replaces
+-     * the server-rendered NonJS fallback node once its own ESM import resolves. On a page doing a
+-     * lot of other concurrent React mounting (for example the dashboard, straight after a
+-     * block-configuration save), that swap can leave the element unsettled for a moment. Waiting for
+-     * pending JS here, before locating the field, lets that mount finish first so the field lookup
+-     * itself does not need its own retry loop.
+-     *
+-     * @param int $value 1 to turn editing on, 0 to turn it off.
+-     */
+-    protected function set_editing_mode_field(int $value): void {
+-        if ($this->running_javascript()) {
+-            $this->wait_for_pending_js();
+-        }
+-        $this->execute('behat_forms::i_set_the_field_to', [get_string('editmode'), $value]);
+-    }
+-
+     /**
+      * The named item should exist in the named dropdown.
+      *
+diff --git a/public/theme/boost/scss/moodle/navbar.scss b/public/theme/boost/scss/moodle/navbar.scss
+index d3151190a26f53d8ef78b3380dd16e334b64ef5a..8d9776ddbccc3dbb2c72baa0ce583b64e0539de0 100644
+--- a/public/theme/boost/scss/moodle/navbar.scss
++++ b/public/theme/boost/scss/moodle/navbar.scss
+@@ -152,6 +152,14 @@
+         height: 100%;
+         display: flex;
+     }
++    .editmode-switch-form {
++        .input-group {
++            flex-wrap: nowrap;
++        }
++        .input-group > label {
++            white-space: nowrap;
++        }
++    }
+ }
+ .dir-rtl .navbar.fixed-top {
+     .usermenu {
+diff --git a/public/theme/boost/scss/moodle/primarynavigation.scss b/public/theme/boost/scss/moodle/primarynavigation.scss
+index aa2a7f8fc39df1b3b1df68397557ffa664977073..2ee2301e1cda902e6b2003c274fccf74160d9a96 100644
+--- a/public/theme/boost/scss/moodle/primarynavigation.scss
++++ b/public/theme/boost/scss/moodle/primarynavigation.scss
+@@ -53,85 +53,39 @@
+     .primary-navigation {
+         display: none;
+     }
+-    // Targets the label text specifically (not .mds-switch-control, which also wraps the
+-    // indicator/track/thumb): hiding the whole control would hide the switch itself, not just
+-    // its text, since the design system's Switch nests the indicator inside its own <label>.
+-    .editmode-switch-form .mds-switch-label {
++    .editmode-switch-form label {
+         @include visually-hidden();
+     }
+ }
+ 
+-// mds-switch-input hides the real checkbox with `clip: rect(0,0,0,0)`, collapsing its hit box to
+-// 1x1px: the visible/clickable surface is meant to be its sibling <label>. That's an established
+-// accessible-custom-control pattern for a human clicking near the visual switch, but Behat/WebDriver
+-// (behat_form_checkbox::set_value(), used by every "I turn editing mode on/off" step) clicks the
+-// checkbox <input> itself, and WebDriver refuses to click an element with no visible hit box at all.
+-// Widen the hit box to cover the same area the visible control occupies instead: still invisible to
+-// sighted users (opacity: 0, same as before), but directly clickable in the same place a mouse would
+-// click the switch.
+-.editmode-switch-form .mds-switch {
+-    // Positioning context for .mds-switch-input's widened hit box below.
+-    position: relative;
+-}
+-
+-.editmode-switch-form .mds-switch-input {
+-    position: absolute;
+-    inset: 0;
+-    width: 100%;
+-    height: 100%;
+-    margin: 0;
+-    padding: 0;
+-    overflow: visible;
+-    clip: auto;
+-    opacity: 0;
+-    cursor: pointer;
+-
+-    // The widened, positioned input above now paints above the non-positioned
+-    // .mds-switch-control, so real pointer hover lands on the input rather than on
+-    // .mds-switch-control as the design system's own `.mds-switch-input:not(:disabled) +
+-    // .mds-switch-control:hover` selectors expect. Re-declare the same hover treatment keyed
+-    // off the input's own :hover state instead, so the track/thumb still respond to hover.
+-    &:not(:disabled):hover + .mds-switch-control .mds-switch-track {
+-        background-color: var(--mds-bg-switch-track-hover);
+-        color: var(--mds-bg-switch-track-hover);
+-    }
+-
+-    &:not(:disabled):hover + .mds-switch-control .mds-switch-thumb {
+-        background-color: var(--mds-bg-switch-thumb-hover);
+-    }
++.editmode-switch-form {
++    .form-check.form-switch .form-check-input {
++        background-image: escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$gray-600}'/></svg>"));
++        background-color: var(--#{$prefix}gray-400);
++        border: none;
++
++        // The knob is the same grey the track takes in dark mode, which leaves the switch looking like a plain pill.
++        &:not(:checked) {
++            @include dark-mode {
++                background-image: escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$gray-100}'/></svg>"));
++            }
++        }
+ 
+-    &:checked:not(:disabled):hover + .mds-switch-control .mds-switch-track {
+-        background-color: var(--mds-bg-interactive-primary-hover);
+-        color: var(--mds-bg-interactive-primary-hover);
+-    }
++        &:checked {
++            background-image: escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$white}'/></svg>"));
++            background-color: var(--#{$prefix}primary);
++            border: none;
++        }
+ 
+-    &:checked:not(:disabled):hover + .mds-switch-control .mds-switch-thumb {
+-        background-color: var(--mds-bg-interactive-primary-default-light);
++        &:focus {
++            border-color: transparent;
++            box-shadow: none;
++            outline: 2px solid var(--#{$prefix}primary);
++            outline-offset: 1px;
++        }
+     }
+ }
+ 
+-// The design system's own Switch component CSS (lib/bundles/design-system/js/components/switch)
+-// now supplies the track/thumb colours, icons, hover, disabled, and focus-ring states, superseding
+-// the bespoke Bootstrap .form-switch styling that used to live here.
+-
+-// The Switch component's "on" state is styled entirely from its own fixed
+-// --mds-bg-interactive-primary-* custom properties (design-system/js/index.css), which resolve to
+-// a static design system blue rather than to Boost's own $primary. Unlike the bespoke
+-// .form-switch this replaced (which used var(--#{$prefix}primary) directly), the switch would no
+-// longer follow a site's custom brand colour. Boost already exposes brand-colour- and dark-mode-
+-// aware equivalents of the first two tokens as --bs-primary and --bs-primary-bg-subtle, so reuse
+-// those here; the hover shade has no ready-made equivalent, so it is darkened the same way Boost
+-// darkens $primary for a button's own hover state. The disabled-checked track (briefly visible
+-// while core/edit_switch disables the input during the post-toggle page reload) has no Boost
+-// equivalent either, so it is tinted the same way the design system's own default is lighter than
+-// the "on" fill.
+-.editmode-switch-form {
+-    --mds-bg-interactive-primary-default: var(--#{$prefix}primary);
+-    --mds-bg-interactive-primary-default-light: var(--#{$prefix}primary-bg-subtle);
+-    --mds-bg-interactive-primary-hover: #{shade-color($primary, $btn-hover-bg-shade-amount)};
+-    --mds-bg-interactive-primary-disabled: #{tint-color($primary, 60%)};
+-}
+-
+ .drawer-primary .drawercontent {
+     padding: 0;
+ 
+diff --git a/public/theme/boost/tests/behat/editmode_switch.feature b/public/theme/boost/tests/behat/editmode_switch.feature
+deleted file mode 100644
+index dd726c4686c2b5f8750dd903c2c15bd2ee99a084..0000000000000000000000000000000000000000
+--- a/public/theme/boost/tests/behat/editmode_switch.feature
++++ /dev/null
+@@ -1,37 +0,0 @@
+-@theme_boost
+-Feature: Edit mode switch
+-  In order to safely toggle editing on a page
+-  As a teacher
+-  I need the Edit mode switch to keep working after it moved onto the design system Switch component
+-
+-  Background:
+-    Given the following "courses" exist:
+-      | fullname | shortname |
+-      | Course 1 | C1        |
+-    And the following "users" exist:
+-      | username | firstname | lastname |
+-      | teacher1 | Teacher   | One      |
+-    And the following "course enrolments" exist:
+-      | user     | course | role           |
+-      | teacher1 | C1     | editingteacher |
+-
+-  @javascript
+-  Scenario: Turning editing mode on and off with JavaScript enabled
+-    Given I log in as "teacher1"
+-    And I am on "Course 1" course homepage
+-    And ".mds-switch" "css_element" should exist
+-    And "Edit mode" "field" should exist
+-    When I turn editing mode on
+-    Then the field "Edit mode" matches value "1"
+-    And I turn editing mode off
+-    And the field "Edit mode" matches value "0"
+-
+-  Scenario: Turning editing mode on and off without JavaScript falls back to the noscript submit
+-    Given I log in as "teacher1"
+-    And I am on "Course 1" course homepage
+-    And ".mds-switch" "css_element" should exist
+-    And "Edit mode" "field" should exist
+-    When I turn editing mode on
+-    Then the field "Edit mode" matches value "1"
+-    And I turn editing mode off
+-    And the field "Edit mode" matches value "0"

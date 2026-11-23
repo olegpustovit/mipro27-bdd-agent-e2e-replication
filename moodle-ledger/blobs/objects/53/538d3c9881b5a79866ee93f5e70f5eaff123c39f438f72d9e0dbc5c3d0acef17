@@ -1,0 +1,80 @@
+diff --git a/public/search/tests/behat/behat_search.php b/public/search/tests/behat/behat_search.php
+index 3e86a07497b5d441829c51d821c2b5fd72a38be0..0e1f1fb511dc49f8e35475528a50d317ce07a736 100644
+--- a/public/search/tests/behat/behat_search.php
++++ b/public/search/tests/behat/behat_search.php
+@@ -27,6 +27,7 @@
+ require_once(__DIR__ . '/../../../lib/behat/behat_base.php');
+ 
+ use Behat\Gherkin\Node\TableNode as TableNode;
++use Behat\Mink\Exception\ExpectationException;
+ use Moodle\BehatExtension\Exception\SkippedException;
+ 
+ /**
+@@ -45,20 +46,57 @@ class behat_search extends behat_base {
+      * @param string $query Query to search for
+      */
+     public function i_search_for_using_the_header_global_search_box($query) {
+-        // In boost the toggle button is only visible on small screens, where it expands the
+-        // inline search field. Check visibility before clicking.
+-        $togglelabel = get_string('togglesearch', 'core');
+-        $toggle = $this->getSession()->getPage()->find('named', ['button', $togglelabel]);
+-        if ($toggle && $toggle->isVisible()) {
+-            $this->execute("behat_general::i_click_on", [$togglelabel, 'button']);
++        // The toggle is hidden while the search box is open, so only click it when no search field is visible.
++        if (!$this->find_visible_search_field()) {
++            $this->click_first_visible_button(get_string('togglesearch', 'core'), 'body');
+         }
+ 
+-        $this->execute('behat_forms::i_set_the_field_to', ['q', $query]);
++        // Set the field once the search box has been revealed.
++        $this->spin(function ($context) use ($query) {
++            $field = $context->find_visible_search_field();
++            if (!$field) {
++                throw new ExpectationException('Search field is not visible', $context->getSession());
++            }
++            $field->setValue($query);
++            return true;
++        });
+ 
+         // Submit the form.
+-        $this->execute("behat_general::i_click_on_in_the",
+-            [get_string('performsearch', 'search'), 'button', '#usernavigation', 'css_element']
+-        );
++        $this->click_first_visible_button(get_string('performsearch', 'search'), '#usernavigation');
++    }
++
++    /**
++     * Returns the first visible search field, or null if none is visible.
++     *
++     * @return \Behat\Mink\Element\NodeElement|null
++     */
++    protected function find_visible_search_field() {
++        foreach ($this->getSession()->getPage()->findAll('named_partial', ['field', 'q']) as $field) {
++            if ($field->isVisible()) {
++                return $field;
++            }
++        }
++        return null;
++    }
++
++    /**
++     * Clicks the first visible button matching the locator inside the container, waiting until one is visible.
++     *
++     * @param string $locator Button text, id, title or aria-label
++     * @param string $containerselector CSS selector of the container to search in
++     */
++    protected function click_first_visible_button(string $locator, string $containerselector): void {
++        $this->spin(function ($context) use ($locator, $containerselector) {
++            $container = $context->getSession()->getPage()->find('css', $containerselector);
++            foreach ($container ? $container->findAll('named_partial', ['button', $locator]) : [] as $button) {
++                if ($button->isVisible()) {
++                    $button->click();
++                    return true;
++                }
++            }
++            throw new ExpectationException("No visible button '{$locator}' in '{$containerselector}'",
++                $context->getSession());
++        });
+     }
+ 
+     /**

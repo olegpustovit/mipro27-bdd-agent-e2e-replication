@@ -1,0 +1,22 @@
+diff --git a/public/lib/form/amd/src/submit.js b/public/lib/form/amd/src/submit.js
+index 12c0e5221878aaf6934d56e0a8bd1530983f3819..185d5268c4c058355ce1e3cafcb748b08309befd 100644
+--- a/public/lib/form/amd/src/submit.js
++++ b/public/lib/form/amd/src/submit.js
+@@ -124,13 +124,15 @@ export const init = (elementId) => {
+ 
+     if (!uploadListenersRegistered) {
+         // Add event listener for file upload start.
+-        document.addEventListener(eventTypes.uploadStarted, () => {
++        document.addEventListener(eventTypes.uploadStarted, e => {
++            window.console.log(e.target); // This will be the element/section where the file is uploaded to.
+             currentUploadCount++;
+             checkUploadCount();
+         });
+ 
+         // Add event listener for file upload complete.
+-        document.addEventListener(eventTypes.uploadCompleted, () => {
++        document.addEventListener(eventTypes.uploadCompleted, e => {
++            window.console.log(e.target); // This will be the element/section where the file is uploaded to.
+             currentUploadCount--;
+             checkUploadCount();
+         });

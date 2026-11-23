@@ -1,0 +1,3978 @@
+diff --git a/public/customfield/field/textarea/tests/behat/default_value.feature b/public/customfield/field/textarea/tests/behat/default_value.feature
+index 77abf78095d0434b2562ad05c5ba45dda50b02e6..0de28f27497546096529bb187119409fd90a1c63 100644
+--- a/public/customfield/field/textarea/tests/behat/default_value.feature
++++ b/public/customfield/field/textarea/tests/behat/default_value.feature
+@@ -41,7 +41,7 @@ Feature: Default value for the textarea custom field can contain images
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "gd-logo.png" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "Example"
++    And I set the field "How would you describe this image to someone who can't see it?" to "Example"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I click on "Save changes" "button" in the "Adding a new Text area" "dialogue"
+     And I log out
+diff --git a/public/customfield/tests/behat/edit_fields_settings.feature b/public/customfield/tests/behat/edit_fields_settings.feature
+index bad16f3de0f067f6d91e0cf32a0f6faca904ce5e..e28f22391971618f583869b58dc5e0b22c4c6dc7 100644
+--- a/public/customfield/tests/behat/edit_fields_settings.feature
++++ b/public/customfield/tests/behat/edit_fields_settings.feature
+@@ -85,7 +85,7 @@ Feature: Teachers can edit course custom fields
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "gd-logo.png" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "Example"
++    And I set the field "How would you describe this image to someone who can't see it?" to "Example"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I click on "Save changes" "button" in the "Updating Field 1" "dialogue"
+     And I log out
+diff --git a/public/lib/editor/tiny/plugins/accessibilitychecker/tests/behat/accessibilitychecker.feature b/public/lib/editor/tiny/plugins/accessibilitychecker/tests/behat/accessibilitychecker.feature
+index f3fb6e397ca8c3ee2d32ce9a5947c7ddacb12a52..f5cc262e80a757527e6f2b78dfa1ccf5225bfaba 100644
+--- a/public/lib/editor/tiny/plugins/accessibilitychecker/tests/behat/accessibilitychecker.feature
++++ b/public/lib/editor/tiny/plugins/accessibilitychecker/tests/behat/accessibilitychecker.feature
+@@ -28,8 +28,8 @@ Feature: Tiny editor accessibility checker
+     And I click on "View" "link" in the "Accessibility checker" "dialogue"
+     And I click on the "Image" button for the "Description" TinyMCE editor
+     And I wait "1" seconds
+-    And I click on "Decorative image" "checkbox"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "No more warning!"
++    And I click on "This image is decorative only" "checkbox"
++    And I set the field "How would you describe this image to someone who can't see it?" to "No more warning!"
+     And I press "Save"
+     And I click on the "Tools > Accessibility checker" menu item for the "Description" TinyMCE editor
+     And I should see "Congratulations, no accessibility issues found!" in the "Accessibility checker" "dialogue"
+@@ -39,8 +39,8 @@ Feature: Tiny editor accessibility checker
+     And I set the field "URL" to "http://download.moodle.org/unittest/test.jpg"
+     And I click on "Add" "button" in the "Insert image" "dialogue"
+     And I wait "1" seconds
+-    And I set the field "How would you describe this image to someone who cannot see it?" to ""
+-    And I click on "Decorative image" "checkbox"
++    And I set the field "How would you describe this image to someone who can't see it?" to ""
++    And I click on "This image is decorative only" "checkbox"
+     When I press "Save"
+     And I click on the "Tools > Accessibility checker" menu item for the "Description" TinyMCE editor
+     Then I should see "Congratulations, no accessibility issues found!" in the "Accessibility checker" "dialogue"
+diff --git a/public/lib/editor/tiny/plugins/aiplacement/amd/src/mediaimage.js b/public/lib/editor/tiny/plugins/aiplacement/amd/src/mediaimage.js
+index 75bae61f85551c1cfff99f05d7b4c407ffe7578d..46143cce8aeecaf113825ccea762224a436fe928 100644
+--- a/public/lib/editor/tiny/plugins/aiplacement/amd/src/mediaimage.js
++++ b/public/lib/editor/tiny/plugins/aiplacement/amd/src/mediaimage.js
+@@ -22,10 +22,10 @@
+  */
+ 
+ import {getString} from 'core/str';
+-import MediaImage from 'tiny_media/image/image';
++import MediaImage from 'tiny_media/image';
+ import Notification from 'core/notification';
+ import {prefetchStrings} from 'core/prefetch';
+-import {MAX_LENGTH_ALT} from 'tiny_media/image/imagehelpers';
++import {MAX_LENGTH_ALT} from 'tiny_media/imagehelpers';
+ 
+ prefetchStrings('core_ai', [
+     'contentwatermark',
+diff --git a/public/lib/editor/tiny/plugins/autosave/tests/behat/autosave.feature b/public/lib/editor/tiny/plugins/autosave/tests/behat/autosave.feature
+index d7b2f0aebb0db1b8b9882d4d924884030a52ec64..ff1a3d1500f4ac5a40efdfcde880907935ad74f0 100644
+--- a/public/lib/editor/tiny/plugins/autosave/tests/behat/autosave.feature
++++ b/public/lib/editor/tiny/plugins/autosave/tests/behat/autosave.feature
+@@ -45,7 +45,7 @@ Feature: Tiny editor autosave
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "tinyscreenshot.png" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "It's the Moodle"
++    And I set the field "How would you describe this image to someone who can't see it?" to "It's the Moodle"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I click on "Save and display" "button"
+     When I am on the "Course 1" course page logged in as teacher1
+diff --git a/public/lib/editor/tiny/plugins/link/tests/behat/link.feature b/public/lib/editor/tiny/plugins/link/tests/behat/link.feature
+index bdc7315d46eb221faadd3d7bdbcd506ba029c0a2..40e17848cd8b40ecc601fc946ddf0bc30181ea24 100644
+--- a/public/lib/editor/tiny/plugins/link/tests/behat/link.feature
++++ b/public/lib/editor/tiny/plugins/link/tests/behat/link.feature
+@@ -107,7 +107,7 @@ Feature: Add links to TinyMCE
+     And I select "Private files" repository in file picker
+     And I click on "moodle-logo.png" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "It's the Moodle"
++    And I set the field "How would you describe this image to someone who can't see it?" to "It's the Moodle"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I select the "img" element in position "0" of the "Description" TinyMCE editor
+     And I click on the "Link" button for the "Description" TinyMCE editor
+@@ -129,7 +129,7 @@ Feature: Add links to TinyMCE
+     And I click on "Edit profile" "link" in the "region-main" "region"
+     And I select the "img" element in position "0" of the "Description" TinyMCE editor
+     And I click on the "Image" button for the "Description" TinyMCE editor
+-    And the field "How would you describe this image to someone who cannot see it?" matches value "It's the Moodle"
++    And the field "How would you describe this image to someone who can't see it?" matches value "It's the Moodle"
+     And I click on "Close" "button" in the "Image details" "dialogue"
+     And I click on the "Link" button for the "Description" TinyMCE editor
+     And the field "Text to display" matches value "Moodle - Open-source learning platform"
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/commands.js b/public/lib/editor/tiny/plugins/media/amd/src/commands.js
+index 8b83a7cd08e716bf1f71f79f95233f2d72a9a074..3afb1e38f60a98217d6a6eb08ce201d2a7802bee 100644
+--- a/public/lib/editor/tiny/plugins/media/amd/src/commands.js
++++ b/public/lib/editor/tiny/plugins/media/amd/src/commands.js
+@@ -28,8 +28,8 @@ import {
+     videoButtonName,
+     mediaManagerButtonName
+ } from './common';
+-import MediaImage from './image/image';
+-import MediaEmbed from './embed/embed';
++import MediaImage from './image';
++import MediaEmbed from './embed';
+ import MediaManager from './manager';
+ import {getButtonImage} from 'editor_tiny/utils';
+ import Selectors from './selectors';
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/embed.js b/public/lib/editor/tiny/plugins/media/amd/src/embed.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..89bccd1cc3974a1c55cc6585fc8330f68cdd2e0a
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/amd/src/embed.js
+@@ -0,0 +1,141 @@
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Tiny Media plugin Embed class for Moodle.
++ *
++ * @module      tiny_media/embed
++ * @copyright   2022 Huong Nguyen <huongnv13@gmail.com>
++ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++import EmbedModal from './embedmodal';
++import {getEmbedPermissions} from './options';
++import {getFilePicker, getContextId} from 'editor_tiny/options';
++import {EmbedHandler} from './embed/embedhandler';
++import {insertMediaTemplateContext, getSelectedMediaElement} from './embed/embedhelpers';
++import {EmbedInsert} from './embed/embedinsert';
++import {startMediaLoading} from './helpers';
++import Selectors from "./selectors";
++
++export default class MediaEmbed {
++    editor = null;
++    canShowFilePicker = false;
++    canShowFilePickerTrack = false;
++    canShowDropZone = false;
++
++    constructor(editor) {
++        const permissions = getEmbedPermissions(editor);
++        const options = getFilePicker(editor, 'media');
++
++        // Indicates whether the file picker can be shown.
++        this.canShowFilePicker = permissions.filepicker
++            && (typeof options !== 'undefined')
++            && Object.keys(options.repositories).length > 0;
++        this.canShowFilePickerTrack = permissions.filepicker && (typeof getFilePicker(editor, 'subtitle') !== 'undefined');
++        this.canShowDropZone = Object.values(options.repositories).some(repository => repository.type === 'upload');
++        this.editor = editor;
++        this.acceptedMediaTypes = options.accepted_types;
++        this.contextId = getContextId(editor);
++
++        // Image options.
++        const imageOptions = getFilePicker(editor, 'image');
++        this.acceptedImageTypes = imageOptions.accepted_types;
++        this.canShowImageFilePicker = permissions.filepicker
++            && (typeof imageOptions !== 'undefined')
++            && Object.keys(imageOptions.repositories).length > 0;
++    }
++
++    /**
++     * Displays media modal accordingly.
++     */
++    displayDialogue = async() => {
++        const [mediaType, selectedMedia] = getSelectedMediaElement(this.editor);
++        this.mediaType = mediaType;
++        this.selectedMedia = selectedMedia;
++
++        if (this.selectedMedia) {
++            // Preview the selected media.
++            this.isUpdating = true;
++            this.loadSelectedMedia();
++        } else {
++            // Create media modal.
++            await this.createMediaModal();
++            // Load insert media modal.
++            await this.loadInsertMediaModal();
++        }
++    };
++
++    /**
++     * Load insert media modal.
++     */
++    loadInsertMediaModal = async() => {
++        const embedHandler = new EmbedHandler(this);
++        embedHandler.loadTemplatePromise(insertMediaTemplateContext(this));
++        await embedHandler.registerEventListeners();
++    };
++
++    /**
++     * Create media modal.
++     */
++    createMediaModal = async() => {
++        this.currentModal = await EmbedModal.create({
++            large: true,
++            templateContext: {elementid: this.editor.getElement().id},
++        });
++        this.modalRoot = this.currentModal.getRoot();
++        this.root = this.modalRoot[0];
++    };
++
++    /**
++     * Load media preview based on the selected media.
++     */
++    loadSelectedMedia = async() => {
++        let mediaSource = null;
++        if (['video', 'audio'].includes(this.mediaType)) {
++            mediaSource = this.selectedMedia.querySelector('source').src;
++            // If the selected media has more than one sources, it has main source and alternative sources.
++            const sources = this.selectedMedia.querySelectorAll('source');
++            if (sources.length > 1) {
++                let alternativeSources = [];
++                Object.keys(sources).forEach(function(source) {
++                    alternativeSources.push(sources[source].src);
++                });
++                this.alternativeSources = alternativeSources; // Used to later check if the embedded media has alternative sources.
++            }
++        } else if (this.selectedMedia.classList.contains(Selectors.EMBED.externalMediaProvider)) {
++            mediaSource = this.selectedMedia.href;
++            this.mediaType = 'link';
++        }
++
++        // Load media preview.
++        if (this.mediaType) {
++            // Create media modal.
++            await this.createMediaModal();
++            // Start the spinner.
++            startMediaLoading(this.root, Selectors.EMBED.type);
++
++            const embedInsert = new EmbedInsert(this);
++            embedInsert.init();
++            embedInsert.loadMediaPreview(mediaSource);
++            await (new EmbedHandler(this)).registerEventListeners();
++        } else {
++            // Create media modal.
++            await this.createMediaModal();
++            // Load insert media modal.
++            this.loadInsertMediaModal();
++        }
++    };
++}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/embed/embed.js b/public/lib/editor/tiny/plugins/media/amd/src/embed/embed.js
+deleted file mode 100644
+index cc8b4ab6ef0e77623cc7d1f02ba756b7da5060b1..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/amd/src/embed/embed.js
++++ /dev/null
+@@ -1,141 +0,0 @@
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * Tiny Media plugin Embed class for Moodle.
+- *
+- * @module      tiny_media/embed
+- * @copyright   2022 Huong Nguyen <huongnv13@gmail.com>
+- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-
+-import EmbedModal from './embedmodal';
+-import {getEmbedPermissions} from '../options';
+-import {getFilePicker, getContextId} from 'editor_tiny/options';
+-import {EmbedHandler} from './embedhandler';
+-import {insertMediaTemplateContext, getSelectedMediaElement} from './embedhelpers';
+-import {EmbedInsert} from './embedinsert';
+-import {startMediaLoading} from '../helpers';
+-import Selectors from "../selectors";
+-
+-export default class MediaEmbed {
+-    editor = null;
+-    canShowFilePicker = false;
+-    canShowFilePickerTrack = false;
+-    canShowDropZone = false;
+-
+-    constructor(editor) {
+-        const permissions = getEmbedPermissions(editor);
+-        const options = getFilePicker(editor, 'media');
+-
+-        // Indicates whether the file picker can be shown.
+-        this.canShowFilePicker = permissions.filepicker
+-            && (typeof options !== 'undefined')
+-            && Object.keys(options.repositories).length > 0;
+-        this.canShowFilePickerTrack = permissions.filepicker && (typeof getFilePicker(editor, 'subtitle') !== 'undefined');
+-        this.canShowDropZone = Object.values(options.repositories).some(repository => repository.type === 'upload');
+-        this.editor = editor;
+-        this.acceptedMediaTypes = options.accepted_types;
+-        this.contextId = getContextId(editor);
+-
+-        // Image options.
+-        const imageOptions = getFilePicker(editor, 'image');
+-        this.acceptedImageTypes = imageOptions.accepted_types;
+-        this.canShowImageFilePicker = permissions.filepicker
+-            && (typeof imageOptions !== 'undefined')
+-            && Object.keys(imageOptions.repositories).length > 0;
+-    }
+-
+-    /**
+-     * Displays media modal accordingly.
+-     */
+-    displayDialogue = async() => {
+-        const [mediaType, selectedMedia] = getSelectedMediaElement(this.editor);
+-        this.mediaType = mediaType;
+-        this.selectedMedia = selectedMedia;
+-
+-        if (this.selectedMedia) {
+-            // Preview the selected media.
+-            this.isUpdating = true;
+-            this.loadSelectedMedia();
+-        } else {
+-            // Create media modal.
+-            await this.createMediaModal();
+-            // Load insert media modal.
+-            await this.loadInsertMediaModal();
+-        }
+-    };
+-
+-    /**
+-     * Load insert media modal.
+-     */
+-    loadInsertMediaModal = async() => {
+-        const embedHandler = new EmbedHandler(this);
+-        embedHandler.loadTemplatePromise(insertMediaTemplateContext(this));
+-        await embedHandler.registerEventListeners();
+-    };
+-
+-    /**
+-     * Create media modal.
+-     */
+-    createMediaModal = async() => {
+-        this.currentModal = await EmbedModal.create({
+-            large: true,
+-            templateContext: {elementid: this.editor.getElement().id},
+-        });
+-        this.modalRoot = this.currentModal.getRoot();
+-        this.root = this.modalRoot[0];
+-    };
+-
+-    /**
+-     * Load media preview based on the selected media.
+-     */
+-    loadSelectedMedia = async() => {
+-        let mediaSource = null;
+-        if (['video', 'audio'].includes(this.mediaType)) {
+-            mediaSource = this.selectedMedia.querySelector('source').src;
+-            // If the selected media has more than one sources, it has main source and alternative sources.
+-            const sources = this.selectedMedia.querySelectorAll('source');
+-            if (sources.length > 1) {
+-                let alternativeSources = [];
+-                Object.keys(sources).forEach(function(source) {
+-                    alternativeSources.push(sources[source].src);
+-                });
+-                this.alternativeSources = alternativeSources; // Used to later check if the embedded media has alternative sources.
+-            }
+-        } else if (this.selectedMedia.classList.contains(Selectors.EMBED.externalMediaProvider)) {
+-            mediaSource = this.selectedMedia.href;
+-            this.mediaType = 'link';
+-        }
+-
+-        // Load media preview.
+-        if (this.mediaType) {
+-            // Create media modal.
+-            await this.createMediaModal();
+-            // Start the spinner.
+-            startMediaLoading(this.root, Selectors.EMBED.type);
+-
+-            const embedInsert = new EmbedInsert(this);
+-            embedInsert.init();
+-            embedInsert.loadMediaPreview(mediaSource);
+-            await (new EmbedHandler(this)).registerEventListeners();
+-        } else {
+-            // Create media modal.
+-            await this.createMediaModal();
+-            // Load insert media modal.
+-            this.loadInsertMediaModal();
+-        }
+-    };
+-}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/embed/embedmodal.js b/public/lib/editor/tiny/plugins/media/amd/src/embed/embedmodal.js
+deleted file mode 100644
+index cbd9ca54f137fb1d368ad705e75d41f0ccd0dd9f..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/amd/src/embed/embedmodal.js
++++ /dev/null
+@@ -1,46 +0,0 @@
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * Embedded Media Management Modal for Tiny.
+- *
+- * @module      tiny_media/embed/embedmodal
+- * @copyright   2022 Andrew Lyons <andrew@nicols.co.uk>
+- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-
+-import Modal from 'core/modal';
+-import {component} from '../common';
+-
+-export default class EmbedModal extends Modal {
+-    static TYPE = `${component}/embed/embedmodal`;
+-    static TEMPLATE = `${component}/embed/embed_media_modal`;
+-
+-    registerEventListeners() {
+-        // Call the parent registration.
+-        super.registerEventListeners();
+-
+-        // Register to close on save/cancel.
+-        this.registerCloseOnSave();
+-        this.registerCloseOnCancel();
+-    }
+-
+-    configure(modalConfig) {
+-        modalConfig.removeOnClose = true;
+-        modalConfig.show = true;
+-
+-        super.configure(modalConfig);
+-    }
+-}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/embed/embedpreview.js b/public/lib/editor/tiny/plugins/media/amd/src/embed/embedpreview.js
+index 85cca35d130bb02f8b1d60547d93392eaaa32516..7052a977daefa3165c28a8fe7e5b8361d4a518d2 100644
+--- a/public/lib/editor/tiny/plugins/media/amd/src/embed/embedpreview.js
++++ b/public/lib/editor/tiny/plugins/media/amd/src/embed/embedpreview.js
+@@ -37,7 +37,7 @@ import {
+ import {EmbedHandler} from './embedhandler';
+ import {MediaBase} from '../mediabase';
+ import Notification from 'core/notification';
+-import EmbedModal from './embedmodal';
++import EmbedModal from '../embedmodal';
+ import {
+     getEmbeddedMediaDetails,
+     insertMediaThumbnailTemplateContext,
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/embedmodal.js b/public/lib/editor/tiny/plugins/media/amd/src/embedmodal.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..c2ebb0dc35360ee20be0efd309b400cd5cc4fedb
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/amd/src/embedmodal.js
+@@ -0,0 +1,46 @@
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Embedded Media Management Modal for Tiny.
++ *
++ * @module      tiny_media/embedmodal
++ * @copyright   2022 Andrew Lyons <andrew@nicols.co.uk>
++ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++import Modal from 'core/modal';
++import {component} from './common';
++
++export default class EmbedModal extends Modal {
++    static TYPE = `${component}/modal`;
++    static TEMPLATE = `${component}/embed/embed_media_modal`;
++
++    registerEventListeners() {
++        // Call the parent registration.
++        super.registerEventListeners();
++
++        // Register to close on save/cancel.
++        this.registerCloseOnSave();
++        this.registerCloseOnCancel();
++    }
++
++    configure(modalConfig) {
++        modalConfig.removeOnClose = true;
++        modalConfig.show = true;
++
++        super.configure(modalConfig);
++    }
++}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/image.js b/public/lib/editor/tiny/plugins/media/amd/src/image.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..66fa1295996e9d149e20a3a9b244e125d38e5897
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/amd/src/image.js
+@@ -0,0 +1,279 @@
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Tiny Media plugin Image class for Moodle.
++ *
++ * @module      tiny_media/image
++ * @copyright   2022 Huong Nguyen <huongnv13@gmail.com>
++ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++import Selectors from './selectors';
++import ImageModal from './imagemodal';
++import {getImagePermissions} from './options';
++import {getFilePicker} from 'editor_tiny/options';
++import {ImageInsert} from 'tiny_media/imageinsert';
++import {ImageDetails} from 'tiny_media/imagedetails';
++import {prefetchStrings} from 'core/prefetch';
++import {getString} from 'core/str';
++import {
++    body,
++    footer,
++    hideElements,
++    showElements,
++    isPercentageValue,
++} from './helpers';
++import {MAX_LENGTH_ALT} from './imagehelpers';
++
++prefetchStrings('tiny_media', [
++    'imageurlrequired',
++    'sizecustom_help',
++]);
++
++export default class MediaImage {
++    canShowFilePicker = false;
++    editor = null;
++    currentModal = null;
++    /**
++     * @type {HTMLElement|null} The root element.
++     */
++    root = null;
++
++    constructor(editor) {
++        const permissions = getImagePermissions(editor);
++        const options = getFilePicker(editor, 'image');
++        // Indicates whether the file picker can be shown.
++        this.canShowFilePicker = permissions.filepicker
++            && (typeof options !== 'undefined')
++            && Object.keys(options.repositories).length > 0;
++        // Indicates whether the drop zone area can be shown.
++        this.canShowDropZone = (typeof options !== 'undefined') &&
++            Object.values(options.repositories).some(repository => repository.type === 'upload');
++
++        this.editor = editor;
++    }
++
++    async displayDialogue() {
++        const currentImageData = await this.getCurrentImageData();
++        this.currentModal = await ImageModal.create();
++        this.root = this.currentModal.getRoot()[0];
++        if (currentImageData && currentImageData.src) {
++            this.loadPreviewImage(currentImageData.src);
++        } else {
++            this.loadInsertImage();
++        }
++    }
++
++    /**
++     * Displays an insert image view asynchronously.
++     *
++     * @returns {Promise<void>}
++     */
++    loadInsertImage = async function() {
++        const templateContext = {
++            elementid: this.editor.id,
++            showfilepicker: this.canShowFilePicker,
++            showdropzone: this.canShowDropZone,
++            bodyTemplate: Selectors.IMAGE.template.body.insertImageBody,
++            footerTemplate: Selectors.IMAGE.template.footer.insertImageFooter,
++            selector: Selectors.IMAGE.type,
++        };
++
++        Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
++            .then(() => {
++                const imageinsert = new ImageInsert(
++                    this.root,
++                    this.editor,
++                    this.currentModal,
++                    this.canShowFilePicker,
++                    this.canShowDropZone,
++                );
++                imageinsert.init();
++                return;
++            })
++            .catch(error => {
++                window.console.log(error);
++            });
++    };
++
++    async getTemplateContext(data) {
++        return {
++            elementid: this.editor.id,
++            showfilepicker: this.canShowFilePicker,
++            ...data,
++        };
++    }
++
++    async getCurrentImageData() {
++        const selectedImageProperties = this.getSelectedImageProperties();
++        if (!selectedImageProperties) {
++            return {};
++        }
++
++        const properties = {...selectedImageProperties};
++
++        if (properties.src) {
++            properties.haspreview = true;
++        }
++
++        if (!properties.alt) {
++            properties.presentation = true;
++        }
++
++        return properties;
++    }
++
++    /**
++     * Asynchronously loads and previews an image from the provided URL.
++     *
++     * @param {string} url - The URL of the image to load and preview.
++     * @returns {Promise<void>}
++     */
++    loadPreviewImage = async function(url) {
++        this.startImageLoading();
++        const image = new Image();
++        image.src = url;
++        image.addEventListener('error', async() => {
++            const urlWarningLabelEle = this.root.querySelector(Selectors.IMAGE.elements.urlWarning);
++            urlWarningLabelEle.innerHTML = await getString('imageurlrequired', 'tiny_media');
++            showElements(Selectors.IMAGE.elements.urlWarning, this.root);
++            this.stopImageLoading();
++        });
++
++        image.addEventListener('load', async() => {
++            const currentImageData = await this.getCurrentImageData();
++            let templateContext = await this.getTemplateContext(currentImageData);
++            templateContext.sizecustomhelpicon = {text: await getString('sizecustom_help', 'tiny_media')};
++            templateContext.bodyTemplate = Selectors.IMAGE.template.body.insertImageDetailsBody;
++            templateContext.footerTemplate = Selectors.IMAGE.template.footer.insertImageDetailsFooter;
++            templateContext.selector = Selectors.IMAGE.type;
++            templateContext.maxlengthalt = MAX_LENGTH_ALT;
++
++            Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
++                .then(() => {
++                    this.stopImageLoading();
++                    return;
++                })
++                .then(() => {
++                    const imagedetails = new ImageDetails(
++                        this.root,
++                        this.editor,
++                        this.currentModal,
++                        this.canShowFilePicker,
++                        this.canShowDropZone,
++                        url,
++                        image,
++                    );
++                    imagedetails.init();
++                    return;
++                })
++                .catch(error => {
++                    window.console.log(error);
++                });
++        });
++    };
++
++    getSelectedImageProperties() {
++        const image = this.getSelectedImage();
++        if (!image) {
++            this.selectedImage = null;
++            return null;
++        }
++
++        const properties = {
++            src: null,
++            alt: null,
++            width: null,
++            height: null,
++            presentation: false,
++            customStyle: '', // Custom CSS styles applied to the image.
++        };
++
++        const getImageHeight = (image) => {
++            if (!isPercentageValue(String(image.height))) {
++                return parseInt(image.height, 10);
++            }
++
++            return image.height;
++        };
++
++        const getImageWidth = (image) => {
++            if (!isPercentageValue(String(image.width))) {
++                return parseInt(image.width, 10);
++            }
++
++            return image.width;
++        };
++
++        // Get the current selection.
++        this.selectedImage = image;
++
++        properties.customStyle = image.style.cssText;
++
++        const width = getImageWidth(image);
++        if (width !== 0) {
++            properties.width = width;
++        }
++
++        const height = getImageHeight(image);
++        if (height !== 0) {
++            properties.height = height;
++        }
++
++        properties.src = image.getAttribute('src');
++        properties.alt = image.getAttribute('alt') || '';
++        properties.presentation = (image.getAttribute('role') === 'presentation');
++
++        return properties;
++    }
++
++    getSelectedImage() {
++        const imgElm = this.editor.selection.getNode();
++        const figureElm = this.editor.dom.getParent(imgElm, 'figure.image');
++        if (figureElm) {
++            return this.editor.dom.select('img', figureElm)[0];
++        }
++
++        if (imgElm && (imgElm.nodeName.toUpperCase() !== 'IMG' || this.isPlaceholderImage(imgElm))) {
++            return null;
++        }
++        return imgElm;
++    }
++
++    isPlaceholderImage(imgElm) {
++        if (imgElm.nodeName.toUpperCase() !== 'IMG') {
++            return false;
++        }
++
++        return (imgElm.hasAttribute('data-mce-object') || imgElm.hasAttribute('data-mce-placeholder'));
++    }
++
++    /**
++     * Displays the upload loader and disables UI elements while loading a file.
++     */
++    startImageLoading() {
++        showElements(Selectors.IMAGE.elements.loaderIcon, this.root);
++        hideElements(Selectors.IMAGE.elements.insertImage, this.root);
++    }
++
++    /**
++     * Displays the upload loader and disables UI elements while loading a file.
++     */
++    stopImageLoading() {
++        hideElements(Selectors.IMAGE.elements.loaderIcon, this.root);
++        showElements(Selectors.IMAGE.elements.insertImage, this.root);
++    }
++}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/image/image.js b/public/lib/editor/tiny/plugins/media/amd/src/image/image.js
+deleted file mode 100644
+index 086f32e7f329d639e01b52d3156f01b85f3e4993..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/amd/src/image/image.js
++++ /dev/null
+@@ -1,290 +0,0 @@
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * Tiny Media plugin Image class for Moodle.
+- *
+- * @module      tiny_media/image/image
+- * @copyright   2022 Huong Nguyen <huongnv13@gmail.com>
+- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-
+-import Selectors from '../selectors';
+-import ImageModal from './imagemodal';
+-import {getImagePermissions} from '../options';
+-import {getFilePicker} from 'editor_tiny/options';
+-import {ImageInsert} from './imageinsert';
+-import {ImageDetails} from './imagedetails';
+-import {prefetchStrings} from 'core/prefetch';
+-import {getString} from 'core/str';
+-import {
+-    body,
+-    footer,
+-    hideElements,
+-    showElements,
+-    isPercentageValue,
+-} from '../helpers';
+-import {MAX_LENGTH_ALT} from './imagehelpers';
+-
+-prefetchStrings('tiny_media', [
+-    'imageurlrequired',
+-    'sizecustom_help',
+-]);
+-
+-export default class MediaImage {
+-    canShowFilePicker = false;
+-    editor = null;
+-    currentModal = null;
+-    /**
+-     * @type {HTMLElement|null} The root element.
+-     */
+-    root = null;
+-
+-    constructor(editor) {
+-        const permissions = getImagePermissions(editor);
+-        const options = getFilePicker(editor, 'image');
+-        // Indicates whether the file picker can be shown.
+-        this.canShowFilePicker = permissions.filepicker
+-            && (typeof options !== 'undefined')
+-            && Object.keys(options.repositories).length > 0;
+-        // Indicates whether the drop zone area can be shown.
+-        this.canShowDropZone = (typeof options !== 'undefined') &&
+-            Object.values(options.repositories).some(repository => repository.type === 'upload');
+-
+-        this.editor = editor;
+-    }
+-
+-    async displayDialogue() {
+-        const currentImageData = await this.getCurrentImageData();
+-        this.currentModal = await ImageModal.create();
+-        this.root = this.currentModal.getRoot()[0];
+-        if (currentImageData && currentImageData.src) {
+-            this.loadPreviewImage(currentImageData.src);
+-        } else {
+-            this.loadInsertImage();
+-        }
+-    }
+-
+-    /**
+-     * Displays an insert image view asynchronously.
+-     *
+-     * @returns {Promise<void>}
+-     */
+-    loadInsertImage = async function() {
+-        const templateContext = {
+-            elementid: this.editor.id,
+-            showfilepicker: this.canShowFilePicker,
+-            showdropzone: this.canShowDropZone,
+-            bodyTemplate: Selectors.IMAGE.template.body.insertImageBody,
+-            footerTemplate: Selectors.IMAGE.template.footer.insertImageFooter,
+-            selector: Selectors.IMAGE.type,
+-        };
+-
+-        Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
+-            .then(() => {
+-                const imageinsert = new ImageInsert(
+-                    this.root,
+-                    this.editor,
+-                    this.currentModal,
+-                    this.canShowFilePicker,
+-                    this.canShowDropZone,
+-                );
+-                imageinsert.init();
+-                return;
+-            })
+-            .catch(error => {
+-                window.console.log(error);
+-            });
+-    };
+-
+-    async getTemplateContext(data) {
+-        return {
+-            elementid: this.editor.id,
+-            showfilepicker: this.canShowFilePicker,
+-            ...data,
+-        };
+-    }
+-
+-    async getCurrentImageData() {
+-        const selectedImageProperties = this.getSelectedImageProperties();
+-        if (!selectedImageProperties) {
+-            return {};
+-        }
+-
+-        const properties = {...selectedImageProperties};
+-
+-        if (properties.src) {
+-            properties.haspreview = true;
+-        }
+-
+-        if (!properties.alt) {
+-            properties.presentation = true;
+-        }
+-
+-        return properties;
+-    }
+-
+-    /**
+-     * Asynchronously loads and previews an image from the provided URL.
+-     *
+-     * @param {string} url - The URL of the image to load and preview.
+-     * @returns {Promise<void>}
+-     */
+-    loadPreviewImage = async function(url) {
+-        this.startImageLoading();
+-        const image = new Image();
+-        image.src = url;
+-        image.addEventListener('error', async() => {
+-            const urlWarningLabelEle = this.root.querySelector(Selectors.IMAGE.elements.urlWarning);
+-            urlWarningLabelEle.innerHTML = await getString('imageurlrequired', 'tiny_media');
+-            showElements(Selectors.IMAGE.elements.urlWarning, this.root);
+-            this.stopImageLoading();
+-        });
+-
+-        image.addEventListener('load', async() => {
+-            const currentImageData = await this.getCurrentImageData();
+-            let templateContext = await this.getTemplateContext(currentImageData);
+-            templateContext.sizecustomhelpicon = {text: await getString('sizecustom_help', 'tiny_media')};
+-            templateContext.alttexthelpicon = {text: await getString('alttext_help', 'tiny_media')};
+-            templateContext.bodyTemplate = Selectors.IMAGE.template.body.insertImageDetailsBody;
+-            templateContext.footerTemplate = Selectors.IMAGE.template.footer.insertImageDetailsFooter;
+-            templateContext.selector = Selectors.IMAGE.type;
+-            templateContext.maxlengthalt = MAX_LENGTH_ALT;
+-
+-            Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
+-                .then(() => {
+-                    this.stopImageLoading();
+-                    return;
+-                })
+-                .then(() => {
+-                    const imagedetails = new ImageDetails(
+-                        this.root,
+-                        this.editor,
+-                        this.currentModal,
+-                        this.canShowFilePicker,
+-                        this.canShowDropZone,
+-                        url,
+-                        image,
+-                    );
+-                    imagedetails.init();
+-                    return;
+-                })
+-                .catch(error => {
+-                    window.console.log(error);
+-                });
+-        });
+-    };
+-
+-    getSelectedImageProperties() {
+-        const image = this.getSelectedImage();
+-        if (!image) {
+-            this.selectedImage = null;
+-            return null;
+-        }
+-
+-        const properties = {
+-            src: null,
+-            alt: null,
+-            width: null,
+-            height: null,
+-            presentation: false,
+-            customStyle: '', // Custom CSS styles applied to the image.
+-        };
+-
+-        const getImageHeight = (image) => {
+-            // Values for the height attribute can be in pixels, percentage or null.
+-            const heightAttr = image.getAttribute('height');
+-            // For percentage-based heights, fall back to the rendered pixel height to preserve the previous behaviour.
+-            // Properly supporting percentage dimensions should be handled in a separate issue.
+-            if (heightAttr === null || isPercentageValue(heightAttr)) {
+-                return image.height;
+-            }
+-
+-            const height = parseInt(heightAttr, 10);
+-            return Number.isNaN(height) ? image.height : height;
+-        };
+-
+-        const getImageWidth = (image) => {
+-            // Values for the width attribute can be in pixels, percentage or null.
+-            const widthAttr = image.getAttribute('width');
+-            // For percentage-based widths, fall back to the rendered pixel width to preserve the previous behaviour.
+-            // Properly supporting percentage dimensions should be handled in a separate issue.
+-            if (widthAttr === null || isPercentageValue(widthAttr)) {
+-                return image.width;
+-            }
+-
+-            const width = parseInt(widthAttr, 10);
+-            return Number.isNaN(width) ? image.width : width;
+-        };
+-
+-        // Get the current selection.
+-        this.selectedImage = image;
+-
+-        properties.customStyle = image.style.cssText;
+-
+-        const width = getImageWidth(image);
+-        if (width !== 0) {
+-            properties.width = width;
+-        }
+-
+-        const height = getImageHeight(image);
+-        if (height !== 0) {
+-            properties.height = height;
+-        }
+-
+-        properties.src = image.getAttribute('src');
+-        properties.alt = image.getAttribute('alt') || '';
+-        properties.presentation = (image.getAttribute('role') === 'presentation');
+-
+-        return properties;
+-    }
+-
+-    getSelectedImage() {
+-        const imgElm = this.editor.selection.getNode();
+-        const figureElm = this.editor.dom.getParent(imgElm, 'figure.image');
+-        if (figureElm) {
+-            return this.editor.dom.select('img', figureElm)[0];
+-        }
+-
+-        if (imgElm && (imgElm.nodeName.toUpperCase() !== 'IMG' || this.isPlaceholderImage(imgElm))) {
+-            return null;
+-        }
+-        return imgElm;
+-    }
+-
+-    isPlaceholderImage(imgElm) {
+-        if (imgElm.nodeName.toUpperCase() !== 'IMG') {
+-            return false;
+-        }
+-
+-        return (imgElm.hasAttribute('data-mce-object') || imgElm.hasAttribute('data-mce-placeholder'));
+-    }
+-
+-    /**
+-     * Displays the upload loader and disables UI elements while loading a file.
+-     */
+-    startImageLoading() {
+-        showElements(Selectors.IMAGE.elements.loaderIcon, this.root);
+-        hideElements(Selectors.IMAGE.elements.insertImage, this.root);
+-    }
+-
+-    /**
+-     * Displays the upload loader and disables UI elements while loading a file.
+-     */
+-    stopImageLoading() {
+-        hideElements(Selectors.IMAGE.elements.loaderIcon, this.root);
+-        showElements(Selectors.IMAGE.elements.insertImage, this.root);
+-    }
+-}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/image/imagedetails.js b/public/lib/editor/tiny/plugins/media/amd/src/image/imagedetails.js
+deleted file mode 100644
+index 09ad7b997f74a4e694b897902a095a02ffcbba0e..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/amd/src/image/imagedetails.js
++++ /dev/null
+@@ -1,470 +0,0 @@
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * Tiny media plugin image details class for Moodle.
+- *
+- * @module      tiny_media/image/imagedetails
+- * @copyright   2024 Meirza <meirza.arson@moodle.com>
+- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-
+-import Config from 'core/config';
+-import ModalEvents from 'core/modal_events';
+-import Notification from 'core/notification';
+-import Pending from 'core/pending';
+-import Selectors from '../selectors';
+-import Templates from 'core/templates';
+-import {getString} from 'core/str';
+-import {ImageInsert} from './imageinsert';
+-import {MediaBase} from '../mediabase';
+-import {
+-    body,
+-    footer,
+-    hideElements,
+-    showElements,
+-    isPercentageValue,
+-} from '../helpers';
+-
+-export class ImageDetails extends MediaBase {
+-    DEFAULTS = {
+-        WIDTH: 160,
+-        HEIGHT: 160,
+-    };
+-
+-    selectorType = Selectors.IMAGE.type;
+-
+-    mediaDimensions = null;
+-
+-    constructor(
+-        root,
+-        editor,
+-        currentModal,
+-        canShowFilePicker,
+-        canShowDropZone,
+-        currentUrl,
+-        image,
+-    ) {
+-        super();
+-        this.root = root;
+-        this.editor = editor;
+-        this.currentModal = currentModal;
+-        this.canShowFilePicker = canShowFilePicker;
+-        this.canShowDropZone = canShowDropZone;
+-        this.currentUrl = currentUrl;
+-        this.image = image;
+-        this.toggleMaxlengthFeedbackSuffix = false;
+-    }
+-
+-    init = function() {
+-        this.currentModal.setTitle(getString('imagedetails', 'tiny_media'));
+-        this.imageTypeChecked();
+-        this.presentationChanged();
+-        this.storeImageDimensions(this.image);
+-        this.setImageDimensions();
+-        this.registerEventListeners();
+-    };
+-
+-    /**
+-     * Loads and displays a preview image based on the provided URL, and handles image loading events.
+-     */
+-    loadInsertImage = async function() {
+-        const templateContext = {
+-            elementid: this.editor.id,
+-            showfilepicker: this.canShowFilePicker,
+-            showdropzone: this.canShowDropZone,
+-            bodyTemplate: Selectors.IMAGE.template.body.insertImageBody,
+-            footerTemplate: Selectors.IMAGE.template.footer.insertImageFooter,
+-            selector: Selectors.IMAGE.type,
+-        };
+-
+-        Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
+-            .then(() => {
+-                const imageinsert = new ImageInsert(
+-                    this.root,
+-                    this.editor,
+-                    this.currentModal,
+-                    this.canShowFilePicker,
+-                    this.canShowDropZone,
+-                );
+-                imageinsert.init();
+-                return;
+-            })
+-            .catch(error => {
+-                window.console.log(error);
+-            });
+-    };
+-
+-    storeImageDimensions(image) {
+-        // Store dimensions of the raw image, falling back to defaults for images without dimensions (e.g. SVG).
+-        this.mediaDimensions = {
+-            width: image.width || this.DEFAULTS.WIDTH,
+-            height: image.height || this.DEFAULTS.HEIGHT,
+-        };
+-
+-        const getCurrentWidth = (element) => {
+-            if (element.value === '') {
+-                element.value = this.mediaDimensions.width;
+-            }
+-            return element.value;
+-        };
+-
+-        const getCurrentHeight = (element) => {
+-            if (element.value === '') {
+-                element.value = this.mediaDimensions.height;
+-            }
+-            return element.value;
+-        };
+-
+-        const widthInput = this.root.querySelector(Selectors.IMAGE.elements.width);
+-        const currentWidth = getCurrentWidth(widthInput);
+-
+-        const heightInput = this.root.querySelector(Selectors.IMAGE.elements.height);
+-        const currentHeight = getCurrentHeight(heightInput);
+-
+-        const preview = this.root.querySelector(Selectors.IMAGE.elements.preview);
+-        preview.setAttribute('src', image.src);
+-        preview.style.display = '';
+-
+-        /**
+-         * Sets the selected size option based on current width and height values.
+-         *
+-         * @param {number} currentWidth - The current width value.
+-         * @param {number} currentHeight - The current height value.
+-         */
+-        const setSelectedSize = (currentWidth, currentHeight) => {
+-            if (this.mediaDimensions.width === currentWidth &&
+-                this.mediaDimensions.height === currentHeight
+-            ) {
+-                this.currentWidth = this.mediaDimensions.width;
+-                this.currentHeight = this.mediaDimensions.height;
+-                this.sizeChecked('original');
+-            } else {
+-                this.currentWidth = currentWidth;
+-                this.currentHeight = currentHeight;
+-                this.sizeChecked('custom');
+-            }
+-        };
+-
+-        setSelectedSize(Number(currentWidth), Number(currentHeight));
+-    }
+-
+-    /**
+-     * Sets the dimensions of the image preview element based on user input and constraints.
+-     */
+-    setImageDimensions = () => {
+-        const imagePreviewBox = this.root.querySelector(Selectors.IMAGE.elements.previewBox);
+-        const image = this.root.querySelector(Selectors.IMAGE.elements.preview);
+-        const widthField = this.root.querySelector(Selectors.IMAGE.elements.width);
+-        const heightField = this.root.querySelector(Selectors.IMAGE.elements.height);
+-
+-        const updateImageDimensions = () => {
+-            // Get the latest dimensions of the preview box for responsiveness.
+-            const boxWidth = imagePreviewBox.clientWidth;
+-            const boxHeight = imagePreviewBox.clientHeight;
+-            // Get the new width and height for the image.
+-            const dimensions = this.fitSquareIntoBox(widthField.value, heightField.value, boxWidth, boxHeight);
+-            image.style.width = `${dimensions.width}px`;
+-            image.style.height = `${dimensions.height}px`;
+-        };
+-        // If the client size is zero, then get the new dimensions once the modal is shown.
+-        if (imagePreviewBox.clientWidth === 0) {
+-            // Call the shown event.
+-            this.currentModal.getRoot().on(ModalEvents.shown, () => {
+-                updateImageDimensions();
+-            });
+-        } else {
+-            updateImageDimensions();
+-        }
+-    };
+-
+-    /**
+-     * Handles changes in the image presentation checkbox and enables/disables the image alt text input accordingly.
+-     */
+-    async presentationChanged() {
+-        const presentation = this.root.querySelector(Selectors.IMAGE.elements.presentation);
+-        const alt = this.root.querySelector(Selectors.IMAGE.elements.alt);
+-        alt.disabled = presentation.checked;
+-
+-        // Counting the image description characters.
+-        await this.handleKeyupCharacterCount();
+-    }
+-
+-    /**
+-     * This function checks whether an image URL is local (within the same website's domain) or external (from an external source).
+-     * Depending on the result, it dynamically updates the visibility and content of HTML elements in a user interface.
+-     * If the image is local then we only show it's filename.
+-     * If the image is external then it will show full URL and it can be updated.
+-     */
+-    imageTypeChecked() {
+-        const regex = new RegExp(`${Config.wwwroot}`);
+-
+-        // True if the URL is from external, otherwise false.
+-        const isExternalUrl = regex.test(this.currentUrl) === false;
+-
+-        // Hide the URL input.
+-        hideElements(Selectors.IMAGE.elements.url, this.root);
+-
+-        if (!isExternalUrl) {
+-            // Split the URL by '/' to get an array of segments.
+-            const segments = this.currentUrl.split('/');
+-            // Get the last segment, which should be the filename.
+-            const filename = segments.pop().split('?')[0];
+-            // Show the file name.
+-            this.setFilenameLabel(decodeURI(filename));
+-        } else {
+-
+-            this.setFilenameLabel(decodeURI(this.currentUrl));
+-        }
+-    }
+-
+-    /**
+-     * Set the string for the URL label element.
+-     *
+-     * @param {string} label - The label text to set.
+-     */
+-    setFilenameLabel(label) {
+-        const urlLabelEle = this.root.querySelector(Selectors.IMAGE.elements.fileNameLabel);
+-        if (urlLabelEle) {
+-            urlLabelEle.innerHTML = label;
+-            urlLabelEle.setAttribute("title", label);
+-        }
+-    }
+-
+-    toggleAriaInvalid(selectors, predicate) {
+-        selectors.forEach((selector) => {
+-            const elements = this.root.querySelectorAll(selector);
+-            elements.forEach((element) => element.setAttribute('aria-invalid', predicate));
+-        });
+-    }
+-
+-    hasErrorUrlField() {
+-        const urlError = this.currentUrl === '';
+-        if (urlError) {
+-            showElements(Selectors.IMAGE.elements.urlWarning, this.root);
+-        } else {
+-            hideElements(Selectors.IMAGE.elements.urlWarning, this.root);
+-        }
+-        this.toggleAriaInvalid([Selectors.IMAGE.elements.url], urlError);
+-
+-        return urlError;
+-    }
+-
+-    hasErrorAltField() {
+-        const alt = this.root.querySelector(Selectors.IMAGE.elements.alt).value;
+-        const presentation = this.root.querySelector(Selectors.IMAGE.elements.presentation).checked;
+-        const imageAltError = alt === '' && !presentation;
+-        if (imageAltError) {
+-            showElements(Selectors.IMAGE.elements.altWarning, this.root);
+-        } else {
+-            hideElements(Selectors.IMAGE.elements.altWarning, this.root);
+-        }
+-        this.toggleAriaInvalid([Selectors.IMAGE.elements.alt, Selectors.IMAGE.elements.presentation], imageAltError);
+-
+-        return imageAltError;
+-    }
+-
+-    setImage() {
+-        const pendingPromise = new Pending('tiny_media:setImage');
+-        const url = this.currentUrl;
+-        if (url === '') {
+-            return;
+-        }
+-
+-        // Check if there are any accessibility issues.
+-        if (this.hasErrorUrlField() || this.hasErrorAltField()) {
+-            pendingPromise.resolve();
+-            return;
+-        }
+-
+-        // Check for invalid width or height.
+-        const width = this.root.querySelector(Selectors.IMAGE.elements.width).value;
+-        if (!isPercentageValue(width) && isNaN(parseInt(width, 10))) {
+-            this.root.querySelector(Selectors.IMAGE.elements.width).focus();
+-            pendingPromise.resolve();
+-            return;
+-        }
+-
+-        const height = this.root.querySelector(Selectors.IMAGE.elements.height).value;
+-        if (!isPercentageValue(height) && isNaN(parseInt(height, 10))) {
+-            this.root.querySelector(Selectors.IMAGE.elements.height).focus();
+-            pendingPromise.resolve();
+-            return;
+-        }
+-
+-        const imageContext = {
+-            url: this.currentUrl,
+-            alt: this.root.querySelector(Selectors.IMAGE.elements.alt).value,
+-            width: this.root.querySelector(Selectors.IMAGE.elements.width).value,
+-            height: this.root.querySelector(Selectors.IMAGE.elements.height).value,
+-            presentation: this.root.querySelector(Selectors.IMAGE.elements.presentation).checked,
+-            customStyle: this.root.querySelector(Selectors.IMAGE.elements.customStyle).value,
+-        };
+-
+-        Templates.render('tiny_media/image/image', imageContext)
+-        .then((html) => {
+-            this.editor.insertContent(html);
+-            this.currentModal.destroy();
+-            pendingPromise.resolve();
+-
+-            return html;
+-        })
+-        .catch(error => {
+-            window.console.log(error);
+-        });
+-    }
+-
+-    /**
+-     * Deletes the image after confirming with the user and loads the insert image page.
+-     */
+-    deleteImage() {
+-        Notification.deleteCancelPromise(
+-            getString('deleteimage', 'tiny_media'),
+-            getString('deleteimagewarning', 'tiny_media'),
+-        ).then(() => {
+-            hideElements(Selectors.IMAGE.elements.altWarning, this.root);
+-            // Removing the image in the preview will bring the user to the insert page.
+-            this.loadInsertImage();
+-            return;
+-        }).catch(() => {
+-            // User cancelled the delete action.
+-            return;
+-        });
+-    }
+-
+-    registerEventListeners() {
+-        const submitAction = this.root.querySelector(Selectors.IMAGE.actions.submit);
+-        submitAction.addEventListener('click', (e) => {
+-            e.preventDefault();
+-            this.setImage();
+-        });
+-
+-        const deleteImageEle = this.root.querySelector(Selectors.IMAGE.actions.deleteImage);
+-        deleteImageEle.addEventListener('click', () => {
+-            this.deleteImage();
+-        });
+-
+-        this.root.addEventListener('change', async(e) => {
+-            const presentationEle = e.target.closest(Selectors.IMAGE.elements.presentation);
+-            if (presentationEle) {
+-                await this.presentationChanged();
+-            }
+-        });
+-
+-        const customSize = this.root.querySelector(Selectors.IMAGE.elements.customSizeToggle);
+-        if (customSize) {
+-            customSize.addEventListener('click', (e) => {
+-                e.preventDefault();
+-                this.sizeChecked('custom');
+-            });
+-        }
+-
+-        const originalSize = this.root.querySelector(Selectors.IMAGE.elements.originalSizeToggle);
+-        if (originalSize) {
+-            originalSize.addEventListener('click', (e) => {
+-                e.preventDefault();
+-                this.sizeChecked('original');
+-            });
+-        }
+-
+-        this.root.addEventListener('blur', async(e) => {
+-            if (e.target.nodeType === Node.ELEMENT_NODE) {
+-
+-                const presentationEle = e.target.closest(Selectors.IMAGE.elements.presentation);
+-                if (presentationEle) {
+-                    await this.presentationChanged();
+-                }
+-            }
+-        }, true);
+-
+-        // Character count.
+-        this.root.addEventListener('keyup', async(e) => {
+-            const altEle = e.target.closest(Selectors.IMAGE.elements.alt);
+-            if (altEle) {
+-                await this.handleKeyupCharacterCount();
+-            }
+-        });
+-
+-        this.root.addEventListener('input', (e) => {
+-            const widthEle = e.target.closest(Selectors.IMAGE.elements.width);
+-            if (widthEle) {
+-                // Avoid empty value.
+-                widthEle.value = widthEle.value === "" ? 0 : Number(widthEle.value);
+-                this.autoAdjustSize();
+-            }
+-
+-            const heightEle = e.target.closest(Selectors.IMAGE.elements.height);
+-            if (heightEle) {
+-                // Avoid empty value.
+-                heightEle.value = heightEle.value === "" ? 0 : Number(heightEle.value);
+-                this.autoAdjustSize(true);
+-            }
+-        });
+-    }
+-
+-    async handleKeyupCharacterCount() {
+-        const altField = this.root.querySelector(Selectors.IMAGE.elements.alt);
+-        const alt = altField.value;
+-        const current = this.root.querySelector('#currentcount');
+-        current.innerHTML = alt.length;
+-        const maxLength = altField.getAttribute('maxlength');
+-        const maxLengthFeedback = document.getElementById('maxlength_feedback');
+-        if (alt.length >= maxLength) {
+-            maxLengthFeedback.textContent = await getString('maxlengthreached', 'core', maxLength);
+-
+-            // Clever (or hacky?;p) way to ensure that the feedback message is announced to screen readers.
+-            const suffix = this.toggleMaxlengthFeedbackSuffix ? '' : '.';
+-            maxLengthFeedback.textContent += suffix;
+-            this.toggleMaxlengthFeedbackSuffix = !this.toggleMaxlengthFeedbackSuffix;
+-
+-            // Clear the feedback message after 4 seconds. This is similar to the default timeout of toast messages
+-            // before disappearing from view. It is important to clear the message to prevent screen reader users from navigating
+-            // into this region and avoiding confusion.
+-            setTimeout(() => {
+-                maxLengthFeedback.textContent = '';
+-            }, 4000);
+-        }
+-    }
+-
+-    /**
+-     * Calculates the dimensions to fit a square into a specified box while maintaining aspect ratio.
+-     *
+-     * @param {number} squareWidth - The width of the square.
+-     * @param {number} squareHeight - The height of the square.
+-     * @param {number} boxWidth - The width of the box.
+-     * @param {number} boxHeight - The height of the box.
+-     * @returns {Object} An object with the new width and height of the square to fit in the box.
+-     */
+-    fitSquareIntoBox = (squareWidth, squareHeight, boxWidth, boxHeight) => {
+-        if (squareWidth < boxWidth && squareHeight < boxHeight) {
+-          // If the square is smaller than the box, keep its dimensions.
+-          return {
+-            width: squareWidth,
+-            height: squareHeight,
+-          };
+-        }
+-        // Calculate the scaling factor based on the minimum scaling required to fit in the box.
+-        const widthScaleFactor = boxWidth / squareWidth;
+-        const heightScaleFactor = boxHeight / squareHeight;
+-        const minScaleFactor = Math.min(widthScaleFactor, heightScaleFactor);
+-        // Scale the square's dimensions based on the aspect ratio and the minimum scaling factor.
+-        const newWidth = squareWidth * minScaleFactor;
+-        const newHeight = squareHeight * minScaleFactor;
+-        return {
+-          width: newWidth,
+-          height: newHeight,
+-        };
+-    };
+-}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/image/imagehelpers.js b/public/lib/editor/tiny/plugins/media/amd/src/image/imagehelpers.js
+deleted file mode 100644
+index ca995812d338ed6adba2544e490f3ea9737be293..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/amd/src/image/imagehelpers.js
++++ /dev/null
+@@ -1,135 +0,0 @@
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * Tiny media plugin image helpers.
+- *
+- * @module      tiny_media/image/imagehelpers
+- * @copyright   2024 Meirza <meirza.arson@moodle.com>
+- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-
+-import * as Helpers from '../helpers';
+-import {Selectors} from '../selectors';
+-
+-/**
+- * Maximum length allowed for the alt attribute.
+- */
+-export const MAX_LENGTH_ALT = 750;
+-
+-/**
+- * Renders and inserts the body template for inserting an image into the modal.
+- *
+- * @param {object} templateContext - The context for rendering the template.
+- * @param {HTMLElement} root - The root element where the template will be inserted.
+- * @returns {Promise<void>}
+- * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.body}
+- */
+-export const bodyImageInsert = async(templateContext, root) => {
+-    window.console.warn('This function is deprecated. Please use core_editor/tiny/plugins/media/helpers.body instead.');
+-
+-    templateContext.bodyTemplate = 'tiny_media/insert_image_modal_insert';
+-    templateContext.selector = Selectors.IMAGE.type;
+-    return Helpers.body(templateContext, root);
+-};
+-
+-/**
+- * Renders and inserts the footer template for inserting an image into the modal.
+- *
+- * @param {object} templateContext - The context for rendering the template.
+- * @param {HTMLElement} root - The root element where the template will be inserted.
+- * @returns {Promise<void>}
+- * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.footer}
+- */
+-export const footerImageInsert = async(templateContext, root) => {
+-    window.console.warn(`This function is deprecated.
+-        Please use core_editor/tiny/plugins/media/helpers.footer instead.`);
+-
+-    templateContext.footerTemplate = 'tiny_media/insert_image_modal_insert_footer';
+-    templateContext.selector = Selectors.IMAGE.type;
+-    return Helpers.footer(templateContext, root);
+-};
+-
+-/**
+- * Renders and inserts the body template for displaying image details in the modal.
+- *
+- * @param {object} templateContext - The context for rendering the template.
+- * @param {HTMLElement} root - The root element where the template will be inserted.
+- * @returns {Promise<void>}
+- * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.body}
+- */
+-export const bodyImageDetails = async(templateContext, root) => {
+-    window.console.warn(`This function is deprecated.
+-        Please use core_editor/tiny/plugins/media/helpers.body instead.`);
+-
+-    templateContext.bodyTemplate = 'tiny_media/insert_image_modal_details';
+-    templateContext.selector = Selectors.IMAGE.type;
+-    return Helpers.body(templateContext, root);
+-};
+-
+-/**
+- * Renders and inserts the footer template for displaying image details in the modal.
+- * @param {object} templateContext - The context for rendering the template.
+- * @param {HTMLElement} root - The root element where the template will be inserted.
+- * @returns {Promise<void>}
+- * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.footer}
+- */
+-export const footerImageDetails = async(templateContext, root) => {
+-    window.console.warn(`This function is deprecated.
+-        Please use core_editor/tiny/plugins/media/helpers.footer instead.`);
+-
+-    templateContext.footerTemplate = 'tiny_media/insert_image_modal_details_footer';
+-    templateContext.selector = Selectors.IMAGE.type;
+-    return Helpers.footer(templateContext, root);
+-};
+-
+-/**
+- * Show the element(s).
+- *
+- * @param {string|string[]} elements - The CSS selector for the elements to toggle.
+- * @param {object} root - The CSS selector for the elements to toggle.
+- * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.showElements}
+- */
+-export const showElements = (elements, root) => {
+-    window.console.warn(`This function is deprecated.
+-        Please use core_editor/tiny/plugins/media/helpers.showElements instead.`);
+-    Helpers.showElements(elements, root);
+-};
+-
+-/**
+- * Hide the element(s).
+- *
+- * @param {string|string[]} elements - The CSS selector for the elements to toggle.
+- * @param {object} root - The CSS selector for the elements to toggle.
+- * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.hideElements}
+- */
+-export const hideElements = (elements, root) => {
+-    window.console.warn(`This function is deprecated.
+-        Please use core_editor/tiny/plugins/media/helpers.hideElements instead.`);
+-    Helpers.hideElements(elements, root);
+-};
+-
+-/**
+- * Checks if the given value is a percentage value.
+- *
+- * @param {string} value - The value to check.
+- * @returns {boolean} True if the value is a percentage value, false otherwise.
+- * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.isPercentageValue}
+- */
+-export const isPercentageValue = (value) => {
+-    window.console.warn(`This function is deprecated.
+-        Please use core_editor/tiny/plugins/media/helpers.isPercentageValue instead.`);
+-    return Helpers.isPercentageValue(value);
+-};
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/image/imageinsert.js b/public/lib/editor/tiny/plugins/media/amd/src/image/imageinsert.js
+deleted file mode 100644
+index 19effce44312afd78aade7f1e3f0c2902638094d..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/amd/src/image/imageinsert.js
++++ /dev/null
+@@ -1,278 +0,0 @@
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * Tiny media plugin image insertion class for Moodle.
+- *
+- * @module      tiny_media/image/imageinsert
+- * @copyright   2024 Meirza <meirza.arson@moodle.com>
+- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-
+-import Selectors from '../selectors';
+-import Dropzone from 'core/dropzone';
+-import uploadFile from 'editor_tiny/uploader';
+-import {prefetchStrings} from 'core/prefetch';
+-import {getStrings} from 'core/str';
+-import {component} from "../common";
+-import {getFilePicker} from 'editor_tiny/options';
+-import {displayFilepicker} from 'editor_tiny/utils';
+-import {ImageDetails} from './imagedetails';
+-import {
+-    body,
+-    footer,
+-    hideElements,
+-    showElements,
+-    isValidUrl,
+-} from '../helpers';
+-import {MAX_LENGTH_ALT} from './imagehelpers';
+-
+-prefetchStrings('tiny_media', [
+-    'insertimage',
+-    'enterurl',
+-    'enterurlor',
+-    'imageurlrequired',
+-    'uploading',
+-    'loading',
+-    'addfilesdrop',
+-    'sizecustom_help',
+-    'alttext_help',
+-]);
+-
+-export class ImageInsert {
+-
+-    constructor(
+-        root,
+-        editor,
+-        currentModal,
+-        canShowFilePicker,
+-        canShowDropZone,
+-    ) {
+-        this.root = root;
+-        this.editor = editor;
+-        this.currentModal = currentModal;
+-        this.canShowFilePicker = canShowFilePicker;
+-        this.canShowDropZone = canShowDropZone;
+-    }
+-
+-    init = async function() {
+-        // Get the localization lang strings and turn them into object.
+-        const langStringKeys = [
+-            'insertimage',
+-            'enterurl',
+-            'enterurlor',
+-            'imageurlrequired',
+-            'uploading',
+-            'loading',
+-            'addfilesdrop',
+-            'sizecustom_help',
+-            'alttext_help',
+-        ];
+-        const langStringvalues = await getStrings([...langStringKeys].map((key) => ({key, component})));
+-
+-        // Convert array to object.
+-        this.langStrings = Object.fromEntries(langStringKeys.map((key, index) => [key, langStringvalues[index]]));
+-        this.currentModal.setTitle(this.langStrings.insertimage);
+-        if (this.canShowDropZone) {
+-            const dropZoneEle = document.querySelector(Selectors.IMAGE.elements.dropzoneContainer);
+-
+-            // Accepted types can be either a string or an array.
+-            let acceptedTypes = getFilePicker(this.editor, 'image').accepted_types;
+-            if (Array.isArray(acceptedTypes)) {
+-                acceptedTypes = acceptedTypes.join(',');
+-            }
+-
+-            const dropZone = new Dropzone(
+-                dropZoneEle,
+-                acceptedTypes,
+-                files => {
+-                    this.handleUploadedFile(files);
+-                }
+-            );
+-            dropZone.setLabel(this.langStrings.addfilesdrop);
+-            dropZone.init();
+-        }
+-        await this.registerEventListeners();
+-    };
+-
+-    /**
+-     * Enables or disables the URL-related buttons in the footer based on the current URL and input value.
+-     */
+-    toggleUrlButton() {
+-        const urlInput = this.root.querySelector(Selectors.IMAGE.elements.url);
+-        const url = urlInput.value;
+-        const addUrl = this.root.querySelector(Selectors.IMAGE.actions.addUrl);
+-        addUrl.disabled = !(url !== "" && isValidUrl(url));
+-    }
+-
+-    /**
+-     * Handles changes in the image URL input field and loads a preview of the image if the URL has changed.
+-     */
+-    urlChanged() {
+-        hideElements(Selectors.IMAGE.elements.urlWarning, this.root);
+-        const input = this.root.querySelector(Selectors.IMAGE.elements.url);
+-        if (input.value && input.value !== this.currentUrl) {
+-            this.loadPreviewImage(input.value);
+-        }
+-    }
+-
+-    /**
+-     * Loads and displays a preview image based on the provided URL, and handles image loading events.
+-     *
+-     * @param {string} url - The URL of the image to load and display.
+-     */
+-    loadPreviewImage = function(url) {
+-        this.startImageLoading();
+-        this.currentUrl = url;
+-        const image = new Image();
+-        image.src = url;
+-        image.addEventListener('error', () => {
+-            const urlWarningLabelEle = this.root.querySelector(Selectors.IMAGE.elements.urlWarning);
+-            urlWarningLabelEle.innerHTML = this.langStrings.imageurlrequired;
+-            showElements(Selectors.IMAGE.elements.urlWarning, this.root);
+-            this.currentUrl = "";
+-            this.stopImageLoading();
+-        });
+-
+-        image.addEventListener('load', () => {
+-            let templateContext = {};
+-            templateContext.sizecustomhelpicon = {text: this.langStrings.sizecustom_help};
+-            templateContext.alttexthelpicon = {text: this.langStrings.alttext_help};
+-            templateContext.bodyTemplate = Selectors.IMAGE.template.body.insertImageDetailsBody;
+-            templateContext.footerTemplate = Selectors.IMAGE.template.footer.insertImageDetailsFooter;
+-            templateContext.selector = Selectors.IMAGE.type;
+-            templateContext.maxlengthalt = MAX_LENGTH_ALT;
+-
+-            Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
+-                .then(() => {
+-                    const imagedetails = new ImageDetails(
+-                        this.root,
+-                        this.editor,
+-                        this.currentModal,
+-                        this.canShowFilePicker,
+-                        this.canShowDropZone,
+-                        this.currentUrl,
+-                        image,
+-                    );
+-                    imagedetails.init();
+-                    return;
+-                }).then(() => {
+-                    this.stopImageLoading();
+-                    return;
+-                })
+-                .catch(error => {
+-                    window.console.log(error);
+-                });
+-        });
+-    };
+-
+-    /**
+-     * Displays the upload loader and disables UI elements while loading a file.
+-     */
+-    startImageLoading() {
+-        showElements(Selectors.IMAGE.elements.loaderIcon, this.root);
+-        const elementsToHide = [
+-            Selectors.IMAGE.elements.insertImage,
+-            Selectors.IMAGE.elements.urlWarning,
+-            Selectors.IMAGE.elements.modalFooter,
+-        ];
+-        hideElements(elementsToHide, this.root);
+-    }
+-
+-    /**
+-     * Displays the upload loader and disables UI elements while loading a file.
+-     */
+-    stopImageLoading() {
+-        hideElements(Selectors.IMAGE.elements.loaderIcon, this.root);
+-        const elementsToShow = [
+-            Selectors.IMAGE.elements.insertImage,
+-            Selectors.IMAGE.elements.modalFooter,
+-        ];
+-        showElements(elementsToShow, this.root);
+-    }
+-
+-    filePickerCallback(params) {
+-        if (params.url) {
+-            this.loadPreviewImage(params.url);
+-        }
+-    }
+-
+-    /**
+-     * Updates the content of the loader icon.
+-     *
+-     * @param {HTMLElement} root - The root element containing the loader icon.
+-     * @param {object} langStrings - An object containing language strings.
+-     * @param {number|null} progress - The progress percentage (optional).
+-     * @returns {void}
+-     */
+-    updateLoaderIcon = (root, langStrings, progress = null) => {
+-        const loaderIcon = root.querySelector(Selectors.IMAGE.elements.loaderIconContainer + ' div');
+-        loaderIcon.innerHTML = progress !== null ? `${langStrings.uploading} ${Math.round(progress)}%` : langStrings.loading;
+-    };
+-
+-    /**
+-     * Handles the uploaded file, initiates the upload process, and updates the UI during the upload.
+-     *
+-     * @param {FileList} files - The list of files to upload (usually from a file input field).
+-     * @returns {Promise<void>} A promise that resolves when the file is uploaded and processed.
+-     */
+-    handleUploadedFile = async(files) => {
+-        try {
+-            this.startImageLoading();
+-            const fileURL = await uploadFile(this.editor, 'image', files[0], files[0].name, (progress) => {
+-                this.updateLoaderIcon(this.root, this.langStrings, progress);
+-            });
+-            // Set the loader icon content to "loading" after the file upload completes.
+-            this.updateLoaderIcon(this.root, this.langStrings);
+-            this.filePickerCallback({url: fileURL});
+-        } catch (error) {
+-            // Handle the error.
+-            const urlWarningLabelEle = this.root.querySelector(Selectors.IMAGE.elements.urlWarning);
+-            urlWarningLabelEle.innerHTML = error.error !== undefined ? error.error : error;
+-            showElements(Selectors.IMAGE.elements.urlWarning, this.root);
+-            this.stopImageLoading();
+-        }
+-    };
+-
+-    registerEventListeners() {
+-        this.root.addEventListener('click', async(e) => {
+-            const addUrlEle = e.target.closest(Selectors.IMAGE.actions.addUrl);
+-            if (addUrlEle) {
+-                this.urlChanged();
+-            }
+-
+-            const imageBrowserAction = e.target.closest(Selectors.IMAGE.actions.imageBrowser);
+-            if (imageBrowserAction && this.canShowFilePicker) {
+-                e.preventDefault();
+-                const params = await displayFilepicker(this.editor, 'image');
+-                this.filePickerCallback(params);
+-            }
+-        });
+-
+-        this.root.addEventListener('input', (e) => {
+-            const urlEle = e.target.closest(Selectors.IMAGE.elements.url);
+-            if (urlEle) {
+-                this.toggleUrlButton();
+-            }
+-        });
+-
+-        const fileInput = this.root.querySelector(Selectors.IMAGE.elements.fileInput);
+-        if (fileInput) {
+-            fileInput.addEventListener('change', () => {
+-                this.handleUploadedFile(fileInput.files);
+-            });
+-        }
+-    }
+-}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/image/imagemodal.js b/public/lib/editor/tiny/plugins/media/amd/src/image/imagemodal.js
+deleted file mode 100644
+index df2b6406c25201561f27d4fcecb04cb79fb6f7aa..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/amd/src/image/imagemodal.js
++++ /dev/null
+@@ -1,49 +0,0 @@
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/**
+- * Image Modal for Tiny.
+- *
+- * @module      tiny_media/image/imagemodal
+- * @copyright   2022 Huong Nguyen <huongnv13@gmail.com>
+- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-
+-import Modal from 'core/modal';
+-import {component} from '../common';
+-
+-export default class ImageModal extends Modal {
+-    static TYPE = `${component}/image/imagemodal`;
+-    static TEMPLATE = `${component}/image/insert_image_modal`;
+-
+-    registerEventListeners() {
+-        // Call the parent registration.
+-        super.registerEventListeners();
+-
+-        // Register to close on save/cancel.
+-        this.registerCloseOnSave();
+-        this.registerCloseOnCancel();
+-    }
+-
+-    configure(modalConfig) {
+-        modalConfig.large = true;
+-        modalConfig.removeOnClose = true;
+-        modalConfig.show = true;
+-
+-        super.configure(modalConfig);
+-    }
+-}
+-
+-ImageModal.registerModalType();
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/imagedetails.js b/public/lib/editor/tiny/plugins/media/amd/src/imagedetails.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..648b3121d5c3b98ca13ea71dcd38319ed2fef7cb
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/amd/src/imagedetails.js
+@@ -0,0 +1,513 @@
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Tiny media plugin image details class for Moodle.
++ *
++ * @module      tiny_media/imagedetails
++ * @copyright   2024 Meirza <meirza.arson@moodle.com>
++ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++import Config from 'core/config';
++import ModalEvents from 'core/modal_events';
++import Notification from 'core/notification';
++import Pending from 'core/pending';
++import Selectors from './selectors';
++import Templates from 'core/templates';
++import {getString} from 'core/str';
++import {ImageInsert} from 'tiny_media/imageinsert';
++import {MediaBase} from './mediabase';
++import {
++    body,
++    footer,
++    hideElements,
++    showElements,
++    isPercentageValue,
++} from './helpers';
++
++export class ImageDetails extends MediaBase {
++    DEFAULTS = {
++        WIDTH: 160,
++        HEIGHT: 160,
++    };
++
++    selectorType = Selectors.IMAGE.type;
++
++    mediaDimensions = null;
++
++    constructor(
++        root,
++        editor,
++        currentModal,
++        canShowFilePicker,
++        canShowDropZone,
++        currentUrl,
++        image,
++    ) {
++        super();
++        this.root = root;
++        this.editor = editor;
++        this.currentModal = currentModal;
++        this.canShowFilePicker = canShowFilePicker;
++        this.canShowDropZone = canShowDropZone;
++        this.currentUrl = currentUrl;
++        this.image = image;
++        this.toggleMaxlengthFeedbackSuffix = false;
++    }
++
++    init = function() {
++        this.currentModal.setTitle(getString('imagedetails', 'tiny_media'));
++        this.imageTypeChecked();
++        this.presentationChanged();
++        this.storeImageDimensions(this.image);
++        this.setImageDimensions();
++        this.registerEventListeners();
++    };
++
++    /**
++     * Loads and displays a preview image based on the provided URL, and handles image loading events.
++     */
++    loadInsertImage = async function() {
++        const templateContext = {
++            elementid: this.editor.id,
++            showfilepicker: this.canShowFilePicker,
++            showdropzone: this.canShowDropZone,
++            bodyTemplate: Selectors.IMAGE.template.body.insertImageBody,
++            footerTemplate: Selectors.IMAGE.template.footer.insertImageFooter,
++            selector: Selectors.IMAGE.type,
++        };
++
++        Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
++            .then(() => {
++                const imageinsert = new ImageInsert(
++                    this.root,
++                    this.editor,
++                    this.currentModal,
++                    this.canShowFilePicker,
++                    this.canShowDropZone,
++                );
++                imageinsert.init();
++                return;
++            })
++            .catch(error => {
++                window.console.log(error);
++            });
++    };
++
++    storeImageDimensions(image) {
++        // Store dimensions of the raw image, falling back to defaults for images without dimensions (e.g. SVG).
++        this.mediaDimensions = {
++            width: image.width || this.DEFAULTS.WIDTH,
++            height: image.height || this.DEFAULTS.HEIGHT,
++        };
++
++        const getCurrentWidth = (element) => {
++            if (element.value === '') {
++                element.value = this.mediaDimensions.width;
++            }
++            return element.value;
++        };
++
++        const getCurrentHeight = (element) => {
++            if (element.value === '') {
++                element.value = this.mediaDimensions.height;
++            }
++            return element.value;
++        };
++
++        const widthInput = this.root.querySelector(Selectors.IMAGE.elements.width);
++        const currentWidth = getCurrentWidth(widthInput);
++
++        const heightInput = this.root.querySelector(Selectors.IMAGE.elements.height);
++        const currentHeight = getCurrentHeight(heightInput);
++
++        const preview = this.root.querySelector(Selectors.IMAGE.elements.preview);
++        preview.setAttribute('src', image.src);
++        preview.style.display = '';
++
++        // Ensure the checkbox always in unchecked status when an image loads at first.
++        const constrain = this.root.querySelector(Selectors.IMAGE.elements.constrain);
++        if (isPercentageValue(currentWidth) && isPercentageValue(currentHeight)) {
++            constrain.checked = currentWidth === currentHeight;
++        } else if (image.width === 0 || image.height === 0) {
++            // If we don't have both dimensions of the image, we can't auto-size it, so disable control.
++            constrain.disabled = 'disabled';
++        } else {
++            // This is the same as comparing to 3 decimal places.
++            const widthRatio = Math.round(100 * parseInt(currentWidth, 10) / image.width);
++            const heightRatio = Math.round(100 * parseInt(currentHeight, 10) / image.height);
++            constrain.checked = widthRatio === heightRatio;
++        }
++
++        /**
++         * Sets the selected size option based on current width and height values.
++         *
++         * @param {number} currentWidth - The current width value.
++         * @param {number} currentHeight - The current height value.
++         */
++        const setSelectedSize = (currentWidth, currentHeight) => {
++            if (this.mediaDimensions.width === currentWidth &&
++                this.mediaDimensions.height === currentHeight
++            ) {
++                this.currentWidth = this.mediaDimensions.width;
++                this.currentHeight = this.mediaDimensions.height;
++                this.sizeChecked('original');
++            } else {
++                this.currentWidth = currentWidth;
++                this.currentHeight = currentHeight;
++                this.sizeChecked('custom');
++            }
++        };
++
++        setSelectedSize(Number(currentWidth), Number(currentHeight));
++    }
++
++    /**
++     * Sets the dimensions of the image preview element based on user input and constraints.
++     */
++    setImageDimensions = () => {
++        const imagePreviewBox = this.root.querySelector(Selectors.IMAGE.elements.previewBox);
++        const image = this.root.querySelector(Selectors.IMAGE.elements.preview);
++        const widthField = this.root.querySelector(Selectors.IMAGE.elements.width);
++        const heightField = this.root.querySelector(Selectors.IMAGE.elements.height);
++
++        const updateImageDimensions = () => {
++            // Get the latest dimensions of the preview box for responsiveness.
++            const boxWidth = imagePreviewBox.clientWidth;
++            const boxHeight = imagePreviewBox.clientHeight;
++            // Get the new width and height for the image.
++            const dimensions = this.fitSquareIntoBox(widthField.value, heightField.value, boxWidth, boxHeight);
++            image.style.width = `${dimensions.width}px`;
++            image.style.height = `${dimensions.height}px`;
++        };
++        // If the client size is zero, then get the new dimensions once the modal is shown.
++        if (imagePreviewBox.clientWidth === 0) {
++            // Call the shown event.
++            this.currentModal.getRoot().on(ModalEvents.shown, () => {
++                updateImageDimensions();
++            });
++        } else {
++            updateImageDimensions();
++        }
++    };
++
++    /**
++     * Handles changes in the image presentation checkbox and enables/disables the image alt text input accordingly.
++     */
++    async presentationChanged() {
++        const presentation = this.root.querySelector(Selectors.IMAGE.elements.presentation);
++        const alt = this.root.querySelector(Selectors.IMAGE.elements.alt);
++        alt.disabled = presentation.checked;
++
++        // Counting the image description characters.
++        await this.handleKeyupCharacterCount();
++    }
++
++    /**
++     * This function checks whether an image URL is local (within the same website's domain) or external (from an external source).
++     * Depending on the result, it dynamically updates the visibility and content of HTML elements in a user interface.
++     * If the image is local then we only show it's filename.
++     * If the image is external then it will show full URL and it can be updated.
++     */
++    imageTypeChecked() {
++        const regex = new RegExp(`${Config.wwwroot}`);
++
++        // True if the URL is from external, otherwise false.
++        const isExternalUrl = regex.test(this.currentUrl) === false;
++
++        // Hide the URL input.
++        hideElements(Selectors.IMAGE.elements.url, this.root);
++
++        if (!isExternalUrl) {
++            // Split the URL by '/' to get an array of segments.
++            const segments = this.currentUrl.split('/');
++            // Get the last segment, which should be the filename.
++            const filename = segments.pop().split('?')[0];
++            // Show the file name.
++            this.setFilenameLabel(decodeURI(filename));
++        } else {
++
++            this.setFilenameLabel(decodeURI(this.currentUrl));
++        }
++    }
++
++    /**
++     * Set the string for the URL label element.
++     *
++     * @param {string} label - The label text to set.
++     */
++    setFilenameLabel(label) {
++        const urlLabelEle = this.root.querySelector(Selectors.IMAGE.elements.fileNameLabel);
++        if (urlLabelEle) {
++            urlLabelEle.innerHTML = label;
++            urlLabelEle.setAttribute("title", label);
++        }
++    }
++
++    toggleAriaInvalid(selectors, predicate) {
++        selectors.forEach((selector) => {
++            const elements = this.root.querySelectorAll(selector);
++            elements.forEach((element) => element.setAttribute('aria-invalid', predicate));
++        });
++    }
++
++    hasErrorUrlField() {
++        const urlError = this.currentUrl === '';
++        if (urlError) {
++            showElements(Selectors.IMAGE.elements.urlWarning, this.root);
++        } else {
++            hideElements(Selectors.IMAGE.elements.urlWarning, this.root);
++        }
++        this.toggleAriaInvalid([Selectors.IMAGE.elements.url], urlError);
++
++        return urlError;
++    }
++
++    hasErrorAltField() {
++        const alt = this.root.querySelector(Selectors.IMAGE.elements.alt).value;
++        const presentation = this.root.querySelector(Selectors.IMAGE.elements.presentation).checked;
++        const imageAltError = alt === '' && !presentation;
++        if (imageAltError) {
++            showElements(Selectors.IMAGE.elements.altWarning, this.root);
++        } else {
++            hideElements(Selectors.IMAGE.elements.altWarning, this.root);
++        }
++        this.toggleAriaInvalid([Selectors.IMAGE.elements.alt, Selectors.IMAGE.elements.presentation], imageAltError);
++
++        return imageAltError;
++    }
++
++    updateWarning() {
++        const urlError = this.hasErrorUrlField();
++        const imageAltError = this.hasErrorAltField();
++
++        return urlError || imageAltError;
++    }
++
++    getImageContext() {
++        // Check if there are any accessibility issues.
++        if (this.updateWarning()) {
++            return null;
++        }
++
++        const classList = [];
++        const constrain = this.root.querySelector(Selectors.IMAGE.elements.constrain).checked;
++        const sizeOriginal = this.root.querySelector(Selectors.IMAGE.elements.sizeOriginal).checked;
++        if (constrain || sizeOriginal) {
++            // If the Auto size checkbox is checked or the Original size is checked, then apply the responsive class.
++            classList.push(Selectors.IMAGE.styles.responsive);
++        } else {
++            // Otherwise, remove it.
++            classList.pop(Selectors.IMAGE.styles.responsive);
++        }
++
++        return {
++            url: this.currentUrl,
++            alt: this.root.querySelector(Selectors.IMAGE.elements.alt).value,
++            width: this.root.querySelector(Selectors.IMAGE.elements.width).value,
++            height: this.root.querySelector(Selectors.IMAGE.elements.height).value,
++            presentation: this.root.querySelector(Selectors.IMAGE.elements.presentation).checked,
++            customStyle: this.root.querySelector(Selectors.IMAGE.elements.customStyle).value,
++            classlist: classList.join(' '),
++        };
++    }
++
++    setImage() {
++        const pendingPromise = new Pending('tiny_media:setImage');
++        const url = this.currentUrl;
++        if (url === '') {
++            return;
++        }
++
++        // Check if there are any accessibility issues.
++        if (this.updateWarning()) {
++            pendingPromise.resolve();
++            return;
++        }
++
++        // Check for invalid width or height.
++        const width = this.root.querySelector(Selectors.IMAGE.elements.width).value;
++        if (!isPercentageValue(width) && isNaN(parseInt(width, 10))) {
++            this.root.querySelector(Selectors.IMAGE.elements.width).focus();
++            pendingPromise.resolve();
++            return;
++        }
++
++        const height = this.root.querySelector(Selectors.IMAGE.elements.height).value;
++        if (!isPercentageValue(height) && isNaN(parseInt(height, 10))) {
++            this.root.querySelector(Selectors.IMAGE.elements.height).focus();
++            pendingPromise.resolve();
++            return;
++        }
++
++        Templates.render('tiny_media/image', this.getImageContext())
++        .then((html) => {
++            this.editor.insertContent(html);
++            this.currentModal.destroy();
++            pendingPromise.resolve();
++
++            return html;
++        })
++        .catch(error => {
++            window.console.log(error);
++        });
++    }
++
++    /**
++     * Deletes the image after confirming with the user and loads the insert image page.
++     */
++    deleteImage() {
++        Notification.deleteCancelPromise(
++            getString('deleteimage', 'tiny_media'),
++            getString('deleteimagewarning', 'tiny_media'),
++        ).then(() => {
++            hideElements(Selectors.IMAGE.elements.altWarning, this.root);
++            // Removing the image in the preview will bring the user to the insert page.
++            this.loadInsertImage();
++            return;
++        }).catch(error => {
++            window.console.log(error);
++        });
++    }
++
++    registerEventListeners() {
++        const submitAction = this.root.querySelector(Selectors.IMAGE.actions.submit);
++        submitAction.addEventListener('click', (e) => {
++            e.preventDefault();
++            this.setImage();
++        });
++
++        const deleteImageEle = this.root.querySelector(Selectors.IMAGE.actions.deleteImage);
++        deleteImageEle.addEventListener('click', () => {
++            this.deleteImage();
++        });
++        deleteImageEle.addEventListener("keydown", (e) => {
++            if (e.key === "Enter") {
++                this.deleteImage();
++            }
++        });
++
++        this.root.addEventListener('change', async(e) => {
++            const presentationEle = e.target.closest(Selectors.IMAGE.elements.presentation);
++            if (presentationEle) {
++                await this.presentationChanged();
++            }
++
++            const constrainEle = e.target.closest(Selectors.IMAGE.elements.constrain);
++            if (constrainEle) {
++                this.autoAdjustSize();
++            }
++
++            const sizeOriginalEle = e.target.closest(Selectors.IMAGE.elements.sizeOriginal);
++            if (sizeOriginalEle) {
++                this.sizeChecked('original');
++            }
++
++            const sizeCustomEle = e.target.closest(Selectors.IMAGE.elements.sizeCustom);
++            if (sizeCustomEle) {
++                this.sizeChecked('custom');
++            }
++        });
++
++        this.root.addEventListener('blur', async(e) => {
++            if (e.target.nodeType === Node.ELEMENT_NODE) {
++
++                const presentationEle = e.target.closest(Selectors.IMAGE.elements.presentation);
++                if (presentationEle) {
++                    await this.presentationChanged();
++                }
++            }
++        }, true);
++
++        // Character count.
++        this.root.addEventListener('keyup', async(e) => {
++            const altEle = e.target.closest(Selectors.IMAGE.elements.alt);
++            if (altEle) {
++                await this.handleKeyupCharacterCount();
++            }
++        });
++
++        this.root.addEventListener('input', (e) => {
++            const widthEle = e.target.closest(Selectors.IMAGE.elements.width);
++            if (widthEle) {
++                // Avoid empty value.
++                widthEle.value = widthEle.value === "" ? 0 : Number(widthEle.value);
++                this.autoAdjustSize();
++            }
++
++            const heightEle = e.target.closest(Selectors.IMAGE.elements.height);
++            if (heightEle) {
++                // Avoid empty value.
++                heightEle.value = heightEle.value === "" ? 0 : Number(heightEle.value);
++                this.autoAdjustSize(true);
++            }
++        });
++    }
++
++    async handleKeyupCharacterCount() {
++        const altField = this.root.querySelector(Selectors.IMAGE.elements.alt);
++        const alt = altField.value;
++        const current = this.root.querySelector('#currentcount');
++        current.innerHTML = alt.length;
++        const maxLength = altField.getAttribute('maxlength');
++        const maxLengthFeedback = document.getElementById('maxlength_feedback');
++        if (alt.length >= maxLength) {
++            maxLengthFeedback.textContent = await getString('maxlengthreached', 'core', maxLength);
++
++            // Clever (or hacky?;p) way to ensure that the feedback message is announced to screen readers.
++            const suffix = this.toggleMaxlengthFeedbackSuffix ? '' : '.';
++            maxLengthFeedback.textContent += suffix;
++            this.toggleMaxlengthFeedbackSuffix = !this.toggleMaxlengthFeedbackSuffix;
++
++            // Clear the feedback message after 4 seconds. This is similar to the default timeout of toast messages
++            // before disappearing from view. It is important to clear the message to prevent screen reader users from navigating
++            // into this region and avoiding confusion.
++            setTimeout(() => {
++                maxLengthFeedback.textContent = '';
++            }, 4000);
++        }
++    }
++
++    /**
++     * Calculates the dimensions to fit a square into a specified box while maintaining aspect ratio.
++     *
++     * @param {number} squareWidth - The width of the square.
++     * @param {number} squareHeight - The height of the square.
++     * @param {number} boxWidth - The width of the box.
++     * @param {number} boxHeight - The height of the box.
++     * @returns {Object} An object with the new width and height of the square to fit in the box.
++     */
++    fitSquareIntoBox = (squareWidth, squareHeight, boxWidth, boxHeight) => {
++        if (squareWidth < boxWidth && squareHeight < boxHeight) {
++          // If the square is smaller than the box, keep its dimensions.
++          return {
++            width: squareWidth,
++            height: squareHeight,
++          };
++        }
++        // Calculate the scaling factor based on the minimum scaling required to fit in the box.
++        const widthScaleFactor = boxWidth / squareWidth;
++        const heightScaleFactor = boxHeight / squareHeight;
++        const minScaleFactor = Math.min(widthScaleFactor, heightScaleFactor);
++        // Scale the square's dimensions based on the aspect ratio and the minimum scaling factor.
++        const newWidth = squareWidth * minScaleFactor;
++        const newHeight = squareHeight * minScaleFactor;
++        return {
++          width: newWidth,
++          height: newHeight,
++        };
++    };
++}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/imagehelpers.js b/public/lib/editor/tiny/plugins/media/amd/src/imagehelpers.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..9153092eb17217afae3f6810ad45a7c810d9b76c
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/amd/src/imagehelpers.js
+@@ -0,0 +1,135 @@
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Tiny media plugin image helpers.
++ *
++ * @module      tiny_media/imagehelpers
++ * @copyright   2024 Meirza <meirza.arson@moodle.com>
++ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++import * as Helpers from 'tiny_media/helpers';
++import {Selectors} from './selectors';
++
++/**
++ * Maximum length allowed for the alt attribute.
++ */
++export const MAX_LENGTH_ALT = 750;
++
++/**
++ * Renders and inserts the body template for inserting an image into the modal.
++ *
++ * @param {object} templateContext - The context for rendering the template.
++ * @param {HTMLElement} root - The root element where the template will be inserted.
++ * @returns {Promise<void>}
++ * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.body}
++ */
++export const bodyImageInsert = async(templateContext, root) => {
++    window.console.warn('This function is deprecated. Please use core_editor/tiny/plugins/media/helpers.body instead.');
++
++    templateContext.bodyTemplate = 'tiny_media/insert_image_modal_insert';
++    templateContext.selector = Selectors.IMAGE.type;
++    return Helpers.body(templateContext, root);
++};
++
++/**
++ * Renders and inserts the footer template for inserting an image into the modal.
++ *
++ * @param {object} templateContext - The context for rendering the template.
++ * @param {HTMLElement} root - The root element where the template will be inserted.
++ * @returns {Promise<void>}
++ * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.footer}
++ */
++export const footerImageInsert = async(templateContext, root) => {
++    window.console.warn(`This function is deprecated.
++        Please use core_editor/tiny/plugins/media/helpers.footer instead.`);
++
++    templateContext.footerTemplate = 'tiny_media/insert_image_modal_insert_footer';
++    templateContext.selector = Selectors.IMAGE.type;
++    return Helpers.footer(templateContext, root);
++};
++
++/**
++ * Renders and inserts the body template for displaying image details in the modal.
++ *
++ * @param {object} templateContext - The context for rendering the template.
++ * @param {HTMLElement} root - The root element where the template will be inserted.
++ * @returns {Promise<void>}
++ * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.body}
++ */
++export const bodyImageDetails = async(templateContext, root) => {
++    window.console.warn(`This function is deprecated.
++        Please use core_editor/tiny/plugins/media/helpers.body instead.`);
++
++    templateContext.bodyTemplate = 'tiny_media/insert_image_modal_details';
++    templateContext.selector = Selectors.IMAGE.type;
++    return Helpers.body(templateContext, root);
++};
++
++/**
++ * Renders and inserts the footer template for displaying image details in the modal.
++ * @param {object} templateContext - The context for rendering the template.
++ * @param {HTMLElement} root - The root element where the template will be inserted.
++ * @returns {Promise<void>}
++ * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.footer}
++ */
++export const footerImageDetails = async(templateContext, root) => {
++    window.console.warn(`This function is deprecated.
++        Please use core_editor/tiny/plugins/media/helpers.footer instead.`);
++
++    templateContext.footerTemplate = 'tiny_media/insert_image_modal_details_footer';
++    templateContext.selector = Selectors.IMAGE.type;
++    return Helpers.footer(templateContext, root);
++};
++
++/**
++ * Show the element(s).
++ *
++ * @param {string|string[]} elements - The CSS selector for the elements to toggle.
++ * @param {object} root - The CSS selector for the elements to toggle.
++ * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.showElements}
++ */
++export const showElements = (elements, root) => {
++    window.console.warn(`This function is deprecated.
++        Please use core_editor/tiny/plugins/media/helpers.showElements instead.`);
++    Helpers.showElements(elements, root);
++};
++
++/**
++ * Hide the element(s).
++ *
++ * @param {string|string[]} elements - The CSS selector for the elements to toggle.
++ * @param {object} root - The CSS selector for the elements to toggle.
++ * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.hideElements}
++ */
++export const hideElements = (elements, root) => {
++    window.console.warn(`This function is deprecated.
++        Please use core_editor/tiny/plugins/media/helpers.hideElements instead.`);
++    Helpers.hideElements(elements, root);
++};
++
++/**
++ * Checks if the given value is a percentage value.
++ *
++ * @param {string} value - The value to check.
++ * @returns {boolean} True if the value is a percentage value, false otherwise.
++ * @deprecated Since Moodle 5.0 See {@link module:core_editor/tiny/plugins/media/helpers.isPercentageValue}
++ */
++export const isPercentageValue = (value) => {
++    window.console.warn(`This function is deprecated.
++        Please use core_editor/tiny/plugins/media/helpers.isPercentageValue instead.`);
++    return Helpers.isPercentageValue(value);
++};
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/imageinsert.js b/public/lib/editor/tiny/plugins/media/amd/src/imageinsert.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..a4115c86e1a805b20ec55651421159288058ab66
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/amd/src/imageinsert.js
+@@ -0,0 +1,275 @@
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Tiny media plugin image insertion class for Moodle.
++ *
++ * @module      tiny_media/imageinsert
++ * @copyright   2024 Meirza <meirza.arson@moodle.com>
++ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++import Selectors from './selectors';
++import Dropzone from 'core/dropzone';
++import uploadFile from 'editor_tiny/uploader';
++import {prefetchStrings} from 'core/prefetch';
++import {getStrings} from 'core/str';
++import {component} from "./common";
++import {getFilePicker} from 'editor_tiny/options';
++import {displayFilepicker} from 'editor_tiny/utils';
++import {ImageDetails} from 'tiny_media/imagedetails';
++import {
++    body,
++    footer,
++    hideElements,
++    showElements,
++    isValidUrl,
++} from './helpers';
++import {MAX_LENGTH_ALT} from './imagehelpers';
++
++prefetchStrings('tiny_media', [
++    'insertimage',
++    'enterurl',
++    'enterurlor',
++    'imageurlrequired',
++    'uploading',
++    'loading',
++    'addfilesdrop',
++    'sizecustom_help',
++]);
++
++export class ImageInsert {
++
++    constructor(
++        root,
++        editor,
++        currentModal,
++        canShowFilePicker,
++        canShowDropZone,
++    ) {
++        this.root = root;
++        this.editor = editor;
++        this.currentModal = currentModal;
++        this.canShowFilePicker = canShowFilePicker;
++        this.canShowDropZone = canShowDropZone;
++    }
++
++    init = async function() {
++        // Get the localization lang strings and turn them into object.
++        const langStringKeys = [
++            'insertimage',
++            'enterurl',
++            'enterurlor',
++            'imageurlrequired',
++            'uploading',
++            'loading',
++            'addfilesdrop',
++            'sizecustom_help',
++        ];
++        const langStringvalues = await getStrings([...langStringKeys].map((key) => ({key, component})));
++
++        // Convert array to object.
++        this.langStrings = Object.fromEntries(langStringKeys.map((key, index) => [key, langStringvalues[index]]));
++        this.currentModal.setTitle(this.langStrings.insertimage);
++        if (this.canShowDropZone) {
++            const dropZoneEle = document.querySelector(Selectors.IMAGE.elements.dropzoneContainer);
++
++            // Accepted types can be either a string or an array.
++            let acceptedTypes = getFilePicker(this.editor, 'image').accepted_types;
++            if (Array.isArray(acceptedTypes)) {
++                acceptedTypes = acceptedTypes.join(',');
++            }
++
++            const dropZone = new Dropzone(
++                dropZoneEle,
++                acceptedTypes,
++                files => {
++                    this.handleUploadedFile(files);
++                }
++            );
++            dropZone.setLabel(this.langStrings.addfilesdrop);
++            dropZone.init();
++        }
++        await this.registerEventListeners();
++    };
++
++    /**
++     * Enables or disables the URL-related buttons in the footer based on the current URL and input value.
++     */
++    toggleUrlButton() {
++        const urlInput = this.root.querySelector(Selectors.IMAGE.elements.url);
++        const url = urlInput.value;
++        const addUrl = this.root.querySelector(Selectors.IMAGE.actions.addUrl);
++        addUrl.disabled = !(url !== "" && isValidUrl(url));
++    }
++
++    /**
++     * Handles changes in the image URL input field and loads a preview of the image if the URL has changed.
++     */
++    urlChanged() {
++        hideElements(Selectors.IMAGE.elements.urlWarning, this.root);
++        const input = this.root.querySelector(Selectors.IMAGE.elements.url);
++        if (input.value && input.value !== this.currentUrl) {
++            this.loadPreviewImage(input.value);
++        }
++    }
++
++    /**
++     * Loads and displays a preview image based on the provided URL, and handles image loading events.
++     *
++     * @param {string} url - The URL of the image to load and display.
++     */
++    loadPreviewImage = function(url) {
++        this.startImageLoading();
++        this.currentUrl = url;
++        const image = new Image();
++        image.src = url;
++        image.addEventListener('error', () => {
++            const urlWarningLabelEle = this.root.querySelector(Selectors.IMAGE.elements.urlWarning);
++            urlWarningLabelEle.innerHTML = this.langStrings.imageurlrequired;
++            showElements(Selectors.IMAGE.elements.urlWarning, this.root);
++            this.currentUrl = "";
++            this.stopImageLoading();
++        });
++
++        image.addEventListener('load', () => {
++            let templateContext = {};
++            templateContext.sizecustomhelpicon = {text: this.langStrings.sizecustom_help};
++            templateContext.bodyTemplate = Selectors.IMAGE.template.body.insertImageDetailsBody;
++            templateContext.footerTemplate = Selectors.IMAGE.template.footer.insertImageDetailsFooter;
++            templateContext.selector = Selectors.IMAGE.type;
++            templateContext.maxlengthalt = MAX_LENGTH_ALT;
++
++            Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
++                .then(() => {
++                    const imagedetails = new ImageDetails(
++                        this.root,
++                        this.editor,
++                        this.currentModal,
++                        this.canShowFilePicker,
++                        this.canShowDropZone,
++                        this.currentUrl,
++                        image,
++                    );
++                    imagedetails.init();
++                    return;
++                }).then(() => {
++                    this.stopImageLoading();
++                    return;
++                })
++                .catch(error => {
++                    window.console.log(error);
++                });
++        });
++    };
++
++    /**
++     * Displays the upload loader and disables UI elements while loading a file.
++     */
++    startImageLoading() {
++        showElements(Selectors.IMAGE.elements.loaderIcon, this.root);
++        const elementsToHide = [
++            Selectors.IMAGE.elements.insertImage,
++            Selectors.IMAGE.elements.urlWarning,
++            Selectors.IMAGE.elements.modalFooter,
++        ];
++        hideElements(elementsToHide, this.root);
++    }
++
++    /**
++     * Displays the upload loader and disables UI elements while loading a file.
++     */
++    stopImageLoading() {
++        hideElements(Selectors.IMAGE.elements.loaderIcon, this.root);
++        const elementsToShow = [
++            Selectors.IMAGE.elements.insertImage,
++            Selectors.IMAGE.elements.modalFooter,
++        ];
++        showElements(elementsToShow, this.root);
++    }
++
++    filePickerCallback(params) {
++        if (params.url) {
++            this.loadPreviewImage(params.url);
++        }
++    }
++
++    /**
++     * Updates the content of the loader icon.
++     *
++     * @param {HTMLElement} root - The root element containing the loader icon.
++     * @param {object} langStrings - An object containing language strings.
++     * @param {number|null} progress - The progress percentage (optional).
++     * @returns {void}
++     */
++    updateLoaderIcon = (root, langStrings, progress = null) => {
++        const loaderIcon = root.querySelector(Selectors.IMAGE.elements.loaderIconContainer + ' div');
++        loaderIcon.innerHTML = progress !== null ? `${langStrings.uploading} ${Math.round(progress)}%` : langStrings.loading;
++    };
++
++    /**
++     * Handles the uploaded file, initiates the upload process, and updates the UI during the upload.
++     *
++     * @param {FileList} files - The list of files to upload (usually from a file input field).
++     * @returns {Promise<void>} A promise that resolves when the file is uploaded and processed.
++     */
++    handleUploadedFile = async(files) => {
++        try {
++            this.startImageLoading();
++            const fileURL = await uploadFile(this.editor, 'image', files[0], files[0].name, (progress) => {
++                this.updateLoaderIcon(this.root, this.langStrings, progress);
++            });
++            // Set the loader icon content to "loading" after the file upload completes.
++            this.updateLoaderIcon(this.root, this.langStrings);
++            this.filePickerCallback({url: fileURL});
++        } catch (error) {
++            // Handle the error.
++            const urlWarningLabelEle = this.root.querySelector(Selectors.IMAGE.elements.urlWarning);
++            urlWarningLabelEle.innerHTML = error.error !== undefined ? error.error : error;
++            showElements(Selectors.IMAGE.elements.urlWarning, this.root);
++            this.stopImageLoading();
++        }
++    };
++
++    registerEventListeners() {
++        this.root.addEventListener('click', async(e) => {
++            const addUrlEle = e.target.closest(Selectors.IMAGE.actions.addUrl);
++            if (addUrlEle) {
++                this.urlChanged();
++            }
++
++            const imageBrowserAction = e.target.closest(Selectors.IMAGE.actions.imageBrowser);
++            if (imageBrowserAction && this.canShowFilePicker) {
++                e.preventDefault();
++                const params = await displayFilepicker(this.editor, 'image');
++                this.filePickerCallback(params);
++            }
++        });
++
++        this.root.addEventListener('input', (e) => {
++            const urlEle = e.target.closest(Selectors.IMAGE.elements.url);
++            if (urlEle) {
++                this.toggleUrlButton();
++            }
++        });
++
++        const fileInput = this.root.querySelector(Selectors.IMAGE.elements.fileInput);
++        if (fileInput) {
++            fileInput.addEventListener('change', () => {
++                this.handleUploadedFile(fileInput.files);
++            });
++        }
++    }
++}
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/imagemodal.js b/public/lib/editor/tiny/plugins/media/amd/src/imagemodal.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b747ca35c923f058664ba8cae6d397c30ab6c8ac
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/amd/src/imagemodal.js
+@@ -0,0 +1,49 @@
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Image Modal for Tiny.
++ *
++ * @module      tiny_media/imagemodal
++ * @copyright   2022 Huong Nguyen <huongnv13@gmail.com>
++ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++import Modal from 'core/modal';
++import {component} from './common';
++
++export default class ImageModal extends Modal {
++    static TYPE = `${component}/imagemodal`;
++    static TEMPLATE = `${component}/insert_image_modal`;
++
++    registerEventListeners() {
++        // Call the parent registration.
++        super.registerEventListeners();
++
++        // Register to close on save/cancel.
++        this.registerCloseOnSave();
++        this.registerCloseOnCancel();
++    }
++
++    configure(modalConfig) {
++        modalConfig.large = true;
++        modalConfig.removeOnClose = true;
++        modalConfig.show = true;
++
++        super.configure(modalConfig);
++    }
++}
++
++ImageModal.registerModalType();
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/selectors.js b/public/lib/editor/tiny/plugins/media/amd/src/selectors.js
+index bd222bf7cb7b16861e6cf7368a0198507aacc231..4baf97518f97438e94459265e8d4a3f11ae5e9de 100644
+--- a/public/lib/editor/tiny/plugins/media/amd/src/selectors.js
++++ b/public/lib/editor/tiny/plugins/media/amd/src/selectors.js
+@@ -62,12 +62,12 @@ export default {
+         },
+         template: {
+             body: {
+-                insertImageBody: 'tiny_media/image/body/insert_image_modal_insert_body',
+-                insertImageDetailsBody: 'tiny_media/image/body/insert_image_modal_details_body',
++                insertImageBody: 'tiny_media/insert_image_modal_insert',
++                insertImageDetailsBody: 'tiny_media/insert_image_modal_details',
+             },
+             footer: {
+-                insertImageFooter: 'tiny_media/image/footer/insert_image_modal_insert_footer',
+-                insertImageDetailsFooter: 'tiny_media/image/footer/insert_image_modal_details_footer',
++                insertImageFooter: 'tiny_media/insert_image_modal_insert_footer',
++                insertImageDetailsFooter: 'tiny_media/insert_image_modal_details_footer',
+             },
+         },
+         type: 'IMAGE',
+diff --git a/public/lib/editor/tiny/plugins/media/templates/image.mustache b/public/lib/editor/tiny/plugins/media/templates/image.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..a82e3059dd3a2151ab6a943bd51897ab34e4eae3
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/templates/image.mustache
+@@ -0,0 +1,34 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tiny_media/image
++
++    Image template.
++
++    Example context (json):
++    {
++
++    }
++}}
++<img src="{{url}}" alt="{{alt}}"{{!
++    }}{{#width}} width="{{.}}"{{/width}}{{!
++    }}{{#height}} height="{{.}}"{{/height}}{{!
++    }}{{#presentation}} role="presentation"{{/presentation}}{{!
++    }}{{#customStyle}} style="{{.}}"{{/customStyle}}{{!
++    }}{{#classlist}} class="{{.}}"{{/classlist}}{{!
++    }}{{#id}} id="{{.}}"{{/id}}{{!
++}}/>
+diff --git a/public/lib/editor/tiny/plugins/media/templates/image/body/insert_image_modal_details_body.mustache b/public/lib/editor/tiny/plugins/media/templates/image/body/insert_image_modal_details_body.mustache
+deleted file mode 100644
+index 6b1b72186c4bacd8e961e54ee2b250e7d0b1625f..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/templates/image/body/insert_image_modal_details_body.mustache
++++ /dev/null
+@@ -1,119 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template tiny_media/insert_image_modal_details
+-
+-    Insert image details body template.
+-
+-    Example context (json):
+-    {
+-        "elementid": "exampleId",
+-        "alt": "Image description",
+-        "presentation": true,
+-        "width": 600,
+-        "height": 400,
+-        "customStyle": "",
+-        "sizecustomhelpicon": {
+-            "text": "Help text"
+-        },
+-        "maxlengthalt": 750
+-    }
+-
+-}}
+-<div class="tiny_image_image_details">
+-    <div class="container">
+-        <div class="row">
+-            {{! Checkbox and radio buttons }}
+-            <div class="tiny_image_properties_col col-lg-5">
+-                {{! Image description }}
+-                <div class="mb-2">
+-                    <h3 class="h6 fw-bold">{{#str}} imagealternativetext, tiny_media {{/str}}</h3>
+-                    <label for="{{elementid}}_tiny_image_altentry">{{#str}} enteralt, tiny_media {{/str}}</label>
+-                    <textarea class="tiny_image_altentry form-control fullwidth" rows="5" id="{{elementid}}_tiny_image_altentry" name="altentry" maxlength="{{maxlengthalt}}">{{alt}}</textarea>
+-                    {{! Character counter }}
+-                    <div id="the-count" class="d-flex justify-content-end small">
+-                        <span id="currentcount">0</span>
+-                        <span class="mx-1">/</span>
+-                        <span id="maximumcount">{{maxlengthalt}}</span>
+-                        <span id="maxlength_feedback" class="visually-hidden" role="status"></span>
+-                    </div>
+-                </div>
+-                {{! Image presentation checkbox }}
+-                <div class="form-check mb-2">
+-                    <input type="checkbox" class="tiny_image_presentation form-check-input" id="{{elementid}}_tiny_image_presentation" {{# presentation }}checked{{/ presentation }}>
+-                    <label class="form-check-label" for="{{elementid}}_tiny_image_presentation">{{#str}} presentation, tiny_media {{/str}}</label>
+-                    <span>{{#alttexthelpicon}}{{> core/help_icon }}{{/alttexthelpicon}}</span>
+-                </div>
+-                <hr>
+-                <h3 class="h6 fw-bold">{{#str}} imagesize, tiny_media {{/str}}</h3>
+-                {{! Original size radio button }}
+-                <div class="mt-1 mb-1">
+-                    <div class="btn-group" role="group" aria-label="{{#str}} imagesize, tiny_media{{/str}}">
+-                        <button class="btn btn-outline-primary image-original-size-toggle">{{#str}} sizeoriginal, tiny_media {{/str}}</button>
+-                        <button class="btn btn-outline-primary image-custom-size-toggle">{{#str}} sizecustom, tiny_media {{/str}}</button>
+-                    </div>
+-                </div>
+-                {{! Image size }}
+-                <div class="tiny_image_properties mb-2">
+-                    {{! Image width and height }}
+-                    <div id="{{elementid}}_tiny_image_size" class="tiny_image_size">
+-                        <div class="d-flex justify-content-start">
+-                            {{! Width input }}
+-                            <div class="flex-item me-2 col-5">
+-                                <div>
+-                                    <label for="{{elementid}}_tiny_image_widthentry">{{#str}} width, tiny_media {{/str}}</label>
+-                                    <div class="d-flex align-items-start">
+-                                        <input type="number" min="0" class="tiny_image_widthentry form-control input-mini me-1 w-100" id="{{elementid}}_tiny_image_widthentry" value="{{width}}">
+-                                        <span class="mt-1">px</span>
+-                                    </div>
+-                                </div>
+-                            </div>
+-                            {{! Height input }}
+-                            <div class="flex-item me-1 col-5">
+-                                <div>
+-                                    <label for="{{elementid}}_tiny_image_heightentry">{{#str}} height, tiny_media {{/str}}</label>
+-                                    <div class="d-flex align-items-start">
+-                                        <input type="number" min="0" class="tiny_image_heightentry form-control input-mini me-1 w-100" id="{{elementid}}_tiny_image_heightentry" value="{{height}}">
+-                                        <span class="mt-1">px</span>
+-                                    </div>
+-                                </div>
+-                            </div>
+-                            <div class="tiny_image_customhelpicon flex-item ms-1">{{#sizecustomhelpicon}}{{> core/help_icon }}{{/sizecustomhelpicon}}</div>
+-                        </div>
+-                    </div>
+-                </div>
+-            </div>
+-            {{! Image preview and description }}
+-            <div class="tiny_image_preview_col col-lg-7 p-0">
+-                <input type="hidden" class="tiny_image_customstyle" value="{{customStyle}}">
+-                {{! Image preview }}
+-                <div class="tiny_image_preview_box border rounded position-relative">
+-                    {{! Delete image icon }}
+-                    <button class="btn btn-icon icon-size-3 p-0 ms-auto tiny_image_deleteicon"
+-                        type="button"
+-                        title="{{#str}} deleteimage, tiny_media {{/str}}"
+-                        aria-label="{{#str}} deleteimage, tiny_media {{/str}}"
+-                    >
+-                        {{#pix}} delete, tiny_media {{/pix}}
+-                    </button>
+-                    {{! Image placeholder }}
+-                    <img class="tiny_image_preview" src="data:," alt>
+-                </div>
+-            </div>
+-        </div>
+-    </div>
+-</div>
+diff --git a/public/lib/editor/tiny/plugins/media/templates/image/body/insert_image_modal_insert_body.mustache b/public/lib/editor/tiny/plugins/media/templates/image/body/insert_image_modal_insert_body.mustache
+deleted file mode 100644
+index 98e3c3cd58794e3bdae8b2fdcb440bf5bc284f6a..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/templates/image/body/insert_image_modal_insert_body.mustache
++++ /dev/null
+@@ -1,53 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template tiny_media/insert_image_modal_insert
+-
+-    Insert image body template.
+-
+-    Example context (json):
+-    {
+-        "showdropzone": true,
+-        "showfilepicker": true
+-    }
+-
+-}}
+-<div class="tiny_image_insert_image">
+-    <div class="tiny_image_dropzone d-flex flex-column justify-content-center">
+-        {{#showdropzone}}
+-            <div class="tiny_image_dropzone_container"></div>
+-            {{! File input }}
+-            <input type="file" id="tiny_image_fileinput" accept="image/*" class="d-none">
+-        {{/showdropzone}}
+-        {{^showdropzone}}
+-            <div class="text-center">
+-                {{! Dropzone icon }}
+-                <i class="fa-6x pb-2 text-secondary fa fa-cloud"></i>
+-                {{! Dropzone string }}
+-                <div class="lead text-center">
+-                    <p class="mb-0">
+-                    {{#showfilepicker}}
+-                        {{#str}} repositoryuploadnotpermitted, tiny_media {{/str}}</p>
+-                    {{/showfilepicker}}
+-                    {{^showfilepicker}}
+-                        {{#str}} repositorynotpermitted, tiny_media {{/str}}
+-                    {{/showfilepicker}}
+-                </div>
+-            </div>
+-        {{/showdropzone}}
+-    </div>
+-</div>
+diff --git a/public/lib/editor/tiny/plugins/media/templates/image/footer/insert_image_modal_details_footer.mustache b/public/lib/editor/tiny/plugins/media/templates/image/footer/insert_image_modal_details_footer.mustache
+deleted file mode 100644
+index 030004bf402e806ad197cb2ed258b8b032264b25..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/templates/image/footer/insert_image_modal_details_footer.mustache
++++ /dev/null
+@@ -1,42 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template tiny_media/insert_image_modal_details_footer
+-
+-    Insert image details footer template.
+-
+-    Example context (json):
+-    {
+-        "elementid": "exampleId"
+-    }
+-
+-}}
+-<div class="row">
+-    {{! First column }}
+-    <div class="col-md-6 d-flex align-items-center p-0">
+-        {{! URL related label }}
+-        <span class="tiny_image_filename text-truncate me-1"></span>
+-    </div>
+-    {{! Saving, canceling, browsing repositories buttons }}
+-    <div class="col-md-6 text-end mt-2 mt-md-0 p-0">
+-        {{! Cancel button }}
+-        <button type="button" class="btn btn-secondary" data-action="cancel">{{#str}} cancel, moodle {{/str}}</button>
+-        {{! Save button }}
+-        <button class="tiny_image_urlentrysubmit btn btn-primary" type="submit">{{#str}} saveimage, tiny_media {{/str}}</button>
+-    </div>
+-</div>
+-
+diff --git a/public/lib/editor/tiny/plugins/media/templates/image/footer/insert_image_modal_insert_footer.mustache b/public/lib/editor/tiny/plugins/media/templates/image/footer/insert_image_modal_insert_footer.mustache
+deleted file mode 100644
+index ab63fd9f78fa037c9a2d86a907334e5270892c70..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/templates/image/footer/insert_image_modal_insert_footer.mustache
++++ /dev/null
+@@ -1,56 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template tiny_media/insert_image_modal_insert_footer
+-
+-    Insert image footer template.
+-
+-    Example context (json):
+-    {
+-        "showdropzone": true,
+-        "elementid": "exampleId",
+-        "src": "https://moodle.org/logo.png",
+-        "showfilepicker": true
+-    }
+-
+-}}
+-<div class="row">
+-    {{! First column }}
+-    <div class="col-md-6 d-flex align-items-center p-0">
+-        {{! URL related label }}
+-        {{#showdropzone}}
+-        <label for="{{elementid}}_tiny_image_urlentry" class="tiny_image_url_label me-1">{{#str}} enterurlor, tiny_media {{/str}}</label>
+-        {{/showdropzone}}
+-        {{^showdropzone}}
+-        <label for="{{elementid}}_tiny_image_urlentry" class="tiny_image_url_label me-1">{{#str}} enterurl, tiny_media {{/str}}</label>
+-        {{/showdropzone}}
+-        {{! URL entry input. Needed by the insert image step and image details step if the image URL source from external }}
+-        <input name="urlentry" class="tiny_image_urlentry form-control w-50 me-1" type="url" id="{{elementid}}_tiny_image_urlentry" size="32" value="{{src}}">
+-        {{! Add button. Needed by the insert image step }}
+-        <button disabled class="tiny_image_addurl btn btn-secondary me-1" type="button">{{#str}} addurl, tiny_media {{/str}}</button>
+-    </div>
+-    {{! Saving, canceling, browsing repositories buttons }}
+-    <div class="col-md-6 text-end mt-2 mt-md-0 p-0">
+-        {{! Cancel button }}
+-        <button type="button" class="btn btn-secondary" data-action="cancel">{{#str}} cancel, moodle {{/str}}</button>
+-        {{#showfilepicker}}
+-            {{! Browse repositories button }}
+-            <button class="openimagebrowser btn btn-primary" type="button">{{#str}} browseembedimagerepositories, tiny_media {{/str}}</button>
+-        {{/showfilepicker}}
+-    </div>
+-</div>
+-
+diff --git a/public/lib/editor/tiny/plugins/media/templates/image/image.mustache b/public/lib/editor/tiny/plugins/media/templates/image/image.mustache
+deleted file mode 100644
+index 148ccb0dd55029031e79d73a4c8f162295fed4f1..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/templates/image/image.mustache
++++ /dev/null
+@@ -1,33 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template tiny_media/image/image
+-
+-    Image template.
+-
+-    Example context (json):
+-    {
+-
+-    }
+-}}
+-<img src="{{url}}" alt="{{alt}}"{{!
+-    }}{{#width}} width="{{.}}"{{/width}}{{!
+-    }}{{#height}} height="{{.}}"{{/height}}{{!
+-    }}{{#presentation}} role="presentation"{{/presentation}}{{!
+-    }}{{#customStyle}} style="{{.}}"{{/customStyle}}{{!
+-    }}{{#id}} id="{{.}}"{{/id}}{{!
+-}}/>
+diff --git a/public/lib/editor/tiny/plugins/media/templates/image/insert_image_modal.mustache b/public/lib/editor/tiny/plugins/media/templates/image/insert_image_modal.mustache
+deleted file mode 100644
+index 5301a6d6e49f8c90a1d0d931807e07afa607ec81..0000000000000000000000000000000000000000
+--- a/public/lib/editor/tiny/plugins/media/templates/image/insert_image_modal.mustache
++++ /dev/null
+@@ -1,61 +0,0 @@
+-{{!
+-    This file is part of Moodle - http://moodle.org/
+-
+-    Moodle is free software: you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation, either version 3 of the License, or
+-    (at your option) any later version.
+-
+-    Moodle is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-}}
+-{{!
+-    @template tiny_media/insert_image_modal
+-
+-    Insert image template.
+-
+-    Example context (json):
+-    {
+-        "uniqid": 0,
+-        "elementid": "exampleId",
+-        "loading": {},
+-        "title": "Insert image"
+-    }
+-}}
+-{{< core/modal }}
+-    {{$body}}
+-        <form class="tiny_image_form">
+-            {{! URL warning }}
+-            <div role="alert" class="d-none alert alert-warning mb-1 tiny_image_urlwarning">
+-                <label>
+-                    {{#str}} imageurlrequired, tiny_media {{/str}}
+-                </label>
+-            </div>
+-            {{! Presentation warning }}
+-            <div role="alert" class="d-none tiny_image_altwarning alert alert-warning mb-1">
+-                <label>
+-                    {{#str}} presentationoraltrequired, tiny_media {{/str}}
+-                </label>
+-            </div>
+-            {{! Preloader icon }}
+-            <div role="progressbar" class="d-none tiny_image_loader lead border rounded text-center">
+-                <div class="tiny_image_loader_container d-flex flex-column justify-content-center">
+-                    <span data-region="loading-icon-container">
+-                        {{> core/loading }}
+-                    </span>
+-                    <div>{{#str}} loading, tiny_media {{/str}}</div>
+-                </div>
+-            </div>
+-            <div class="tiny_image_body_template"></div>
+-        </form>
+-    {{/body}}
+-
+-    {{$footer}}
+-        <div class="tiny_image_footer_template container"></div>
+-    {{/footer}}
+-{{/ core/modal }}
+diff --git a/public/lib/editor/tiny/plugins/media/templates/insert_image_modal.mustache b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..cc87296e6f9e6afcafecc720ae055f323b1d118f
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal.mustache
+@@ -0,0 +1,61 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tiny_media/insert_image_modal
++
++    Insert image template.
++
++    Example context (json):
++    {
++        "uniqid": 0,
++        "elementid": "exampleId",
++        "loading": {},
++        "title": "Insert image"
++    }
++}}
++{{< core/modal }}
++    {{$body}}
++        <form class="tiny_image_form">
++            <!-- URL warning -->
++            <div role="alert" class="d-none alert alert-warning mb-1 tiny_image_urlwarning">
++                <label>
++                    {{#str}} imageurlrequired, tiny_media {{/str}}
++                </label>
++            </div>
++            <!-- Presentation warning -->
++            <div role="alert" class="d-none tiny_image_altwarning alert alert-warning mb-1">
++                <label>
++                    {{#str}} presentationoraltrequired, tiny_media {{/str}}
++                </label>
++            </div>
++            <!-- Preloader icon -->
++            <div role="progressbar" class="d-none tiny_image_loader lead border rounded text-center">
++                <div class="tiny_image_loader_container d-flex flex-column justify-content-center">
++                    <span data-region="loading-icon-container">
++                        {{> core/loading }}
++                    </span>
++                    <div>{{#str}} loading, tiny_media {{/str}}</div>
++                </div>
++            </div>
++            <div class="tiny_image_body_template"></div>
++        </form>
++    {{/body}}
++
++    {{$footer}}
++        <div class="tiny_image_footer_template container"></div>
++    {{/footer}}
++{{/ core/modal }}
+diff --git a/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_details.mustache b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_details.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..b7f79942214aef21da5a4361feef190177881f6a
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_details.mustache
+@@ -0,0 +1,115 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tiny_media/insert_image_modal_details
++
++    Insert image details body template.
++
++    Example context (json):
++    {
++        "elementid": "exampleId",
++        "alt": "Image description",
++        "presentation": true,
++        "width": 600,
++        "height": 400,
++        "customStyle": "",
++        "sizecustomhelpicon": {
++            "text": "Help text"
++        },
++        "maxlengthalt": 750
++    }
++
++}}
++<div class="tiny_image_image_details">
++    <div class="container">
++        <div class="row">
++            <!-- Column 1: Image Preview and Description -->
++            <div class="tiny_image_preview_col col-lg-7 p-0">
++                <input type="hidden" class="tiny_image_customstyle" value="{{customStyle}}">
++                <!-- Row 1: Image preview -->
++                <div class="tiny_image_preview_box border rounded position-relative">
++                    <!-- Delete image icon -->
++                    <div class="tiny_image_deleteicon" tabindex="0" title="{{#str}} deleteimage, tiny_media {{/str}}">
++                        <i class="fa fa-trash-o" title="{{#str}} deleteimage, tiny_media {{/str}}"></i>
++                    </div>
++                    <!-- Image placeholder -->
++                    <img class="tiny_image_preview" src="data:," alt>
++                </div>
++                <!-- Row 2: Image description -->
++                <div class="mt-3">
++                    <label for="{{elementid}}_tiny_image_altentry">{{#str}} enteralt, tiny_media {{/str}}</label>
++                    <textarea class="tiny_image_altentry form-control fullwidth" id="{{elementid}}_tiny_image_altentry" name="altentry" maxlength="{{maxlengthalt}}">{{alt}}</textarea>
++                    <!-- Character counter -->
++                    <div id="the-count" class="d-flex justify-content-end small">
++                        <span id="currentcount">0</span>
++                        <span class="mx-1">/</span>
++                        <span id="maximumcount">{{maxlengthalt}}</span>
++                        <span id="maxlength_feedback" class="visually-hidden" role="status"></span>
++                    </div>
++                </div>
++            </div>
++            <!-- Column 2: Checkbox and Radio Buttons -->
++            <div class="tiny_image_properties_col col-lg-5">
++                <!-- Row 1: Image presentation role -->
++                <div class="form-check mb-2">
++                    <input type="checkbox" class="tiny_image_presentation form-check-input" id="{{elementid}}_tiny_image_presentation" {{# presentation }}checked{{/ presentation }}>
++                    <label class="form-check-label" for="{{elementid}}_tiny_image_presentation">{{#str}} presentation, tiny_media {{/str}}</label>
++                </div>
++                <!-- Row 2: Original size radiobutton -->
++                <div class="form-check mb-2 ps-0">
++                    <input type="radio" class="tiny_image_sizeoriginal" id="{{elementid}}_tiny_image_sizeoriginal" name="radioOptions">
++                    <label class="form-check-label" for="{{elementid}}_tiny_image_sizeoriginal">{{#str}} sizeoriginal, tiny_media {{/str}}</label>
++                </div>
++                <!-- Row 3: Custom size radiobutton -->
++                <div class="form-check ps-0 mb-2">
++                    <input type="radio" class="tiny_image_sizecustom" id="{{elementid}}_tiny_image_sizecustom" name="radioOptions">
++                    <label class="form-check-label" for="{{elementid}}_tiny_image_sizecustom">{{#str}} sizecustom, tiny_media {{/str}}</label>
++                </div>
++                <!-- Row 4: Image size -->
++                <div class="tiny_image_properties mb-2">
++                    <!-- Row 1: Image width and height -->
++                    <div id="{{elementid}}_tiny_image_size" class="tiny_image_size container ms-1">
++                        <div class="d-flex justify-content-start">
++                            <!-- Column 1: Width Input -->
++                            <div class="flex-item me-2">
++                                <div>
++                                    <input type="number" min="0" class="tiny_image_widthentry form-control me-1 input-mini" id="{{elementid}}_tiny_image_widthentry" value="{{width}}">
++                                    <label for="{{elementid}}_tiny_image_widthentry" class="ms-1">{{#str}} width, tiny_media {{/str}}</label>
++                                </div>
++                            </div>
++                            <!-- Column 2: "X" Text -->
++                            <div class="flex-item me-1 mt-2">X</div>
++                            <!-- Column 3: Height Input -->
++                            <div class="flex-item me-1">
++                                <div>
++                                    <input type="number" min="0" class="tiny_image_heightentry form-control ms-1 input-mini" id="{{elementid}}_tiny_image_heightentry" value="{{height}}">
++                                    <label for="{{elementid}}_tiny_image_heightentry" class="ms-1">{{#str}} height, tiny_media {{/str}}</label>
++                                </div>
++                            </div>
++                            <div class="tiny_image_customhelpicon flex-item ms-1">{{#sizecustomhelpicon}}{{> core/help_icon }}{{/sizecustomhelpicon}}</div>
++                        </div>
++                    </div>
++                    <!-- Row 2: Keep proportion -->
++                    <div class="form-check mb-2">
++                        <input type="checkbox" class="tiny_image_constrain form-check-input" id="{{elementid}}_tiny_image_constrain">
++                        <label class="form-check-label" for="{{elementid}}_tiny_image_constrain">{{#str}} constrain, tiny_media {{/str}}</label>
++                    </div>
++                </div>
++            </div>
++        </div>
++    </div>
++</div>
+diff --git a/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_details_footer.mustache b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_details_footer.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..4cbe766b7629230c52d029891b6c28b43a2f8232
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_details_footer.mustache
+@@ -0,0 +1,42 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tiny_media/insert_image_modal_details_footer
++
++    Insert image details footer template.
++
++    Example context (json):
++    {
++        "elementid": "exampleId"
++    }
++
++}}
++<div class="row">
++    <!-- First Column -->
++    <div class="col-md-6 d-flex align-items-center p-0">
++        <!-- Row 1: URL related label -->
++        <span class="tiny_image_filename text-truncate me-1"></span>
++    </div>
++    <!-- Column 2: Saving, canceling, browsing repositories buttons -->
++    <div class="col-md-6 text-end mt-2 mt-md-0 p-0">
++        <!-- Row 1: Cancel button -->
++        <button type="button" class="btn btn-secondary" data-action="cancel">{{#str}} cancel, moodle {{/str}}</button>
++        <!-- Row 2: Save button -->
++        <button class="tiny_image_urlentrysubmit btn btn-primary" type="submit">{{#str}} saveimage, tiny_media {{/str}}</button>
++    </div>
++</div>
++
+diff --git a/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_insert.mustache b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_insert.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..cea8682e7affd6d91e470d57d4bc02cb006e1694
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_insert.mustache
+@@ -0,0 +1,53 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tiny_media/insert_image_modal_insert
++
++    Insert image body template.
++
++    Example context (json):
++    {
++        "showdropzone": true,
++        "showfilepicker": true
++    }
++
++}}
++<div class="tiny_image_insert_image">
++    <div class="tiny_image_dropzone d-flex flex-column justify-content-center">
++        {{#showdropzone}}
++            <div class="tiny_image_dropzone_container"></div>
++            <!-- File input -->
++            <input type="file" id="tiny_image_fileinput" accept="image/*" class="d-none">
++        {{/showdropzone}}
++        {{^showdropzone}}
++            <div class="text-center">
++                <!-- Dropzone icon -->
++                <i class="fa-6x pb-2 text-secondary fa fa-cloud"></i>
++                <!-- Dropzone string -->
++                <div class="lead text-center">
++                    <p class="mb-0">
++                    {{#showfilepicker}}
++                        {{#str}} repositoryuploadnotpermitted, tiny_media {{/str}}</p>
++                    {{/showfilepicker}}
++                    {{^showfilepicker}}
++                        {{#str}} repositorynotpermitted, tiny_media {{/str}}
++                    {{/showfilepicker}}
++                </div>
++            </div>
++        {{/showdropzone}}
++    </div>
++</div>
+diff --git a/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_insert_footer.mustache b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_insert_footer.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..eb60ad14f34c44f9ff54e598a9caed48052ac0a8
+--- /dev/null
++++ b/public/lib/editor/tiny/plugins/media/templates/insert_image_modal_insert_footer.mustache
+@@ -0,0 +1,56 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template tiny_media/insert_image_modal_insert_footer
++
++    Insert image footer template.
++
++    Example context (json):
++    {
++        "showdropzone": true,
++        "elementid": "exampleId",
++        "src": "https://moodle.org/logo.png",
++        "showfilepicker": true
++    }
++
++}}
++<div class="row">
++    <!-- First Column -->
++    <div class="col-md-6 d-flex align-items-center p-0">
++        <!-- Row 1: URL related label -->
++        {{#showdropzone}}
++        <label for="{{elementid}}_tiny_image_urlentry" class="tiny_image_url_label me-1">{{#str}} enterurlor, tiny_media {{/str}}</label>
++        {{/showdropzone}}
++        {{^showdropzone}}
++        <label for="{{elementid}}_tiny_image_urlentry" class="tiny_image_url_label me-1">{{#str}} enterurl, tiny_media {{/str}}</label>
++        {{/showdropzone}}
++        <!-- Row 2: URL entry input. Needed by the insert image step and image details step if the image URL source from external -->
++        <input name="urlentry" class="tiny_image_urlentry form-control w-50 me-1" type="url" id="{{elementid}}_tiny_image_urlentry" size="32" value="{{src}}">
++        <!-- Row 3: Add button. Needed by the insert image step -->
++        <button disabled class="tiny_image_addurl btn btn-secondary me-1" type="button">{{#str}} addurl, tiny_media {{/str}}</button>
++    </div>
++    <!-- Column 2: Saving, canceling, browsing repositories buttons -->
++    <div class="col-md-6 text-end mt-2 mt-md-0 p-0">
++        <!-- Row 1: Cancel button -->
++        <button type="button" class="btn btn-secondary" data-action="cancel">{{#str}} cancel, moodle {{/str}}</button>
++        {{#showfilepicker}}
++            <!-- Row 3: Browse repositories button -->
++            <button class="openimagebrowser btn btn-secondary" type="button">{{#str}} browseembedimagerepositories, tiny_media {{/str}}</button>
++        {{/showfilepicker}}
++    </div>
++</div>
++
+diff --git a/public/mod/lesson/tests/behat/duplicate_lesson_page.feature b/public/mod/lesson/tests/behat/duplicate_lesson_page.feature
+index b65ff113c41a1f931a522a9e23b9864c7270cce6..1fe950c794e1824a3343b5c99ff003541a8f47ff 100644
+--- a/public/mod/lesson/tests/behat/duplicate_lesson_page.feature
++++ b/public/mod/lesson/tests/behat/duplicate_lesson_page.feature
+@@ -41,7 +41,7 @@ Feature: In a lesson activity, a teacher can duplicate a lesson page
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodle_logo.jpg" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "It's the logo"
++    And I set the field "How would you describe this image to someone who can't see it?" to "It's the logo"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save page"
+     And I follow "Duplicate page: First page name"
+@@ -76,7 +76,7 @@ Feature: In a lesson activity, a teacher can duplicate a lesson page
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodle_logo.jpg" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "It's the logo"
++    And I set the field "How would you describe this image to someone who can't see it?" to "It's the logo"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save page"
+     And I follow "Duplicate page: True false with an image in the answer"
+@@ -114,7 +114,7 @@ Feature: In a lesson activity, a teacher can duplicate a lesson page
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodle_logo.jpg" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "It's the logo"
++    And I set the field "How would you describe this image to someone who can't see it?" to "It's the logo"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save page"
+     And I follow "Duplicate page: True false with an image in the feedback"
+diff --git a/public/mod/lesson/tests/behat/questions_images.feature b/public/mod/lesson/tests/behat/questions_images.feature
+index 796dfb3b8b22959ee8cd7573686e79e42285f3bd..39c4146842e94c9639df9da160136d93eff2696d 100644
+--- a/public/mod/lesson/tests/behat/questions_images.feature
++++ b/public/mod/lesson/tests/behat/questions_images.feature
+@@ -48,7 +48,7 @@ Feature: In a lesson activity, teacher can add embedded images in questions answ
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodle_logo.jpg" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "It's the logo"
++    And I set the field "How would you describe this image to someone who can't see it?" to "It's the logo"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save page"
+     And I set the field "qtype" to "Add a question page"
+@@ -68,7 +68,7 @@ Feature: In a lesson activity, teacher can add embedded images in questions answ
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodle_logo.jpg" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "It's the logo"
++    And I set the field "How would you describe this image to someone who can't see it?" to "It's the logo"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save page"
+     When I am on the "Test lesson name" "lesson activity" page logged in as student1
+diff --git a/public/mod/quiz/tests/behat/manually_mark_question.feature b/public/mod/quiz/tests/behat/manually_mark_question.feature
+index 3c688126ed21477ad76bd1b53bb3140f4dcff1ec..d7ba2448d839d52cbdb36aeafc28c08c5a43003a 100644
+--- a/public/mod/quiz/tests/behat/manually_mark_question.feature
++++ b/public/mod/quiz/tests/behat/manually_mark_question.feature
+@@ -71,7 +71,7 @@ Feature: Teachers can override the grade for any question
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodle_logo.jpg" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "It's the logo"
++    And I set the field "How would you describe this image to someone who can't see it?" to "It's the logo"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save" and switch to main window
+     And I switch to the main window
+diff --git a/public/mod/workshop/tests/behat/embedded_images.feature b/public/mod/workshop/tests/behat/embedded_images.feature
+index 244b38c2ea0884195f0a7b439ed41584ff6f72cf..146e2cf2927ef55eca55138ca4e2315eebacf752 100644
+--- a/public/mod/workshop/tests/behat/embedded_images.feature
++++ b/public/mod/workshop/tests/behat/embedded_images.feature
+@@ -37,7 +37,7 @@ Feature: Teachers can embed images into instructions and conclusion fields
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodlelogo.png" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "How to submit"
++    And I set the field "How would you describe this image to someone who can't see it?" to "How to submit"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save and display"
+     # Embed the image into Instructions for assessment.
+@@ -48,7 +48,7 @@ Feature: Teachers can embed images into instructions and conclusion fields
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodlelogo.png" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "How to assess"
++    And I set the field "How would you describe this image to someone who can't see it?" to "How to assess"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save and display"
+     # Embed the image into Conclusion.
+@@ -59,7 +59,7 @@ Feature: Teachers can embed images into instructions and conclusion fields
+     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
+     And I click on "moodlelogo.png" "link"
+     And I click on "Select this file" "button"
+-    And I set the field "How would you describe this image to someone who cannot see it?" to "Well done"
++    And I set the field "How would you describe this image to someone who can't see it?" to "Well done"
+     And I click on "Save" "button" in the "Image details" "dialogue"
+     And I press "Save and display"
+     # Save the form and check the images are displayed in appropriate phases.

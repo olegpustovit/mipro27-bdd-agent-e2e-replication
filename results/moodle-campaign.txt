@@ -1,0 +1,424 @@
+Moodle campaign (measured trials; exploratory, run without a gate pass)
+trials: 416; repair sessions: 48
+
+Oracle: caught = same arm passes the healthy build AND fails the faulted build at the fix's target step (agent: verified step-level verdict); false alarm = fails the healthy build.
+fail-near / fail-elsewhere = healthy passes, faulted fails at another step, within two steps of the target or further (not a catch); fail-unlocated = fails without a verified step; invalid = Behat error or agent "unresolved".
+
+arm model                 pairs caught           missed           fail-near        fail-elsewhere   fail-unlocated   false-alarm      invalid-healthy  invalid-faulted  incomplete       healthy runs / failed
+A   none                  16    16               0                0                0                0                0                0                0                0                16 / 0
+B   claude-haiku-5-5      32    18               0                0                0                0                14               0                0                0                32 / 14
+B   gpt-5.6-terra         32    27               0                0                0                0                5                0                0                0                32 / 5
+B   gpt-6-luna            32    16               0                0                0                0                16               0                0                0                32 / 16
+C   claude-haiku-5-5      32    13               1                1                0                0                7                10               0                0                32 / 7
+C   gpt-5.6-terra         32    18               2                0                0                0                4                7                1                0                32 / 4
+C   gpt-6-luna            32    8                1                1                1                1                16               4                0                0                32 / 16
+
+Per trial pair
+case        fault arm model                 rep outcome         healthy      faulted (step vs target)
+B04.S036    X014  B   gpt-6-luna            1   false-alarm     fail@8       fail@8 (target 8)
+B04.S041    X014  B   gpt-6-luna            1   false-alarm     fail@6       fail@6 (target 6)
+B04.S036    X014  B   gpt-6-luna            2   false-alarm     fail@8       fail@8 (target 8)
+B04.S041    X014  B   gpt-6-luna            2   false-alarm     fail@6       fail@6 (target 6)
+B04.S037    X014  B   gpt-6-luna            2   false-alarm     fail@15      fail@15 (target 15)
+B04.S037    X014  B   gpt-6-luna            1   false-alarm     fail@15      fail@15 (target 15)
+B07.S028    X010  B   gpt-6-luna            2   false-alarm     fail@3       fail@3 (target 4)
+B07.S028    X010  B   gpt-6-luna            1   false-alarm     fail@3       fail@3 (target 4)
+B07.S029    X010  B   gpt-6-luna            2   false-alarm     fail@3       fail@3 (target 4)
+B07.S029    X010  B   gpt-6-luna            1   false-alarm     fail@3       fail@3 (target 4)
+B28.S137    X025  B   gpt-6-luna            2   false-alarm     fail@5       fail@5 (target 8)
+B28.S134    X025  B   gpt-6-luna            1   false-alarm     fail@5       fail@5 (target 8)
+B28.S137    X025  B   gpt-6-luna            1   false-alarm     fail@5       fail@5 (target 8)
+B28.S134    X025  B   gpt-6-luna            2   false-alarm     fail@5       fail@5 (target 8)
+B29.S138    X026  B   gpt-6-luna            1   caught          pass         fail@10 (target 10)
+B29.S139    X026  B   gpt-6-luna            1   caught          pass         fail@10 (target 10)
+B29.S139    X026  B   gpt-6-luna            2   caught          pass         fail@10 (target 10)
+B29.S138    X026  B   gpt-6-luna            2   caught          pass         fail@10 (target 10)
+B34.S153    X018  B   gpt-6-luna            2   caught          pass         fail@8 (target 8)
+B34.S153    X018  B   gpt-6-luna            1   caught          pass         fail@8 (target 8)
+B34.S154    X018  B   gpt-6-luna            2   caught          pass         fail@12 (target 12)
+B34.S154    X018  B   gpt-6-luna            1   caught          pass         fail@12 (target 12)
+B07.S025    X011  B   gpt-6-luna            1   false-alarm     fail@9       fail@9 (target 13)
+B07.S025    X011  B   gpt-6-luna            2   false-alarm     fail@9       fail@9 (target 13)
+B15.S094    X021  B   gpt-6-luna            2   caught          pass         fail@6 (target 6)
+B15.S094    X021  B   gpt-6-luna            1   caught          pass         fail@6 (target 6)
+B15.S091    X022  B   gpt-6-luna            2   caught          pass         fail@4 (target 4)
+B15.S091    X022  B   gpt-6-luna            1   caught          pass         fail@4 (target 4)
+B25.S125    X020  B   gpt-6-luna            1   caught          pass         fail@16 (target 16)
+B25.S125    X020  B   gpt-6-luna            2   caught          pass         fail@16 (target 16)
+B27.S131    X023  B   gpt-6-luna            2   caught          pass         fail@3 (target 3)
+B27.S131    X023  B   gpt-6-luna            1   caught          pass         fail@3 (target 3)
+B04.S036    X014  C   gpt-6-luna            1   caught          pass         fail@8 (target 8)
+B04.S037    X014  A   none                  1   caught          pass         fail@15 (target 15)
+B04.S041    X014  C   gpt-6-luna            1   caught          pass         fail@6 (target 6)
+B04.S036    X014  C   gpt-6-luna            2   false-alarm     fail@6       fail@8 (target 8)
+B04.S041    X014  C   gpt-6-luna            2   false-alarm     fail@6       fail@6 (target 6)
+B04.S037    X014  C   gpt-6-luna            2   caught          pass         fail@15 (target 15)
+B04.S037    X014  C   gpt-6-luna            1   caught          pass         fail@15 (target 15)
+B04.S036    X014  A   none                  1   caught          pass         fail@8 (target 8)
+B04.S041    X014  A   none                  1   caught          pass         fail@6 (target 6)
+B07.S029    X010  A   none                  1   caught          pass         fail@4 (target 4)
+B07.S028    X010  A   none                  1   caught          pass         fail@4 (target 4)
+B28.S137    X025  A   none                  1   caught          pass         fail@8 (target 8)
+B28.S134    X025  A   none                  1   caught          pass         fail@8 (target 8)
+B29.S139    X026  A   none                  1   caught          pass         fail@10 (target 10)
+B29.S138    X026  A   none                  1   caught          pass         fail@10 (target 10)
+B34.S153    X018  A   none                  1   caught          pass         fail@8 (target 8)
+B34.S154    X018  A   none                  1   caught          pass         fail@12 (target 12)
+B07.S025    X011  A   none                  1   caught          pass         fail@13 (target 13)
+B15.S094    X021  A   none                  1   caught          pass         fail@6 (target 6)
+B15.S091    X022  A   none                  1   caught          pass         fail@4 (target 4)
+B25.S125    X020  A   none                  1   caught          pass         fail@16 (target 16)
+B27.S131    X023  A   none                  1   caught          pass         fail@3 (target 3)
+B04.S041    X014  B   claude-haiku-5-5      1   false-alarm     fail@6       fail@6 (target 6)
+B04.S036    X014  B   claude-haiku-5-5      1   false-alarm     fail@8       fail@8 (target 8)
+B04.S036    X014  B   claude-haiku-5-5      2   false-alarm     fail@8       fail@8 (target 8)
+B04.S037    X014  B   claude-haiku-5-5      2   false-alarm     fail@15      fail@15 (target 15)
+B04.S037    X014  B   claude-haiku-5-5      1   false-alarm     fail@15      fail@15 (target 15)
+B04.S041    X014  B   claude-haiku-5-5      2   false-alarm     fail@6       fail@6 (target 6)
+B07.S028    X010  C   gpt-6-luna            2   caught          pass         fail@4 (target 4)
+B07.S028    X010  C   gpt-6-luna            1   false-alarm     fail         fail (target 4)
+B07.S029    X010  C   gpt-6-luna            2   fail-unlocated  pass         fail (target 4)
+B07.S029    X010  B   claude-haiku-5-5      1   caught          pass         fail@4 (target 4)
+B07.S028    X010  B   claude-haiku-5-5      2   caught          pass         fail@4 (target 4)
+B07.S029    X010  C   gpt-6-luna            1   caught          pass         fail@4 (target 4)
+B07.S029    X010  B   claude-haiku-5-5      2   caught          pass         fail@4 (target 4)
+B07.S028    X010  B   claude-haiku-5-5      1   caught          pass         fail@4 (target 4)
+B28.S137    X025  B   claude-haiku-5-5      1   false-alarm     fail@5       fail@5 (target 8)
+B28.S137    X025  B   claude-haiku-5-5      2   false-alarm     fail@5       fail@5 (target 8)
+B28.S134    X025  B   claude-haiku-5-5      2   false-alarm     fail@5       fail@5 (target 8)
+B28.S134    X025  B   claude-haiku-5-5      1   false-alarm     fail@5       fail@5 (target 8)
+B29.S138    X026  B   claude-haiku-5-5      1   caught          pass         fail@10 (target 10)
+B29.S139    X026  B   claude-haiku-5-5      2   false-alarm     fail@9       fail@9 (target 10)
+B28.S137    X025  C   gpt-6-luna            2   false-alarm     fail@7       fail@7 (target 8)
+B29.S138    X026  B   claude-haiku-5-5      2   false-alarm     fail@9       fail@9 (target 10)
+B04.S036    X014  B   gpt-5.6-terra         1   caught          pass         fail@8 (target 8)
+B29.S139    X026  B   claude-haiku-5-5      1   caught          pass         fail@10 (target 10)
+B28.S134    X025  C   gpt-6-luna            1   false-alarm     fail@7       fail@7 (target 8)
+B04.S036    X014  B   gpt-5.6-terra         2   caught          pass         fail@8 (target 8)
+B04.S037    X014  B   gpt-5.6-terra         1   caught          pass         fail@15 (target 15)
+B04.S041    X014  B   gpt-5.6-terra         2   caught          pass         fail@6 (target 6)
+B28.S137    X025  C   gpt-6-luna            1   false-alarm     fail@15      fail@5 (target 8)
+B04.S041    X014  B   gpt-5.6-terra         1   caught          pass         fail@6 (target 6)
+B04.S037    X014  B   gpt-5.6-terra         2   caught          pass         fail@15 (target 15)
+B34.S154    X018  B   claude-haiku-5-5      1   caught          pass         fail@12 (target 12)
+B34.S153    X018  B   claude-haiku-5-5      1   caught          pass         fail@8 (target 8)
+B28.S134    X025  C   gpt-6-luna            2   fail-elsewhere  pass         fail@5 (target 8)
+B34.S153    X018  B   claude-haiku-5-5      2   caught          pass         fail@8 (target 8)
+B34.S154    X018  B   claude-haiku-5-5      2   caught          pass         fail@12 (target 12)
+B07.S025    X011  B   claude-haiku-5-5      2   caught          pass         fail@13 (target 13)
+B07.S025    X011  B   claude-haiku-5-5      1   caught          pass         fail@13 (target 13)
+B15.S094    X021  B   claude-haiku-5-5      2   caught          pass         fail@6 (target 6)
+B15.S094    X021  B   claude-haiku-5-5      1   caught          pass         fail@6 (target 6)
+B15.S091    X022  B   claude-haiku-5-5      2   caught          pass         fail@4 (target 4)
+B15.S091    X022  B   claude-haiku-5-5      1   caught          pass         fail@4 (target 4)
+B25.S125    X020  B   claude-haiku-5-5      2   false-alarm     fail@8       fail@8 (target 16)
+B25.S125    X020  B   claude-haiku-5-5      1   false-alarm     fail@8       fail@8 (target 16)
+B07.S028    X010  B   gpt-5.6-terra         2   caught          pass         fail@4 (target 4)
+B07.S029    X010  B   gpt-5.6-terra         2   caught          pass         fail@4 (target 4)
+B27.S131    X023  B   claude-haiku-5-5      1   caught          pass         fail@3 (target 3)
+B07.S028    X010  B   gpt-5.6-terra         1   caught          pass         fail@4 (target 4)
+B07.S029    X010  B   gpt-5.6-terra         1   caught          pass         fail@4 (target 4)
+B27.S131    X023  B   claude-haiku-5-5      2   caught          pass         fail@3 (target 3)
+B28.S137    X025  B   gpt-5.6-terra         1   false-alarm     fail@5       fail@5 (target 8)
+B28.S137    X025  B   gpt-5.6-terra         2   false-alarm     fail@5       fail@5 (target 8)
+B04.S041    X014  C   claude-haiku-5-5      1   caught          pass         fail@6 (target 6)
+B28.S134    X025  B   gpt-5.6-terra         1   false-alarm     fail@5       fail@5 (target 8)
+B04.S036    X014  C   claude-haiku-5-5      1   caught          pass         fail@8 (target 8)
+B28.S134    X025  B   gpt-5.6-terra         2   false-alarm     fail@5       fail@5 (target 8)
+B29.S138    X026  C   gpt-6-luna            1   false-alarm     fail         fail (target 10)
+B04.S036    X014  C   claude-haiku-5-5      2   caught          pass         fail@8 (target 8)
+B29.S139    X026  C   gpt-6-luna            1   false-alarm     fail         fail (target 10)
+B29.S139    X026  C   gpt-6-luna            2   false-alarm     fail         fail (target 10)
+B29.S138    X026  B   gpt-5.6-terra         2   caught          pass         fail@10 (target 10)
+B29.S138    X026  C   gpt-6-luna            2   false-alarm     fail         fail (target 10)
+B29.S138    X026  B   gpt-5.6-terra         1   caught          pass         fail@10 (target 10)
+B29.S139    X026  B   gpt-5.6-terra         2   caught          pass         fail@10 (target 10)
+B04.S037    X014  C   claude-haiku-5-5      2   caught          pass         fail@15 (target 15)
+B29.S139    X026  B   gpt-5.6-terra         1   caught          pass         fail@10 (target 10)
+B04.S037    X014  C   claude-haiku-5-5      1   caught          pass         fail@15 (target 15)
+B04.S041    X014  C   claude-haiku-5-5      2   caught          pass         fail@6 (target 6)
+B34.S154    X018  B   gpt-5.6-terra         2   caught          pass         fail@12 (target 12)
+B34.S154    X018  B   gpt-5.6-terra         1   caught          pass         fail@12 (target 12)
+B34.S153    X018  B   gpt-5.6-terra         1   caught          pass         fail@8 (target 8)
+B34.S153    X018  B   gpt-5.6-terra         2   caught          pass         fail@8 (target 8)
+B34.S153    X018  C   gpt-6-luna            2   false-alarm     fail@8       fail@8 (target 8)
+B34.S153    X018  C   gpt-6-luna            1   false-alarm     fail@8       fail@8 (target 8)
+B07.S025    X011  B   gpt-5.6-terra         1   caught          pass         fail@13 (target 13)
+B07.S025    X011  B   gpt-5.6-terra         2   caught          pass         fail@13 (target 13)
+B15.S094    X021  B   gpt-5.6-terra         2   caught          pass         fail@6 (target 6)
+B15.S094    X021  B   gpt-5.6-terra         1   caught          pass         fail@6 (target 6)
+B15.S091    X022  B   gpt-5.6-terra         1   caught          pass         fail@4 (target 4)
+B15.S091    X022  B   gpt-5.6-terra         2   caught          pass         fail@4 (target 4)
+B25.S125    X020  B   gpt-5.6-terra         1   false-alarm     fail@8       fail@8 (target 16)
+B25.S125    X020  B   gpt-5.6-terra         2   caught          pass         fail@16 (target 16)
+B34.S154    X018  C   gpt-6-luna            2   fail-near       pass         fail@10 (target 12)
+B27.S131    X023  B   gpt-5.6-terra         1   caught          pass         fail@3 (target 3)
+B27.S131    X023  B   gpt-5.6-terra         2   caught          pass         fail@3 (target 3)
+B34.S154    X018  C   gpt-6-luna            1   false-alarm     fail         invalid (target 12)
+B04.S036    X014  C   gpt-5.6-terra         1   caught          pass         fail@8 (target 8)
+B04.S036    X014  C   gpt-5.6-terra         2   caught          pass         fail@8 (target 8)
+B04.S037    X014  C   gpt-5.6-terra         1   caught          pass         fail@15 (target 15)
+B04.S041    X014  C   gpt-5.6-terra         2   caught          pass         fail@6 (target 6)
+B04.S041    X014  C   gpt-5.6-terra         1   caught          pass         fail@6 (target 6)
+B07.S029    X010  C   claude-haiku-5-5      1   missed          pass         pass (target 4)
+B04.S037    X014  C   gpt-5.6-terra         2   caught          pass         fail@15 (target 15)
+B07.S025    X011  C   gpt-6-luna            1   invalid-healthy invalid      invalid (target 13)
+B07.S025    X011  C   gpt-6-luna            2   invalid-healthy invalid      invalid (target 13)
+B07.S028    X010  C   claude-haiku-5-5      2   caught          pass         fail@4 (target 4)
+B15.S094    X021  C   gpt-6-luna            2   caught          pass         fail@6 (target 6)
+B07.S029    X010  C   claude-haiku-5-5      2   caught          pass         fail@4 (target 4)
+B15.S094    X021  C   gpt-6-luna            1   false-alarm     fail@6       fail@5 (target 6)
+B07.S028    X010  C   claude-haiku-5-5      1   caught          pass         fail@4 (target 4)
+B15.S091    X022  C   gpt-6-luna            2   missed          pass         pass (target 4)
+B15.S091    X022  C   gpt-6-luna            1   caught          pass         fail@4 (target 4)
+B25.S125    X020  C   gpt-6-luna            1   false-alarm     fail         invalid (target 16)
+B25.S125    X020  C   gpt-6-luna            2   false-alarm     fail         fail (target 16)
+B28.S137    X025  C   claude-haiku-5-5      1   false-alarm     fail@5       invalid@7 (target 8)
+B27.S131    X023  C   gpt-6-luna            2   invalid-healthy invalid      invalid (target 3)
+B27.S131    X023  C   gpt-6-luna            1   invalid-healthy invalid      invalid (target 3)
+B28.S137    X025  C   claude-haiku-5-5      2   invalid-healthy invalid@10   fail@8 (target 8)
+B28.S134    X025  C   claude-haiku-5-5      2   caught          pass         fail@8 (target 8)
+B28.S134    X025  C   claude-haiku-5-5      1   fail-near       pass         fail@7 (target 8)
+B07.S028    X010  C   gpt-5.6-terra         2   caught          pass         fail@4 (target 4)
+B07.S029    X010  C   gpt-5.6-terra         2   caught          pass         fail@4 (target 4)
+B29.S138    X026  C   claude-haiku-5-5      1   invalid-healthy invalid@7    fail@7 (target 10)
+B29.S139    X026  C   claude-haiku-5-5      2   false-alarm     fail         fail@7 (target 10)
+B07.S028    X010  C   gpt-5.6-terra         1   caught          pass         fail@4 (target 4)
+B29.S138    X026  C   claude-haiku-5-5      2   false-alarm     fail         invalid@7 (target 10)
+B29.S139    X026  C   claude-haiku-5-5      1   false-alarm     fail@7       fail@7 (target 10)
+B07.S029    X010  C   gpt-5.6-terra         1   caught          pass         fail@4 (target 4)
+B34.S154    X018  C   claude-haiku-5-5      1   invalid-healthy invalid@7    invalid@7 (target 12)
+B34.S153    X018  C   claude-haiku-5-5      1   caught          pass         fail@8 (target 8)
+B28.S137    X025  C   gpt-5.6-terra         1   caught          pass         fail@8 (target 8)
+B34.S153    X018  C   claude-haiku-5-5      2   false-alarm     fail@8       fail@8 (target 8)
+B28.S137    X025  C   gpt-5.6-terra         2   caught          pass         fail@8 (target 8)
+B34.S154    X018  C   claude-haiku-5-5      2   invalid-healthy invalid@7    invalid@7 (target 12)
+B28.S134    X025  C   gpt-5.6-terra         1   caught          pass         fail@8 (target 8)
+B28.S134    X025  C   gpt-5.6-terra         2   caught          pass         fail@8 (target 8)
+B07.S025    X011  C   claude-haiku-5-5      2   invalid-healthy invalid      invalid (target 13)
+B07.S025    X011  C   claude-haiku-5-5      1   invalid-healthy invalid      invalid (target 13)
+B15.S094    X021  C   claude-haiku-5-5      2   false-alarm     fail@6       fail@6 (target 6)
+B15.S094    X021  C   claude-haiku-5-5      1   false-alarm     fail@6       fail@6 (target 6)
+B15.S091    X022  C   claude-haiku-5-5      2   caught          pass         fail@4 (target 4)
+B29.S138    X026  C   gpt-5.6-terra         2   false-alarm     fail         fail (target 10)
+B29.S138    X026  C   gpt-5.6-terra         1   false-alarm     fail@7       fail@7 (target 10)
+B15.S091    X022  C   claude-haiku-5-5      1   caught          pass         fail@4 (target 4)
+B29.S139    X026  C   gpt-5.6-terra         2   false-alarm     fail@8       fail@8 (target 10)
+B29.S139    X026  C   gpt-5.6-terra         1   false-alarm     fail@8       fail@8 (target 10)
+B25.S125    X020  C   claude-haiku-5-5      2   invalid-healthy invalid      invalid@10 (target 16)
+B25.S125    X020  C   claude-haiku-5-5      1   invalid-healthy invalid      invalid@10 (target 16)
+B34.S154    X018  C   gpt-5.6-terra         2   invalid-healthy invalid@11   invalid@11 (target 12)
+B27.S131    X023  C   claude-haiku-5-5      1   invalid-healthy invalid      invalid (target 3)
+B27.S131    X023  C   claude-haiku-5-5      2   invalid-healthy invalid      invalid (target 3)
+B34.S154    X018  C   gpt-5.6-terra         1   invalid-faulted pass         invalid@9 (target 12)
+B34.S153    X018  C   gpt-5.6-terra         1   caught          pass         fail@8 (target 8)
+B34.S153    X018  C   gpt-5.6-terra         2   caught          pass         fail@8 (target 8)
+B07.S025    X011  C   gpt-5.6-terra         1   invalid-healthy invalid      invalid (target 13)
+B07.S025    X011  C   gpt-5.6-terra         2   invalid-healthy invalid      invalid (target 13)
+B15.S094    X021  C   gpt-5.6-terra         2   caught          pass         fail@6 (target 6)
+B15.S094    X021  C   gpt-5.6-terra         1   caught          pass         fail@6 (target 6)
+B15.S091    X022  C   gpt-5.6-terra         1   missed          pass         pass (target 4)
+B15.S091    X022  C   gpt-5.6-terra         2   missed          pass         pass (target 4)
+B25.S125    X020  C   gpt-5.6-terra         1   invalid-healthy invalid      invalid (target 16)
+B25.S125    X020  C   gpt-5.6-terra         2   invalid-healthy invalid@12   invalid@9 (target 16)
+B27.S131    X023  C   gpt-5.6-terra         1   invalid-healthy invalid      invalid (target 3)
+B27.S131    X023  C   gpt-5.6-terra         2   invalid-healthy invalid      invalid (target 3)
+
+Invalid individual executions: 45
+  6ac189f540b8/B07.S025/healthy/C/gpt-6-luna/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B07.S025/healthy/C/gpt-6-luna/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B34.S154/fault:X018/C/gpt-6-luna/r1: unresolved
+  6ac189f540b8/B07.S025/healthy/C/claude-haiku-5-5/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B07.S025/healthy/C/claude-haiku-5-5/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B07.S025/fault:X011/C/gpt-6-luna/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B07.S025/fault:X011/C/gpt-6-luna/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B25.S125/fault:X020/C/gpt-6-luna/r1: unresolved
+  6ac189f540b8/B28.S137/fault:X025/C/claude-haiku-5-5/r1: unresolved
+  6ac189f540b8/B27.S131/fault:X023/C/gpt-6-luna/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/fault:X023/C/gpt-6-luna/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/healthy/C/gpt-6-luna/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/healthy/C/gpt-6-luna/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B07.S025/healthy/C/gpt-5.6-terra/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B07.S025/healthy/C/gpt-5.6-terra/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B28.S137/healthy/C/claude-haiku-5-5/r2: unresolved
+  6ac189f540b8/B29.S138/fault:X026/C/claude-haiku-5-5/r2: unresolved
+  6ac189f540b8/B29.S138/healthy/C/claude-haiku-5-5/r1: unresolved
+  6ac189f540b8/B34.S154/fault:X018/C/claude-haiku-5-5/r1: unresolved
+  6ac189f540b8/B34.S154/fault:X018/C/claude-haiku-5-5/r2: unresolved
+  6ac189f540b8/B34.S154/healthy/C/claude-haiku-5-5/r2: unresolved
+  6ac189f540b8/B34.S154/healthy/C/claude-haiku-5-5/r1: unresolved
+  6ac189f540b8/B07.S025/fault:X011/C/claude-haiku-5-5/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B07.S025/fault:X011/C/claude-haiku-5-5/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B25.S125/fault:X020/C/claude-haiku-5-5/r2: unresolved
+  6ac189f540b8/B25.S125/fault:X020/C/claude-haiku-5-5/r1: unresolved
+  6ac189f540b8/B25.S125/healthy/C/claude-haiku-5-5/r1: unresolved
+  6ac189f540b8/B34.S154/fault:X018/C/gpt-5.6-terra/r2: unresolved
+  6ac189f540b8/B25.S125/healthy/C/claude-haiku-5-5/r2: unresolved
+  6ac189f540b8/B27.S131/fault:X023/C/claude-haiku-5-5/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/fault:X023/C/claude-haiku-5-5/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/healthy/C/claude-haiku-5-5/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/healthy/C/claude-haiku-5-5/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B34.S154/fault:X018/C/gpt-5.6-terra/r1: unresolved
+  6ac189f540b8/B34.S154/healthy/C/gpt-5.6-terra/r2: unresolved
+  6ac189f540b8/B07.S025/fault:X011/C/gpt-5.6-terra/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B07.S025/fault:X011/C/gpt-5.6-terra/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B25.S125/fault:X020/C/gpt-5.6-terra/r1: unresolved
+  6ac189f540b8/B25.S125/fault:X020/C/gpt-5.6-terra/r2: unresolved
+  6ac189f540b8/B25.S125/healthy/C/gpt-5.6-terra/r1: unresolved
+  6ac189f540b8/B25.S125/healthy/C/gpt-5.6-terra/r2: unresolved
+  6ac189f540b8/B27.S131/fault:X023/C/gpt-5.6-terra/r1: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/fault:X023/C/gpt-5.6-terra/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/healthy/C/gpt-5.6-terra/r2: Scenario has no leading data steps to run through generators
+  6ac189f540b8/B27.S131/healthy/C/gpt-5.6-terra/r1: Scenario has no leading data steps to run through generators
+
+ARM A AND ARM C DO NOT DEPEND ON THE BREAK: both run at the pin (states healthy and fault:<id>); the break id in a case name only says which pair the trial was planned for. Rows are grouped by (fault, scenario, arm, model, repetition).
+pair rows of arm A and arm C 112; distinct (fault, scenario, arm, model, repetition) units 112; units planned under more than one break 0; units whose rows disagree on the outcome 0.
+
+ARM B (measured trials): unit of analysis = one break-level repair per break x model x repetition; pair rows are listed under their unit and share that repair, so they are not independent observations.
+Step-to-definition limit: the harness has no runtime mapping from a step to its step definition. "target def edited" uses a static mapping (docblock @Given/@When/@Then regex of the PHP function an edit sits in, helpers followed through same-file callers to depth 3, named-selector keys); a definition reached through a helper in another file is not seen, so "none" means "not seen", not "proven unedited". "unmapped" = the repair made edits that reach no step definition or selector key (for example a selector class constructor), so no step can be tied to them. "unknown" = no repair record or no target text.
+plan          break model             rep edits runs sample  pairs edited files / step definitions
+6ac189f540b8  B04   claude-haiku-5-5  1   7     6    fail    3     public/completion/tests/behat/behat_completion.php | defs: the_manual_completion_button_for_activity_should_be_disabled, the_manual_completion_button_for_activity_should_exist, the_manual_completion_button_for_activity_should_not_exist
+    pair B04.S041 X014: false-alarm; target step 6 "the manual completion button for "Music history" should be disabled"; target def edited: definition
+    pair B04.S036 X014: false-alarm; target step 8 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+    pair B04.S037 X014: false-alarm; target step 15 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+6ac189f540b8  B04   claude-haiku-5-5  2   5     6    fail    3     public/completion/tests/behat/behat_completion.php | defs: the_manual_completion_button_for_activity_should_be_disabled, the_manual_completion_button_for_activity_should_exist, the_manual_completion_button_for_activity_should_not_exist
+    pair B04.S036 X014: false-alarm; target step 8 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+    pair B04.S037 X014: false-alarm; target step 15 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+    pair B04.S041 X014: false-alarm; target step 6 "the manual completion button for "Music history" should be disabled"; target def edited: definition
+6ac189f540b8  B04   gpt-5.6-terra     1   8     8    pass    3     public/completion/tests/behat/behat_completion.php | defs: the_manual_completion_button_for_activity_should_be_disabled
+    pair B04.S036 X014: caught; target step 8 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+    pair B04.S037 X014: caught; target step 15 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+    pair B04.S041 X014: caught; target step 6 "the manual completion button for "Music history" should be disabled"; target def edited: definition
+6ac189f540b8  B04   gpt-5.6-terra     2   3     3    pass    3     public/completion/tests/behat/behat_completion.php | defs: the_manual_completion_button_for_activity_should_be_disabled
+    pair B04.S036 X014: caught; target step 8 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+    pair B04.S041 X014: caught; target step 6 "the manual completion button for "Music history" should be disabled"; target def edited: definition
+    pair B04.S037 X014: caught; target step 15 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+6ac189f540b8  B04   gpt-6-luna        1   3     3    fail    3     public/completion/tests/behat/behat_completion.php | defs: the_manual_completion_button_for_activity_should_be_disabled
+    pair B04.S036 X014: false-alarm; target step 8 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+    pair B04.S041 X014: false-alarm; target step 6 "the manual completion button for "Music history" should be disabled"; target def edited: definition
+    pair B04.S037 X014: false-alarm; target step 15 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+6ac189f540b8  B04   gpt-6-luna        2   5     4    fail    3     public/completion/tests/behat/behat_completion.php | defs: the_manual_completion_button_for_activity_should_be_disabled
+    pair B04.S036 X014: false-alarm; target step 8 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+    pair B04.S041 X014: false-alarm; target step 6 "the manual completion button for "Music history" should be disabled"; target def edited: definition
+    pair B04.S037 X014: false-alarm; target step 15 "the manual completion button for "Test choice manual" should be disabled"; target def edited: definition
+6ac189f540b8  B07   claude-haiku-5-5  1   9     8    pass    3     public/search/tests/behat/behat_search.php | defs: click_rendered_button, i_search_for_using_the_header_global_search_box
+    pair B07.S029 X010: caught; target step 4 "".notifywarning" "css_element" should not exist"; target def edited: none
+    pair B07.S028 X010: caught; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+    pair B07.S025 X011: caught; target step 13 ""Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete""; target def edited: none
+6ac189f540b8  B07   claude-haiku-5-5  2   8     6    pass    3     public/search/tests/behat/behat_search.php | defs: click_first_visible_button, i_search_for_using_the_header_global_search_box
+    pair B07.S028 X010: caught; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+    pair B07.S029 X010: caught; target step 4 "".notifywarning" "css_element" should not exist"; target def edited: none
+    pair B07.S025 X011: caught; target step 13 ""Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete""; target def edited: none
+6ac189f540b8  B07   gpt-5.6-terra     1   8     8    pass    3     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B07.S028 X010: caught; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+    pair B07.S029 X010: caught; target step 4 "".notifywarning" "css_element" should not exist"; target def edited: none
+    pair B07.S025 X011: caught; target step 13 ""Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete""; target def edited: none
+6ac189f540b8  B07   gpt-5.6-terra     2   5     5    pass    3     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B07.S028 X010: caught; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+    pair B07.S029 X010: caught; target step 4 "".notifywarning" "css_element" should not exist"; target def edited: none
+    pair B07.S025 X011: caught; target step 13 ""Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete""; target def edited: none
+6ac189f540b8  B07   gpt-6-luna        1   4     3    fail    3     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B07.S028 X010: false-alarm; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+    pair B07.S029 X010: false-alarm; target step 4 "".notifywarning" "css_element" should not exist"; target def edited: none
+    pair B07.S025 X011: false-alarm; target step 13 ""Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete""; target def edited: none
+6ac189f540b8  B07   gpt-6-luna        2   2     2    fail    3     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B07.S028 X010: false-alarm; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+    pair B07.S029 X010: false-alarm; target step 4 "".notifywarning" "css_element" should not exist"; target def edited: none
+    pair B07.S025 X011: false-alarm; target step 13 ""Anne Additional" "text" should appear after "Anne Other" "text" in the "Users" "autocomplete""; target def edited: none
+6ac189f540b8  B15   claude-haiku-5-5  1   2     2    pass    2     public/blocks/tests/behat/behat_blocks.php | defs: i_add_the_block
+    pair B15.S094 X021: caught; target step 6 "I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block""; target def edited: none
+    pair B15.S091 X022: caught; target step 4 "I should see "Teacher One" in the "Logged in user" "block""; target def edited: none
+6ac189f540b8  B15   claude-haiku-5-5  2   2     2    pass    2     public/blocks/tests/behat/behat_blocks.php | defs: i_add_the_block
+    pair B15.S094 X021: caught; target step 6 "I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block""; target def edited: none
+    pair B15.S091 X022: caught; target step 4 "I should see "Teacher One" in the "Logged in user" "block""; target def edited: none
+6ac189f540b8  B15   gpt-5.6-terra     1   2     2    pass    2     public/blocks/tests/behat/behat_blocks.php | defs: i_add_the_block
+    pair B15.S094 X021: caught; target step 6 "I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block""; target def edited: none
+    pair B15.S091 X022: caught; target step 4 "I should see "Teacher One" in the "Logged in user" "block""; target def edited: none
+6ac189f540b8  B15   gpt-5.6-terra     2   4     3    pass    2     public/blocks/tests/behat/behat_blocks.php | defs: i_add_the_block
+    pair B15.S094 X021: caught; target step 6 "I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block""; target def edited: none
+    pair B15.S091 X022: caught; target step 4 "I should see "Teacher One" in the "Logged in user" "block""; target def edited: none
+6ac189f540b8  B15   gpt-6-luna        1   2     2    pass    2     public/blocks/tests/behat/behat_blocks.php | defs: i_add_the_block
+    pair B15.S094 X021: caught; target step 6 "I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block""; target def edited: none
+    pair B15.S091 X022: caught; target step 4 "I should see "Teacher One" in the "Logged in user" "block""; target def edited: none
+6ac189f540b8  B15   gpt-6-luna        2   2     2    pass    2     public/blocks/tests/behat/behat_blocks.php | defs: i_add_the_block
+    pair B15.S094 X021: caught; target step 6 "I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block""; target def edited: none
+    pair B15.S091 X022: caught; target step 4 "I should see "Teacher One" in the "Logged in user" "block""; target def edited: none
+6ac189f540b8  B25   claude-haiku-5-5  1   3     3    fail    1     public/mod/workshop/tests/behat/behat_mod_workshop.php | defs: i_add_a_submission_in_workshop_as
+    pair B25.S125 X020: false-alarm; target step 16 ""Delete submission" "button" should not exist"; target def edited: none
+6ac189f540b8  B25   claude-haiku-5-5  2   3     2    fail    1     public/mod/workshop/tests/behat/behat_mod_workshop.php | defs: i_add_a_submission_in_workshop_as
+    pair B25.S125 X020: false-alarm; target step 16 ""Delete submission" "button" should not exist"; target def edited: none
+6ac189f540b8  B25   gpt-5.6-terra     1   10    10   fail    1     public/mod/workshop/tests/behat/behat_mod_workshop.php | defs: i_add_a_submission_in_workshop_as
+    pair B25.S125 X020: false-alarm; target step 16 ""Delete submission" "button" should not exist"; target def edited: none
+6ac189f540b8  B25   gpt-5.6-terra     2   3     2    pass    1     public/mod/workshop/tests/behat/behat_mod_workshop.php | defs: i_add_a_submission_in_workshop_as
+    pair B25.S125 X020: caught; target step 16 ""Delete submission" "button" should not exist"; target def edited: none
+6ac189f540b8  B25   gpt-6-luna        1   5     3    pass    1     public/mod/workshop/tests/behat/behat_mod_workshop.php | defs: i_add_a_submission_in_workshop_as
+    pair B25.S125 X020: caught; target step 16 ""Delete submission" "button" should not exist"; target def edited: none
+6ac189f540b8  B25   gpt-6-luna        2   2     2    pass    1     public/mod/workshop/tests/behat/behat_mod_workshop.php | defs: i_add_a_submission_in_workshop_as
+    pair B25.S125 X020: caught; target step 16 ""Delete submission" "button" should not exist"; target def edited: none
+6ac189f540b8  B27   claude-haiku-5-5  1   1     2    pass    1     public/lib/tests/behat/behat_navigation.php | defs: i_follow_in_the_user_menu
+    pair B27.S131 X023: caught; target step 3 "I should see "Current session""; target def edited: none
+6ac189f540b8  B27   claude-haiku-5-5  2   1     1    pass    1     public/lib/tests/behat/behat_navigation.php | defs: i_follow_in_the_user_menu
+    pair B27.S131 X023: caught; target step 3 "I should see "Current session""; target def edited: none
+6ac189f540b8  B27   gpt-5.6-terra     1   1     1    pass    1     public/lib/tests/behat/behat_navigation.php | defs: i_follow_in_the_user_menu
+    pair B27.S131 X023: caught; target step 3 "I should see "Current session""; target def edited: none
+6ac189f540b8  B27   gpt-5.6-terra     2   1     1    pass    1     public/lib/tests/behat/behat_navigation.php | defs: i_follow_in_the_user_menu
+    pair B27.S131 X023: caught; target step 3 "I should see "Current session""; target def edited: none
+6ac189f540b8  B27   gpt-6-luna        1   1     1    pass    1     public/lib/tests/behat/behat_navigation.php | defs: i_follow_in_the_user_menu
+    pair B27.S131 X023: caught; target step 3 "I should see "Current session""; target def edited: none
+6ac189f540b8  B27   gpt-6-luna        2   1     1    pass    1     public/lib/tests/behat/behat_navigation.php | defs: i_follow_in_the_user_menu
+    pair B27.S131 X023: caught; target step 3 "I should see "Current session""; target def edited: none
+6ac189f540b8  B28   claude-haiku-5-5  1   2     2    fail    2     public/message/tests/behat/behat_message.php | defs: i_search_for_string_in_messaging
+    pair B28.S137 X025: false-alarm; target step 8 "I should see "Are you sure you want to block Student 2?""; target def edited: none
+    pair B28.S134 X025: false-alarm; target step 8 "I should see "You can't block Teacher 1""; target def edited: none
+6ac189f540b8  B28   claude-haiku-5-5  2   6     4    fail    2     public/message/tests/behat/behat_message.php | defs: i_open_messaging, i_search_for_string_in_messaging
+    pair B28.S137 X025: false-alarm; target step 8 "I should see "Are you sure you want to block Student 2?""; target def edited: none
+    pair B28.S134 X025: false-alarm; target step 8 "I should see "You can't block Teacher 1""; target def edited: none
+6ac189f540b8  B28   gpt-5.6-terra     1   10    9    fail    2     public/message/tests/behat/behat_message.php | defs: i_open_messaging, i_search_for_string_in_messaging
+    pair B28.S137 X025: false-alarm; target step 8 "I should see "Are you sure you want to block Student 2?""; target def edited: none
+    pair B28.S134 X025: false-alarm; target step 8 "I should see "You can't block Teacher 1""; target def edited: none
+6ac189f540b8  B28   gpt-5.6-terra     2   10    8    fail    2     public/message/tests/behat/behat_message.php | defs: i_open_messaging, i_search_for_string_in_messaging
+    pair B28.S137 X025: false-alarm; target step 8 "I should see "Are you sure you want to block Student 2?""; target def edited: none
+    pair B28.S134 X025: false-alarm; target step 8 "I should see "You can't block Teacher 1""; target def edited: none
+6ac189f540b8  B28   gpt-6-luna        1   3     2    fail    2     public/message/tests/behat/behat_message.php | defs: i_search_for_string_in_messaging
+    pair B28.S134 X025: false-alarm; target step 8 "I should see "You can't block Teacher 1""; target def edited: none
+    pair B28.S137 X025: false-alarm; target step 8 "I should see "Are you sure you want to block Student 2?""; target def edited: none
+6ac189f540b8  B28   gpt-6-luna        2   1     1    fail    2     public/message/tests/behat/behat_message.php | defs: i_open_messaging
+    pair B28.S137 X025: false-alarm; target step 8 "I should see "Are you sure you want to block Student 2?""; target def edited: none
+    pair B28.S134 X025: false-alarm; target step 8 "I should see "You can't block Teacher 1""; target def edited: none
+6ac189f540b8  B29   claude-haiku-5-5  1   1     1    pass    2     public/lib/tests/behat/behat_navigation.php | defs: i_expand_node
+    pair B29.S138 X026: caught; target step 10 "I should not see "Content bank""; target def edited: none
+    pair B29.S139 X026: caught; target step 10 "I should see "Content bank""; target def edited: none
+6ac189f540b8  B29   claude-haiku-5-5  2   5     4    pass    2     public/lib/tests/behat/behat_navigation.php | defs: get_node_text_node, i_expand_node
+    pair B29.S139 X026: false-alarm; target step 10 "I should see "Content bank""; target def edited: none
+    pair B29.S138 X026: false-alarm; target step 10 "I should not see "Content bank""; target def edited: none
+6ac189f540b8  B29   gpt-5.6-terra     1   2     1    pass    2     public/lib/tests/behat/behat_navigation.php | defs: get_node_text_node, i_expand_node
+    pair B29.S138 X026: caught; target step 10 "I should not see "Content bank""; target def edited: none
+    pair B29.S139 X026: caught; target step 10 "I should see "Content bank""; target def edited: none
+6ac189f540b8  B29   gpt-5.6-terra     2   10    8    pass    2     public/lib/tests/behat/behat_navigation.php | defs: get_node_text_node
+    pair B29.S138 X026: caught; target step 10 "I should not see "Content bank""; target def edited: none
+    pair B29.S139 X026: caught; target step 10 "I should see "Content bank""; target def edited: none
+6ac189f540b8  B29   gpt-6-luna        1   6     5    pass    2     public/lib/tests/behat/behat_navigation.php | defs: get_node_text_node
+    pair B29.S138 X026: caught; target step 10 "I should not see "Content bank""; target def edited: none
+    pair B29.S139 X026: caught; target step 10 "I should see "Content bank""; target def edited: none
+6ac189f540b8  B29   gpt-6-luna        2   8     7    pass    2     public/lib/tests/behat/behat_navigation.php | defs: get_node_text_node, i_expand_node
+    pair B29.S139 X026: caught; target step 10 "I should see "Content bank""; target def edited: none
+    pair B29.S138 X026: caught; target step 10 "I should not see "Content bank""; target def edited: none
+6ac189f540b8  B34   claude-haiku-5-5  1   1     2    pass    2     public/grade/grading/tests/behat/behat_grading.php | defs: i_go_to_advanced_grading_definition_page
+    pair B34.S154 X018: caught; target step 12 "I should see "Comment 1""; target def edited: none
+    pair B34.S153 X018: caught; target step 8 "I should see "Criterion name can not be empty""; target def edited: none
+6ac189f540b8  B34   claude-haiku-5-5  2   1     1    pass    2     public/grade/grading/tests/behat/behat_grading.php | defs: i_go_to_advanced_grading_definition_page
+    pair B34.S153 X018: caught; target step 8 "I should see "Criterion name can not be empty""; target def edited: none
+    pair B34.S154 X018: caught; target step 12 "I should see "Comment 1""; target def edited: none
+6ac189f540b8  B34   gpt-5.6-terra     1   1     1    pass    2     public/grade/grading/tests/behat/behat_grading.php | defs: i_go_to_advanced_grading_definition_page
+    pair B34.S154 X018: caught; target step 12 "I should see "Comment 1""; target def edited: none
+    pair B34.S153 X018: caught; target step 8 "I should see "Criterion name can not be empty""; target def edited: none
+6ac189f540b8  B34   gpt-5.6-terra     2   1     1    pass    2     public/grade/grading/tests/behat/behat_grading.php | defs: i_go_to_advanced_grading_definition_page
+    pair B34.S154 X018: caught; target step 12 "I should see "Comment 1""; target def edited: none
+    pair B34.S153 X018: caught; target step 8 "I should see "Criterion name can not be empty""; target def edited: none
+6ac189f540b8  B34   gpt-6-luna        1   1     1    pass    2     public/grade/grading/tests/behat/behat_grading.php | defs: i_go_to_advanced_grading_definition_page
+    pair B34.S153 X018: caught; target step 8 "I should see "Criterion name can not be empty""; target def edited: none
+    pair B34.S154 X018: caught; target step 12 "I should see "Comment 1""; target def edited: none
+6ac189f540b8  B34   gpt-6-luna        2   1     1    pass    2     public/grade/grading/tests/behat/behat_grading.php | defs: i_go_to_advanced_grading_definition_page
+    pair B34.S153 X018: caught; target step 8 "I should see "Criterion name can not be empty""; target def edited: none
+    pair B34.S154 X018: caught; target step 12 "I should see "Comment 1""; target def edited: none
+TOTALS: repair sessions 48; sample passes 33; arm B pair rows 96 over 48 repair units; pair rows whose target step uses an edited definition 18, not seen 78, edits unmapped 0, unknown 0.

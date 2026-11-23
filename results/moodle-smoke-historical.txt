@@ -1,0 +1,89 @@
+Moodle SMOKE (engineering check of the harness; NOT measured trials, not a result)
+trials: 66; repairs: 64
+
+Oracle: caught = same arm passes the healthy build AND fails the faulted build at the fix's target step (agent: verified step-level verdict); false alarm = fails the healthy build.
+fail-near / fail-elsewhere = healthy passes, faulted fails at another step, within two steps of the target or further (not a catch); fail-unlocated = fails without a verified step; invalid = Behat error or agent "unresolved".
+
+arm model                 pairs caught           missed           fail-near        fail-elsewhere   fail-unlocated   false-alarm      invalid-healthy  invalid-faulted  incomplete       healthy runs / failed
+A   none                  11    8                0                3                0                0                0                0                0                0                11 / 0
+B   claude-haiku-5-5      5     2                0                0                0                0                3                0                0                0                5 / 3
+B   gpt-5.6-terra         6     4                0                0                0                0                2                0                0                0                6 / 2
+B   gpt-6-luna            4     0                1                0                0                0                3                0                0                0                4 / 3
+C   claude-haiku-5-5      3     0                0                0                0                0                3                0                0                0                3 / 3
+C   gpt-5.6-terra         2     2                0                0                0                0                0                0                0                0                2 / 0
+C   gpt-6-luna            2     0                0                0                0                1                1                0                0                0                2 / 1
+
+Per trial pair
+case        fault arm model                 rep outcome         healthy      faulted (step vs target)
+B03.S003    F03   A   none                  1   caught          pass         fail@11 (target 11)
+B03.S022    F23   A   none                  1   caught          pass         fail@26 (target 26)
+B06.S006    F06   A   none                  1   caught          pass         fail@11 (target 8)
+B06.S012    F12   A   none                  1   caught          pass         fail@11 (target 11)
+B06.S014    F14   A   none                  1   caught          pass         fail@9 (target 9)
+B06.S015    F15   A   none                  1   caught          pass         fail@11 (target 11)
+B12.S079    F01   A   none                  1   fail-near       pass         fail@25 (target 24)
+B12.S079    F01   C   claude-haiku-5-5      1   false-alarm     fail@8       fail@8 (target 24)
+B12.S079    F01   B   claude-haiku-5-5      1   false-alarm     fail@14      fail@14 (target 24)
+B12.S079    F01   A   none                  1   fail-near       pass         fail@25 (target 24)
+B12.S079    F01   C   claude-haiku-5-5      1   false-alarm     fail@8       fail (target 24)
+B12.S079    F01   B   claude-haiku-5-5      1   false-alarm     fail@14      fail@14 (target 24)
+B12.S079    F01   A   none                  1   fail-near       pass         fail@25 (target 24)
+B12.S079    F01   C   claude-haiku-5-5      1   false-alarm     fail@8       fail@8 (target 24)
+B12.S079    F01   B   claude-haiku-5-5      1   false-alarm     fail@14      fail@14 (target 24)
+B01.S028    X010  A   none                  1   caught          pass         fail@4 (target 4)
+B12.S076    X001  A   none                  1   caught          pass         fail@17 (target 17)
+B01.S028    X010  C   gpt-6-luna            1   false-alarm     fail         fail (target 4)
+B12.S076    X001  C   gpt-6-luna            1   fail-unlocated  pass         fail (target 17)
+B01.S028    X010  C   gpt-5.6-terra         1   caught          pass         fail@4 (target 4)
+B12.S076    X001  C   gpt-5.6-terra         1   caught          pass         fail@17 (target 17)
+B01.S028    X010  B   gpt-6-luna            1   false-alarm     fail@3       fail@3 (target 4)
+B12.S076    X001  B   gpt-6-luna            1   false-alarm     fail@12      fail@12 (target 17)
+B01.S028    X010  B   gpt-5.6-terra         1   false-alarm     fail@3       fail@3 (target 4)
+B12.S076    X001  B   gpt-5.6-terra         1   false-alarm     fail@12      fail@12 (target 17)
+B01.S028    X010  B   gpt-6-luna            1   missed          pass         pass (target 4)
+B12.S076    X001  B   gpt-6-luna            1   false-alarm     fail@12      fail@12 (target 17)
+B01.S028    X010  B   claude-haiku-5-5      1   caught          pass         fail@4 (target 4)
+B12.S076    X001  B   claude-haiku-5-5      1   caught          pass         fail@17 (target 17)
+B01.S028    X010  B   gpt-5.6-terra         1   caught          pass         fail@4 (target 4)
+B12.S076    X001  B   gpt-5.6-terra         1   caught          pass         fail@17 (target 17)
+B07.S028    X010  B   gpt-5.6-terra         1   caught          pass         fail@4 (target 4)
+B12.S076    X001  B   gpt-5.6-terra         1   caught          pass         fail@17 (target 17)
+
+ARM A AND ARM C DO NOT DEPEND ON THE BREAK: both run at the pin (states healthy and fault:<id>); the break id in a case name only says which pair the trial was planned for. Rows are grouped by (fault, scenario, arm, model, repetition).
+pair rows of arm A and arm C 18; distinct (fault, scenario, arm, model, repetition) units 14; units planned under more than one break 0; units whose rows disagree on the outcome 0.
+
+ARM B (smoke, not measured): unit of analysis = one break-level repair per break x model x repetition; pair rows are listed under their unit and share that repair, so they are not independent observations.
+Step-to-definition limit: the harness has no runtime mapping from a step to its step definition. "target def edited" uses a static mapping (docblock @Given/@When/@Then regex of the PHP function an edit sits in, helpers followed through same-file callers to depth 3, named-selector keys); a definition reached through a helper in another file is not seen, so "none" means "not seen", not "proven unedited". "unmapped" = the repair made edits that reach no step definition or selector key (for example a selector class constructor), so no step can be tied to them. "unknown" = no repair record or no target text.
+plan          break model             rep edits runs sample  pairs edited files / step definitions
+036237a21be7  B12   claude-haiku-5-5  1   2     3    fail    1     public/lib/behat/classes/partial_named_selector.php | defs: __construct
+    pair B12.S079 F01: false-alarm; target step 24 "I should see "New headline" in the "region-main" "region""; target def edited: unmapped
+1b79548e1ee9  B01   claude-haiku-5-5  1   2     2    pass    1     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B01.S028 X010: caught; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+1b79548e1ee9  B01   gpt-5.6-terra     1   6     6    pass    1     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B01.S028 X010: caught; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+1b79548e1ee9  B01   gpt-6-luna        1   2     2    pass    1     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B01.S028 X010: missed; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+1b79548e1ee9  B12   claude-haiku-5-5  1   6     6    pass    1     public/lib/behat/classes/partial_named_selector.php, public/mod/data/tests/behat/advanced_search.feature | defs: __construct
+    pair B12.S076 X001: caught; target step 17 "I should see "The test is on My Field, Field 1 description, and the input" in the "data_adv_form" "region""; target def edited: unmapped
+1b79548e1ee9  B12   gpt-5.6-terra     1   5     4    pass    1     public/lib/behat/classes/partial_named_selector.php, public/mod/data/tests/behat/advanced_search.feature | defs: __construct
+    pair B12.S076 X001: caught; target step 17 "I should see "The test is on My Field, Field 1 description, and the input" in the "data_adv_form" "region""; target def edited: unmapped
+1b79548e1ee9  B12   gpt-6-luna        1   2     2    fail    1     public/lib/behat/classes/partial_named_selector.php | defs: __construct
+    pair B12.S076 X001: false-alarm; target step 17 "I should see "The test is on My Field, Field 1 description, and the input" in the "data_adv_form" "region""; target def edited: unmapped
+20b56db38a70  B07   gpt-5.6-terra     1   6     6    pass    1     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B07.S028 X010: caught; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+20b56db38a70  B12   gpt-5.6-terra     1   0     0    pass    1     none | defs: none seen
+    pair B12.S076 X001: caught; target step 17 "I should see "The test is on My Field, Field 1 description, and the input" in the "data_adv_form" "region""; target def edited: none
+9d0d95b51aa9  B01   gpt-5.6-terra     1   2     3    fail    1     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B01.S028 X010: false-alarm; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+9d0d95b51aa9  B01   gpt-6-luna        1   2     3    fail    1     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+    pair B01.S028 X010: false-alarm; target step 4 "I should not see "The search currently only finds frog-related content""; target def edited: none
+9d0d95b51aa9  B12   gpt-5.6-terra     1   2     3    fail    1     public/lib/behat/classes/partial_named_selector.php | defs: __construct
+    pair B12.S076 X001: false-alarm; target step 17 "I should see "The test is on My Field, Field 1 description, and the input" in the "data_adv_form" "region""; target def edited: unmapped
+9d0d95b51aa9  B12   gpt-6-luna        1   2     3    fail    1     public/lib/behat/classes/partial_named_selector.php | defs: __construct
+    pair B12.S076 X001: false-alarm; target step 17 "I should see "The test is on My Field, Field 1 description, and the input" in the "data_adv_form" "region""; target def edited: unmapped
+a640781290ad  B12   claude-haiku-5-5  1   2     3    fail    1     public/lib/behat/classes/partial_named_selector.php | defs: __construct
+    pair B12.S079 F01: false-alarm; target step 24 "I should see "New headline" in the "region-main" "region""; target def edited: unmapped
+f66fd695cc21  B12   claude-haiku-5-5  1   2     2    fail    1     public/lib/behat/classes/partial_named_selector.php | defs: __construct
+    pair B12.S079 F01: false-alarm; target step 24 "I should see "New headline" in the "region-main" "region""; target def edited: unmapped
+f6e17d1d3815  B01   gpt-6-luna        1   2     3    fail    0     public/search/tests/behat/behat_search.php | defs: i_search_for_using_the_header_global_search_box
+TOTALS: repair sessions 16; sample passes 7; arm B pair rows 15 over 15 repair units; pair rows whose target step uses an edited definition 0, not seen 7, edits unmapped 8, unknown 0.

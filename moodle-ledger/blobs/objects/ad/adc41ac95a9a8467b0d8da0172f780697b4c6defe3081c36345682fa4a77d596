@@ -1,0 +1,86 @@
+diff --git a/public/search/tests/behat/behat_search.php b/public/search/tests/behat/behat_search.php
+index 3e86a07497b5d441829c51d821c2b5fd72a38be0..73eef940f86dafc71110c1be97bba301ec1f5d0a 100644
+--- a/public/search/tests/behat/behat_search.php
++++ b/public/search/tests/behat/behat_search.php
+@@ -27,6 +27,8 @@
+ require_once(__DIR__ . '/../../../lib/behat/behat_base.php');
+ 
+ use Behat\Gherkin\Node\TableNode as TableNode;
++use Behat\Mink\Element\NodeElement;
++use Behat\Mink\Exception\ExpectationException;
+ use Moodle\BehatExtension\Exception\SkippedException;
+ 
+ /**
+@@ -45,20 +47,62 @@ class behat_search extends behat_base {
+      * @param string $query Query to search for
+      */
+     public function i_search_for_using_the_header_global_search_box($query) {
+-        // In boost the toggle button is only visible on small screens, where it expands the
+-        // inline search field. Check visibility before clicking.
+-        $togglelabel = get_string('togglesearch', 'core');
+-        $toggle = $this->getSession()->getPage()->find('named', ['button', $togglelabel]);
+-        if ($toggle && $toggle->isVisible()) {
+-            $this->execute("behat_general::i_click_on", [$togglelabel, 'button']);
++        // The toggle is displayed only while the header search is collapsed; open it only then.
++        if (!$this->get_displayed_search_input()) {
++            $this->click_rendered_button(get_string('togglesearch', 'core'));
+         }
+ 
+-        $this->execute('behat_forms::i_set_the_field_to', ['q', $query]);
++        // Set the search input once it is displayed; the revealed input can lag behind the toggle.
++        $this->spin(function ($context) use ($query) {
++            $field = $context->get_displayed_search_input();
++            if (!$field) {
++                throw new ExpectationException('The header search input is not displayed yet', $context->getSession());
++            }
++            $field->setValue($query);
++            return true;
++        });
+ 
+         // Submit the form.
+-        $this->execute("behat_general::i_click_on_in_the",
+-            [get_string('performsearch', 'search'), 'button', '#usernavigation', 'css_element']
+-        );
++        $this->click_rendered_button(get_string('performsearch', 'search'), $this->find('css', '#usernavigation'));
++    }
++
++    /**
++     * Returns the first displayed header search input, or null.
++     *
++     * The header can contain hidden copies of the input, which the driver rejects.
++     *
++     * @return NodeElement|null
++     */
++    private function get_displayed_search_input(): ?NodeElement {
++        foreach ($this->getSession()->getPage()->findAll('xpath', "//input[@name='q']") as $field) {
++            if ($field->isVisible()) {
++                return $field;
++            }
++        }
++        return null;
++    }
++
++    /**
++     * Clicks the first rendered button with the given label, optionally scoped to a container.
++     *
++     * The header renders matching controls more than once (some hidden), and the driver rejects
++     * clicks on hidden elements, so only rendered candidates are considered.
++     *
++     * @param string $label Button id|name|title|value|aria-label
++     * @param NodeElement|null $container Container to search in; the whole page when null
++     */
++    private function click_rendered_button(string $label, ?NodeElement $container = null): void {
++        $scope = $container ?? $this->getSession()->getPage();
++        $this->spin(function ($context) use ($scope, $label) {
++            foreach ($scope->findAll('named_partial', ['button', $label]) as $node) {
++                if ($node->isVisible()) {
++                    $node->click();
++                    return true;
++                }
++            }
++            throw new ExpectationException("No displayed button '{$label}' yet", $context->getSession());
++        });
++        $this->wait_for_pending_js();
+     }
+ 
+     /**

@@ -1,0 +1,20 @@
+diff --git a/public/blocks/myoverview/classes/output/main.php b/public/blocks/myoverview/classes/output/main.php
+index 49638baa7c560ca41ddbdcda8419e8e7a94ba778..b37e0e377098ac1d62d9cf69ebdad442548abf23 100644
+--- a/public/blocks/myoverview/classes/output/main.php
++++ b/public/blocks/myoverview/classes/output/main.php
+@@ -363,14 +363,7 @@ class main implements renderable, templatable {
+         if (!$this->displaygroupingcustomfield) {
+             return [];
+         }
+-
+-        // Get the relevant customfield ID within the core_course/course component/area.
+-        $fieldid = $DB->get_field_sql("
+-            SELECT f.id
+-              FROM {customfield_field} f
+-              JOIN {customfield_category} c ON c.id = f.categoryid
+-             WHERE f.shortname = :shortname AND c.component = 'core_course' AND c.area = 'course'
+-        ", ['shortname' => $this->customfiltergrouping]);
++        $fieldid = $DB->get_field('customfield_field', 'id', ['shortname' => $this->customfiltergrouping]);
+         if (!$fieldid) {
+             return [];
+         }

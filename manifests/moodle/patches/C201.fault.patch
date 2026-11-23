@@ -1,0 +1,145 @@
+diff --git a/public/cohort/classes/customfield/cohort_handler.php b/public/cohort/classes/customfield/cohort_handler.php
+index c7dc3d74c68150c7f8fa8c888aa9fbec54169e2e..26b7bdbb0b1586a49d847bbfffdbfab154f380b2 100644
+--- a/public/cohort/classes/customfield/cohort_handler.php
++++ b/public/cohort/classes/customfield/cohort_handler.php
+@@ -27,9 +27,6 @@ use core_customfield\field_controller;
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class cohort_handler extends handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = true;
+-
+     /**
+      * The current user can configure custom fields on this component.
+      *
+diff --git a/public/contentbank/classes/customfield/content_handler.php b/public/contentbank/classes/customfield/content_handler.php
+index 3d8e70dcbadcad68e7edce26a81b6a3fec91bf11..2ebaf8431726006f947585fe84780686a7a06c0e 100644
+--- a/public/contentbank/classes/customfield/content_handler.php
++++ b/public/contentbank/classes/customfield/content_handler.php
+@@ -27,9 +27,6 @@ use core_customfield\field_controller;
+  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class content_handler extends \core_customfield\handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = true;
+-
+     /**
+      * @var \context
+      */
+diff --git a/public/course/classes/customfield/course_handler.php b/public/course/classes/customfield/course_handler.php
+index 7db5cb2606da66ce1abf58298c477909bd40c4bf..7d7616293aeff14ce72597497d898b988491b814 100644
+--- a/public/course/classes/customfield/course_handler.php
++++ b/public/course/classes/customfield/course_handler.php
+@@ -26,9 +26,6 @@ use core_customfield\field_controller;
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class course_handler extends \core_customfield\handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = true;
+-
+     /**
+      * @var \context
+      */
+diff --git a/public/customfield/classes/customfield/shared_handler.php b/public/customfield/classes/customfield/shared_handler.php
+index 6b3dfded5998cc61a2eaaa5467b50bb8b473fea3..4cb9e214c6a3c45dfdde8098124fae85df7318e2 100644
+--- a/public/customfield/classes/customfield/shared_handler.php
++++ b/public/customfield/classes/customfield/shared_handler.php
+@@ -31,9 +31,6 @@ use core_customfield\field_controller;
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class shared_handler extends \core_customfield\handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = true;
+-
+     /**
+      * The current user can configure custom fields on this component.
+      *
+diff --git a/public/customfield/classes/handler.php b/public/customfield/classes/handler.php
+index c9e9b3f6d024f55aebd5f55cfa2888bef46e817f..94bb31d0ebf5bc3d9a23e2bff691af4eb2d951cb 100644
+--- a/public/customfield/classes/handler.php
++++ b/public/customfield/classes/handler.php
+@@ -42,9 +42,6 @@ use stdClass;
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ abstract class handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = false;
+-
+     /** @var handler[] $instances */
+     private static $instances = [];
+ 
+@@ -91,16 +88,13 @@ abstract class handler {
+     /**
+      * Returns an instance of the handler
+      *
+-     * Handlers may cache instances during the request by overriding {@see self::CACHE_HANDLER_INSTANCES}.
++     * We statically cache the list of instances during request lifecycle, to allow this method to be called
++     * repeatedly without potential performance problems
+      *
+      * @param int $itemid
+      * @return static
+      */
+     public static function create(int $itemid = 0): handler {
+-        if (!static::CACHE_HANDLER_INSTANCES) {
+-            return new static($itemid);
+-        }
+-
+         $instancekey = static::class . ':' . $itemid;
+         if (!array_key_exists($instancekey, static::$instances)) {
+             static::$instances[$instancekey] = new static($itemid);
+diff --git a/public/group/classes/customfield/group_handler.php b/public/group/classes/customfield/group_handler.php
+index 91ea5aae5144b163f4f0f33135d863742dd3b8c5..cbde105d1b0a3b9b99119422240dd3923c89e19a 100644
+--- a/public/group/classes/customfield/group_handler.php
++++ b/public/group/classes/customfield/group_handler.php
+@@ -34,9 +34,6 @@ use restore_task;
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class group_handler extends handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = true;
+-
+     /**
+      * The current user can configure custom fields on this component.
+      *
+diff --git a/public/group/classes/customfield/grouping_handler.php b/public/group/classes/customfield/grouping_handler.php
+index f426c64d2226fac3ef7d820cbed52b70666444e9..9a95813ebcf73c59870c36b5eaa056d4b93fc916 100644
+--- a/public/group/classes/customfield/grouping_handler.php
++++ b/public/group/classes/customfield/grouping_handler.php
+@@ -34,9 +34,6 @@ use restore_task;
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class grouping_handler extends handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = true;
+-
+     /**
+      * The current user can configure custom fields on this component.
+      *
+diff --git a/public/question/bank/customfields/classes/customfield/question_handler.php b/public/question/bank/customfields/classes/customfield/question_handler.php
+index c88c6d7c8cd7a1d36d4eafbc0aa05d3965cd9e9b..86892009b806d1106f29c4fd0ced9489897d54da 100644
+--- a/public/question/bank/customfields/classes/customfield/question_handler.php
++++ b/public/question/bank/customfields/classes/customfield/question_handler.php
+@@ -29,9 +29,6 @@ use core_customfield\output\field_data;
+  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class question_handler extends \core_customfield\handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = true;
+-
+     /**
+      * @var \context
+      */
+diff --git a/public/reportbuilder/classes/customfield/report_handler.php b/public/reportbuilder/classes/customfield/report_handler.php
+index b9350f13812d2b49adc0b5f4806aa16f7f26ce2b..5c7568247429e6afaca56ceaf0c39c2b1b9ecea0 100644
+--- a/public/reportbuilder/classes/customfield/report_handler.php
++++ b/public/reportbuilder/classes/customfield/report_handler.php
+@@ -34,9 +34,6 @@ use core_reportbuilder\permission;
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class report_handler extends \core_customfield\handler {
+-    /** @var bool Whether to cache handler instances during the request. */
+-    protected const CACHE_HANDLER_INSTANCES = true;
+-
+     /**
+      * The current user can configure custom fields on this component.
+      *

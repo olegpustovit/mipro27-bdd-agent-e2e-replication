@@ -1,0 +1,87 @@
+diff --git a/public/lib/db/upgradelib.php b/public/lib/db/upgradelib.php
+index f6a5105e5a3b447362a91eba413bb7cdf7682946..ed902abaf2ea961bcfeed77ba47c9b546c8c90f6 100644
+--- a/public/lib/db/upgradelib.php
++++ b/public/lib/db/upgradelib.php
+@@ -2014,28 +2014,6 @@ function upgrade_change_binary_column_to_int(
+     return true;
+ }
+ 
+-/**
+- * Upgrade script replacing absolute URLs in defaulthomepage setting with relative URLs
+- */
+-function upgrade_store_relative_url_sitehomepage() {
+-    global $CFG, $DB;
+-
+-    if (str_starts_with((string)$CFG->defaulthomepage, $CFG->wwwroot . '/')) {
+-        set_config('defaulthomepage', substr((string)$CFG->defaulthomepage, strlen($CFG->wwwroot)));
+-    }
+-
+-    $records = $DB->get_records_select('user_preferences', "name = :name AND " . $DB->sql_like('value', ':pattern'),
+-        ['name' => 'user_home_page_preference', 'pattern' => 'http%']);
+-    foreach ($records as $record) {
+-        if (str_starts_with($record->value, $CFG->wwwroot . '/')) {
+-            $DB->update_record('user_preferences', [
+-                'id' => $record->id,
+-                'value' => substr($record->value, strlen($CFG->wwwroot)),
+-            ]);
+-        }
+-    }
+-}
+-
+ /**
+  * Upgrade script to convert existing AI providers to provider instances.
+  */
+diff --git a/public/lib/moodlelib.php b/public/lib/moodlelib.php
+index c0d7af6c49f71940759aa6775fb0182ce7972945..1a016325d93f65fa244ad7557976ca41163ad9fb 100644
+--- a/public/lib/moodlelib.php
++++ b/public/lib/moodlelib.php
+@@ -9827,11 +9827,11 @@ function get_home_page() {
+             } else if (empty($CFG->enablemycourses) && $userhomepage == HOMEPAGE_MYCOURSES) {
+                 // If the user was using my courses but it's disabled, return the default home page.
+                 $userhomepage = $defaultpage;
+-            } else if (get_default_home_page_url()) {
++            } else if (clean_param($userhomepage, PARAM_LOCALURL)) {
+                 return HOMEPAGE_URL;
+             }
+             return (int) $userhomepage;
+-        } else if (get_default_home_page_url()) {
++        } else if (clean_param($CFG->defaulthomepage, PARAM_LOCALURL)) {
+             return HOMEPAGE_URL;
+         }
+     }
+@@ -9879,15 +9879,13 @@ function get_default_home_page(): int {
+ function get_default_home_page_url(): ?\core\url {
+     global $CFG;
+ 
+-    if (substr((string)$CFG->defaulthomepage, 0, 1) === '/' &&
+-            ($defaulthomepage = clean_param($CFG->wwwroot . $CFG->defaulthomepage, PARAM_LOCALURL))) {
++    if ($defaulthomepage = clean_param($CFG->defaulthomepage, PARAM_LOCALURL)) {
+         return new \core\url($defaulthomepage);
+     }
+ 
+     if ($CFG->defaulthomepage == HOMEPAGE_USER) {
+         $userhomepage = get_user_preferences('user_home_page_preference');
+-        if (substr((string)$userhomepage, 0, 1) === '/' &&
+-                ($userhomepage = clean_param($CFG->wwwroot . $userhomepage, PARAM_LOCALURL))) {
++        if ($userhomepage = clean_param($userhomepage, PARAM_LOCALURL)) {
+             return new \core\url($userhomepage);
+         }
+     }
+diff --git a/public/user/classes/hook/extend_default_homepage.php b/public/user/classes/hook/extend_default_homepage.php
+index 6dc6f8de374c8df97c2af5b0f67dc81ec5009fc9..114a2e8e032b8618b0d2c4f8bd572a73983a73d1 100644
+--- a/public/user/classes/hook/extend_default_homepage.php
++++ b/public/user/classes/hook/extend_default_homepage.php
+@@ -50,11 +50,11 @@ final class extend_default_homepage {
+     /**
+      * To be called by callback to add an option
+      *
+-     * @param url $url URL that can be used as a site homepage. Must be a local URL.
++     * @param url $url
+      * @param lang_string|string $title
+      */
+     public function add_option(url $url, lang_string|string $title): void {
+-        $this->options[$url->out_as_local_url()] = $title;
++        $this->options[(string) $url] = $title;
+     }
+ 
+     /**

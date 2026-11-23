@@ -1,0 +1,14 @@
+diff --git a/public/mod/workshop/tests/behat/behat_mod_workshop.php b/public/mod/workshop/tests/behat/behat_mod_workshop.php
+index f581daaf326b72bcc4d18848a88e1bf6da32142a..2df9c86e389fac86d3d5a367208981afe56589bf 100644
+--- a/public/mod/workshop/tests/behat/behat_mod_workshop.php
++++ b/public/mod/workshop/tests/behat/behat_mod_workshop.php
+@@ -72,7 +72,8 @@ class behat_mod_workshop extends behat_base {
+     public function i_add_a_submission_in_workshop_as($workshopname, $table) {
+         $workshopname = $this->escape($workshopname);
+         $savechanges = $this->escape(get_string('savechanges'));
+-        $xpath = "//div[contains(concat(' ', normalize-space(@class), ' '), ' singlebutton ')]/descendant::*[@type='submit']";
++        $addsubmission = behat_context_helper::escape(get_string('createsubmission', 'workshop'));
++        $xpath = "//*[self::a or self::button][normalize-space(.)=$addsubmission]";
+ 
+         $this->execute("behat_navigation::i_am_on_page_instance", [$workshopname, 'workshop activity']);
+ 

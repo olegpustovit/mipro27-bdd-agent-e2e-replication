@@ -1,0 +1,2157 @@
+diff --git a/admin/cli/reset_password.php b/admin/cli/reset_password.php
+index 8bd03eb16e7f1e822b56c3f801186d5a1053b220..8681fdacb088af6b451b921ef96df2452bccc121 100644
+--- a/admin/cli/reset_password.php
++++ b/admin/cli/reset_password.php
+@@ -99,7 +99,7 @@ if (!$options['ignore-password-policy'] ) {
+     }
+ }
+ 
+-$hashedpassword = hash_internal_user_password($password);
++$hashedpassword = \core\di::get(\core\authentication\password::class)->hash($password);
+ 
+ $DB->set_field('user', 'password', $hashedpassword, array('id'=>$user->id));
+ 
+diff --git a/public/admin/auth.php b/public/admin/auth.php
+index a5a88a9d9b2be3499b9131de0d003e5ebfcd13ab..512488626bd2cd6c1fb8d76ef503cac9d2bc4551 100644
+--- a/public/admin/auth.php
++++ b/public/admin/auth.php
+@@ -20,19 +20,21 @@ $PAGE->set_url($returnurl);
+ $action = optional_param('action', '', PARAM_ALPHANUMEXT);
+ $auth   = optional_param('auth', '', PARAM_PLUGIN);
+ 
+-get_enabled_auth_plugins(true); // fix the list of enabled auths
++// Fix the list of enabled auths.
++\core\di::get(\core\authentication::class)->get_enabled_plugins(true);
+ if (empty($CFG->auth)) {
+-    $authsenabled = array();
++    $authsenabled = [];
+ } else {
+     $authsenabled = explode(',', $CFG->auth);
+ }
+ 
+-if (!empty($auth) and !exists_auth_plugin($auth)) {
++$authhelper = \core\di::get(\core\authentication::class);
++
++if (!empty($auth) && !$authhelper->plugin_exists($auth)) {
+     throw new \moodle_exception('pluginnotinstalled', 'auth', $returnurl, $auth);
+ }
+ 
+-////////////////////////////////////////////////////////////////////////////////
+-// process actions
++// Process the actions.
+ 
+ if (!confirm_sesskey()) {
+     redirect($returnurl);
+diff --git a/public/admin/mnet/access_control.php b/public/admin/mnet/access_control.php
+index c0a38dcb956863a8ffab3e7899555721650414b0..71bba24694e8039404e8dbcd6530c545f56c8ceb 100644
+--- a/public/admin/mnet/access_control.php
++++ b/public/admin/mnet/access_control.php
+@@ -126,7 +126,7 @@ if (empty($CFG->mnet_dispatcher_mode) || $CFG->mnet_dispatcher_mode !== 'strict'
+     $warn = '<p>' . get_string('mnetdisabled','mnet') .'</p>';
+ }
+ 
+-if (!is_enabled_auth('mnet')) {
++if (!\core\di::get(\core\authentication::class)->is_enabled('mnet')) {
+     $warn .= '<p>' .  get_string('authmnetdisabled','mnet').'</p>';
+ }
+ 
+diff --git a/public/admin/tool/generator/classes/testplan_backend.php b/public/admin/tool/generator/classes/testplan_backend.php
+index 3d74e3e3d086118abc747a312ef69ff56148ddc5..591e9ad7f8279a11adede840f8c33bb435fd1900 100644
+--- a/public/admin/tool/generator/classes/testplan_backend.php
++++ b/public/admin/tool/generator/classes/testplan_backend.php
+@@ -194,7 +194,7 @@ class tool_generator_testplan_backend extends tool_generator_backend {
+ 
+             // Updating password to the one set in config.php.
+             if ($updateuserspassword) {
+-                $userauth = get_auth_plugin($user->auth);
++                $userauth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+                 if (!$userauth->user_update_password($user, $CFG->tool_generator_users_password)) {
+                     throw new \moodle_exception('errorpasswordupdate', 'auth');
+                 }
+diff --git a/public/admin/tool/mfa/classes/manager.php b/public/admin/tool/mfa/classes/manager.php
+index c033a6548d7b819baa3720fa41aaa75c429cc605..199e996d3f00b219b5e41d703816541ed6015b4e 100644
+--- a/public/admin/tool/mfa/classes/manager.php
++++ b/public/admin/tool/mfa/classes/manager.php
+@@ -264,9 +264,10 @@ class manager {
+      * @return void
+      */
+     public static function mfa_logout(): void {
+-        $authsequence = get_enabled_auth_plugins();
++        $authentication = \core\di::get(\core\authentication::class);
++        $authsequence = $authentication->get_enabled_plugins();
+         foreach ($authsequence as $authname) {
+-            $authplugin = get_auth_plugin($authname);
++            $authplugin = $authentication->get_plugin($authname);
+             $authplugin->logoutpage_hook();
+         }
+         require_logout();
+diff --git a/public/admin/tool/mfa/classes/output/renderer.php b/public/admin/tool/mfa/classes/output/renderer.php
+index aef658338f3c3d73726897d8f69d1459e616e6f0..48ea2fc0be2b5066df251b4c60151c05272751f4 100644
+--- a/public/admin/tool/mfa/classes/output/renderer.php
++++ b/public/admin/tool/mfa/classes/output/renderer.php
+@@ -391,7 +391,7 @@ class renderer extends \plugin_renderer_base {
+         $factorsusedinfo = $DB->get_records_sql_menu($factorsusedsql, [$lookback, $lookback]);
+ 
+         // Auth rows.
+-        $authtypes = get_enabled_auth_plugins(true);
++        $authtypes = \core\di::get(\core\authentication::class)->get_enabled_plugins();
+         foreach ($authtypes as $authtype) {
+             $row = [];
+             $row[] = \html_writer::tag('b', $authtype);
+diff --git a/public/admin/tool/mfa/factor/auth/settings.php b/public/admin/tool/mfa/factor/auth/settings.php
+index 32944b1c1ad67e7691d2fb2b5828458562d4fe81..d21291bbe9cfcb0cd4420ec1b048689886187138 100644
+--- a/public/admin/tool/mfa/factor/auth/settings.php
++++ b/public/admin/tool/mfa/factor/auth/settings.php
+@@ -42,10 +42,11 @@ if ($ADMIN->fulltree) {
+         new lang_string('settings:weight', 'tool_mfa'),
+         new lang_string('settings:weight_help', 'tool_mfa'), 100, PARAM_INT));
+ 
+-    $authtypes = get_enabled_auth_plugins(true);
++    $authentication = \core\di::get(\core\authentication::class);
++    $authtypes = $authentication->get_enabled_plugins();
+     $authselect = [];
+     foreach ($authtypes as $type) {
+-        $auth = get_auth_plugin($type);
++        $auth = $authentication->get_plugin($type);
+         $authselect[$type] = $auth->get_title();
+     }
+ 
+diff --git a/public/admin/tool/mobile/classes/api.php b/public/admin/tool/mobile/classes/api.php
+index b3c13c176ef168213c42a84c444f028f9ced3a5a..6e77938c5bd03447f84304483eb003c21abbdc83 100644
+--- a/public/admin/tool/mobile/classes/api.php
++++ b/public/admin/tool/mobile/classes/api.php
+@@ -192,7 +192,7 @@ class api {
+             'registerauth' => $CFG->registerauth,
+             'forgottenpasswordurl' => clean_param($CFG->forgottenpasswordurl, PARAM_URL), // We may expect a mailto: here.
+             'authinstructions' => $authinstructions,
+-            'authnoneenabled' => (int) is_enabled_auth('none'),
++            'authnoneenabled' => (int) \core\di::get(\core\authentication::class)->is_enabled('none'),
+             'enablewebservices' => $CFG->enablewebservices,
+             'enablemobilewebservice' => $CFG->enablemobilewebservice,
+             'maintenanceenabled' => $CFG->maintenance_enabled,
+@@ -241,7 +241,7 @@ class api {
+         }
+ 
+         // Identity providers.
+-        $authsequence = get_enabled_auth_plugins();
++        $authsequence = \core\di::get(\core\authentication::class)->get_enabled_plugins();
+         $identityproviders = \auth_plugin_base::get_identity_providers($authsequence);
+         $identityprovidersdata = \auth_plugin_base::prepare_identity_providers_for_output($identityproviders, $OUTPUT);
+         if (!empty($identityprovidersdata)) {
+@@ -658,7 +658,7 @@ class api {
+         }
+ 
+         // Display OAuth 2 identity providers.
+-        if (is_enabled_auth('oauth2')) {
++        if (\core\di::get(\core\authentication::class)->is_enabled('oauth2')) {
+             $identityproviderslist = [];
+             $idps = \auth_plugin_base::get_identity_providers(['oauth2']);
+ 
+diff --git a/public/admin/tool/mobile/launch.php b/public/admin/tool/mobile/launch.php
+index 346653a2fb0f02f5eb045a788fe4237e172b1b7f..0a29e7ba922e3b9e84dc049535ae9bbf217467d8 100644
+--- a/public/admin/tool/mobile/launch.php
++++ b/public/admin/tool/mobile/launch.php
+@@ -57,7 +57,7 @@ $expires = time() + (15 * MINSECS); // 15 minutes for authentication should be e
+ setcookie('tool_mobile_launch', $ldata, $expires, $CFG->sessioncookiepath, $CFG->sessioncookiedomain);
+ 
+ // We have been requested to start a SSO process via OpenID.
+-if (!empty($oauthsso) && is_enabled_auth('oauth2')) {
++if (!empty($oauthsso) && \core\di::get(\core\authentication::class)->is_enabled('oauth2')) {
+     $wantsurl = new moodle_url('/admin/tool/mobile/launch.php',
+         array('service' => $serviceshortname, 'passport' => $passport, 'urlscheme' => $urlscheme, 'confirmed' => $confirmed));
+     $oauthurl = new moodle_url('/auth/oauth2/login.php',
+@@ -69,7 +69,7 @@ if (!empty($oauthsso) && is_enabled_auth('oauth2')) {
+ // Check if the plugin is properly configured.
+ $typeoflogin = get_config('tool_mobile', 'typeoflogin');
+ if (empty($SESSION->justloggedin) &&
+-        !is_enabled_auth('oauth2') &&
++        !\core\di::get(\core\authentication::class)->is_enabled('oauth2') &&
+         $typeoflogin != tool_mobile\api::LOGIN_VIA_BROWSER &&
+         $typeoflogin != tool_mobile\api::LOGIN_VIA_EMBEDDED_BROWSER) {
+     throw new moodle_exception('pluginnotenabledorconfigured', 'tool_mobile');
+diff --git a/public/admin/tool/uploaduser/classes/process.php b/public/admin/tool/uploaduser/classes/process.php
+index 70928dd2bc48dd7bc08f6efe64dd2495a7d2bd21..83b10d01ec2291c294da26807b0693b4ff2fa4ac 100644
+--- a/public/admin/tool/uploaduser/classes/process.php
++++ b/public/admin/tool/uploaduser/classes/process.php
+@@ -826,7 +826,7 @@ class process {
+             }
+ 
+             try {
+-                $auth = get_auth_plugin($existinguser->auth);
++                $auth = \core\di::get(\core\authentication::class)->get_plugin($existinguser->auth);
+             } catch (\Exception $e) {
+                 $this->upt->track('auth', get_string('userautherror', 'error', s($existinguser->auth)), 'error');
+                 $this->upt->track('status', get_string('usernotupdatederror', 'error'), 'error');
+@@ -870,7 +870,7 @@ class process {
+                     // Check for passwords that we want to force users to reset next
+                     // time they log in.
+                     $errmsg = null;
+-                    $weak = !check_password_policy($user->password, $errmsg, $user);
++                    $weak = !\core\di::get(\core\authentication\password::class)->check_policy($user->password, $errmsg, $user);
+                     if ($this->get_reset_passwords() == UU_PWRESET_ALL or
+                             ($this->get_reset_passwords() == UU_PWRESET_WEAK and $weak)) {
+                         if ($weak) {
+@@ -887,7 +887,7 @@ class process {
+                     // hashing would be slow when uploading lots of users. Hashes
+                     // will be automatically updated to a higher cost factor the first
+                     // time the user logs in.
+-                    $existinguser->password = hash_internal_user_password($user->password, true);
++                    $existinguser->password = \core\di::get(\core\authentication\password::class)->hash($user->password, true);
+                     $this->upt->track('password', $user->password, 'normal', false);
+                 } else {
+                     // Do not print password when not changed.
+@@ -955,7 +955,7 @@ class process {
+ 
+             // Do not insert record if new auth plugin does not exist!
+             try {
+-                $auth = get_auth_plugin($user->auth);
++                $auth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+             } catch (\Exception $e) {
+                 $this->upt->track('auth', get_string('userautherror', 'error', s($user->auth)), 'error');
+                 $this->upt->track('status', get_string('usernotaddederror', 'error'), 'error');
+@@ -1012,7 +1012,7 @@ class process {
+                     }
+                 } else {
+                     $errmsg = null;
+-                    $weak = !check_password_policy($user->password, $errmsg, $user);
++                    $weak = !\core\di::get(\core\authentication\password::class)->check_policy($user->password, $errmsg, $user);
+                     if ($this->get_reset_passwords() == UU_PWRESET_ALL or
+                             ($this->get_reset_passwords() == UU_PWRESET_WEAK and $weak)) {
+                         if ($weak) {
+@@ -1025,7 +1025,7 @@ class process {
+                     // hashing would be slow when uploading lots of users. Hashes
+                     // will be automatically updated to a higher cost factor the first
+                     // time the user logs in.
+-                    $user->password = hash_internal_user_password($user->password, true);
++                    $user->password = \core\di::get(\core\authentication\password::class)->hash($user->password, true);
+                 }
+             } else {
+                 $user->password = AUTH_PASSWORD_NOT_CACHED;
+diff --git a/public/admin/tool/uploaduser/locallib.php b/public/admin/tool/uploaduser/locallib.php
+index 6b8c88e19b363ab5f081fba0e392a0fd108f189f..3bb34b29c091eb24560616dc2a20f4a66431d41b 100644
+--- a/public/admin/tool/uploaduser/locallib.php
++++ b/public/admin/tool/uploaduser/locallib.php
+@@ -360,10 +360,11 @@ function uu_process_template_callback($username, $firstname, $lastname, $block)
+  */
+ function uu_supported_auths() {
+     // Get all the enabled plugins.
+-    $plugins = get_enabled_auth_plugins();
++    $authentication = \core\di::get(\core\authentication::class);
++    $plugins = $authentication->get_enabled_plugins();
+     $choices = array();
+     foreach ($plugins as $plugin) {
+-        $objplugin = get_auth_plugin($plugin);
++        $objplugin = $authentication->get_plugin($plugin);
+         // If the plugin can not be manually set skip it.
+         if (!$objplugin->can_be_manually_set()) {
+             continue;
+diff --git a/public/admin/user.php b/public/admin/user.php
+index 7ac5ba013bfaec516e7911b6b23e2176ebd399ce..2261ae55c83fc020669316c36a91139b21c0712d 100644
+--- a/public/admin/user.php
++++ b/public/admin/user.php
+@@ -33,7 +33,7 @@
+             throw new \moodle_exception('nousers');
+         }
+ 
+-        $auth = get_auth_plugin($user->auth);
++        $auth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+ 
+         $result = $auth->user_confirm($user->username, $user->secret);
+ 
+diff --git a/public/admin/user/user_bulk_confirm.php b/public/admin/user/user_bulk_confirm.php
+index c55362262cddf208b07a715a4ca1715ef5487786..21e86abe7b261529c5f8bbcbf33f074df8231348 100644
+--- a/public/admin/user/user_bulk_confirm.php
++++ b/public/admin/user/user_bulk_confirm.php
+@@ -33,7 +33,7 @@ if ($confirm and confirm_sesskey()) {
+         if ($user->confirmed) {
+             continue;
+         }
+-        $auth = get_auth_plugin($user->auth);
++        $auth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+         $result = $auth->user_confirm($user->username, $user->secret);
+         if ($result != AUTH_CONFIRM_OK && $result != AUTH_CONFIRM_ALREADY) {
+             $notifications .= $OUTPUT->notification(get_string('usernotconfirmed', '', fullname($user, true)));
+diff --git a/public/admin/user/user_bulk_forcepasswordchange.php b/public/admin/user/user_bulk_forcepasswordchange.php
+index 607c47160b1725f01f7bc9442863aca7fd0a7b08..3dc3d51d00b82b45c087670ca2f3dbebc3fe5865 100644
+--- a/public/admin/user/user_bulk_forcepasswordchange.php
++++ b/public/admin/user/user_bulk_forcepasswordchange.php
+@@ -26,11 +26,12 @@ echo $OUTPUT->header();
+ 
+ if ($confirm and confirm_sesskey()) {
+     // only force password change if user may actually change the password
+-    $authsavailable = get_enabled_auth_plugins();
++    $authentication = \core\di::get(\core\authentication::class);
++    $authsavailable = $authentication->get_enabled_plugins();
+     $changeable = array();
+ 
+-    foreach($authsavailable as $authplugin) {
+-        if (!$auth = get_auth_plugin($authplugin)) {
++    foreach ($authsavailable as $authplugin) {
++        if (!$auth = $authentication->get_plugin($authplugin)) {
+             continue;
+         }
+         if ($auth->is_internal() and $auth->can_change_password()) {
+diff --git a/public/auth/classes/external.php b/public/auth/classes/external.php
+index d6b44fdd1119add47ec9a388394e0a04a8da3019..5ce0cdcc520ba541aeb873a88e7ca1be3c942e48 100644
+--- a/public/auth/classes/external.php
++++ b/public/auth/classes/external.php
+@@ -396,7 +396,7 @@ class core_auth_external extends external_api {
+             throw new moodle_exception('alreadyconfirmed');
+         }
+ 
+-        if (is_restored_user($username)) {
++        if (\core\di::get(\core\authentication::class)->is_restored_user($username)) {
+             if (!empty($CFG->protectusernames)) {
+                 throw new moodle_exception('invalidlogin');
+             }
+diff --git a/public/auth/classes/output/login.php b/public/auth/classes/output/login.php
+index fb245885cccdfce78592240b81dc96c98b97c155..b4f8308f537427891389ce05208ef6f60750b8e8 100644
+--- a/public/auth/classes/output/login.php
++++ b/public/auth/classes/output/login.php
+@@ -113,7 +113,7 @@ class login implements renderable, templatable {
+ 
+         // Authentication instructions.
+         $this->instructions = $CFG->auth_instructions;
+-        if (is_enabled_auth('none')) {
++        if (\core\di::get(\core\authentication::class)->is_enabled('none')) {
+             $this->instructions = get_string('loginstepsnone');
+         } else if ($CFG->registerauth == 'email' && empty($this->instructions)) {
+             $this->instructions = get_string('logindonthaveaccount');
+diff --git a/public/auth/db/auth.php b/public/auth/db/auth.php
+index 1f14150a61454f39f05bf93decb5b43ab1da9e87..6ec8faea143d079b6708695f2948061da63b7750 100644
+--- a/public/auth/db/auth.php
++++ b/public/auth/db/auth.php
+@@ -75,7 +75,7 @@ class auth_plugin_db extends auth_plugin_base {
+             if (isset($this->config->removeuser) and $this->config->removeuser == AUTH_REMOVEUSER_KEEP) {
+                 // No need to connect to external database in this case because users are never removed and we verify password locally.
+                 if ($user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id, 'auth'=>$this->authtype))) {
+-                    return validate_internal_user_password($user, $password);
++                    return \core\di::get(\core\authentication\password::class)->validate($user, $password);
+                 } else {
+                     return false;
+                 }
+@@ -97,7 +97,7 @@ class auth_plugin_db extends auth_plugin_base {
+                 $authdb->Close();
+                 // User exists externally - check username/password internally.
+                 if ($user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id, 'auth'=>$this->authtype))) {
+-                    return validate_internal_user_password($user, $password);
++                    return \core\di::get(\core\authentication\password::class)->validate($user, $password);
+                 }
+             } else {
+                 $rs->Close();
+@@ -260,7 +260,7 @@ class auth_plugin_db extends auth_plugin_base {
+             // This will also update the stored hash to the latest algorithm
+             // if the existing hash is using an out-of-date algorithm (or the
+             // legacy md5 algorithm).
+-            if (update_internal_user_password($puser, $newpassword)) {
++            if (\core\di::get(\core\authentication\password::class)->update($puser, $newpassword)) {
+                 $user->password = $puser->password;
+                 return true;
+             } else {
+diff --git a/public/auth/db/classes/task/sync_users.php b/public/auth/db/classes/task/sync_users.php
+index ca998d2bc868f5cb2841b5603f54b12dd84cece4..4a958986184bcbae71c5462cbda6f1cfebe8efb7 100644
+--- a/public/auth/db/classes/task/sync_users.php
++++ b/public/auth/db/classes/task/sync_users.php
+@@ -38,12 +38,12 @@ class sync_users extends \core\task\scheduled_task {
+      * Run task for synchronising users.
+      */
+     public function execute() {
+-        if (!is_enabled_auth('db')) {
++        if (!\core\di::get(\core\authentication::class)->is_enabled('db')) {
+             mtrace('auth_db plugin is disabled, synchronisation stopped');
+             return;
+         }
+ 
+-        $dbauth = get_auth_plugin('db');
++        $dbauth = \core\di::get(\core\authentication::class)->get_plugin('db');
+         $config = get_config('auth_db');
+         $trace = new \text_progress_trace();
+         $update = !empty($config->updateusers);
+diff --git a/public/auth/db/cli/sync_users.php b/public/auth/db/cli/sync_users.php
+index 3d0b12b620b28fa2421bb5471d9a2a9829072334..8ab35d6347bee0aecf11dc7ef40c639b0a20dcb7 100644
+--- a/public/auth/db/cli/sync_users.php
++++ b/public/auth/db/cli/sync_users.php
+@@ -77,7 +77,7 @@ Sample cron entry:
+     die;
+ }
+ 
+-if (!is_enabled_auth('db')) {
++if (!\core\di::get(\core\authentication::class)->is_enabled('db')) {
+     cli_error('auth_db plugin is disabled, synchronisation stopped', 2);
+ }
+ 
+@@ -98,7 +98,7 @@ if (empty($options['verbose'])) {
+ $update = empty($options['noupdate']);
+ 
+ /** @var auth_plugin_db $dbauth */
+-$dbauth = get_auth_plugin('db');
++$dbauth = \core\di::get(\core\authentication::class)->get_plugin('db');
+ $result = $dbauth->sync_users($trace, $update);
+ 
+ exit($result);
+diff --git a/public/auth/db/settings.php b/public/auth/db/settings.php
+index cfb9a9a1843385e916b0f844c5d5da49c1077ef3..02aadce21450ec14751bf8a3f9399d7a7490c4d3 100644
+--- a/public/auth/db/settings.php
++++ b/public/auth/db/settings.php
+@@ -131,7 +131,7 @@ if ($ADMIN->fulltree) {
+         new lang_string('auth_dbupdateusers_description', 'auth_db'), 0, $yesno));
+ 
+     // Display locking / mapping of profile fields.
+-    $authplugin = get_auth_plugin('db');
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin('db');
+     display_auth_lock_options($settings, $authplugin->authtype, $authplugin->userfields,
+             get_string('auth_dbextrafields', 'auth_db'),
+             true, true, $authplugin->get_custom_user_profile_fields());
+diff --git a/public/auth/email/auth.php b/public/auth/email/auth.php
+index 580d702ea5cbc5bbb8d8ec815b5ff1bf35bb590a..a6bbaf3a41857f34cf4447456438c51a20ef9db5 100644
+--- a/public/auth/email/auth.php
++++ b/public/auth/email/auth.php
+@@ -49,7 +49,7 @@ class auth_plugin_email extends auth_plugin_base {
+     function user_login($username, $password) {
+         global $CFG, $DB;
+         if ($user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id))) {
+-            return validate_internal_user_password($user, $password);
++            return \core\di::get(\core\authentication\password::class)->validate($user, $password);
+         }
+         return false;
+     }
+@@ -69,7 +69,7 @@ class auth_plugin_email extends auth_plugin_base {
+         // This will also update the stored hash to the latest algorithm
+         // if the existing hash is using an out-of-date algorithm (or the
+         // legacy md5 algorithm).
+-        return update_internal_user_password($user, $newpassword);
++        return \core\di::get(\core\authentication\password::class)->update($user, $newpassword);
+     }
+ 
+     function can_signup() {
+@@ -107,7 +107,7 @@ class auth_plugin_email extends auth_plugin_base {
+         require_once($CFG->dirroot.'/user/lib.php');
+ 
+         $plainpassword = $user->password;
+-        $user->password = hash_internal_user_password($user->password);
++        $user->password = \core\di::get(\core\authentication\password::class)->hash($user->password);
+         if (empty($user->calendartype)) {
+             $user->calendartype = $CFG->calendartype;
+         }
+diff --git a/public/auth/email/classes/external.php b/public/auth/email/classes/external.php
+index 5115b05af0a95627d15b78d773242b4458db3a49..7de3ce512fe1d3c90ed50d700bccf589fb2171a2 100644
+--- a/public/auth/email/classes/external.php
++++ b/public/auth/email/classes/external.php
+@@ -346,7 +346,7 @@ class auth_email_external extends external_api {
+             // Save the user.
+             $user = signup_setup_new_user((object) $data);
+ 
+-            $authplugin = get_auth_plugin('email');
++            $authplugin = \core\di::get(\core\authentication::class)->get_plugin('email');
+ 
+             // Check if we should redirect the user once the user is confirmed.
+             $confirmationurl = null;
+diff --git a/public/auth/email/settings.php b/public/auth/email/settings.php
+index 29d2849c469926f615e1ef78fc733f3a72ef4f92..d559f12f0632226605465ba0aa4c842d75da70a5 100644
+--- a/public/auth/email/settings.php
++++ b/public/auth/email/settings.php
+@@ -40,7 +40,7 @@ if ($ADMIN->fulltree) {
+         new lang_string('auth_emailrecaptcha', 'auth_email'), 0, $options));
+ 
+     // Display locking / mapping of profile fields.
+-    $authplugin = get_auth_plugin('email');
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin('email');
+     display_auth_lock_options($settings, $authplugin->authtype, $authplugin->userfields,
+             get_string('auth_fieldlocks_help', 'auth'), false, false);
+ }
+diff --git a/public/auth/ldap/auth.php b/public/auth/ldap/auth.php
+index 1d73075bf046f6741e7a3d2f439b2457eafe811a..89974a7ccfb2b4db2338cade30fe1c7ea2bd2562 100644
+--- a/public/auth/ldap/auth.php
++++ b/public/auth/ldap/auth.php
+@@ -552,7 +552,7 @@ class auth_plugin_ldap extends auth_plugin_base {
+         // This will also update the stored hash to the latest algorithm
+         // if the existing hash is using an out-of-date algorithm (or the
+         // legacy md5 algorithm).
+-        update_internal_user_password($user, $plainslashedpassword);
++        \core\di::get(\core\authentication\password::class)->update($user, $plainslashedpassword);
+ 
+         $user = $DB->get_record('user', array('id'=>$user->id));
+ 
+diff --git a/public/auth/ldap/classes/task/asynchronous_sync_task.php b/public/auth/ldap/classes/task/asynchronous_sync_task.php
+index e4d03d0f338d4ceb10b6783d8b0b140ae98437d8..166ecd378cf62cce777e9dd4c40d260b586498b9 100644
+--- a/public/auth/ldap/classes/task/asynchronous_sync_task.php
++++ b/public/auth/ldap/classes/task/asynchronous_sync_task.php
+@@ -51,7 +51,7 @@ class asynchronous_sync_task extends adhoc_task {
+         $data = $this->get_custom_data();
+ 
+         /** @var auth_plugin_ldap $auth */
+-        $auth = get_auth_plugin('ldap');
++        $auth = \core\di::get(\core\authentication::class)->get_plugin('ldap');
+         $auth->update_users($data->users, $data->updatekeys);
+ 
+         mtrace(sprintf(" %s (%d)", self::MTRACE_MSG, count($data->users)));
+diff --git a/public/auth/ldap/classes/task/sync_roles.php b/public/auth/ldap/classes/task/sync_roles.php
+index 37ea23c2eaf5fb64cb640b77549de49140e29c14..637d946e3569b9014ad5e666a1a5dbee4acde4cf 100644
+--- a/public/auth/ldap/classes/task/sync_roles.php
++++ b/public/auth/ldap/classes/task/sync_roles.php
+@@ -49,8 +49,9 @@ class sync_roles extends \core\task\scheduled_task {
+      */
+     public function execute() {
+         global $DB;
+-        if (is_enabled_auth('ldap')) {
+-            $auth = get_auth_plugin('ldap');
++        $authentication = \core\di::get(\core\authentication::class);
++        if ($authentication->is_enabled('ldap')) {
++            $auth = $authentication->get_plugin('ldap');
+             $users = $DB->get_records('user', array('auth' => 'ldap'));
+             foreach ($users as $user) {
+                 $auth->sync_roles($user);
+diff --git a/public/auth/ldap/classes/task/sync_task.php b/public/auth/ldap/classes/task/sync_task.php
+index 5d2f7166e11bfd3760d3bb200f5f104cb5a2f9ec..f77aa884594dae4637e7a5aea646bf57a4015e2c 100644
+--- a/public/auth/ldap/classes/task/sync_task.php
++++ b/public/auth/ldap/classes/task/sync_task.php
+@@ -48,9 +48,10 @@ class sync_task extends \core\task\scheduled_task {
+      * Run users sync.
+      */
+     public function execute() {
+-        if (is_enabled_auth('ldap')) {
++        $authentication = \core\di::get(\core\authentication::class);
++        if ($authentication->is_enabled('ldap')) {
+             /** @var auth_plugin_ldap $auth */
+-            $auth = get_auth_plugin('ldap');
++            $auth = $authentication->get_plugin('ldap');
+             $count = 0;
+             $auth->sync_users_update_callback(function ($users, $updatekeys) use (&$count) {
+                 $asynctask = new asynchronous_sync_task();
+diff --git a/public/auth/ldap/ntlmsso_attempt.php b/public/auth/ldap/ntlmsso_attempt.php
+index a7c8749a56392e7c8b4e62778b206afe03f01568..a8136810feb6b774171e5feac65a9c90bfbf1246 100644
+--- a/public/auth/ldap/ntlmsso_attempt.php
++++ b/public/auth/ldap/ntlmsso_attempt.php
+@@ -8,12 +8,13 @@ $PAGE->set_context(context_system::instance());
+ // Define variables used in page
+ $site = get_site();
+ 
+-$authsequence = get_enabled_auth_plugins(); // Auths, in sequence.
++$authentication = \core\di::get(\core\authentication::class);
++$authsequence = $authentication->get_enabled_plugins(); // Auths, in sequence.
+ if (!in_array('ldap', $authsequence, true)) {
+     throw new \moodle_exception('ldap_isdisabled', 'auth');
+ }
+ 
+-$authplugin = get_auth_plugin('ldap');
++$authplugin = $authentication->get_plugin('ldap');
+ if (empty($authplugin->config->ntlmsso_enabled)) {
+     throw new \moodle_exception('ntlmsso_isdisabled', 'auth_ldap');
+ }
+diff --git a/public/auth/ldap/ntlmsso_finish.php b/public/auth/ldap/ntlmsso_finish.php
+index 9a802ed3bcb4be4dcb6f6de704af9d4bb88d73ad..83ccd24e86fa1e41ee9b49b72ca1042f5144584f 100644
+--- a/public/auth/ldap/ntlmsso_finish.php
++++ b/public/auth/ldap/ntlmsso_finish.php
+@@ -8,12 +8,13 @@ $PAGE->set_context(context_system::instance());
+ // Define variables used in page
+ $site = get_site();
+ 
+-$authsequence = get_enabled_auth_plugins(); // Auths, in sequence.
++$authentication = \core\di::get(\core\authentication::class);
++$authsequence = $authentication->get_enabled_plugins(); // Auths, in sequence.
+ if (!in_array('ldap', $authsequence, true)) {
+     throw new \moodle_exception('ldap_isdisabled', 'auth');
+ }
+ 
+-$authplugin = get_auth_plugin('ldap');
++$authplugin = $authentication->get_plugin('ldap');
+ if (empty($authplugin->config->ntlmsso_enabled)) {
+     throw new \moodle_exception('ntlmsso_isdisabled', 'auth_ldap');
+ }
+diff --git a/public/auth/ldap/ntlmsso_magic.php b/public/auth/ldap/ntlmsso_magic.php
+index bb1847650ef6ae5ecd93cb8e163a4ab62a1f2e76..080de608ed3010e8cc1eca5f53e26386df7049f7 100644
+--- a/public/auth/ldap/ntlmsso_magic.php
++++ b/public/auth/ldap/ntlmsso_magic.php
+@@ -10,12 +10,13 @@ require(__DIR__.'/../../config.php');
+ 
+ $PAGE->set_context(context_system::instance());
+ 
+-$authsequence = get_enabled_auth_plugins(); // Auths, in sequence.
++$authentication = \core\di::get(\core\authentication::class);
++$authsequence = $authentication->get_enabled_plugins(); // Auths, in sequence.
+ if (!in_array('ldap', $authsequence, true)) {
+     throw new \moodle_exception('ldap_isdisabled', 'auth');
+ }
+ 
+-$authplugin = get_auth_plugin('ldap');
++$authplugin = $authentication->get_plugin('ldap');
+ if (empty($authplugin->config->ntlmsso_enabled)) {
+     throw new \moodle_exception('ntlmsso_isdisabled', 'auth_ldap');
+ }
+@@ -43,5 +44,3 @@ if ($authplugin->ntlmsso_magic($sesskey) && file_exists($file)) {
+ } else {
+     throw new \moodle_exception('ntlmsso_iwamagicnotenabled', 'auth_ldap');
+ }
+-
+-
+diff --git a/public/auth/ldap/settings.php b/public/auth/ldap/settings.php
+index cd3b2a2a9d5a958a7b5942489fa316d148ea15d1..b2f5425a15edec9524465af15f43d8225c00a061 100644
+--- a/public/auth/ldap/settings.php
++++ b/public/auth/ldap/settings.php
+@@ -335,7 +335,7 @@ if ($ADMIN->fulltree) {
+     }
+ 
+     // Display locking / mapping of profile fields.
+-    $authplugin = get_auth_plugin('ldap');
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin('ldap');
+     $help  = get_string('auth_ldapextrafields', 'auth_ldap');
+     $help .= get_string('auth_updatelocal_expl', 'auth');
+     $help .= get_string('auth_fieldlock_expl', 'auth');
+diff --git a/public/auth/lti/login.php b/public/auth/lti/login.php
+index 41084332ca48a95817176a555c98a5a7a567e0e2..574d7b45efc0a7d488e66ea6bd9ddebd17049b5c 100644
+--- a/public/auth/lti/login.php
++++ b/public/auth/lti/login.php
+@@ -71,7 +71,7 @@ if ($newaccount) {
+         redirect(new moodle_url('/login/index.php'));
+     } else {
+         // Create a new account and link it, logging the user in.
+-        $auth = get_auth_plugin('lti');
++        $auth = \core\di::get(\core\authentication::class)->get_plugin('lti');
+         $newuser = $auth->find_or_create_user_from_launch($launchdata);
+         complete_user_login($newuser);
+         $auth->update_user_account($newuser, $launchdata, $launchdata['iss']);
+@@ -97,7 +97,7 @@ if ($newaccount) {
+     unset($SESSION->auth_lti);
+ 
+     global $USER;
+-    $auth = get_auth_plugin('lti');
++    $auth = \core\di::get(\core\authentication::class)->get_plugin('lti');
+     $auth->create_user_binding($launchdata['iss'], $launchdata['sub'], $USER->id);
+ 
+     $PAGE->set_context(context_system::instance());
+diff --git a/public/auth/manual/auth.php b/public/auth/manual/auth.php
+index 9c5133057a661b0c4ea766b188b9d425c12c5c78..a836644a3f0231f9c74f5335b630872a32652d8b 100644
+--- a/public/auth/manual/auth.php
++++ b/public/auth/manual/auth.php
+@@ -66,7 +66,7 @@ class auth_plugin_manual extends auth_plugin_base {
+         if (!$user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id))) {
+             return false;
+         }
+-        if (!validate_internal_user_password($user, $password)) {
++        if (!\core\di::get(\core\authentication\password::class)->validate($user, $password)) {
+             return false;
+         }
+         if ($password === 'changeme') {
+@@ -93,7 +93,7 @@ class auth_plugin_manual extends auth_plugin_base {
+         // This will also update the stored hash to the latest algorithm
+         // if the existing hash is using an out-of-date algorithm (or the
+         // legacy md5 algorithm).
+-        return update_internal_user_password($user, $newpassword);
++        return \core\di::get(\core\authentication\password::class)->update($user, $newpassword);
+     }
+ 
+     function prevent_local_passwords() {
+diff --git a/public/auth/manual/settings.php b/public/auth/manual/settings.php
+index 95b29b1beb408434b1fbad421c4a54ccea6ee2dc..c6c7102a5d1dc22b38071a2017fb566984d1671e 100644
+--- a/public/auth/manual/settings.php
++++ b/public/auth/manual/settings.php
+@@ -72,7 +72,7 @@ if ($ADMIN->fulltree) {
+         new lang_string('expiration_warning_desc', 'auth_manual'), 0, $expirationwarningoptions));
+ 
+     // Display locking / mapping of profile fields.
+-    $authplugin = get_auth_plugin('manual');
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin('manual');
+     display_auth_lock_options($settings, $authplugin->authtype,
+         $authplugin->userfields, get_string('auth_fieldlocks_help', 'auth'), false, false);
+ }
+diff --git a/public/auth/none/auth.php b/public/auth/none/auth.php
+index 85e22d3113f508b5aa04cf156c9113d69e897044..16e6e565b56ce753ae72b4b3e5fc0fe5a4d7712b 100644
+--- a/public/auth/none/auth.php
++++ b/public/auth/none/auth.php
+@@ -49,7 +49,7 @@ class auth_plugin_none extends auth_plugin_base {
+     function user_login($username, $password) {
+         global $CFG, $DB;
+         if ($user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id))) {
+-            return validate_internal_user_password($user, $password);
++            return \core\di::get(\core\authentication\password::class)->validate($user, $password);
+         }
+         return true;
+     }
+@@ -69,7 +69,7 @@ class auth_plugin_none extends auth_plugin_base {
+         // This will also update the stored hash to the latest algorithm
+         // if the existing hash is using an out-of-date algorithm (or the
+         // legacy md5 algorithm).
+-        return update_internal_user_password($user, $newpassword);
++        return \core\di::get(\core\authentication\password::class)->update($user, $newpassword);
+     }
+ 
+     function prevent_local_passwords() {
+diff --git a/public/auth/none/classes/check/noauth.php b/public/auth/none/classes/check/noauth.php
+index 7e57907f4346fb325c50b23f9ae9d7d0f624a203..27618a99d69f4858509208e12fffea8315bf2e3b 100644
+--- a/public/auth/none/classes/check/noauth.php
++++ b/public/auth/none/classes/check/noauth.php
+@@ -54,7 +54,7 @@ class noauth extends \core\check\check {
+      * @return result
+      */
+     public function get_result(): result {
+-        if (is_enabled_auth('none')) {
++        if (\core\di::get(\core\authentication::class)->is_enabled('none')) {
+             $status = result::ERROR;
+             $summary = get_string('checknoautherror', 'auth_none');
+         } else {
+@@ -66,4 +66,3 @@ class noauth extends \core\check\check {
+         return new result($status, $summary, $details);
+     }
+ }
+-
+diff --git a/public/auth/none/settings.php b/public/auth/none/settings.php
+index 28ff93160fbdf3cfd8f11d5217f250525a19c4a8..63551f506b315d29b8970caf3da4688919feb488 100644
+--- a/public/auth/none/settings.php
++++ b/public/auth/none/settings.php
+@@ -31,7 +31,7 @@ if ($ADMIN->fulltree) {
+         new lang_string('auth_nonedescription', 'auth_none')));
+ 
+     // Display locking / mapping of profile fields.
+-    $authplugin = get_auth_plugin('none');
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin('none');
+     display_auth_lock_options($settings, $authplugin->authtype, $authplugin->userfields,
+         get_string('auth_fieldlocks_help', 'auth'), false, false);
+ }
+diff --git a/public/auth/oauth2/auth.php b/public/auth/oauth2/auth.php
+index 76700d7cd5506ab64579d81aafc757954d0471a5..a47bb4bb782a30ed30878e0836297dc1b876a866 100644
+--- a/public/auth/oauth2/auth.php
++++ b/public/auth/oauth2/auth.php
+@@ -41,7 +41,7 @@ class auth_plugin_oauth2 extends \auth_oauth2\auth {
+     public function test_settings() {
+         global $OUTPUT;
+ 
+-        $authplugin = get_auth_plugin('oauth2');
++        $authplugin = \core\di::get(\core\authentication::class)->get_plugin('oauth2');
+         $idps = $authplugin->loginpage_idp_list('');
+         $templateidps = [];
+ 
+@@ -60,5 +60,3 @@ class auth_plugin_oauth2 extends \auth_oauth2\auth {
+         }
+     }
+ }
+-
+-
+diff --git a/public/auth/oauth2/classes/api.php b/public/auth/oauth2/classes/api.php
+index 78c4576d94f0de57e52e3365203d3145f0f0c85b..6ef1bda9911c7460367f36d634f1f69ce6dff277 100644
+--- a/public/auth/oauth2/classes/api.php
++++ b/public/auth/oauth2/classes/api.php
+@@ -393,7 +393,7 @@ class api {
+      * @return bool
+      */
+     public static function is_enabled() {
+-        return is_enabled_auth('oauth2');
++        return \core\di::get(\core\authentication::class)->is_enabled('oauth2');
+     }
+ 
+     /**
+diff --git a/public/auth/oauth2/confirm-account.php b/public/auth/oauth2/confirm-account.php
+index d5ecd4d344b2fe34ce89dd90d19c7611a4af6a8a..b4390484c91e9c0000fa1153924169c41b559968 100644
+--- a/public/auth/oauth2/confirm-account.php
++++ b/public/auth/oauth2/confirm-account.php
+@@ -32,7 +32,7 @@ $redirect = optional_param('redirect', '', PARAM_LOCALURL);    // Where to redir
+ $PAGE->set_url('/auth/oauth2/confirm-account.php');
+ $PAGE->set_context(context_system::instance());
+ 
+-$auth = get_auth_plugin('oauth2');
++$auth = \core\di::get(\core\authentication::class)->get_plugin('oauth2');
+ 
+ if (!\auth_oauth2\api::is_enabled()) {
+     throw new \moodle_exception('notenabled', 'auth_oauth2');
+diff --git a/public/auth/oauth2/settings.php b/public/auth/oauth2/settings.php
+index cbf7397ea3e065afcd54719897b21e3efe3f8035..88b29b551e92981685589cf6119bec00c645d758 100644
+--- a/public/auth/oauth2/settings.php
++++ b/public/auth/oauth2/settings.php
+@@ -29,7 +29,7 @@ if ($ADMIN->fulltree) {
+     $warning = $OUTPUT->notification(get_string('createaccountswarning', 'auth_oauth2'), 'warning');
+     $settings->add(new admin_setting_heading('auth_oauth2/pluginname', '', $warning));
+ 
+-    $authplugin = get_auth_plugin('oauth2');
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin('oauth2');
+     display_auth_lock_options($settings, $authplugin->authtype, $authplugin->userfields,
+         get_string('auth_fieldlocks_help', 'auth'), false, false,
+         $authplugin->customfields);
+diff --git a/public/auth/shibboleth/index.php b/public/auth/shibboleth/index.php
+index 576d332a686a321a09ee0cf8cc0efac104b5a982..98043ffccc18c79443d651ef6092163f37763a04 100644
+--- a/public/auth/shibboleth/index.php
++++ b/public/auth/shibboleth/index.php
+@@ -29,7 +29,7 @@
+     }
+ 
+     $pluginconfig   = get_config('auth_shibboleth');
+-    $shibbolethauth = get_auth_plugin('shibboleth');
++    $shibbolethauth = \core\di::get(\core\authentication::class)->get_plugin('shibboleth');
+ 
+     // Check whether Shibboleth is configured properly
+     $readmeurl = (new moodle_url('/auth/shibboleth/README.txt'))->out();
+@@ -43,11 +43,11 @@
+         $frm->username = strtolower($_SERVER[$pluginconfig->user_attribute]);
+         // The password is never actually used, but needs to be passed to the functions 'user_login' and
+         // 'authenticate_user_login'. Shibboleth returns true for the function 'prevent_local_password', which is
+-        // used when setting the password in 'update_internal_user_password'. When 'prevent_local_password'
++        // used when setting the password in '\core\authentication\password::update()'. When 'prevent_local_password'
+         // returns true, the password is set to 'not cached' (AUTH_PASSWORD_NOT_CACHED) in the Moodle DB. However,
+         // rather than setting the password to a hard-coded value, we will generate one each time, in case there are
+         // changes to the Shibboleth plugin and it is actually used.
+-        $frm->password = generate_password(8);
++        $frm->password = \core\di::get(\core\authentication\password::class)->generate(8);
+ 
+     /// Check if the user has actually submitted login data to us
+         $reason = null;
+diff --git a/public/auth/shibboleth/login.php b/public/auth/shibboleth/login.php
+index 6ecad18fbd7f302962da38ef1b461f8681cdc106..6c14a37408252fd16cc30eb5f95f7da3f5d97b7e 100644
+--- a/public/auth/shibboleth/login.php
++++ b/public/auth/shibboleth/login.php
+@@ -22,7 +22,11 @@
+     $loginurl = (!empty($CFG->alternateloginurl)) ? $CFG->alternateloginurl : '';
+ 
+     $config = get_config('auth_shibboleth');
+-    if (!empty($CFG->registerauth) or is_enabled_auth('none') or !empty($config->auth_instructions)) {
++    if (
++        !empty($CFG->registerauth)
++        || \core\di::get(\core\authentication::class)->is_enabled('none')
++        || !empty($config->auth_instructions)
++    ) {
+         $showinstructions = true;
+     } else {
+         $showinstructions = false;
+@@ -94,7 +98,7 @@
+         $cansignup = !empty($CFG->registerauth);
+         // Default instructions.
+         $instructions = format_text($config->auth_instructions);
+-        if (is_enabled_auth('none')) {
++        if (\core\di::get(\core\authentication::class)->is_enabled('none')) {
+             $instructions = get_string('loginstepsnone');
+         } else if ($cansignup) {
+             if ($CFG->registerauth === 'email' && empty($instructions)) {
+diff --git a/public/auth/shibboleth/logout.php b/public/auth/shibboleth/logout.php
+index f514d4e2b7d53185ec3f8086eade140f89352bd7..5eef643ff36a291a55a3d867363cfa02300006bd 100644
+--- a/public/auth/shibboleth/logout.php
++++ b/public/auth/shibboleth/logout.php
+@@ -18,7 +18,7 @@ if (is_https()) {
+ }
+ 
+ // If the shibboleth plugin is not enable, throw an exception.
+-if (!is_enabled_auth('shibboleth')) {
++if (!\core\di::get(\core\authentication::class)->is_enabled('shibboleth')) {
+     throw new moodle_exception(get_string('pluginnotenabled', 'auth', 'shibboleth'));
+ }
+ 
+diff --git a/public/auth/shibboleth/settings.php b/public/auth/shibboleth/settings.php
+index d6a9d43a3c1bf1d2e5a032cfb13596d5c91cedf2..890d60965a9934d821b2af042cd9981246be4e2a 100644
+--- a/public/auth/shibboleth/settings.php
++++ b/public/auth/shibboleth/settings.php
+@@ -82,7 +82,7 @@ if ($ADMIN->fulltree) {
+             get_string('changepasswordhelp', 'auth'), '', PARAM_URL));
+ 
+     // Display locking / mapping of profile fields.
+-    $authplugin = get_auth_plugin('shibboleth');
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin('shibboleth');
+     display_auth_lock_options($settings, $authplugin->authtype, $authplugin->userfields,
+             '', true, false, $authplugin->get_custom_user_profile_fields());
+ 
+diff --git a/public/auth/test_settings.php b/public/auth/test_settings.php
+index 84207ba4a77239945293aeaf71b70b92e03e7745..f015c4007b69ddb0ce8f88fe63b2880e6bec0655 100644
+--- a/public/auth/test_settings.php
++++ b/public/auth/test_settings.php
+@@ -43,7 +43,7 @@ if (!$auth) {
+     $options = array();
+     $plugins = core_component::get_plugin_list('auth');
+     foreach ($plugins as $name => $fulldir) {
+-        $plugin = get_auth_plugin($name);
++        $plugin = \core\di::get(\core\authentication::class)->get_plugin($name);
+         if (!$plugin or !method_exists($plugin, 'test_settings')) {
+             continue;
+         }
+@@ -62,7 +62,7 @@ if (!$auth) {
+     echo $OUTPUT->footer();
+ }
+ 
+-$plugin = get_auth_plugin($auth);
++$plugin = \core\di::get(\core\authentication::class)->get_plugin($auth);
+ if (!$plugin or !method_exists($plugin, 'test_settings')) {
+     redirect($returnurl);
+ }
+diff --git a/public/auth/webservice/auth.php b/public/auth/webservice/auth.php
+index 73fbe705d4bfafa121ad9e8923b711d905a95304..3165b3c62e8a4dd6fae32d3bc883c581f216d825 100644
+--- a/public/auth/webservice/auth.php
++++ b/public/auth/webservice/auth.php
+@@ -72,7 +72,7 @@ class auth_plugin_webservice extends auth_plugin_base {
+         ]);
+ 
+         if ($user) {
+-            return validate_internal_user_password($user, $password);
++            return \core\di::get(\core\authentication\password::class)->validate($user, $password);
+         }
+         return false;
+     }
+@@ -92,7 +92,7 @@ class auth_plugin_webservice extends auth_plugin_base {
+         // This will also update the stored hash to the latest algorithm
+         // if the existing hash is using an out-of-date algorithm (or the
+         // legacy md5 algorithm).
+-        return update_internal_user_password($user, $newpassword);
++        return \core\di::get(\core\authentication\password::class)->update($user, $newpassword);
+     }
+ 
+     /**
+diff --git a/public/backup/util/dbops/restore_dbops.class.php b/public/backup/util/dbops/restore_dbops.class.php
+index cd68126ff9f41515dc9631acf095bb12accc7a1c..9ce3130484f7af90f00fd40b257fd27b8fd15fcd 100644
+--- a/public/backup/util/dbops/restore_dbops.class.php
++++ b/public/backup/util/dbops/restore_dbops.class.php
+@@ -1256,14 +1256,15 @@ abstract class restore_dbops {
+             // We need to analyse the AUTH field to recode it:
+             //   - if the auth isn't enabled in target site, $CFG->registerauth will decide
+             //   - finally, if the auth resulting isn't enabled, default to 'manual'
+-            if (!is_enabled_auth($user->auth)) {
++            if (!\core\di::get(\core\authentication::class)->is_enabled($user->auth)) {
+                 if ($CFG->registerauth == 'email') {
+                     $user->auth = 'email';
+                 } else {
+                     $user->auth = 'manual';
+                 }
+             }
+-            if (!is_enabled_auth($user->auth)) { // Final auth check verify, default to manual if not enabled
++            if (!\core\di::get(\core\authentication::class)->is_enabled($user->auth)) {
++                // Final auth check verify, default to manual if not enabled.
+                 $user->auth = 'manual';
+             }
+ 
+@@ -1275,7 +1276,7 @@ abstract class restore_dbops {
+             if (empty($user->password)) { // Only if restore comes without password
+                 if (!array_key_exists($user->auth, $authcache)) { // Not in cache
+                     $userauth = new stdClass();
+-                    $authplugin = get_auth_plugin($user->auth);
++                    $authplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+                     $userauth->preventpassindb = $authplugin->prevent_local_passwords();
+                     $userauth->isinternal      = $authplugin->is_internal();
+                     $userauth->canresetpwd     = $authplugin->can_reset_password();
+@@ -1295,7 +1296,7 @@ abstract class restore_dbops {
+             } else if (self::password_should_be_discarded($user->password)) {
+                 // Password is not empty and it is MD5 hashed. Generate a new random password for the user.
+                 // We don't want MD5 hashes in the database and users won't be able to log in with the associated password anyway.
+-                $user->password = hash_internal_user_password(base64_encode(random_bytes(24)));
++                $user->password = \core\di::get(\core\authentication\password::class)->hash(base64_encode(random_bytes(24)));
+             }
+ 
+             // Creating new user, we must reset the policyagreed always
+diff --git a/public/blocks/course_list/block_course_list.php b/public/blocks/course_list/block_course_list.php
+index 0c4b83227634ee7b125123640658b01251fc92a4..efcc07debbd166755c5049d35102a4589267b195 100644
+--- a/public/blocks/course_list/block_course_list.php
++++ b/public/blocks/course_list/block_course_list.php
+@@ -132,7 +132,7 @@ class block_course_list extends block_list {
+     function get_remote_courses() {
+         global $CFG, $USER, $OUTPUT;
+ 
+-        if (!is_enabled_auth('mnet')) {
++        if (!\core\di::get(\core\authentication::class)->is_enabled('mnet')) {
+             // no need to query anything remote related
+             return;
+         }
+@@ -199,5 +199,3 @@ class block_course_list extends block_list {
+         ];
+     }
+ }
+-
+-
+diff --git a/public/blocks/login/block_login.php b/public/blocks/login/block_login.php
+index e90923aacbae6668168a14b0518ce0847c90ace3..41d4bdfdb629ffc92bc5fffa2416aa0c5f8d143c 100644
+--- a/public/blocks/login/block_login.php
++++ b/public/blocks/login/block_login.php
+@@ -100,10 +100,11 @@ class block_login extends block_base {
+                 $this->content->text .= '<div><a href="'.$forgot.'">'.get_string('forgotaccount').'</a></div>';
+             }
+ 
+-            $authsequence = get_enabled_auth_plugins(); // Get all auths, in sequence.
++            $authentication = \core\di::get(\core\authentication::class);
++            $authsequence = $authentication->get_enabled_plugins(); // Get all auths, in sequence.
+             $potentialidps = array();
+             foreach ($authsequence as $authname) {
+-                $authplugin = get_auth_plugin($authname);
++                $authplugin = $authentication->get_plugin($authname);
+                 $potentialidps = array_merge($potentialidps, $authplugin->loginpage_idp_list($this->page->url->out(false)));
+             }
+ 
+diff --git a/public/enrol/guest/lib.php b/public/enrol/guest/lib.php
+index e32c8754decc1541072252718fa007edebd525a2..b4ffad76d11364016109436fd7f663fdacec88e3 100644
+--- a/public/enrol/guest/lib.php
++++ b/public/enrol/guest/lib.php
+@@ -222,7 +222,7 @@ class enrol_guest_plugin extends enrol_plugin {
+                     $fields['password'] = $data->enrol_guest_password_0;
+                 } else {
+                     if ($this->get_config('requirepassword')) {
+-                        $fields['password'] = generate_password(20);
++                        $fields['password'] = \core\di::get(\core\authentication\password::class)->generate(20);
+                     }
+                 }
+                 $this->add_instance($course, $fields);
+@@ -285,7 +285,7 @@ class enrol_guest_plugin extends enrol_plugin {
+         $fields = array('status'=>$this->get_config('status'));
+ 
+         if ($this->get_config('requirepassword')) {
+-            $fields['password'] = generate_password(20);
++            $fields['password'] = \core\di::get(\core\authentication\password::class)->generate(20);
+         }
+ 
+         return $this->add_instance($course, $fields);
+@@ -344,7 +344,7 @@ class enrol_guest_plugin extends enrol_plugin {
+ 
+             // Only check the password if it is set.
+             if (!empty($instance->password) && $this->get_config('usepasswordpolicy')) {
+-                if (!check_password_policy($instance->password, $errmsg)) {
++                if (!\core\di::get(\core\authentication\password::class)->check_policy($instance->password, $errmsg)) {
+                     return false;
+                 }
+             }
+@@ -478,7 +478,7 @@ class enrol_guest_plugin extends enrol_plugin {
+                 $errors['password'] = get_string('required');
+             } else if (!empty($data['password']) && $policy) {
+                 $errmsg = '';
+-                if (!check_password_policy($data['password'], $errmsg)) {
++                if (!\core\di::get(\core\authentication\password::class)->check_policy($data['password'], $errmsg)) {
+                     $errors['password'] = $errmsg;
+                 }
+             }
+@@ -564,7 +564,7 @@ class enrol_guest_plugin extends enrol_plugin {
+ 
+         $policy = $this->get_config('usepasswordpolicy');
+         if (!empty($enrolmentdata['password']) && $policy) {
+-            $errarray = get_password_policy_errors($enrolmentdata['password']);
++            $errarray = \core\di::get(\core\authentication\password::class)->get_policy_errors($enrolmentdata['password']);
+             foreach ($errarray as $i => $err) {
+                 $errors['enrol_guest' . $i] = $err;
+             }
+diff --git a/public/enrol/lti/cartridge.php b/public/enrol/lti/cartridge.php
+index c3df932607be94a2f27875b87b16a008607f44c2..a05fcd1ba974593f44c7fe5176ee4b657d3375b3 100644
+--- a/public/enrol/lti/cartridge.php
++++ b/public/enrol/lti/cartridge.php
+@@ -46,7 +46,7 @@ if (!\enrol_lti\helper::verify_cartridge_token($toolid, $token)) {
+ 
+ $tool = \enrol_lti\helper::get_lti_tool($toolid);
+ 
+-if (!is_enabled_auth('lti')) {
++if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+     throw new \moodle_exception('pluginnotenabled', 'auth', '', get_string('pluginname', 'auth_lti'));
+ 
+ } else if (!enrol_is_enabled('lti')) {
+diff --git a/public/enrol/lti/classes/local/ltiadvantage/task/sync_grades.php b/public/enrol/lti/classes/local/ltiadvantage/task/sync_grades.php
+index 71af42f35cdef01b164bb08c038dfb0af28c5293..25a7e02296cd42acc72064b8a2c2896108154ef7 100644
+--- a/public/enrol/lti/classes/local/ltiadvantage/task/sync_grades.php
++++ b/public/enrol/lti/classes/local/ltiadvantage/task/sync_grades.php
+@@ -44,7 +44,7 @@ class sync_grades extends scheduled_task {
+      */
+     public function execute() {
+ 
+-        if (!is_enabled_auth('lti')) {
++        if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+             mtrace('Skipping task - ' . get_string('pluginnotenabled', 'auth', get_string('pluginname', 'auth_lti')));
+             return true;
+         }
+diff --git a/public/enrol/lti/classes/local/ltiadvantage/task/sync_members.php b/public/enrol/lti/classes/local/ltiadvantage/task/sync_members.php
+index 124b25bccfaccb8ba5451c6796043bee9aacb149..6bc76d4e919dc77ac4c5b72b5870911b07398d9e 100644
+--- a/public/enrol/lti/classes/local/ltiadvantage/task/sync_members.php
++++ b/public/enrol/lti/classes/local/ltiadvantage/task/sync_members.php
+@@ -153,7 +153,7 @@ class sync_members extends scheduled_task {
+      * Performs the synchronisation of members.
+      */
+     public function execute() {
+-        if (!is_enabled_auth('lti')) {
++        if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+             mtrace('Skipping task - ' . get_string('pluginnotenabled', 'auth', get_string('pluginname', 'auth_lti')));
+             return;
+         }
+@@ -376,7 +376,7 @@ class sync_members extends scheduled_task {
+         $legacyconsumerkey = $deployment->get_legacy_consumer_key() ?? '';
+ 
+         foreach ($members as $member) {
+-            $auth = get_auth_plugin('lti');
++            $auth = \core\di::get(\core\authentication::class)->get_plugin('lti');
+             if ($auth->get_user_binding($appregistration->get_platformid()->out(false), $member['user_id'])) {
+                 // Use is bound already, so we can update them.
+                 $user = $auth->find_or_create_user_from_membership($member, $appregistration->get_platformid()->out(false));
+diff --git a/public/enrol/lti/classes/task/sync_grades.php b/public/enrol/lti/classes/task/sync_grades.php
+index 3f2a08e220872ced4d0bbcdc0deba0df46db9f56..dced0b5d07c8b9dada2939a180fdd06f90eec0bc 100644
+--- a/public/enrol/lti/classes/task/sync_grades.php
++++ b/public/enrol/lti/classes/task/sync_grades.php
+@@ -57,7 +57,7 @@ class sync_grades extends \core\task\scheduled_task {
+         require_once($CFG->dirroot . '/grade/querylib.php');
+ 
+         // Check if the authentication plugin is disabled.
+-        if (!is_enabled_auth('lti')) {
++        if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+             mtrace('Skipping task - ' . get_string('pluginnotenabled', 'auth', get_string('pluginname', 'auth_lti')));
+             return true;
+         }
+diff --git a/public/enrol/lti/classes/task/sync_members.php b/public/enrol/lti/classes/task/sync_members.php
+index 5aa77ed72b61cca8bcfb8de57f85d93026762d35..467f7f3ada1b8372431597d93dadcfee296ad7ad 100644
+--- a/public/enrol/lti/classes/task/sync_members.php
++++ b/public/enrol/lti/classes/task/sync_members.php
+@@ -66,7 +66,7 @@ class sync_members extends scheduled_task {
+      * Performs the synchronisation of members.
+      */
+     public function execute() {
+-        if (!is_enabled_auth('lti')) {
++        if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+             mtrace('Skipping task - ' . get_string('pluginnotenabled', 'auth', get_string('pluginname', 'auth_lti')));
+             return;
+         }
+diff --git a/public/enrol/lti/launch.php b/public/enrol/lti/launch.php
+index 9f0e1aa5972ab80d23eae3d5015b7b96330fd80a..356433a132eb9e9c7972906242c10a131593b279 100644
+--- a/public/enrol/lti/launch.php
++++ b/public/enrol/lti/launch.php
+@@ -51,7 +51,7 @@ require_once($CFG->libdir . '/filelib.php');
+ $idtoken = optional_param('id_token', null, PARAM_RAW);
+ $launchid = optional_param('launchid', null, PARAM_RAW);
+ 
+-if (!is_enabled_auth('lti')) {
++if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+     throw new moodle_exception('pluginnotenabled', 'auth', '', get_string('pluginname', 'auth_lti'));
+ }
+ if (!enrol_is_enabled('lti')) {
+@@ -100,7 +100,7 @@ if (empty($resource) || $resource->status != ENROL_INSTANCE_ENABLED) {
+ 
+ $provisioningmode = message_helper::is_instructor_launch($launchdata) ? $resource->provisioningmodeinstructor
+     : $resource->provisioningmodelearner;
+-$auth = get_auth_plugin('lti');
++$auth = \core\di::get(\core\authentication::class)->get_plugin('lti');
+ $auth->complete_login(
+     $messagelaunch->getLaunchData(),
+     new moodle_url('/enrol/lti/launch.php', ['launchid' => $messagelaunch->getLaunchId()]),
+diff --git a/public/enrol/lti/launch_deeplink.php b/public/enrol/lti/launch_deeplink.php
+index ffdd03c3a394d6e06d473ec93003430622b5cc60..8f7f980aff0d57e71ba954b9fa9576873b52c818 100644
+--- a/public/enrol/lti/launch_deeplink.php
++++ b/public/enrol/lti/launch_deeplink.php
+@@ -45,7 +45,7 @@ require_once($CFG->libdir . '/filelib.php');
+ $idtoken = optional_param('id_token', null, PARAM_RAW);
+ $launchid = optional_param('launchid', null, PARAM_RAW);
+ 
+-if (!is_enabled_auth('lti')) {
++if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+     throw new moodle_exception('pluginnotenabled', 'auth', '', get_string('pluginname', 'auth_lti'));
+ }
+ if (!enrol_is_enabled('lti')) {
+@@ -73,7 +73,7 @@ if (empty($messagelaunch)) {
+ 
+ // Authenticate the instructor.
+ // Deep linking cannot use resource-specific provisioning modes, so it just uses a sensible 'existing accounts only' mode.
+-$auth = get_auth_plugin('lti');
++$auth = \core\di::get(\core\authentication::class)->get_plugin('lti');
+ $auth->complete_login(
+     $messagelaunch->getLaunchData(),
+     new moodle_url('/enrol/lti/launch_deeplink.php', ['launchid' => $messagelaunch->getLaunchId()]),
+diff --git a/public/enrol/lti/proxy.php b/public/enrol/lti/proxy.php
+index 557560d33d5c9a3219b830c1e2f95d2f4ef559b5..72d0bc70c53ae45b60226c181d66f3bf92aac04f 100644
+--- a/public/enrol/lti/proxy.php
++++ b/public/enrol/lti/proxy.php
+@@ -49,7 +49,7 @@ if (!\enrol_lti\helper::verify_proxy_token($toolid, $token)) {
+ }
+ $tool = \enrol_lti\helper::get_lti_tool($toolid);
+ 
+-if (!is_enabled_auth('lti')) {
++if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+     throw new \moodle_exception('pluginnotenabled', 'auth', '', get_string('pluginname', 'auth_lti'));
+     exit();
+ }
+diff --git a/public/enrol/lti/settings.php b/public/enrol/lti/settings.php
+index 68299f5ef08b851e1ccfb283d6281e7532405d83..da8862680d0b6948e5d15fe400d6931a8194d2ea 100644
+--- a/public/enrol/lti/settings.php
++++ b/public/enrol/lti/settings.php
+@@ -34,7 +34,7 @@ $settings = new admin_settingpage($section, "User default values", 'moodle/site:
+ if ($ADMIN->fulltree) {
+     $settings->add(new admin_setting_heading('enrol_lti_settings', '', get_string('pluginname_desc', 'enrol_lti')));
+ 
+-    if (!is_enabled_auth('lti')) {
++    if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+         $notify = new \core\output\notification(get_string('authltimustbeenabled', 'enrol_lti'),
+             \core\output\notification::NOTIFY_WARNING);
+         $settings->add(new admin_setting_heading('enrol_lti_enable_auth_lti', '', $OUTPUT->render($notify)));
+diff --git a/public/enrol/lti/tool.php b/public/enrol/lti/tool.php
+index 5aad2b3af5530554e19aac15c1ce5f84bfb161b0..ae975b37f791672aa8be3651b0a7f47f4580b3e3 100644
+--- a/public/enrol/lti/tool.php
++++ b/public/enrol/lti/tool.php
+@@ -36,7 +36,7 @@ $PAGE->set_title(get_string('opentool', 'enrol_lti'));
+ $tool = \enrol_lti\helper::get_lti_tool($toolid);
+ 
+ // Check if the authentication plugin is disabled.
+-if (!is_enabled_auth('lti')) {
++if (!\core\di::get(\core\authentication::class)->is_enabled('lti')) {
+     throw new \moodle_exception('pluginnotenabled', 'auth', '', get_string('pluginname', 'auth_lti'));
+     exit();
+ }
+diff --git a/public/enrol/self/lib.php b/public/enrol/self/lib.php
+index 918531b05cc3bec417cbb32d99c08625e04e9ec9..8dbf2f8c0ed91f9e22477a3f36129a3e00f951f8 100644
+--- a/public/enrol/self/lib.php
++++ b/public/enrol/self/lib.php
+@@ -392,7 +392,7 @@ class enrol_self_plugin extends enrol_plugin {
+         $fields = $this->get_instance_defaults();
+ 
+         if ($this->get_config('requirepassword')) {
+-            $fields['password'] = generate_password(20);
++            $fields['password'] = \core\di::get(\core\authentication\password::class)->generate(20);
+         }
+ 
+         return $this->add_instance($course, $fields);
+@@ -770,7 +770,7 @@ class enrol_self_plugin extends enrol_plugin {
+             }
+             // Only check the password if it is set.
+             if (!empty($instance->password) && $this->get_config('usepasswordpolicy')) {
+-                if (!check_password_policy($instance->password, $errmsg)) {
++                if (!\core\di::get(\core\authentication\password::class)->check_policy($instance->password, $errmsg)) {
+                     return false;
+                 }
+             }
+@@ -1077,7 +1077,7 @@ class enrol_self_plugin extends enrol_plugin {
+             } else if (!empty($data['password'])) {
+                 if ($policy) {
+                     $errmsg = '';
+-                    if (!check_password_policy($data['password'], $errmsg)) {
++                    if (!\core\di::get(\core\authentication\password::class)->check_policy($data['password'], $errmsg)) {
+                         $errors['password'] = $errmsg;
+                     }
+                 }
+@@ -1275,7 +1275,7 @@ class enrol_self_plugin extends enrol_plugin {
+         $policy = $this->get_config('usepasswordpolicy');
+         if (!empty($enrolmentdata['password'])) {
+             if ($policy) {
+-                $errarray = get_password_policy_errors($enrolmentdata['password']);
++                $errarray = \core\di::get(\core\authentication\password::class)->get_policy_errors($enrolmentdata['password']);
+                 foreach ($errarray as $i => $err) {
+                     $errors['enrol_self' . $i] = $err;
+                 }
+diff --git a/public/group/group_form.php b/public/group/group_form.php
+index 2c0114090947b7dd47e5728b3f9ad437aa70e3a0..96b5450ffd9c230ee5dba95a1b2265f080f65ace 100644
+--- a/public/group/group_form.php
++++ b/public/group/group_form.php
+@@ -174,6 +174,8 @@ class group_form extends moodleform {
+ 
+         $errors = parent::validation($data, $files);
+ 
++        $passwordmanager = \core\di::get(\core\authentication\password::class);
++
+         $name = trim($data['name']);
+         if (isset($data['idnumber'])) {
+             $idnumber = trim($data['idnumber']);
+@@ -194,8 +196,11 @@ class group_form extends moodleform {
+ 
+             if ($data['enrolmentkey'] != '') {
+                 $errmsg = '';
+-                if (!empty($CFG->groupenrolmentkeypolicy) && $group->enrolmentkey !== $data['enrolmentkey']
+-                        && !check_password_policy($data['enrolmentkey'], $errmsg)) {
++                if (
++                    !empty($CFG->groupenrolmentkeypolicy)
++                    && $group->enrolmentkey !== $data['enrolmentkey']
++                    && !$passwordmanager->check_policy($data['enrolmentkey'], $errmsg)
++                ) {
+                     // Enforce password policy when the password is changed.
+                     $errors['enrolmentkey'] = $errmsg;
+                 } else {
+@@ -214,7 +219,10 @@ class group_form extends moodleform {
+             $errors['idnumber']= get_string('idnumbertaken');
+         } else if ($data['enrolmentkey'] != '') {
+             $errmsg = '';
+-            if (!empty($CFG->groupenrolmentkeypolicy) && !check_password_policy($data['enrolmentkey'], $errmsg)) {
++            if (
++                !empty($CFG->groupenrolmentkeypolicy)
++                && !$passwordmanager->check_policy($data['enrolmentkey'], $errmsg)
++            ) {
+                 // Enforce password policy.
+                 $errors['enrolmentkey'] = $errmsg;
+             } else if ($DB->record_exists('groups', array('courseid' => $COURSE->id, 'enrolmentkey' => $data['enrolmentkey']))) {
+diff --git a/public/lib/adminlib.php b/public/lib/adminlib.php
+index 4a86a77c351219b66c309b18d6984213d8adff73..f315eb8c1b6499d8d619076952bf43bd0b782acd 100644
+--- a/public/lib/adminlib.php
++++ b/public/lib/adminlib.php
+@@ -6623,10 +6623,11 @@ class admin_setting_special_registerauth extends admin_setting_configselect {
+         $this->choices = array();
+         $this->choices[''] = get_string('disable');
+ 
+-        $authsenabled = get_enabled_auth_plugins();
++        $authentication = \core\di::get(\core\authentication::class);
++        $authsenabled = $authentication->get_enabled_plugins();
+ 
+         foreach ($authsenabled as $auth) {
+-            $authplugin = get_auth_plugin($auth);
++            $authplugin = $authentication->get_plugin($auth);
+             if (!$authplugin->can_signup()) {
+                 continue;
+             }
+@@ -7324,7 +7325,7 @@ class admin_setting_manageauths extends admin_setting {
+                 $this->searchmatchtype = admin_search::SEARCH_MATCH_SETTING_SHORT_NAME;
+                 return true;
+             }
+-            $authplugin = get_auth_plugin($auth);
++            $authplugin = \core\di::get(\core\authentication::class)->get_plugin($auth);
+             $authtitle = $authplugin->get_title();
+             if (strpos(core_text::strtolower($authtitle), $query) !== false) {
+                 $this->searchmatchtype = admin_search::SEARCH_MATCH_SETTING_DISPLAY_NAME;
+@@ -7353,7 +7354,8 @@ class admin_setting_manageauths extends admin_setting {
+         $txt->testsettings = get_string('testsettings', 'core_auth');
+ 
+         $authsavailable = core_component::get_plugin_list('auth');
+-        get_enabled_auth_plugins(true); // fix the list of enabled auths
++        // Fix the list of enabled auths.
++        \core\di::get(\core\authentication::class)->get_enabled_plugins(true);
+         if (empty($CFG->auth)) {
+             $authsenabled = array();
+         } else {
+@@ -7365,8 +7367,9 @@ class admin_setting_manageauths extends admin_setting {
+         $registrationauths = array();
+         $registrationauths[''] = $txt->disable;
+         $authplugins = array();
++        $authentication = \core\di::get(\core\authentication::class);
+         foreach ($authsenabled as $auth) {
+-            $authplugin = get_auth_plugin($auth);
++            $authplugin = $authentication->get_plugin($auth);
+             $authplugins[$auth] = $authplugin;
+             /// Get the auth title (from core or own auth lang files)
+             $authtitle = $authplugin->get_title();
+@@ -7381,7 +7384,7 @@ class admin_setting_manageauths extends admin_setting {
+             if (array_key_exists($auth, $displayauths)) {
+                 continue; //already in the list
+             }
+-            $authplugin = get_auth_plugin($auth);
++            $authplugin = $authentication->get_plugin($auth);
+             $authplugins[$auth] = $authplugin;
+             /// Get the auth title (from core or own auth lang files)
+             $authtitle = $authplugin->get_title();
+diff --git a/public/lib/authlib.php b/public/lib/authlib.php
+index ebe2866ed494c88cb427b7819aadc48aac1a068f..760a643ccadf84acf360bc2856959e2c21beec32 100644
+--- a/public/lib/authlib.php
++++ b/public/lib/authlib.php
+@@ -733,8 +733,9 @@ class auth_plugin_base {
+         global $SESSION;
+ 
+         $identityproviders = [];
++        $authentication = \core\di::get(\core\authentication::class);
+         foreach ($authsequence as $authname) {
+-            $authplugin = get_auth_plugin($authname);
++            $authplugin = $authentication->get_plugin($authname);
+             $wantsurl = (isset($SESSION->wantsurl)) ? $SESSION->wantsurl : '';
+             $identityproviders = array_merge($identityproviders, $authplugin->loginpage_idp_list($wantsurl));
+         }
+@@ -840,9 +841,10 @@ class auth_plugin_base {
+      */
+     public static function get_enabled_auth_plugin_classes(): array {
+         $plugins = [];
+-        $authsequence = get_enabled_auth_plugins();
++        $authentication = \core\di::get(\core\authentication::class);
++        $authsequence = $authentication->get_enabled_plugins();
+         foreach ($authsequence as $authname) {
+-            $plugins[] = get_auth_plugin($authname);
++            $plugins[] = $authentication->get_plugin($authname);
+         }
+         return $plugins;
+     }
+@@ -1102,7 +1104,7 @@ function login_unlock_account($user, bool $notify = false) {
+  */
+ function signup_captcha_enabled() {
+     global $CFG;
+-    $authplugin = get_auth_plugin($CFG->registerauth);
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin($CFG->registerauth);
+     return !empty($CFG->recaptchapublickey) && !empty($CFG->recaptchaprivatekey) && $authplugin->is_captcha_enabled();
+ }
+ 
+@@ -1162,7 +1164,7 @@ function signup_validate_data($data, $files) {
+     global $CFG, $DB;
+ 
+     $errors = array();
+-    $authplugin = get_auth_plugin($CFG->registerauth);
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin($CFG->registerauth);
+ 
+     if ($DB->record_exists('user', array('username' => $data['username'], 'mnethostid' => $CFG->mnet_localhost_id))) {
+         $errors['username'] = get_string('usernameexists');
+@@ -1226,7 +1228,7 @@ function signup_validate_data($data, $files) {
+ 
+     // Construct fake user object to check password policy against required information.
+     $tempuser = new stdClass();
+-    // To prevent errors with check_password_policy(),
++    // To prevent errors with check_policy(),
+     // the temporary user and the guest must not share the same ID.
+     $tempuser->id = (int)$CFG->siteguest + 1;
+     $tempuser->username = $data['username'];
+@@ -1235,7 +1237,7 @@ function signup_validate_data($data, $files) {
+     $tempuser->email = $data['email'];
+ 
+     $errmsg = '';
+-    if (!check_password_policy($data['password'], $errmsg, $tempuser)) {
++    if (!\core\di::get(\core\authentication\password::class)->check_policy($data['password'], $errmsg, $tempuser)) {
+         $errors['password'] = $errmsg;
+     }
+ 
+@@ -1284,7 +1286,7 @@ function signup_get_user_confirmation_authplugin() {
+     if (empty($CFG->registerauth)) {
+         return false;
+     }
+-    $authplugin = get_auth_plugin($CFG->registerauth);
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin($CFG->registerauth);
+ 
+     if (!$authplugin->can_confirm()) {
+         return false;
+@@ -1302,7 +1304,7 @@ function signup_is_enabled() {
+     global $CFG;
+ 
+     if (!empty($CFG->registerauth)) {
+-        $authplugin = get_auth_plugin($CFG->registerauth);
++        $authplugin = \core\di::get(\core\authentication::class)->get_plugin($CFG->registerauth);
+         if ($authplugin->can_signup()) {
+             return $authplugin;
+         }
+diff --git a/public/lib/classes/authentication/password.php b/public/lib/classes/authentication/password.php
+index f01ec43a994428d9df06ae98312be9baf2e796dd..2cefe53755f4ff682b0e3e4da904af33318a1291 100644
+--- a/public/lib/classes/authentication/password.php
++++ b/public/lib/classes/authentication/password.php
+@@ -192,7 +192,7 @@ class password {
+         // Figure out what the hashed password should be.
+         if (!isset($user->auth)) {
+             debugging(
+-                'User record in update_internal_user_password() must include field auth',
++                'User record in \\core\\authentication\\password::update() must include field auth',
+                 DEBUG_DEVELOPER,
+             );
+             $user->auth = $DB->get_field('user', 'auth', ['id' => $user->id]);
+diff --git a/public/lib/classes/navigation/settings_navigation.php b/public/lib/classes/navigation/settings_navigation.php
+index 516149028e7049f9b7d7d7778d13e6cb772b529b..244680bfdd12cbfbec4c119a0ed5694469f3a276 100644
+--- a/public/lib/classes/navigation/settings_navigation.php
++++ b/public/lib/classes/navigation/settings_navigation.php
+@@ -1157,7 +1157,7 @@ class settings_navigation extends navigation_node {
+ 
+         $userauthplugin = false;
+         if (!empty($user->auth)) {
+-            $userauthplugin = get_auth_plugin($user->auth);
++            $userauthplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+         }
+ 
+         $useraccount = $usersetting->add(get_string('useraccount'), null, self::TYPE_CONTAINER, null, 'useraccount');
+diff --git a/public/lib/classes/param.php b/public/lib/classes/param.php
+index 6bff63d79fcc969525dd333e105deb52cd9fbf87..24a89be5aefdc7b71a2078084f73d69ba773c9ec 100644
+--- a/public/lib/classes/param.php
++++ b/public/lib/classes/param.php
+@@ -1237,7 +1237,7 @@ enum param: string {
+         $param = clean_param($param, PARAM_PLUGIN);
+         if (empty($param)) {
+             return '';
+-        } else if (exists_auth_plugin($param)) {
++        } else if (\core\di::get(\core\authentication::class)->plugin_exists($param)) {
+             return $param;
+         } else {
+             return '';
+diff --git a/public/lib/classes/session/handler.php b/public/lib/classes/session/handler.php
+index 8a033a7a18e4d984dec6d2d8903e0b9f9b2e9cde..c8900d13f40b6e468bb1c15203dc4b95128f3e57 100644
+--- a/public/lib/classes/session/handler.php
++++ b/public/lib/classes/session/handler.php
+@@ -196,13 +196,14 @@ abstract class handler {
+     protected function destroy_all_expired_sessions(int $purgebefore): void {
+         global $DB, $CFG;
+ 
+-        $authsequence = get_enabled_auth_plugins();
++        $authentication = \core\di::get(\core\authentication::class);
++        $authsequence = $authentication->get_enabled_plugins();
+         $authsequence = array_flip($authsequence);
+         unset($authsequence['nologin']); // No login means user cannot login.
+         $authsequence = array_flip($authsequence);
+         $authplugins = [];
+         foreach ($authsequence as $authname) {
+-            $authplugins[$authname] = get_auth_plugin($authname);
++            $authplugins[$authname] = $authentication->get_plugin($authname);
+         }
+         $sql = "SELECT u.*, s.sid, s.timecreated AS s_timecreated, s.timemodified AS s_timemodified
+                   FROM {user} u
+diff --git a/public/lib/classes/session/manager.php b/public/lib/classes/session/manager.php
+index 7b47349f0ad03f488bee0a490748efebc79dd002..c16ab3bc974ca46f6bb4189ee8897987193fdbb6 100644
+--- a/public/lib/classes/session/manager.php
++++ b/public/lib/classes/session/manager.php
+@@ -455,9 +455,10 @@ class manager {
+ 
+             } else if ($record->timemodified < di::get(clock::class)->time() - $maxlifetime) {
+                 $timeout = true;
+-                $authsequence = get_enabled_auth_plugins(); // Auths, in sequence.
++                $authentication = di::get(\core\authentication::class);
++                $authsequence = $authentication->get_enabled_plugins(); // Auths, in sequence.
+                 foreach ($authsequence as $authname) {
+-                    $authplugin = get_auth_plugin($authname);
++                    $authplugin = $authentication->get_plugin($authname);
+                     if ($authplugin->ignore_timeout_hook($_SESSION['USER'], $record->sid, $record->timecreated, $record->timemodified)) {
+                         $timeout = false;
+                         break;
+diff --git a/public/lib/classes/task/send_login_notifications.php b/public/lib/classes/task/send_login_notifications.php
+index e32cf28d06ae3468ee209344001f0daa198f2801..267c870d224d4efb24f164cb451e76816b959f0b 100644
+--- a/public/lib/classes/task/send_login_notifications.php
++++ b/public/lib/classes/task/send_login_notifications.php
+@@ -58,7 +58,7 @@ class send_login_notifications extends adhoc_task {
+ 
+         $changepasswordlink = (new \moodle_url('/user/preferences.php', ['userid' => $USER->id]))->out(false);
+         // Find a better final URL for changing password.
+-        $userauth = get_auth_plugin($USER->auth);
++        $userauth = \core\di::get(\core\authentication::class)->get_plugin($USER->auth);
+         if ($userauth->can_change_password()) {
+             if ($changepwurl = $userauth->change_password_url()) {
+                 $changepasswordlink = $changepwurl;
+diff --git a/public/lib/db/install.php b/public/lib/db/install.php
+index 76acdbea0df2e7bc9a8fe6a92475cb1105b38cd9..43ba607eff9f443147274562fa62ade5da4c20be 100644
+--- a/public/lib/db/install.php
++++ b/public/lib/db/install.php
+@@ -204,7 +204,7 @@ function xmldb_main_install() {
+     $guest = new stdClass();
+     $guest->auth        = 'manual';
+     $guest->username    = 'guest';
+-    $guest->password    = hash_internal_user_password('guest');
++    $guest->password    = \core\di::get(\core\authentication\password::class)->hash('guest');
+     $guest->firstname   = get_string('guestuser');
+     $guest->lastname    = ' ';
+     $guest->email       = 'root@localhost';
+diff --git a/public/lib/deprecatedlib.php b/public/lib/deprecatedlib.php
+index 5c3187e2dd999ce3ea7dfbf2bc5bde7d2916e9b8..d5dedd7955651c5e0635a40294a2805ec19968b0 100644
+--- a/public/lib/deprecatedlib.php
++++ b/public/lib/deprecatedlib.php
+@@ -353,8 +353,11 @@ function reset_password_and_mail($user) {
+     $site  = get_site();
+     $supportuser = core_user::get_support_user();
+ 
+-    $userauth = get_auth_plugin($user->auth);
+-    if (!$userauth->can_reset_password() or !is_enabled_auth($user->auth)) {
++    $userauth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
++    if (
++        !$userauth->can_reset_password()
++        || !\core\di::get(\core\authentication::class)->is_enabled($user->auth)
++    ) {
+         trigger_error("Attempt to reset user password for user $user->username with Auth $user->auth.");
+         return false;
+     }
+diff --git a/public/lib/installlib.php b/public/lib/installlib.php
+index 8cb905428b6ed99e8f03a3a2b219d3f422883938..e0caa906ee003058fa0ddb7f169e70f18b3b46fe 100644
+--- a/public/lib/installlib.php
++++ b/public/lib/installlib.php
+@@ -451,7 +451,12 @@ function install_cli_database(array $options, $interactive) {
+     upgrade_noncore(true);
+ 
+     // set up admin user password
+-    $DB->set_field('user', 'password', hash_internal_user_password($options['adminpass']), array('username' => 'admin'));
++    $DB->set_field(
++        'user',
++        'password',
++        \core\di::get(\core\authentication\password::class)->hash($options['adminpass']),
++        ['username' => 'admin'],
++    );
+ 
+     // Set the admin email address if specified.
+     if (isset($options['adminemail'])) {
+diff --git a/public/lib/moodlelib.php b/public/lib/moodlelib.php
+index 5f383e54e70ec36bdc36c93045885f31322c5969..e3bbee75eba646210da39242ddc1695eb04dea85 100644
+--- a/public/lib/moodlelib.php
++++ b/public/lib/moodlelib.php
+@@ -2340,9 +2340,10 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
+             }
+ 
+             // Give auth plugins an opportunity to authenticate or redirect to an external login page
+-            $authsequence = get_enabled_auth_plugins(); // Auths, in sequence.
++            $authentication = \core\di::get(\core\authentication::class);
++            $authsequence = $authentication->get_enabled_plugins(); // Auths, in sequence.
+             foreach($authsequence as $authname) {
+-                $authplugin = get_auth_plugin($authname);
++                $authplugin = $authentication->get_plugin($authname);
+                 $authplugin->pre_loginpage_hook();
+                 if (isloggedin()) {
+                     if ($cm) {
+@@ -2374,7 +2375,7 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
+ 
+     // Check whether the user should be changing password (but only if it is REALLY them).
+     if (get_user_preferences('auth_forcepasswordchange') && !\core\session\manager::is_loggedinas()) {
+-        $userauth = get_auth_plugin($USER->auth);
++        $userauth = \core\di::get(\core\authentication::class)->get_plugin($USER->auth);
+         if ($userauth->can_change_password() and !$preventredirect) {
+             if ($setwantsurltome) {
+                 $SESSION->wantsurl = qualified_me();
+@@ -2718,9 +2719,10 @@ function require_logout() {
+ 
+     // Execute hooks before action.
+     $authplugins = array();
+-    $authsequence = get_enabled_auth_plugins();
++    $authentication = \core\di::get(\core\authentication::class);
++    $authsequence = $authentication->get_enabled_plugins();
+     foreach ($authsequence as $authname) {
+-        $authplugins[$authname] = get_auth_plugin($authname);
++        $authplugins[$authname] = $authentication->get_plugin($authname);
+         $authplugins[$authname]->prelogout_hook();
+     }
+ 
+@@ -3368,7 +3370,7 @@ function create_user_record($username, $password, $auth = 'manual') {
+     // Just in case check text case.
+     $username = trim(core_text::strtolower($username));
+ 
+-    $authplugin = get_auth_plugin($auth);
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin($auth);
+     $customfields = $authplugin->get_custom_user_profile_fields();
+     $newuser = new stdClass();
+     if ($newinfo = $authplugin->get_userinfo($username)) {
+@@ -3411,7 +3413,7 @@ function create_user_record($username, $password, $auth = 'manual') {
+         set_user_preference('auth_forcepasswordchange', 1, $user);
+     }
+     // Set the password.
+-    update_internal_user_password($user, $password);
++    \core\di::get(\core\authentication\password::class)->update($user, $password);
+ 
+     // Trigger event.
+     \core\event\user_created::create_from_userid($newuser->id)->trigger();
+@@ -3449,7 +3451,7 @@ function update_user_record_by_id($id) {
+     $oldinfo = $DB->get_record('user', $params, '*', MUST_EXIST);
+ 
+     $newuser = array();
+-    $userauth = get_auth_plugin($oldinfo->auth);
++    $userauth = \core\di::get(\core\authentication::class)->get_plugin($oldinfo->auth);
+ 
+     if ($newinfo = $userauth->get_userinfo($oldinfo->username)) {
+         $newinfo = truncate_userinfo($newinfo);
+@@ -3734,7 +3736,7 @@ function delete_user(stdClass $user) {
+     $user->timemodified = $updateuser->timemodified;
+ 
+     // Notify auth plugin - do not block the delete even when plugin fails.
+-    $authplugin = get_auth_plugin($user->auth);
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+     $authplugin->user_delete($user);
+ 
+     return true;
+@@ -3850,7 +3852,7 @@ function authenticate_user_login(
+         $auth = empty($user->auth) ? 'manual' : $user->auth;
+ 
+         if (in_array($user->auth, $authsenabled)) {
+-            $authplugin = get_auth_plugin($user->auth);
++            $authplugin = $authentication->get_plugin($user->auth);
+             $authplugin->pre_user_login_hook($user);
+         }
+ 
+@@ -3923,7 +3925,7 @@ function authenticate_user_login(
+     }
+ 
+     foreach ($auths as $auth) {
+-        $authplugin = get_auth_plugin($auth);
++        $authplugin = $authentication->get_plugin($auth);
+ 
+         // On auth fail fall through to the next plugin.
+         if (!$authplugin->user_login($username, $password)) {
+@@ -3977,7 +3979,7 @@ function authenticate_user_login(
+ 
+             // If the existing hash is using an out-of-date algorithm (or the legacy md5 algorithm), then we should update to
+             // the current hash algorithm while we have access to the user's password.
+-            update_internal_user_password($user, $password);
++            \core\di::get(\core\authentication\password::class)->update($user, $password);
+ 
+             if ($authplugin->is_synchronised_with_external()) {
+                 // Update user record from external DB.
+@@ -4004,7 +4006,7 @@ function authenticate_user_login(
+         $authplugin->sync_roles($user);
+ 
+         foreach ($authsenabled as $hau) {
+-            $hauth = get_auth_plugin($hau);
++            $hauth = $authentication->get_plugin($hau);
+             $hauth->user_authenticated_hook($user, $username, $password);
+         }
+ 
+@@ -4156,7 +4158,7 @@ function complete_user_login($user, array $extrauserinfo = []) {
+     }
+ 
+     // Select password change url.
+-    $userauth = get_auth_plugin($USER->auth);
++    $userauth = \core\di::get(\core\authentication::class)->get_plugin($USER->auth);
+ 
+     // Check whether the user should be changing password.
+     if (get_user_preferences('auth_forcepasswordchange', false)) {
+@@ -5934,7 +5936,7 @@ function setnew_password_and_mail($user, $fasthash = false) {
+ 
+     $newpassword = generate_password();
+ 
+-    update_internal_user_password($user, $newpassword, $fasthash);
++    \core\di::get(\core\authentication\password::class)->update($user, $newpassword, $fasthash);
+ 
+     $a = new stdClass();
+     $placeholders = \core_user::get_name_placeholders($user);
+@@ -6059,14 +6061,16 @@ function send_password_change_info($user) {
+     $data->sitename  = format_string($site->fullname);
+     $data->admin     = generate_email_signoff();
+ 
+-    if (!is_enabled_auth($user->auth)) {
++    $authentication = \core\di::get(\core\authentication::class);
++
++    if (!$authentication->is_enabled($user->auth)) {
+         $message = get_string('emailpasswordchangeinfodisabled', '', $data);
+         $subject = get_string('emailpasswordchangeinfosubject', '', format_string($site->fullname));
+         // Directly email rather than using the messaging system to ensure its not routed to a popup or jabber.
+         return email_to_user($user, $supportuser, $subject, $message);
+     }
+ 
+-    $userauth = get_auth_plugin($user->auth);
++    $userauth = $authentication->get_plugin($user->auth);
+     ['subject' => $subject, 'message' => $message] = $userauth->get_password_change_info($user);
+ 
+     // Directly email rather than using the messaging system to ensure its not routed to a popup or jabber.
+diff --git a/public/lib/myprofilelib.php b/public/lib/myprofilelib.php
+index aff98f5a2ecb740fa02748e8fdf3722be0fa22ec..7b9a71bcf8ee096431895860bb1ca5438f734ca9 100644
+--- a/public/lib/myprofilelib.php
++++ b/public/lib/myprofilelib.php
+@@ -80,7 +80,7 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
+                    || ($iscurrentuser && has_capability('moodle/user:editownprofile', $systemcontext))) {
+             $userauthplugin = false;
+             if (!empty($user->auth)) {
+-                $userauthplugin = get_auth_plugin($user->auth);
++                $userauthplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+             }
+             if ($userauthplugin && $userauthplugin->can_edit_profile()) {
+                 $url = $userauthplugin->edit_profile_url();
+diff --git a/public/lib/testing/generator/data_generator.php b/public/lib/testing/generator/data_generator.php
+index d76435ec99dc88ce8540daa9429899d52d5d82f3..f0357aa2f791efa94eaa657c714bd3aba783cda7 100644
+--- a/public/lib/testing/generator/data_generator.php
++++ b/public/lib/testing/generator/data_generator.php
+@@ -209,7 +209,7 @@ EOD;
+         }
+ 
+         if (isset($record['password'])) {
+-            $record['password'] = hash_internal_user_password($record['password']);
++            $record['password'] = \core\di::get(\core\authentication\password::class)->hash($record['password']);
+         }
+ 
+         if (!isset($record['email'])) {
+diff --git a/public/login/change_password.php b/public/login/change_password.php
+index d378092b316c100c3a7c2ae78d7ca1388c205d1a..d720c3c8026b6419a5d6f6b89a82d5c85a71bf69 100644
+--- a/public/login/change_password.php
++++ b/public/login/change_password.php
+@@ -90,7 +90,7 @@ if (is_mnet_remote_user($USER)) {
+ }
+ 
+ // load the appropriate auth plugin
+-$userauth = get_auth_plugin($USER->auth);
++$userauth = \core\di::get(\core\authentication::class)->get_plugin($USER->auth);
+ 
+ if (!$userauth->can_change_password()) {
+     throw new \moodle_exception('nopasswordchange', 'auth');
+diff --git a/public/login/change_password_form.php b/public/login/change_password_form.php
+index b6a01a1d9dbf507b9f3dae9db2486bffcd4ec2c6..2b906c8fdbeb034fa2b765df296ccf8ad32b50c7 100644
+--- a/public/login/change_password_form.php
++++ b/public/login/change_password_form.php
+@@ -134,7 +134,7 @@ class login_change_password_form extends moodleform {
+         }
+ 
+         $errmsg = '';//prevents eclipse warnings
+-        if (!check_password_policy($data['newpassword1'], $errmsg, $USER)) {
++        if (!\core\di::get(\core\authentication\password::class)->check_policy($data['newpassword1'], $errmsg, $USER)) {
+             $errors['newpassword1'] = $errmsg;
+             $errors['newpassword2'] = $errmsg;
+             return $errors;
+diff --git a/public/login/index.php b/public/login/index.php
+index bdbfb9b4d3592116a5ffecc0b3d301e65352a019..bb3d12889fa58e6df0fe4e4d04d76e4ba17eb20a 100644
+--- a/public/login/index.php
++++ b/public/login/index.php
+@@ -85,9 +85,10 @@ if (!empty($SESSION->has_timed_out)) {
+ $frm  = false;
+ $user = false;
+ 
+-$authsequence = get_enabled_auth_plugins(); // Auths, in sequence.
++$authentication = \core\di::get(\core\authentication::class);
++$authsequence = $authentication->get_enabled_plugins(); // Auths, in sequence.
+ foreach($authsequence as $authname) {
+-    $authplugin = get_auth_plugin($authname);
++    $authplugin = $authentication->get_plugin($authname);
+     // The auth plugin's loginpage_hook() can eventually set $frm and/or $user.
+     $authplugin->loginpage_hook();
+ }
+@@ -134,11 +135,11 @@ if ($anchor && isset($SESSION->wantsurl) && strpos($SESSION->wantsurl, '#') ===
+ 
+ /// Check if the user has actually submitted login data to us
+ 
+-if ($frm and isset($frm->username)) {                             // Login WITH cookies
+-
++if ($frm && isset($frm->username)) {
++    // Login WITH cookies.
+     $frm->username = trim(core_text::strtolower($frm->username));
+ 
+-    if (is_enabled_auth('none') ) {
++    if ($authentication->is_enabled('none')) {
+         if ($frm->username !== core_user::clean_field($frm->username, 'username')) {
+             $errormsg = get_string('username').': '.get_string("invalidusername");
+             $errorcode = 2;
+@@ -148,8 +149,9 @@ if ($frm and isset($frm->username)) {                             // Login WITH
+ 
+     if ($user) {
+         // The auth plugin has already provided the user via the loginpage_hook() called above.
+-    } else if (($frm->username == 'guest') and empty($CFG->guestloginbutton)) {
+-        $user = false;    /// Can't log in as guest if guest button is disabled
++    } else if (($frm->username == 'guest') && empty($CFG->guestloginbutton)) {
++        // Can't log in as guest if guest button is disabled
++        $user = false;
+         $frm = false;
+     } else {
+         if (empty($errormsg)) {
+@@ -159,8 +161,9 @@ if ($frm and isset($frm->username)) {                             // Login WITH
+         }
+     }
+ 
+-    // Intercept 'restored' users to provide them with info & reset password
+-    if (!$user and $frm and is_restored_user($frm->username)) {
++    // Intercept 'restored' users to provide them with info & reset password.
++    $authhelper = \core\di::get(\core\authentication::class);
++    if (!$user && $frm && $authhelper->is_restored_user($frm->username)) {
+         $PAGE->set_title(get_string('restoredaccount'));
+         $PAGE->set_heading($site->fullname);
+         echo $OUTPUT->header();
+@@ -174,10 +177,9 @@ if ($frm and isset($frm->username)) {                             // Login WITH
+     }
+ 
+     if ($user) {
+-
+-        // language setup
++        // Language setup.
+         if (isguestuser($user)) {
+-            // no predefined language for guests - use existing session or default site lang
++            // No predefined language for guests - use existing session or default site lang.
+             unset($user->lang);
+ 
+         } else if (!empty($user->lang)) {
+@@ -234,7 +236,7 @@ if ($frm and isset($frm->username)) {                             // Login WITH
+ 
+     /// check if user password has expired
+     /// Currently supported only for ldap-authentication module
+-        $userauth = get_auth_plugin($USER->auth);
++        $userauth = $authentication->get_plugin($USER->auth);
+         if (!isguestuser() and !empty($userauth->config->expiration) and $userauth->config->expiration == 1) {
+             $externalchangepassword = false;
+             if ($userauth->can_change_password()) {
+diff --git a/public/login/lib.php b/public/login/lib.php
+index b6594d6a639a6613155dbf2d5604f21f6580422f..7a3555a4ce6f7b23cbb7eecac518710b61eccb6b 100644
+--- a/public/login/lib.php
++++ b/public/login/lib.php
+@@ -129,9 +129,12 @@ function core_login_process_password_reset($username, $email) {
+     if ($user and !empty($user->confirmed)) {
+         $systemcontext = context_system::instance();
+ 
+-        $userauth = get_auth_plugin($user->auth);
+-        if (!$userauth->can_reset_password() or !is_enabled_auth($user->auth)
+-          or !has_capability('moodle/user:changeownpassword', $systemcontext, $user->id)) {
++        $userauth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
++        if (
++            !$userauth->can_reset_password()
++            || !\core\di::get(\core\authentication::class)->is_enabled($user->auth)
++            || !has_capability('moodle/user:changeownpassword', $systemcontext, $user->id)
++        ) {
+             if (send_password_change_info($user)) {
+                 $pwresetstatus = PWRESET_STATUS_OTHEREMAILSENT;
+             } else {
+@@ -250,7 +253,10 @@ function core_login_process_password_set($token) {
+         die; // Never reached.
+     }
+ 
+-    if ($user->auth === 'nologin' or !is_enabled_auth($user->auth)) {
++    if (
++        $user->auth === 'nologin'
++        || !\core\di::get(\core\authentication::class)->is_enabled($user->auth)
++    ) {
+         // Bad luck - user is not able to login, do not let them set password.
+         echo $OUTPUT->header();
+         throw new \moodle_exception('forgotteninvalidurl');
+@@ -282,7 +288,7 @@ function core_login_process_password_set($token) {
+         // User has submitted form.
+         // Delete this token so it can't be used again.
+         $DB->delete_records('user_password_resets', array('id' => $user->tokenid));
+-        $userauth = get_auth_plugin($user->auth);
++        $userauth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+         if (!$userauth->user_update_password($user, $data->password)) {
+             throw new \moodle_exception('errorpasswordupdate', 'auth');
+         }
+diff --git a/public/login/logout.php b/public/login/logout.php
+index e7ebddefd8ebdde565cdf4287af584d8ca0984a7..834b740baeaf29fedcca148c814b561907c68f00 100644
+--- a/public/login/logout.php
++++ b/public/login/logout.php
+@@ -29,18 +29,19 @@ require_once('../config.php');
+ $PAGE->set_url('/login/logout.php');
+ $PAGE->set_context(context_system::instance());
+ 
+-$sesskey = optional_param('sesskey', '__notpresent__', PARAM_RAW); // we want not null default to prevent required sesskey warning
++// We want not null default to prevent required sesskey warning.
++$sesskey = optional_param('sesskey', '__notpresent__', PARAM_RAW);
+ $login   = optional_param('loginpage', 0, PARAM_BOOL);
+ 
+-// can be overridden by auth plugins
++// Can be overridden by auth plugins.
+ if ($login) {
+     $redirect = get_login_url();
+ } else {
+-    $redirect = $CFG->wwwroot.'/';
++    $redirect = $CFG->wwwroot . '/';
+ }
+ 
+ if (!isloggedin()) {
+-    // no confirmation, user has already logged out
++    // No confirmation, user has already logged out.
+     require_logout();
+     redirect($redirect);
+ 
+@@ -53,9 +54,10 @@ if (!isloggedin()) {
+     die;
+ }
+ 
+-$authsequence = get_enabled_auth_plugins(); // auths, in sequence
+-foreach($authsequence as $authname) {
+-    $authplugin = get_auth_plugin($authname);
++$authentication = \core\di::get(\core\authentication::class);
++$authsequence = $authentication->get_enabled_plugins(); // Authentication plugins, in sequence.
++foreach ($authsequence as $authname) {
++    $authplugin = $authentication->get_plugin($authname);
+     $authplugin->logoutpage_hook();
+ }
+ 
+diff --git a/public/login/set_password_form.php b/public/login/set_password_form.php
+index 1c9d2124d43d5ec138f76022f521bc051ebd203c..2feb5f2a243290f2c2c26db8ef215ccc621be2cb 100644
+--- a/public/login/set_password_form.php
++++ b/public/login/set_password_form.php
+@@ -119,7 +119,7 @@ class login_set_password_form extends moodleform {
+         }
+ 
+         $errmsg = ''; // Prevents eclipse warnings.
+-        if (!check_password_policy($data['password'], $errmsg, $user)) {
++        if (!\core\di::get(\core\authentication\password::class)->check_policy($data['password'], $errmsg, $user)) {
+             $errors['password'] = $errmsg;
+             $errors['password2'] = $errmsg;
+             return $errors;
+diff --git a/public/login/token.php b/public/login/token.php
+index b185f58f07375faf20a850fbd8a710f3fe2becdd..f3a90a4eaf43547d5e3778925d23914a1164b267 100644
+--- a/public/login/token.php
++++ b/public/login/token.php
+@@ -48,7 +48,7 @@ $serviceshortname = required_param('service', PARAM_ALPHANUMEXT);
+ echo $OUTPUT->header();
+ 
+ $username = trim(core_text::strtolower($username));
+-if (is_restored_user($username)) {
++if (\core\di::get(\core\authentication::class)->is_restored_user($username)) {
+     throw new moodle_exception('restoredaccountresetpassword', 'webservice');
+ }
+ 
+diff --git a/public/reportbuilder/classes/local/entities/user.php b/public/reportbuilder/classes/local/entities/user.php
+index 48e7645540c33a941c7d3758331bd675d94388b3..b5fcb430bea0942fa7bcff8286adf6e50256175e 100644
+--- a/public/reportbuilder/classes/local/entities/user.php
++++ b/public/reportbuilder/classes/local/entities/user.php
+@@ -554,7 +554,7 @@ class user extends base {
+         $authlist = array_keys(core_component::get_plugin_list('auth'));
+ 
+         return array_map(
+-            fn(string $auth) => get_auth_plugin($auth)->get_title(),
++            fn(string $auth) => \core\di::get(\core\authentication::class)->get_plugin($auth)->get_title(),
+             array_combine($authlist, $authlist),
+         );
+     }
+diff --git a/public/user/edit.php b/public/user/edit.php
+index 996f8e742036bff6d33a413075fb030febb0aa42..33e42aefdaf7e411c4a22f476420cecab3579a02 100644
+--- a/public/user/edit.php
++++ b/public/user/edit.php
+@@ -81,7 +81,7 @@ if (is_mnet_remote_user($user)) {
+ }
+ 
+ // Load the appropriate auth plugin.
+-$userauth = get_auth_plugin($user->auth);
++$userauth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+ 
+ if (!$userauth->can_edit_profile()) {
+     throw new \moodle_exception('noprofileedit', 'auth');
+@@ -214,7 +214,7 @@ if ($userform->is_cancelled()) {
+         }
+     }
+ 
+-    $authplugin = get_auth_plugin($user->auth);
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+ 
+     $usernew->timemodified = time();
+ 
+diff --git a/public/user/edit_form.php b/public/user/edit_form.php
+index 0bcb58b16f26cd2ff6203c47300761666337b8cf..4955660022f04edcad109cad1d31f39e62a56ce0 100644
+--- a/public/user/edit_form.php
++++ b/public/user/edit_form.php
+@@ -149,7 +149,7 @@ class user_edit_form extends moodleform {
+ 
+             // Disable fields that are locked by auth plugins.
+             $fields = get_user_fieldnames();
+-            $authplugin = get_auth_plugin($user->auth);
++            $authplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+             $customfields = $authplugin->get_custom_user_profile_fields();
+             $customfieldsdata = profile_user_record($userid, false);
+             $fields = array_merge($fields, $customfields);
+@@ -242,5 +242,3 @@ class user_edit_form extends moodleform {
+         return $errors;
+     }
+ }
+-
+-
+diff --git a/public/user/editadvanced.php b/public/user/editadvanced.php
+index b8065ae7fa6c04a8207f42a4f52d034ad897da75..345ade0878d57f7f64249e2d609aae6e2b6fbda0 100644
+--- a/public/user/editadvanced.php
++++ b/public/user/editadvanced.php
+@@ -178,10 +178,10 @@ if ($userform->is_cancelled()) {
+ 
+     if (empty($usernew->auth)) {
+         // User editing self.
+-        $authplugin = get_auth_plugin($user->auth);
++        $authplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+         unset($usernew->auth); // Can not change/remove.
+     } else {
+-        $authplugin = get_auth_plugin($usernew->auth);
++        $authplugin = \core\di::get(\core\authentication::class)->get_plugin($usernew->auth);
+     }
+ 
+     $usernew->timemodified = time();
+@@ -199,7 +199,7 @@ if ($userform->is_cancelled()) {
+             if ($createpassword or empty($usernew->newpassword)) {
+                 $usernew->password = '';
+             } else {
+-                $usernew->password = hash_internal_user_password($usernew->newpassword);
++                $usernew->password = \core\di::get(\core\authentication\password::class)->hash($usernew->newpassword);
+             }
+         } else {
+             $usernew->password = AUTH_PASSWORD_NOT_CACHED;
+diff --git a/public/user/editadvanced_form.php b/public/user/editadvanced_form.php
+index 7fab35666e346f813874f1a1a9b7a509431e0d51..6c5a603183624cc8ebb3bc6d09deb6c839a7facf 100644
+--- a/public/user/editadvanced_form.php
++++ b/public/user/editadvanced_form.php
+@@ -75,7 +75,7 @@ class user_editadvanced_form extends moodleform {
+         $cannotchangepass = array();
+         $cannotchangeusername = array();
+         foreach ($auths as $auth => $unused) {
+-            $authinst = get_auth_plugin($auth);
++            $authinst = \core\di::get(\core\authentication::class)->get_plugin($auth);
+ 
+             if (!$authinst->is_internal()) {
+                 $cannotchangeusername[] = $auth;
+@@ -90,7 +90,7 @@ class user_editadvanced_form extends moodleform {
+                     $cannotchangepass[] = $auth;
+                 }
+             }
+-            if (is_enabled_auth($auth)) {
++            if (\core\di::get(\core\authentication::class)->is_enabled($auth)) {
+                 $authoptions[$enabled][$auth] = get_string('pluginname', "auth_{$auth}");
+             } else {
+                 $authoptions[$disabled][$auth] = get_string('pluginname', "auth_{$auth}");
+@@ -277,11 +277,11 @@ class user_editadvanced_form extends moodleform {
+         } else {
+             if (!empty($usernew->newpassword)) {
+                 $errmsg = ''; // Prevent eclipse warning.
+-                if (!check_password_policy($usernew->newpassword, $errmsg, $usernew)) {
++                if (!\core\di::get(\core\authentication\password::class)->check_policy($usernew->newpassword, $errmsg, $usernew)) {
+                     $err['newpassword'] = $errmsg;
+                 }
+             } else if (!$user) {
+-                $auth = get_auth_plugin($usernew->auth);
++                $auth = \core\di::get(\core\authentication::class)->get_plugin($usernew->auth);
+                 if ($auth->is_internal()) {
+                     // Internal accounts require password!
+                     $err['newpassword'] = get_string('required');
+@@ -335,5 +335,3 @@ class user_editadvanced_form extends moodleform {
+         }
+     }
+ }
+-
+-
+diff --git a/public/user/emailupdate.php b/public/user/emailupdate.php
+index 9e3da79563036078c79e727aa2c29a84bfc859dd..9c6fa9be1e20ca985d533afa8ca267a5f8973667 100644
+--- a/public/user/emailupdate.php
++++ b/public/user/emailupdate.php
+@@ -84,7 +84,7 @@ if (empty($preferences['newemailattemptsleft'])) {
+     }
+ 
+     // Update user email.
+-    $authplugin = get_auth_plugin($user->auth);
++    $authplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+     $authplugin->user_update($olduser, $user);
+     user_update_user($user, false);
+     $a->email = $user->email;
+diff --git a/public/user/externallib.php b/public/user/externallib.php
+index 6259e7172ad867d71dc0ccf91eb460f1488a4b99..bddf69d9f3f33bd542be67a24dadcffa17a5a008 100644
+--- a/public/user/externallib.php
++++ b/public/user/externallib.php
+@@ -184,7 +184,7 @@ class core_user_external extends \core_external\external_api {
+             }
+ 
+             // Make sure we have a password or have to create one.
+-            $authplugin = get_auth_plugin($user['auth']);
++            $authplugin = \core\di::get(\core\authentication::class)->get_plugin($user['auth']);
+             if ($authplugin->is_internal() && empty($user['password']) && empty($user['createpassword'])) {
+                 throw new invalid_parameter_exception('Invalid password: you must provide a password, or set createpassword.');
+             }
+@@ -1749,7 +1749,7 @@ class core_user_external extends \core_external\external_api {
+         }
+ 
+         // Load the appropriate auth plugin.
+-        $userauth = get_auth_plugin($user->auth);
++        $userauth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+         if (is_mnet_remote_user($user) or !$userauth->can_edit_profile() or $userauth->edit_profile_url()) {
+             throw new moodle_exception('noprofileedit', 'auth');
+         }
+diff --git a/public/user/lib.php b/public/user/lib.php
+index 0e9dbe2edc14a42f08c6544496db8b570c5eae48..e2d7407f9a6e2fee5aedb76400cf9c1a31b21b89 100644
+--- a/public/user/lib.php
++++ b/public/user/lib.php
+@@ -68,7 +68,7 @@ function user_create_user($user, $updatepassword = true, $triggerevent = true) {
+     if ($updatepassword && isset($user->password)) {
+ 
+         // Check password toward the password policy.
+-        if (!check_password_policy($user->password, $errmsg, $user)) {
++        if (!\core\di::get(\core\authentication\password::class)->check_policy($user->password, $errmsg, $user)) {
+             throw new moodle_exception($errmsg);
+         }
+ 
+@@ -128,7 +128,7 @@ function user_create_user($user, $updatepassword = true, $triggerevent = true) {
+     if (isset($userpassword)) {
+         // Get full database user row, in case auth is default.
+         $newuser = $DB->get_record('user', array('id' => $newuserid));
+-        $authplugin = get_auth_plugin($newuser->auth);
++        $authplugin = \core\di::get(\core\authentication::class)->get_plugin($newuser->auth);
+         $authplugin->user_update_password($newuser, $userpassword);
+     }
+ 
+@@ -185,7 +185,7 @@ function user_update_user($user, $updatepassword = true, $triggerevent = true) {
+     if ($updatepassword && isset($user->password)) {
+ 
+         // Check password toward the password policy.
+-        if (!check_password_policy($user->password, $errmsg, $user)) {
++        if (!\core\di::get(\core\authentication\password::class)->check_policy($user->password, $errmsg, $user)) {
+             throw new moodle_exception($errmsg);
+         }
+ 
+@@ -242,7 +242,7 @@ function user_update_user($user, $updatepassword = true, $triggerevent = true) {
+ 
+         // If password was set, then update its hash.
+         if (isset($passwd)) {
+-            $authplugin = get_auth_plugin($currentrecord->auth);
++            $authplugin = \core\di::get(\core\authentication::class)->get_plugin($currentrecord->auth);
+             if ($authplugin->can_change_password()) {
+                 $authplugin->user_update_password($currentrecord, $passwd);
+             }
+diff --git a/public/webservice/lib.php b/public/webservice/lib.php
+index f6362bd897a1c2f0fcbcf98a8823f0f0cec01e53..c92a4a939e65ea0f6e7091af9248fc45ee250c65 100644
+--- a/public/webservice/lib.php
++++ b/public/webservice/lib.php
+@@ -199,7 +199,7 @@ class webservice {
+         }
+ 
+         //Check if the user password is expired
+-        $auth = get_auth_plugin($user->auth);
++        $auth = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+         if (!empty($auth->config->expiration) and $auth->config->expiration == 1) {
+             $days2expire = $auth->password_expire($user->username);
+             if (intval($days2expire) < 0) {
+@@ -1021,11 +1021,11 @@ abstract class webservice_server implements webservice_server_interface {
+ 
+             //we check that authentication plugin is enabled
+             //it is only required by simple authentication
+-            if (!is_enabled_auth('webservice')) {
++            if (!\core\di::get(\core\authentication::class)->is_enabled('webservice')) {
+                 throw new webservice_access_exception('The web service authentication plugin is disabled.');
+             }
+ 
+-            if (!$auth = get_auth_plugin('webservice')) {
++            if (!$auth = \core\di::get(\core\authentication::class)->get_plugin('webservice')) {
+                 throw new webservice_access_exception('The web service authentication plugin is missing.');
+             }
+ 
+@@ -1101,12 +1101,12 @@ abstract class webservice_server implements webservice_server_interface {
+             throw new moodle_exception('sitemaintenance', 'admin', previous: $e);
+         }
+ 
+-        //retrieve the authentication plugin if no previously done
++        // Retrieve the authentication plugin if no previously done.
+         if (empty($auth)) {
+-          $auth  = get_auth_plugin($user->auth);
++            $auth  = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+         }
+ 
+-        // now fake user login, the session is completely empty too
++        // Now fake user login, the session is completely empty too.
+         enrol_check_plugins($user, false);
+         \core\session\manager::set_user($user);
+         set_login_session_preferences();

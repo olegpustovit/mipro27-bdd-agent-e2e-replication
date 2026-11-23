@@ -1,0 +1,320 @@
+diff --git a/public/course/templates/activity_info.mustache b/public/course/templates/activity_info.mustache
+index db544a12b35b4bfb8b60b4c6759ad31f42025f26..9282c4a3161c5b669f5747eddc15376188f319e9 100644
+--- a/public/course/templates/activity_info.mustache
++++ b/public/course/templates/activity_info.mustache
+@@ -53,20 +53,15 @@
+ 
+     {{#hascompletion}}
+         {{#uservisible}}
+-            <div class="completion-info" data-region="completion-info">
+-                {{#isautomatic}}
++            {{#isautomatic}}
++                <div class="completion-info" data-region="completion-info">
+                     <div class="automatic-completion-conditions" data-region ="completionrequirements" role="list" aria-label="{{#str}}completionrequirements, core_course, {{activityname}}{{/str}}">
+                         {{#completiondetails}}
+                             {{> core_course/completion_automatic }}
+                         {{/completiondetails}}
+                     </div>
+-                {{/isautomatic}}
+-                {{^isautomatic}}
+-                    {{#showmanualcompletion}}
+-                        {{> core_course/completion_manual }}
+-                    {{/showmanualcompletion}}
+-                {{/isautomatic}}
+-            </div>
++                </div>
++            {{/isautomatic}}
+         {{/uservisible}}
+     {{/hascompletion}}
+ 
+diff --git a/public/course/templates/completion_manual.mustache b/public/course/templates/completion_manual.mustache
+index b2d1dddedbf8b217adb998f79909d70f75d1f89b..361b051baeb7b42cda8b40eec4c129e79dd26cb3 100644
+--- a/public/course/templates/completion_manual.mustache
++++ b/public/course/templates/completion_manual.mustache
+@@ -35,6 +35,7 @@
+             data-toggletype="manual:undo"
+             data-cmid="{{cmid}}"
+             data-activityname="{{activityname}}"
++            data-completion="manual"
+             data-withavailability="{{withavailability}}" {{!
+             }}{{#accessibledescription}}{{!
+                 }}title="{{.}}" {{!
+@@ -55,6 +56,7 @@
+             data-toggletype="manual:mark-done"
+             data-cmid="{{cmid}}"
+             data-activityname="{{activityname}}"
++            data-completion="manual"
+             data-withavailability="{{withavailability}}" {{!
+             }}{{#accessibledescription}}{{!
+                 }}title="{{.}}" {{!
+@@ -72,6 +74,8 @@
+ {{^istrackeduser}}
+     <button
+         class="btn btn-subtle-body {{^normalbutton}}btn-sm{{/normalbutton}} text-nowrap"
++        data-activityname="{{activityname}}"
++        data-completion="manual"
+         disabled
+     >
+         {{#str}} completion_manual:markdone, core_course {{/str}}
+diff --git a/public/lib/classes/output/activity_header.php b/public/lib/classes/output/activity_header.php
+index 1e836ef019fd0e2395992ea729528b63ac8a3475..fe86ddf63f014fc7603bb9de70ceadfca78fdbc4 100644
+--- a/public/lib/classes/output/activity_header.php
++++ b/public/lib/classes/output/activity_header.php
+@@ -187,6 +187,7 @@ class activity_header implements renderable, templatable {
+         }
+ 
+         $activityinfo = null;
++        $activitycompletiondata = [];
+         if (!$this->hidecompletion) {
+             $completiondetails = \core_completion\cm_completion_details::get_instance($this->page->cm, $this->user->id);
+             $activitydates = \core\activity_dates::get_dates_for_module($this->page->cm, $this->user->id);
+@@ -197,6 +198,14 @@ class activity_header implements renderable, templatable {
+             $activitydatesdata = (array) $activitydates->export_for_template($output);
+             $data = array_merge($activitycompletiondata, $activitydatesdata);
+ 
++            if (
++                !empty($data)
++                && !empty($data['uservisible'])
++                && !empty($data['showmanualcompletion'])
++            ) {
++                $this->add_manual_completion_to_page_header($output, $data);
++            }
++
+             $activityinfo = $output->render_from_template('core_course/activity_info', $data);
+         }
+ 
+@@ -213,12 +222,38 @@ class activity_header implements renderable, templatable {
+             $additionalitems = $this->additionalnavitems->export_for_template($output);
+         }
+ 
+-        return [
++        return array_merge([
+             'title' => $this->title,
+             'description' => $this->description,
+             'completion' => $activityinfo,
+             'additional_items' => $additionalitems,
+-        ];
++        ], $activitycompletiondata);
++    }
++
++    /**
++     * Adds the manual completion component to the page header actions.
++     *
++     * @param renderer_base $output
++     * @param array $data the template data for the completion component
++     * @return bool if the completion was added
++     */
++    private function add_manual_completion_to_page_header(renderer_base $output, array $data): bool {
++        // Some themes may not use completion in the header, so we check first.
++        $showcompletion = $this->page?->layout_options['completioninheader'] ?? true;
++        if (!$showcompletion) {
++            return false;
++        }
++
++        $this->page->add_header_action(
++            $output->render_from_template('core_course/completion_manual', $data)
++        );
++        // Also init the heading component to manage feature like manual completion button display.
++        $this->page->requires->js_call_amd(
++            'core_courseformat/local/content/activity_header',
++            'init',
++            ["[data-for='page-heading']"],
++        );
++        return true;
+     }
+ 
+     /**
+diff --git a/public/lib/templates/full_header.mustache b/public/lib/templates/full_header.mustache
+index e1f2fc6ef04aad9b122b32e190aa699df69421f6..83b69fc23d43d255373df9922cc313d1d0e13fdc 100644
+--- a/public/lib/templates/full_header.mustache
++++ b/public/lib/templates/full_header.mustache
+@@ -29,7 +29,7 @@
+         "welcomemessage": "welcomemessage"
+     }
+ }}
+-<header id="page-header" class="header-maxwidth d-print-none">
++<header id="page-header" class="header-maxwidth d-print-none" data-for="page-heading">
+     <div class="w-100">
+         <div class="d-flex flex-wrap">
+             {{#hasnavbar}}
+@@ -62,4 +62,4 @@
+             </div>
+         </div>
+     </div>
+-</header>
+\ No newline at end of file
++</header>
+diff --git a/public/theme/boost/templates/secure.mustache b/public/theme/boost/templates/secure.mustache
+index 51ed3f48940ebf8f64fd1cee05b6ac6566d5aff5..eafb8d879435a13771603528d0e67d36278669e6 100644
+--- a/public/theme/boost/templates/secure.mustache
++++ b/public/theme/boost/templates/secure.mustache
+@@ -48,7 +48,7 @@
+     <div id="page" class="container-fluid">
+         {{! Secured full header }}
+ 
+-        <header id="page-header" class="row">
++        <header id="page-header" class="row" data-for="page-heading">
+             <div class="col-12 py-3">
+                 <div class="page-context-header">
+                     <div class="page-header-headings">
+diff --git a/public/theme/classic/config.php b/public/theme/classic/config.php
+index defd043bc6b36b0ee4525adf2e22a9673ead13f7..c44190aa1247f838a4207b131d1b54f3bca60152 100644
+--- a/public/theme/classic/config.php
++++ b/public/theme/classic/config.php
+@@ -58,6 +58,7 @@ $THEME->layouts = [
+         'file' => 'columns.php',
+         'regions' => array('side-pre', 'side-post'),
+         'defaultregion' => 'side-pre',
++        'options' => ['completioninheader' => false],
+     ),
+     // The site home page.
+     'frontpage' => array(
+diff --git a/public/theme/classic/scss/classic/course.scss b/public/theme/classic/scss/classic/course.scss
+index 45d6f131eeb9a6fb6f0177608ed6d805aa8a260b..c587f17734cd8831e14d130f2542822772c0212e 100644
+--- a/public/theme/classic/scss/classic/course.scss
++++ b/public/theme/classic/scss/classic/course.scss
+@@ -47,3 +47,11 @@
+         white-space: pre-wrap;
+     }
+ }
++
++// Manual completion button in activity header
++.header-group {
++    display: flex;
++    justify-content: space-between;
++    align-items: center;
++    gap: 20px;
++}
+diff --git a/public/theme/classic/templates/core/activity_header.mustache b/public/theme/classic/templates/core/activity_header.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..0bf28b406fed14a5fa74efe3b7b977d7a1b036ca
+--- /dev/null
++++ b/public/theme/classic/templates/core/activity_header.mustache
+@@ -0,0 +1,101 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template core/activity_header
++
++    Activity header template.
++
++    Context variables required for this template:
++    * title - The title of the activity module
++    * description - The intro for the module
++    * completion - The completion info if available for the the module as acquired via the activity_information method
++    * additional_items - Any additional URL select navigation that needs to show up in the header
++
++    Example context (json):
++    {
++        "title": "Assignment 1",
++        "description": "The assignment does something",
++        "completion": "<div class='activitycompletion'>Some activity completion criteria</div>",
++        "additional_items": {
++            "id": "url_select_test",
++            "action": "https://example.com/post",
++            "formid": "url_select_form",
++            "sesskey": "sesskey",
++            "label": "core/url_select",
++            "helpicon": {
++                "title": "Help with something",
++                "text": "Help with something",
++                "url": "http://example.org/help",
++                "linktext": "",
++                "icon":{
++                    "extraclasses": "",
++                    "attributes": [
++                        {"name": "src", "value": "../../../pix/help.svg"},
++                        {"name": "alt", "value": "Help icon"}
++                    ]
++                }
++            },
++            "showbutton": "Go",
++            "options": [{
++                "name": "Group 1", "isgroup": true, "options":
++                [
++                    {"name": "Item 1", "isgroup": false, "value": "1"},
++                    {"name": "Item 2", "isgroup": false, "value": "2"}
++                ]},
++                {"name": "Group 2", "isgroup": true, "options":
++                [
++                    {"name": "Item 3", "isgroup": false, "value": "3"},
++                    {"name": "Item 4", "isgroup": false, "value": "4"}
++                ]}],
++            "disabled": false,
++            "title": "Some cool title"
++        }
++    }
++}}
++<span id="maincontent"></span>
++<div class="header-group">
++    <div class="activity-title">
++    {{#title}}
++        <h2>{{{title}}}</h2>
++    {{/title}}
++    </div>
++    {{^isautomatic}}
++        {{#showmanualcompletion}}
++            <div class="header-actions">
++                {{> core_course/completion_manual }}
++            </div>
++        {{/showmanualcompletion}}
++    {{/isautomatic}}
++</div>
++
++
++<div class="activity-header" data-for="page-activity-header">{{!
++    }}{{#completion}}
++        <span class="visually-hidden">{{#str}} overallaggregation, completion {{/str}}</span>
++        {{{completion}}}
++    {{/completion}}
++    {{#description}}
++        <div class="activity-description" id="intro">
++            {{{description}}}
++        </div>
++    {{/description}}{{!
++}}</div>
++{{#additional_items}}
++    <nav aria-label="{{#str}} additionalcustomnav, core {{/str}}">
++        {{> core/url_select}}
++    </nav>
++{{/additional_items}}
+diff --git a/public/theme/classic/templates/core/full_header.mustache b/public/theme/classic/templates/core/full_header.mustache
+index 957810067ac56f22abf4303aa12344237c139649..77287ad6f4eee287af1a6b75b3a3bfb89e5158eb 100644
+--- a/public/theme/classic/templates/core/full_header.mustache
++++ b/public/theme/classic/templates/core/full_header.mustache
+@@ -28,7 +28,7 @@
+         "welcomemessage": "welcomemessage"
+     }
+ }}
+-<header id="page-header" class="row">
++<header id="page-header" class="row" data-for="page-heading">
+     <div class="col-12 pt-3 pb-3">
+         <div class="card {{^contextheader}}border-0 bg-transparent{{/contextheader}}">
+             <div class="card-body {{^contextheader}}p-2{{/contextheader}}">
+diff --git a/public/theme/classic/templates/secure.mustache b/public/theme/classic/templates/secure.mustache
+index b5f02208434bad242a673eb72aed2d20b689fe53..38cd0e83a9a0e1c2412b2a62e86defc5c43bd56c 100644
+--- a/public/theme/classic/templates/secure.mustache
++++ b/public/theme/classic/templates/secure.mustache
+@@ -59,7 +59,7 @@
+     <div id="page" class="container-fluid">
+         {{! Secured full header }}
+ 
+-        <header id="page-header" class="row">
++        <header id="page-header" class="row" data-for="page-heading">
+             <div class="col-12 py-3">
+                 <div class="page-context-header">
+                     <div class="page-header-headings">

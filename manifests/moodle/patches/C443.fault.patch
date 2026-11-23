@@ -1,0 +1,37 @@
+diff --git a/public/lib/editor/tiny/plugins/recordrtc/classes/constants.php b/public/lib/editor/tiny/plugins/recordrtc/classes/constants.php
+index 14459c51de918d9e0749d994c524e81db652ab6e..93f863488d5be49802c2ec43792dc8b037b26299 100644
+--- a/public/lib/editor/tiny/plugins/recordrtc/classes/constants.php
++++ b/public/lib/editor/tiny/plugins/recordrtc/classes/constants.php
+@@ -39,7 +39,4 @@ class constants {
+ 
+     /** @var string TINYRECORDRTC_SCREEN_FHD The Full-HD screen-sharing resolution. */
+     public const TINYRECORDRTC_SCREEN_FHD = '1920,1080';
+-
+-    /** @var array TINYRECORDRTC_AUDIO_BITRATES The audio bitrate options. */
+-    public const TINYRECORDRTC_AUDIO_BITRATES = [24000, 32000, 48000, 64000, 96000, 128000, 160000, 192000, 256000, 320000];
+ }
+diff --git a/public/lib/editor/tiny/plugins/recordrtc/settings.php b/public/lib/editor/tiny/plugins/recordrtc/settings.php
+index c097c17cf4091495e97007b077db19a641951c08..db74f078d4065415eecd04bdf757c9580d68521e 100644
+--- a/public/lib/editor/tiny/plugins/recordrtc/settings.php
++++ b/public/lib/editor/tiny/plugins/recordrtc/settings.php
+@@ -61,18 +61,8 @@ if ($ADMIN->fulltree) {
+     // Audio bitrate.
+     $name = get_string('audiobitrate', 'tiny_recordrtc');
+     $desc = get_string('audiobitrate_desc', 'tiny_recordrtc');
+-    $options = [];
+-    foreach (\tiny_recordrtc\constants::TINYRECORDRTC_AUDIO_BITRATES as $rate) {
+-        $kbrate = $rate / 1000;
+-        $options[$rate] = get_string('kbrate', 'tiny_recordrtc', $kbrate);
+-    }
+-    $setting = new admin_setting_configselect(
+-        name: 'tiny_recordrtc/audiobitrate',
+-        visiblename: $name,
+-        description: $desc,
+-        defaultsetting: \tiny_recordrtc\constants::TINYRECORDRTC_AUDIO_BITRATES[5],
+-        choices: $options,
+-    );
++    $default = '128000';
++    $setting = new admin_setting_configtext('tiny_recordrtc/audiobitrate', $name, $desc, $default, PARAM_INT, 8);
+     $settings->add($setting);
+ 
+     // Video bitrate.

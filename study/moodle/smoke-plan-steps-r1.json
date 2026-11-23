@@ -1,0 +1,77 @@
+{
+ "plan": "moodle-smoke-steps-r1",
+ "models": [
+  "gpt-5.6-terra"
+ ],
+ "drivers": [
+  "codex"
+ ],
+ "prompts": {},
+ "pinPatterns": [
+  "adapters/moodle/*.mjs",
+  "docker/moodle/behat/*",
+  "docker/moodle/versions.json",
+  "manifests/moodle.yaml",
+  "manifests/moodle/patches/*",
+  "scripts/moodle/*.mjs",
+  "scripts/ledger/*.mjs",
+  "scripts/drivers/*.mjs",
+  "scripts/codex-boundary.mjs",
+  "scripts/mcp-browser.mjs",
+  "package.json"
+ ],
+ "tasks": [
+  {
+   "key": "smoke:moodle/moodle-smoke-steps-r1/repair-B07-gpt-5.6-terra-r1",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w1",
+    "--break",
+    "B07",
+    "--model",
+    "gpt-5.6-terra",
+    "--rep",
+    "1",
+    "--sample",
+    "S028"
+   ]
+  },
+  {
+   "key": "smoke:moodle/moodle-smoke-steps-r1/repair-B12-gpt-5.6-terra-r1",
+   "cmd": [
+    "node",
+    "scripts/moodle/repair-run.mjs",
+    "--worker",
+    "w1",
+    "--break",
+    "B12",
+    "--model",
+    "gpt-5.6-terra",
+    "--rep",
+    "1",
+    "--sample",
+    "S076"
+   ]
+  },
+  {
+   "key": "smoke:moodle/moodle-smoke-steps-r1/arm-b-gpt-5.6-terra",
+   "cmd": [
+    "node",
+    "scripts/moodle/campaign-run.mjs",
+    "--worker",
+    "w1",
+    "--pairs",
+    "B07.X010@S028,B12.X001@S076",
+    "--arms",
+    "B",
+    "--models",
+    "gpt-5.6-terra",
+    "--reps",
+    "1",
+    "--allow-unlisted"
+   ]
+  }
+ ]
+}

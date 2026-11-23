@@ -1,0 +1,19 @@
+diff --git a/public/customfield/classes/handler.php b/public/customfield/classes/handler.php
+index c9e9b3f6d024f55aebd5f55cfa2888bef46e817f..a07c18a65d97243408febcd4be990da60e22d18c 100644
+--- a/public/customfield/classes/handler.php
++++ b/public/customfield/classes/handler.php
+@@ -464,13 +464,7 @@ abstract class handler {
+      *     In the last case data_controller::get_value() and export_value() functions will return default values.
+      */
+     public function get_instances_data(array $instanceids, bool $returnall = false): array {
+-        $result = api::get_instances_fields_data(
+-            fields: $this->get_fields(),
+-            instanceids: $instanceids,
+-            component: $this->get_component(),
+-            area: $this->get_area(),
+-            itemid: $this->get_itemid(),
+-        );
++        $result = api::get_instances_fields_data($this->get_fields(), $instanceids);
+ 
+         if (!$returnall) {
+             // Filter only by visible fields (list of visible fields may be different for each instance).

@@ -1,0 +1,54 @@
+diff --git a/public/customfield/classes/data.php b/public/customfield/classes/data.php
+index ebdcb6fd04f45e609e1e9f7f1467a5a60dae8886..da1fabf9e5a97bec479fe51ea6be3e7000e2f47d 100644
+--- a/public/customfield/classes/data.php
++++ b/public/customfield/classes/data.php
+@@ -114,34 +114,22 @@ class data extends persistent {
+     /**
+      * For integer data field, persistent won't allow empty string, swap for null
+      *
+-     * Ensure we constrain maximum value to that supported by database
+-     *
+      * @param string|null $value
+      * @return self
+      */
+     protected function set_intvalue(?string $value): self {
+-        if ((string) $value === '') {
+-            $value = null;
+-        } else {
+-            $value = min((int) $value, SQL_INT_MAX);
+-        }
++        $value = (string) $value === '' ? null : (int) $value;
+         return $this->raw_set('intvalue', $value);
+     }
+ 
+     /**
+      * For decimal data field, persistent won't allow empty string, swap for null
+      *
+-     * Ensure we constrain maximum value to that supported by database
+-     *
+      * @param string|null $value
+      * @return self
+      */
+     protected function set_decvalue(?string $value): self {
+-        if ((string) $value === '') {
+-            $value = null;
+-        } else {
+-            $value = min((float) $value, SQL_INT_MAX + .9999);
+-        }
++        $value = (string) $value === '' ? null : (float) $value;
+         return $this->raw_set('decvalue', $value);
+     }
+ 
+diff --git a/public/lib/db/install.xml b/public/lib/db/install.xml
+index 7be4743d6e1c12d855b85daa567d8c00d0b0a48a..ef3027dab7a5d9360586605aaaf308f92b30d6c1 100644
+--- a/public/lib/db/install.xml
++++ b/public/lib/db/install.xml
+@@ -4362,7 +4362,7 @@
+         <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+         <FIELD NAME="instanceid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+         <FIELD NAME="intvalue" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+-        <FIELD NAME="decvalue" TYPE="number" LENGTH="15" NOTNULL="false" SEQUENCE="false" DECIMALS="5"/>
++        <FIELD NAME="decvalue" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5"/>
+         <FIELD NAME="shortcharvalue" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+         <FIELD NAME="charvalue" TYPE="char" LENGTH="1333" NOTNULL="false" SEQUENCE="false"/>
+         <FIELD NAME="value" TYPE="text" NOTNULL="true" SEQUENCE="false"/>

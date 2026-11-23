@@ -1,0 +1,39 @@
+diff --git a/public/message/amd/src/message_drawer_view_overview_section.js b/public/message/amd/src/message_drawer_view_overview_section.js
+index 982dbc007b455cb452474be3fd4843c31b166912..33dfe968aebabcdf41a6683781d1e265154c7737 100644
+--- a/public/message/amd/src/message_drawer_view_overview_section.js
++++ b/public/message/amd/src/message_drawer_view_overview_section.js
+@@ -607,6 +607,10 @@ function(
+             return true;
+         };
+ 
++        // Set the minimum height of the section to the height of the toggle. This
++        // smooths out the collapse animation.
++        var toggle = root.find(SELECTORS.TOGGLE);
++        root.css('min-height', toggle.outerHeight());
+ 
+         root[0].addEventListener('show.bs.collapse', function() {
+             setExpanded(root);
+diff --git a/public/theme/boost/scss/moodle/message.scss b/public/theme/boost/scss/moodle/message.scss
+index a2d870840a33d728f8663f476e0397ab8ce2e5f1..0ed595615874526f01108d237e6840be45d76b73 100644
+--- a/public/theme/boost/scss/moodle/message.scss
++++ b/public/theme/boost/scss/moodle/message.scss
+@@ -398,7 +398,9 @@ $message-day-color: color-contrast($message-app-bg) !default;
+             display: flex;
+             align-items: center;
+         }
+-
++        .footer-container [data-region="view-overview"] {
++            display: none;
++        }
+         .overflow-y {
+             overflow-y: unset;
+         }
+@@ -607,7 +609,7 @@ $message-day-color: color-contrast($message-app-bg) !default;
+         }
+     }
+     .lazy-load-list {
+-        overflow-y: inherit;
++        overflow-y: auto;
+     }
+ }
+ #page-message-index {

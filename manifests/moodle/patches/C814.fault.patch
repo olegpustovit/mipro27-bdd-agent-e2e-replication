@@ -1,0 +1,38 @@
+diff --git a/public/lib/form/amd/src/modalform.js b/public/lib/form/amd/src/modalform.js
+index c4cd6a7bf528b9ec9cf3b32c7f19776b890ee5e0..6645f01aacb86e4d777e763b0728ea35bad26239 100644
+--- a/public/lib/form/amd/src/modalform.js
++++ b/public/lib/form/amd/src/modalform.js
+@@ -318,13 +318,9 @@ export default class ModalForm {
+         formData = formData + '&' + encodeURIComponent(button.getAttribute('name')) + '=' +
+             encodeURIComponent(button.getAttribute('value'));
+ 
+-        this.disableButtons();
+-
+         const bodyContent = this.getBody(formData);
+         this.modal.setBodyContent(bodyContent);
+-        bodyContent
+-            .then(() => this.enableButtons())
+-            .catch(Notification.exception);
++        bodyContent.catch(Notification.exception);
+     }
+ 
+     /**
+@@ -352,16 +348,14 @@ export default class ModalForm {
+      * Disable buttons during form submission
+      */
+     disableButtons() {
+-        this.modal.getModal()[0].querySelectorAll('input[type="submit"], [data-action]')
+-            .forEach(el => el.setAttribute('disabled', true));
++        this.modal.getFooter().find('[data-action]').attr('disabled', true);
+     }
+ 
+     /**
+      * Enable buttons after form submission (on validation error)
+      */
+     enableButtons() {
+-        this.modal.getModal()[0].querySelectorAll('input[type="submit"], [data-action]')
+-            .forEach(el => el.removeAttribute('disabled'));
++        this.modal.getFooter().find('[data-action]').removeAttr('disabled');
+     }
+ 
+     /**

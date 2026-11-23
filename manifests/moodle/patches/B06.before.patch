@@ -1,0 +1,41 @@
+diff --git a/public/admin/tool/usertours/templates/tourstep.mustache b/public/admin/tool/usertours/templates/tourstep.mustache
+index 0ed3f5d86f922a8578acf9829cdcada18100471d..836a32a4c1e61589db68db80e665fd6a800deca7 100644
+--- a/public/admin/tool/usertours/templates/tourstep.mustache
++++ b/public/admin/tool/usertours/templates/tourstep.mustache
+@@ -58,7 +58,7 @@
+     <div class="modal-content">
+       <div class="tooltip-arrow" data-role="arrow"></div>
+       <div class="modal-header">
+-        <h2 class="modal-title fs-5" data-placeholder="title"></h2>
++        <h5 class="modal-title" data-placeholder="title"></h5>
+       </div>
+       <div class="modal-body" data-placeholder="body">
+       </div>
+diff --git a/public/lib/behat/classes/partial_named_selector.php b/public/lib/behat/classes/partial_named_selector.php
+index 705259219402eee05dfbf62f504087c9bb323fb5..43638148f673d97dc60aacf81cd27f4e09350a22 100644
+--- a/public/lib/behat/classes/partial_named_selector.php
++++ b/public/lib/behat/classes/partial_named_selector.php
+@@ -186,9 +186,7 @@ XPATH
+ .//div[
+         contains(concat(' ', normalize-space(@class), ' '), ' modal-content ')
+             and
+-        normalize-space(descendant::*[
+-            self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6
+-        ][contains(concat(' ', normalize-space(@class), ' '), ' modal-title ')]) = %locator%
++        normalize-space(descendant::*[self::h4 or self::h5][contains(concat(' ', normalize-space(@class), ' '), ' modal-title ')]) = %locator%
+     ]
+         |
+ .//div[
+diff --git a/public/lib/templates/modal.mustache b/public/lib/templates/modal.mustache
+index e457fbfc9efb27ac5976f5ed4745efd7342e7233..d7eeda8f726e3002e67390b7711564e157143001 100644
+--- a/public/lib/templates/modal.mustache
++++ b/public/lib/templates/modal.mustache
+@@ -46,7 +46,7 @@
+             <div class="modal-header {{$headerclasses}}{{headerclasses}}{{/headerclasses}}" data-region="header">
+ 
+                 {{$header}}
+-                    <h2 id="{{uniqid}}-modal-title" class="modal-title fs-5 text-truncate" data-region="title">{{$title}}{{title}}{{/title}}</h2>
++                    <h5 id="{{uniqid}}-modal-title" class="modal-title text-truncate" data-region="title">{{$title}}{{title}}{{/title}}</h5>
+                 {{/header}}
+                 <button type="button" class="btn-close" data-action="hide" aria-label="{{#cleanstr}}closebuttontitle{{/cleanstr}}"></button>
+             </div>

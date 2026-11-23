@@ -1,0 +1,33 @@
+diff --git a/public/completion/tests/behat/behat_completion.php b/public/completion/tests/behat/behat_completion.php
+index 39660d5f19724f9c62326b0513b83e4c2d14b3df..bc19b62515fad8fb62a39654ac36f4787fe2ed29 100644
+--- a/public/completion/tests/behat/behat_completion.php
++++ b/public/completion/tests/behat/behat_completion.php
+@@ -302,7 +302,7 @@ class behat_completion extends behat_base {
+      * @param string $activityname The activity name.
+      */
+     public function the_manual_completion_button_for_activity_should_be_disabled(string $activityname): void {
+-        $selector = "button[data-activityname='$activityname'][data-completion='manual']";
++        $selector = "[data-activityname='$activityname'] button";
+ 
+         $params = [$selector, "css_element"];
+         $this->execute("behat_general::the_element_should_be_disabled", $params);
+@@ -315,7 +315,8 @@ class behat_completion extends behat_base {
+      * @param string $activityname The activity name.
+      */
+     public function the_manual_completion_button_for_activity_should_not_exist(string $activityname): void {
+-        $selector = "button[data-activityname='$activityname'][data-completion='manual']";
++        $label = get_string('completion_manual:aria:markdone', 'core_course', $activityname);
++        $selector = "button[aria-label='$label']";
+ 
+         $params = [$selector, "css_element"];
+         $this->execute('behat_general::should_not_exist', $params);
+@@ -328,7 +329,8 @@ class behat_completion extends behat_base {
+      * @param string $activityname The activity name.
+      */
+     public function the_manual_completion_button_for_activity_should_exist(string $activityname): void {
+-        $selector = "button[data-activityname='$activityname'][data-completion='manual']";
++        $label = get_string('completion_manual:aria:markdone', 'core_course', $activityname);
++        $selector = "button[aria-label='$label']";
+ 
+         $params = [$selector, "css_element"];
+         $this->execute('behat_general::should_exist', $params);

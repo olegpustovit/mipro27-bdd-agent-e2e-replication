@@ -1,0 +1,25 @@
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/commands.js b/public/lib/editor/tiny/plugins/media/amd/src/commands.js
+index 8b83a7cd08e716bf1f71f79f95233f2d72a9a074..eb9858a984caf785b44f90b30cd4a668ac56d719 100644
+--- a/public/lib/editor/tiny/plugins/media/amd/src/commands.js
++++ b/public/lib/editor/tiny/plugins/media/amd/src/commands.js
+@@ -32,7 +32,6 @@ import MediaImage from './image/image';
+ import MediaEmbed from './embed/embed';
+ import MediaManager from './manager';
+ import {getButtonImage} from 'editor_tiny/utils';
+-import Selectors from './selectors';
+ 
+ const isImage = (node) => node.nodeName.toLowerCase() === 'img';
+ const isVideo = (node) => node.nodeName.toLowerCase() === 'video' || node.nodeName.toLowerCase() === 'audio';
+@@ -74,12 +73,6 @@ const registerImageCommand = (editor, imageButtonText) => {
+     editor.ui.registry.addContextMenu(imageButtonName, {
+         update: isImage,
+     });
+-
+-    // Let's check for image file at dragged and dropped and add img-fluid class if it does't have it yet.
+-    editor.on('SetContent', function() {
+-        const imgs = editor.getBody().querySelectorAll(`img:not(.${Selectors.IMAGE.styles.responsive})`);
+-        imgs.forEach(img => img.classList.add(`${Selectors.IMAGE.styles.responsive}`));
+-    });
+ };
+ 
+ const registerEmbedCommand = (editor, videoButtonText) => {

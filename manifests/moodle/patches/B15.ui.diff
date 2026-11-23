@@ -1,0 +1,85 @@
+diff --git a/course/format/templates/local/content/addsection.mustache b/course/format/templates/local/content/addsection.mustache
+index eed967b0403548b1509c5ccb494fbdfd95073870..ac9e55a9a0d3599fc8e1bf1459334279e3e697ca 100644
+--- a/course/format/templates/local/content/addsection.mustache
++++ b/course/format/templates/local/content/addsection.mustache
+@@ -52,7 +52,7 @@
+     {{/decrease}}
+     {{#addsections}}
+         <a href="{{{url}}}"
+-           class="w-100 btn add-section justify-content-center align-items-center p-3"
++           class="w-100 btn btn-add-content rounded-4 p-3"
+            data-add-sections="{{title}}"
+            data-new-sections="{{newsection}}"
+            data-action="addSection"
+diff --git a/lib/templates/add_block_button.mustache b/lib/templates/add_block_button.mustache
+index f5a5ffd5005e6556bb08e8f14c3044339ec99218..014030fe8931c8ac208e915d00d1a6b7e5c5922f 100644
+--- a/lib/templates/add_block_button.mustache
++++ b/lib/templates/add_block_button.mustache
+@@ -28,10 +28,10 @@
+     }
+ 
+ }}
+-<div class="add_block_button">
+-    <a href="{{link}}" id="addblock-{{uniqid}}" class="btn btn-link block-add text-start mb-3" data-key="addblock"
++<div class="d-grid" data-region="add-block-button">
++    <a href="{{link}}" id="addblock-{{uniqid}}" class="btn btn-add-content mb-3" data-key="addblock"
+             data-url="{{escapedlink}}" data-blockregion="{{blockregion}}">
+-        <i class="fa fa-plus py-2 me-3" aria-hidden="true"></i>{{#str}}addblock{{/str}}
++        <i class="fa fa-plus py-2 me-2" aria-hidden="true"></i>{{#str}}addblock{{/str}}
+     </a>
+ </div>
+ 
+diff --git a/theme/boost/scss/moodle/buttons.scss b/theme/boost/scss/moodle/buttons.scss
+index 8ad24a6ea1f9d49728e33eea8cc079dc166788ca..39aacb9a5e385d59c25d0bc924c35032f0a1d31c 100644
+--- a/theme/boost/scss/moodle/buttons.scss
++++ b/theme/boost/scss/moodle/buttons.scss
+@@ -143,3 +143,23 @@ p.arrow_button {
+     --#{$prefix}btn-focus-shadow-rgb: #{to-rgb($gray-600)};
+     @include button-focus($gray-600, $white);
+ }
++
++/*
++ * Add content buttons.
++ */
++
++.btn-add-content {
++    @include border-radius();
++    border: map-get($border-widths, 2) dashed $border-color;
++    color: $primary;
++    background-color: $body-bg;
++    font-size: $font-size-sm;
++    font-weight: bold;
++    &:hover,
++    &:focus {
++        background-color: $primary-light-background;
++        border-style: solid;
++        border-color: $primary;
++        color: $primary;
++    }
++}
+diff --git a/theme/boost/scss/moodle/course.scss b/theme/boost/scss/moodle/course.scss
+index 2a14dab1fd3bf4535a859430a599bf72e65c7701..1081ad21d4cd82a7aa4c471a7b812cacff0a3fa5 100644
+--- a/theme/boost/scss/moodle/course.scss
++++ b/theme/boost/scss/moodle/course.scss
+@@ -53,21 +53,6 @@ $divider-hover-color: $primary !default;
+     }
+ }
+ 
+-// Course 'add section' button.
+-.btn.add-section {
+-    @include border-radius($activity-border-radius);
+-    border: $divider-width dashed $border-color;
+-    color: $primary;
+-    font-size: $font-size-sm;
+-    font-weight: bold;
+-    &:hover,
+-    &:focus {
+-        background-color: $primary-light-background;
+-        border: $divider-width solid $primary;
+-        color: $primary;
+-    }
+-}
+-
+ // Max sections reached alert.
+ .max-section-alert {
+     border-top: $divider-width dashed $border-color;

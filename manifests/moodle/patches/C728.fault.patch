@@ -1,0 +1,29 @@
+diff --git a/public/enrol/manual/lib.php b/public/enrol/manual/lib.php
+index 09ebec7adf2ae9db2c8fbdc5bfd3a736b74781df..5db23b980391949d1157a8328a7bc35965ecfcd2 100644
+--- a/public/enrol/manual/lib.php
++++ b/public/enrol/manual/lib.php
+@@ -708,7 +708,7 @@ class enrol_manual_plugin extends enrol_plugin {
+ 
+         // This method is used when configuring the enrolment method, and when only updating the welcome message.
+         // The 'expirynotify' key won't be set when updating the welcome message.
+-        if (isset($data['expirynotify']) && $data['expirynotify'] > 0 && $data['expirythreshold'] < DAYSECS) {
++        if (isset($data['expirynotify']) && $data['expirynotify'] > 0 && $data['expirythreshold'] < 86400) {
+             $errors['expirythreshold'] = get_string('errorthresholdlow', 'core_enrol');
+         }
+ 
+diff --git a/public/enrol/self/lib.php b/public/enrol/self/lib.php
+index 8dbf2f8c0ed91f9e22477a3f36129a3e00f951f8..27c4c98cf94c1cdf2b64b6ccf38eeeb97ace71a9 100644
+--- a/public/enrol/self/lib.php
++++ b/public/enrol/self/lib.php
+@@ -1093,8 +1093,9 @@ class enrol_self_plugin extends enrol_plugin {
+             }
+         }
+ 
+-        // If expirynotify is selected, then ensure the threshold is at least one day.
+-        if (isset($data['expirynotify']) && $data['expirynotify'] > 0 && $data['expirythreshold'] < DAYSECS) {
++        if (array_key_exists('expirynotify', $data)
++                && ($data['expirynotify'] > 0 || $data['customint2'])
++                && $data['expirythreshold'] < 86400) {
+             $errors['expirythreshold'] = get_string('errorthresholdlow', 'core_enrol');
+         }
+ 

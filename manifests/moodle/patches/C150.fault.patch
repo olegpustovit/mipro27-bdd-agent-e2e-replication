@@ -1,0 +1,32 @@
+diff --git a/public/question/type/multianswer/classes/task/cleanup_duplicate_subquestions.php b/public/question/type/multianswer/classes/task/cleanup_duplicate_subquestions.php
+index 6c6f6d9927597d545efd19c603277a76d9e239aa..3a8a54754f090498715ca9ad22ae5b835e9a82a2 100644
+--- a/public/question/type/multianswer/classes/task/cleanup_duplicate_subquestions.php
++++ b/public/question/type/multianswer/classes/task/cleanup_duplicate_subquestions.php
+@@ -83,24 +83,10 @@ class cleanup_duplicate_subquestions extends \core\task\adhoc_task {
+         $this->start_stored_progress();
+         $progress = $this->get_progress();
+         foreach ($duplicatedsubquestions as $subquestion) {
+-            $where = "parent = :parent AND stamp = :stamp";
+-            $params = ['parent' => $subquestion->parent, 'stamp' => $subquestion->stamp];
+             // Find instances of the subquestion that do not appear in the sequence of the parent.
+-            // Make sure to filter out empty elements in the sequence.
+-            // If the parent's sequence ends up empty for whatever reason, there are no "original" subquestions anymore and
+-            // all that match the stamp and parent are fair game for deletion.
+-            $sequence = array_filter(explode(',', $subquestion->sequence));
+-            if (!empty($sequence)) {
+-                [$insql, $inparams] = $DB->get_in_or_equal(
+-                    items: $sequence,
+-                    type: SQL_PARAMS_NAMED,
+-                    prefix: 'id',
+-                    equal: false,
+-                );
+-                $where .= " AND id $insql";
+-                $params = array_merge($params, $inparams);
+-            }
+-            $duplicates = $DB->get_records_select('question', $where, $params);
++            [$insql, $inparams] = $DB->get_in_or_equal(explode(',', $subquestion->sequence), equal: false);
++            $params = array_merge([$subquestion->parent, $subquestion->stamp], $inparams);
++            $duplicates = $DB->get_records_select('question', "parent = ? AND stamp = ? AND id {$insql}", $params);
+             $duplicatecount = count($duplicates);
+             // Delete each duplicate, with a progress bar.
+             mtrace("");

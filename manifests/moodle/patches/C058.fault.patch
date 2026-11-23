@@ -1,0 +1,28 @@
+diff --git a/public/completion/classes/external/completion_info_exporter.php b/public/completion/classes/external/completion_info_exporter.php
+index 3dfc045d1a4033691b30e46fb9fc7413f2ef257b..916d016374d8f490a11e513ab69a60708859d322 100644
+--- a/public/completion/classes/external/completion_info_exporter.php
++++ b/public/completion/classes/external/completion_info_exporter.php
+@@ -53,7 +53,7 @@ class completion_info_exporter extends \core\external\exporter {
+      */
+     public function __construct(object $course, object $cm, int $userid, array $related = []) {
+         $this->course = $course;
+-        $this->cminfo = \cm_info::create($cm, $userid);
++        $this->cminfo = \cm_info::create($cm);
+         $this->userid = $userid;
+         parent::__construct([], $related);
+     }
+diff --git a/public/course/classes/cm_info.php b/public/course/classes/cm_info.php
+index cb30c1eae80d24439f09261cfb7d30ce5e897bfb..44c63c5817251e009cd66f479bee072b06e6d7b8 100644
+--- a/public/course/classes/cm_info.php
++++ b/public/course/classes/cm_info.php
+@@ -1465,8 +1465,8 @@ class cm_info implements IteratorAggregate {
+         if (!$cm) {
+             return null;
+         }
+-        // If it is already a cm_info object with the right user, just return it.
+-        if (($cm instanceof cm_info) && ($cm->get_modinfo()->userid == $userid)) {
++        // If it is already a cm_info object, just return it.
++        if ($cm instanceof cm_info) {
+             return $cm;
+         }
+         // Otherwise load modinfo.

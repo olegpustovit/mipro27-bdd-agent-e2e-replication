@@ -1,0 +1,16 @@
+diff --git a/public/mod/assign/classes/courseformat/overview.php b/public/mod/assign/classes/courseformat/overview.php
+index e4bf08ee16fdc17d19240de6dbba5613f0bcb77d..c55114690c42b7cbd2eea7ce23248f7f0561574e 100644
+--- a/public/mod/assign/classes/courseformat/overview.php
++++ b/public/mod/assign/classes/courseformat/overview.php
+@@ -165,7 +165,10 @@ class overview extends \core_courseformat\activityoverviewbase {
+     private function get_extra_submission_status_overview(): ?overviewitem {
+         global $USER;
+ 
+-        if (!has_capability('mod/assign:submit', $this->context, $USER, false)) {
++        if (
++            !has_capability('mod/assign:submit', $this->context)
++            || has_capability('moodle/site:config', $this->context)
++        ) {
+             return null;
+         }
+ 

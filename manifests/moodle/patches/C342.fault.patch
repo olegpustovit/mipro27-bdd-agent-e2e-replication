@@ -1,0 +1,20 @@
+diff --git a/public/lib/editor/tiny/amd/src/uploader.js b/public/lib/editor/tiny/amd/src/uploader.js
+index 4f11d80bb3ee40101f9d4f48c407027413a674db..71ae3d71a9d4ed030fa946d87b14db5590e29e69 100644
+--- a/public/lib/editor/tiny/amd/src/uploader.js
++++ b/public/lib/editor/tiny/amd/src/uploader.js
+@@ -76,11 +76,13 @@ export default (editor, filePickerType, blob, fileName, progress) => new Promise
+             return;
+         }
+ 
+-        // Try to parse the error response into a JSON object.
+         const errorString = xhr.responseText;
++        // Remove backslashes and escape characters in the stack trace.
++        const cleanedErrorString = errorString.replace(/\\/g, '');
++        // Try to parse the cleaned string into a JSON object.
+         let output = '';
+         try {
+-            output = JSON.parse(errorString);
++            output = JSON.parse(cleanedErrorString);
+         } catch (error) {
+             // If the JSON parsing process returns an error, then it returns the original.
+             output = errorString;

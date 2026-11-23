@@ -1,0 +1,26 @@
+diff --git a/public/question/bank/tagquestion/classes/tag_condition.php b/public/question/bank/tagquestion/classes/tag_condition.php
+index b6360fce4056bfd74bcc66685df476a271b0e8c6..ee4911616feda85bf681cb3e521eed5bea69c6e4 100644
+--- a/public/question/bank/tagquestion/classes/tag_condition.php
++++ b/public/question/bank/tagquestion/classes/tag_condition.php
+@@ -52,7 +52,20 @@ class tag_condition extends condition {
+             return;
+         }
+         parent::__construct($qbank);
+-        $this->contexts = $qbank->contexts->all();
++        $cat = $qbank->get_pagevars('cat');
++        if (is_array($cat)) {
++            foreach ($cat as $value) {
++                [, $contextid] = explode(',', $value);
++                $catcontext = \context::instance_by_id($contextid);
++                $this->contexts[] = $catcontext;
++            }
++        } else {
++            [, $contextid] = explode(',', $qbank->get_pagevars('cat'));
++            $catcontext = \context::instance_by_id($contextid);
++            $this->contexts[] = $catcontext;
++        }
++        $thiscontext = $qbank->get_most_specific_context();
++        $this->contexts[] = $thiscontext;
+         $this->selectedtagids = $this->filter->values ?? [];
+     }
+ 

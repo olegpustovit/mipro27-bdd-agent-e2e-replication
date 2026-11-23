@@ -1,0 +1,24 @@
+diff --git a/public/message/classes/api.php b/public/message/classes/api.php
+index 34d3d478d717478371656a40551043456b6c37a0..c1365d501c336422f4c0458a0c5629be06d16a71 100644
+--- a/public/message/classes/api.php
++++ b/public/message/classes/api.php
+@@ -409,8 +409,8 @@ class api {
+                 if (array_key_exists($groupid, $courseinfo)) {
+                     $group = $courseinfo[$groupid];
+                     // Subname.
+-                    $subname = format_string($courseinfo[$groupid]->courseshortname, true, ['escape' => false]);
+-                    $extrafields[$convid]['subname'] = $subname;
++                    $extrafields[$convid]['subname'] = format_string($courseinfo[$groupid]->courseshortname);
++
+                     // Imageurl.
+                     $extrafields[$convid]['imageurl'] = $renderer->image_url('g/g1')->out(false); // default image.
+                     if ($url = get_group_picture_url($group, $group->courseid, true)) {
+@@ -742,7 +742,7 @@ class api {
+                 $convcontext = \context::instance_by_id($conversation->contextid);
+                 $contexttodeletemessageforall = $convcontext;
+             }
+-            $conv->name = format_string($conversation->conversationname, true, ['context' => $convcontext, 'escape' => false]);
++            $conv->name = format_string($conversation->conversationname, true, ['context' => $convcontext]);
+ 
+             $conv->subname = $convextrafields[$conv->id]['subname'] ?? null;
+             $conv->imageurl = $convextrafields[$conv->id]['imageurl'] ?? null;

@@ -1,0 +1,876 @@
+diff --git a/admin/tool/brickfield/classes/local/areas/core_course/base.php b/admin/tool/brickfield/classes/local/areas/core_course/base.php
+index 8367df6c369caa2b6669a2a7d79c17468dc4542c..3afb2733216db3f2d920b701fdd3ee18853d61bd 100644
+--- a/admin/tool/brickfield/classes/local/areas/core_course/base.php
++++ b/admin/tool/brickfield/classes/local/areas/core_course/base.php
+@@ -108,7 +108,7 @@ abstract class base extends area_base {
+      */
+     public static function get_edit_url(\stdClass $componentinfo): \moodle_url {
+         if ($componentinfo->tablename == 'course_sections') {
+-            return new \moodle_url('/course/editsection.php', ['id' => $componentinfo->itemid, 'sr' => '']);
++            return new \moodle_url('/course/editsection.php', ['id' => $componentinfo->itemid]);
+         } else if ($componentinfo->tablename == 'course_categories') {
+             return new \moodle_url('/course/editcategory.php', ['id' => $componentinfo->itemid]);
+         } else {
+diff --git a/admin/tool/brickfield/classes/local/areas/module_area_base.php b/admin/tool/brickfield/classes/local/areas/module_area_base.php
+index 71673d16aca3812d8383a5fcf0abc34b69997d36..edfc956712bfc01b549163d5c31d55296b201cf6 100644
+--- a/admin/tool/brickfield/classes/local/areas/module_area_base.php
++++ b/admin/tool/brickfield/classes/local/areas/module_area_base.php
+@@ -108,6 +108,6 @@ abstract class module_area_base extends area_base {
+      * @return \moodle_url
+      */
+     public static function get_edit_url(\stdClass $componentinfo): \moodle_url {
+-        return new \moodle_url('/course/mod.php', ['update' => $componentinfo->cmid, 'sr' => 0, 'sesskey' => sesskey()]);
++        return new \moodle_url('/course/mod.php', ['update' => $componentinfo->cmid, 'sr' => null, 'sesskey' => sesskey()]);
+     }
+ }
+diff --git a/course/amd/src/actions.js b/course/amd/src/actions.js
+index deefa0505939c85197963f850c2c22a49ae7f06d..1758c2a1e7e7d9589849dcb82217afcf47fe715f 100644
+--- a/course/amd/src/actions.js
++++ b/course/amd/src/actions.js
+@@ -335,7 +335,7 @@ define(
+                 methodname: 'core_course_edit_module',
+                 args: {id: cmid,
+                     action: action,
+-                    sectionreturn: target.attr('data-sectionreturn') ? target.attr('data-sectionreturn') : 0
++                    sectionreturn: target.attr('data-sectionreturn') ? target.attr('data-sectionreturn') : null
+                 }
+             }], true);
+ 
+@@ -694,7 +694,7 @@ define(
+          */
+         var editSection = function(sectionElement, sectionid, target, courseformat) {
+             var action = target.attr('data-action'),
+-                sectionreturn = target.attr('data-sectionreturn') ? target.attr('data-sectionreturn') : 0;
++                sectionreturn = target.attr('data-sectionreturn') ? target.attr('data-sectionreturn') : null;
+ 
+             // Filter direct component handled actions.
+             if (courseeditor.supportComponents && componentActions.includes(action)) {
+diff --git a/course/amd/src/activitychooser.js b/course/amd/src/activitychooser.js
+index 94b1725694abd7fc795622bc4b028ee8ad9a79e9..f6c4f274984c17a3df11af106609952946abaca4 100644
+--- a/course/amd/src/activitychooser.js
++++ b/course/amd/src/activitychooser.js
+@@ -197,7 +197,10 @@ const sectionIdMapper = (webServiceData, id, sectionreturnid, beforemod) => {
+     // We need to take a fresh deep copy of the original data as an object is a reference type.
+     const newData = JSON.parse(JSON.stringify(webServiceData));
+     newData.content_items.forEach((module) => {
+-        module.link += '&section=' + id + '&sr=' + (sectionreturnid ?? 0) + '&beforemod=' + (beforemod ?? 0);
++        module.link += '&section=' + id + '&beforemod=' + (beforemod ?? 0);
++        if (sectionreturnid) {
++            module.link += '&sr=' + sectionreturnid;
++        }
+     });
+     return newData.content_items;
+ };
+diff --git a/course/editsection.php b/course/editsection.php
+index a63a0860c7e8adb48208d10099b87a6d9bdcaa3b..c08d2c853fb698ff4c509da1fba1f77e0adb949a 100644
+--- a/course/editsection.php
++++ b/course/editsection.php
+@@ -28,11 +28,16 @@ require_once("lib.php");
+ require_once($CFG->libdir . '/formslib.php');
+ 
+ $id = required_param('id', PARAM_INT);    // course_sections.id
+-$sectionreturn = optional_param('sr', 0, PARAM_INT);
++$sectionreturn = optional_param('sr', null, PARAM_INT);
+ $deletesection = optional_param('delete', 0, PARAM_BOOL);
+ $showonly = optional_param('showonly', 0, PARAM_TAGLIST);
+ 
+-$params = ['id' => $id, 'sr' => $sectionreturn];
++$returnparams = [];
++$params = ['id' => $id];
++if (!is_null($sectionreturn)) {
++    $params['sr'] = $sectionreturn;
++    $returnparams['sr'] = $sectionreturn;
++}
+ if (!empty($showonly)) {
+     $params['showonly'] = $showonly;
+ }
+@@ -51,7 +56,7 @@ $sectioninfo = get_fast_modinfo($course)->get_section_info($sectionnum);
+ 
+ // Deleting the section.
+ if ($deletesection) {
+-    $cancelurl = course_get_url($course, $sectioninfo, array('sr' => $sectionreturn));
++    $cancelurl = course_get_url($course, $sectioninfo, $returnparams);
+     if (course_can_delete_section($course, $sectioninfo)) {
+         $confirm = optional_param('confirm', false, PARAM_BOOL) && confirm_sesskey();
+         if (!$confirm && optional_param('sesskey', null, PARAM_RAW) !== null &&
+@@ -61,7 +66,7 @@ if ($deletesection) {
+         }
+         if ($confirm) {
+             course_delete_section($course, $sectioninfo, true, true);
+-            $courseurl = course_get_url($course, $sectioninfo->section - 1, array('sr' => $sectionreturn));
++            $courseurl = course_get_url($course, $sectioninfo->section - 1, $returnparams);
+             redirect($courseurl);
+         } else {
+             if (get_string_manager()->string_exists('deletesection', 'format_' . $course->format)) {
+@@ -123,7 +128,7 @@ if (!empty($showonly)) {
+ 
+ if ($mform->is_cancelled()){
+     // Form cancelled, return to course.
+-    redirect(course_get_url($course, $section, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $section, $returnparams));
+ } else if ($data = $mform->get_data()) {
+     // Data submitted and validated, update and return to course.
+ 
+@@ -139,7 +144,7 @@ if ($mform->is_cancelled()){
+     course_update_section($course, $section, $data);
+ 
+     $PAGE->navigation->clear_cache();
+-    redirect(course_get_url($course, $section, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $section, $returnparams));
+ }
+ 
+ // The edit form is displayed for the first time or if there was validation error on the previous step.
+diff --git a/course/format/amd/src/local/content.js b/course/format/amd/src/local/content.js
+index 5fda25d57d7191db2a583c95ca7df2b4b8d6ef36..87ff74712bd38f61c08328503ae4ef43806a8b1b 100644
+--- a/course/format/amd/src/local/content.js
++++ b/course/format/amd/src/local/content.js
+@@ -76,7 +76,7 @@ export default class Component extends BaseComponent {
+         this.sections = {};
+         this.cms = {};
+         // The page section return.
+-        this.sectionReturn = descriptor.sectionReturn ?? 0;
++        this.sectionReturn = descriptor.sectionReturn ?? null;
+         this.debouncedReloads = new Map();
+     }
+ 
+@@ -433,7 +433,7 @@ export default class Component extends BaseComponent {
+      */
+     _refreshCourseSectionlist({element}) {
+         // If we have a section return means we only show a single section so no need to fix order.
+-        if (this.reactive.sectionReturn != 0) {
++        if (this.reactive.sectionReturn !== null) {
+             return;
+         }
+         const sectionlist = element.sectionlist ?? [];
+@@ -541,7 +541,7 @@ export default class Component extends BaseComponent {
+                 {
+                     id: cmId,
+                     courseid: Config.courseId,
+-                    sr: this.reactive.sectionReturn ?? 0,
++                    sr: this.reactive.sectionReturn ?? null,
+                 }
+             );
+             promise.then((html, js) => {
+@@ -608,7 +608,7 @@ export default class Component extends BaseComponent {
+                 {
+                     id: element.id,
+                     courseid: Config.courseId,
+-                    sr: this.reactive.sectionReturn ?? 0,
++                    sr: this.reactive.sectionReturn ?? null,
+                 }
+             );
+             promise.then((html, js) => {
+diff --git a/course/format/amd/src/local/content/section.js b/course/format/amd/src/local/content/section.js
+index 0dc7d92f42b28002657d4f9c5774a6468b417d97..30333fdc1b8835d667c535544ac21bf2a5320d7a 100644
+--- a/course/format/amd/src/local/content/section.js
++++ b/course/format/amd/src/local/content/section.js
+@@ -100,7 +100,7 @@ export default class extends DndSection {
+      */
+     validateDropData(dropdata) {
+         // If the format uses one section per page sections dropping in the content is ignored.
+-       if (dropdata?.type === 'section' && this.reactive.sectionReturn != 0) {
++       if (dropdata?.type === 'section' && this.reactive.sectionReturn !== null) {
+             return false;
+         }
+         return super.validateDropData(dropdata);
+diff --git a/course/format/amd/src/local/courseeditor/courseeditor.js b/course/format/amd/src/local/courseeditor/courseeditor.js
+index ffa041aff70908f27ad2e334e2a29893b23d425e..caab2f50347f8b03eeff4d57697fabed303b071e 100644
+--- a/course/format/amd/src/local/courseeditor/courseeditor.js
++++ b/course/format/amd/src/local/courseeditor/courseeditor.js
+@@ -52,9 +52,9 @@ export default class extends Reactive {
+      * The current page section return
+      * @attribute sectionReturn
+      * @type number
+-     * @default 0
++     * @default null
+      */
+-    sectionReturn = 0;
++    sectionReturn = null;
+ 
+     /**
+      * Set up the course editor when the page is ready.
+diff --git a/course/format/classes/base.php b/course/format/classes/base.php
+index 3557e3158941a3d98af4b1fe88864b84aff022e1..556c2b856a63e413bf516269b5314384611387ee 100644
+--- a/course/format/classes/base.php
++++ b/course/format/classes/base.php
+@@ -37,7 +37,6 @@ use moodle_exception;
+ use coding_exception;
+ use moodle_url;
+ use lang_string;
+-use completion_info;
+ use core_external\external_api;
+ use stdClass;
+ use cache;
+@@ -78,8 +77,10 @@ abstract class base {
+     protected $course = false;
+     /** @var array caches format options, please use course_format::get_format_options() */
+     protected $formatoptions = array();
+-    /** @var int the section number in single section format, zero for multiple section formats. */
+-    protected $singlesection = 0;
++    /** @var int|null the section number in single section format, null for multiple section formats. */
++    protected $singlesection = null;
++    /** @var int|null the sectionid when a single section is selected, null when multiple sections are displayed. */
++    protected $singlesectionid = null;
+     /** @var course_modinfo the current course modinfo, please use course_format::get_modinfo() */
+     private $modinfo = null;
+     /** @var array cached instances */
+@@ -560,6 +561,43 @@ abstract class base {
+         return get_string('highlighted');
+     }
+ 
++    /**
++     * Set if the current format instance will show multiple sections or an individual one.
++     *
++     * Some formats has the hability to swith from one section to multiple sections per page.
++     *
++     * @param int|null $sectionid null for all sections or a sectionid.
++     */
++    public function set_sectionid(?int $sectionid): void {
++        if ($sectionid === null) {
++            $this->singlesection = null;
++            $this->singlesectionid = null;
++            return;
++        }
++
++        $modinfo = get_fast_modinfo($this->courseid);
++        $sectioninfo = $modinfo->get_section_info_by_id($sectionid);
++        if ($sectioninfo === null) {
++            throw new coding_exception('Invalid sectionid: '. $sectionid);
++        }
++
++        $this->singlesection = $sectioninfo->section;
++        $this->singlesectionid = $sectionid;
++    }
++
++    /**
++     * Get if the current format instance will show multiple sections or an individual one.
++     *
++     * Some formats has the hability to swith from one section to multiple sections per page,
++     * output components will use this method to know if the current display is a single or
++     * multiple sections.
++     *
++     * @return int|null null for all sections or the sectionid.
++     */
++    public function get_sectionid(): ?int {
++        return $this->singlesectionid;
++    }
++
+     /**
+      * Set if the current format instance will show multiple sections or an individual one.
+      *
+@@ -571,6 +609,41 @@ abstract class base {
+         $this->singlesection = $singlesection;
+     }
+ 
++    /**
++     * Set the current section number to display.
++     * Some formats has the hability to swith from one section to multiple sections per page.
++     *
++     * @since Moodle 4.4
++     * @param int|null $sectionnum null for all sections or a sectionid.
++     */
++    public function set_sectionnum(?int $sectionnum): void {
++        if ($sectionnum === null) {
++            $this->singlesection = null;
++            $this->singlesectionid = null;
++            return;
++        }
++
++        $modinfo = get_fast_modinfo($this->courseid);
++        $sectioninfo = $modinfo->get_section_info($sectionnum);
++        if ($sectioninfo === null) {
++            throw new coding_exception('Invalid sectionnum: '. $sectionnum);
++        }
++
++        $this->singlesection = $sectionnum;
++        $this->singlesectionid = $sectioninfo->id;
++    }
++
++    /**
++     * Get the current section number to display.
++     * Some formats has the hability to swith from one section to multiple sections per page.
++     *
++     * @since Moodle 4.4
++     * @return int|null the current section number or null when there is no single section.
++     */
++    public function get_sectionnum(): ?int {
++        return $this->singlesection;
++    }
++
+     /**
+      * Set if the current format instance will show multiple sections or an individual one.
+      *
+@@ -773,7 +846,9 @@ abstract class base {
+             '/course/mod.php',
+             ['sesskey' => sesskey(), $nonajaxaction => $cm->id]
+         );
+-        $nonajaxurl->param('sr', $this->get_section_number());
++        if (!is_null($this->get_sectionid())) {
++            $nonajaxurl->param('sr', $this->get_section_number());
++        }
+         return $nonajaxurl;
+     }
+ 
+diff --git a/course/format/classes/output/local/content.php b/course/format/classes/output/local/content.php
+index 225f9037ff8706a1acff83869c355600905ae210..b2986ee3b059a267cd4bb5c037ae5c425ee7a30f 100644
+--- a/course/format/classes/output/local/content.php
++++ b/course/format/classes/output/local/content.php
+@@ -94,14 +94,14 @@ class content implements named_templatable, renderable {
+             'initialsection' => $initialsection,
+             'sections' => $sections,
+             'format' => $format->get_format(),
+-            'sectionreturn' => 0,
++            'sectionreturn' => null,
+         ];
+ 
+         // The single section format has extra navigation.
+-        $singlesection = $this->format->get_section_number();
+-        if ($singlesection) {
++        if ($this->format->get_sectionid()) {
++            $singlesectionnum = $this->format->get_section_number();
+             if (!$PAGE->theme->usescourseindex) {
+-                $sectionnavigation = new $this->sectionnavigationclass($format, $singlesection);
++                $sectionnavigation = new $this->sectionnavigationclass($format, $singlesectionnum);
+                 $data->sectionnavigation = $sectionnavigation->export_for_template($output);
+ 
+                 $sectionselector = new $this->sectionselectorclass($format, $sectionnavigation);
+@@ -109,7 +109,7 @@ class content implements named_templatable, renderable {
+             }
+             $data->hasnavigation = true;
+             $data->singlesection = array_shift($data->sections);
+-            $data->sectionreturn = $singlesection;
++            $data->sectionreturn = $singlesectionnum;
+         }
+ 
+         if ($this->hasaddsection) {
+@@ -181,10 +181,10 @@ class content implements named_templatable, renderable {
+      * @return section_info[] an array of section_info to display
+      */
+     private function get_sections_to_display(course_modinfo $modinfo): array {
+-        $singlesection = $this->format->get_section_number();
+-        if ($singlesection) {
++        $singlesectionid = $this->format->get_sectionid();
++        if ($singlesectionid) {
+             return [
+-                $modinfo->get_section_info($singlesection),
++                $modinfo->get_section_info_by_id($singlesectionid),
+             ];
+         }
+ 
+diff --git a/course/format/classes/output/local/content/section.php b/course/format/classes/output/local/content/section.php
+index a22de315ba8178cd8b186ca66fa95cc9be31578a..c320da8bccbeef4c1b53b18ef8fd304a61077347 100644
+--- a/course/format/classes/output/local/content/section.php
++++ b/course/format/classes/output/local/content/section.php
+@@ -148,7 +148,7 @@ class section implements named_templatable, renderable {
+             'highlightedlabel' => $format->get_section_highlighted_name(),
+             'sitehome' => $course->id == SITEID,
+             'editing' => $PAGE->user_is_editing(),
+-            'displayonesection' => ($course->id != SITEID && $format->get_section_number() !== 0),
++            'displayonesection' => ($course->id != SITEID && !is_null($format->get_sectionid())),
+         ];
+ 
+         $haspartials = [];
+diff --git a/course/format/classes/output/local/content/section/controlmenu.php b/course/format/classes/output/local/content/section/controlmenu.php
+index 7c22c048a083e6033be4f9f75d126ec4320b877e..d89060f260dcea3659b6bb7f96b9706b8da9c64a 100644
+--- a/course/format/classes/output/local/content/section/controlmenu.php
++++ b/course/format/classes/output/local/content/section/controlmenu.php
+@@ -124,7 +124,7 @@ class controlmenu implements named_templatable, renderable {
+         $format = $this->format;
+         $section = $this->section;
+         $course = $format->get_course();
+-        $sectionreturn = $format->get_section_number();
++        $sectionreturn = !is_null($format->get_sectionid()) ? $format->get_section_number() : null;
+         $user = $USER;
+ 
+         $usecomponents = $format->supports_components();
+@@ -144,15 +144,16 @@ class controlmenu implements named_templatable, renderable {
+         ];
+ 
+         if (!$isstealth && has_capability('moodle/course:update', $coursecontext, $user)) {
+-            if ($section->section > 0
+-                && get_string_manager()->string_exists('editsection', 'format_'.$format->get_format())) {
++            $params = ['id' => $section->id];
++            $params['sr'] = $section->section;
++            if (get_string_manager()->string_exists('editsection', 'format_'.$format->get_format())) {
+                 $streditsection = get_string('editsection', 'format_'.$format->get_format());
+             } else {
+                 $streditsection = get_string('editsection');
+             }
+ 
+             $controls['edit'] = [
+-                'url'   => new moodle_url('/course/editsection.php', ['id' => $section->id, 'sr' => $sectionreturn]),
++                'url'   => new moodle_url('/course/editsection.php', $params),
+                 'icon' => 'i/settings',
+                 'name' => $streditsection,
+                 'pixattr' => ['class' => ''],
+@@ -162,6 +163,9 @@ class controlmenu implements named_templatable, renderable {
+             $duplicatesectionurl = clone($baseurl);
+             $duplicatesectionurl->param('section', $section->section);
+             $duplicatesectionurl->param('duplicatesection', $section->section);
++            if (!is_null($sectionreturn)) {
++                $duplicatesectionurl->param('sr', $sectionreturn);
++            }
+             $controls['duplicate'] = [
+                 'url' => $duplicatesectionurl,
+                 'icon' => 't/copy',
+@@ -267,14 +271,17 @@ class controlmenu implements named_templatable, renderable {
+                 } else {
+                     $strdelete = get_string('deletesection');
+                 }
++                $params = [
++                    'id' => $section->id,
++                    'delete' => 1,
++                    'sesskey' => sesskey(),
++                ];
++                if (!is_null($sectionreturn)) {
++                    $params['sr'] = $sectionreturn;
++                }
+                 $url = new moodle_url(
+                     '/course/editsection.php',
+-                    [
+-                        'id' => $section->id,
+-                        'sr' => $sectionreturn,
+-                        'delete' => 1,
+-                        'sesskey' => sesskey(),
+-                    ]
++                    $params,
+                 );
+                 $controls['delete'] = [
+                     'url' => $url,
+diff --git a/course/format/classes/output/local/content/section/header.php b/course/format/classes/output/local/content/section/header.php
+index 0e2cb03eda92b7f676fe3e177068ff5ecc8bf9a2..b3009705e8b5c5db0ef2d15425b741da4dd1fa4c 100644
+--- a/course/format/classes/output/local/content/section/header.php
++++ b/course/format/classes/output/local/content/section/header.php
+@@ -82,7 +82,7 @@ class header implements named_templatable, renderable {
+             $data->title = $output->section_title_without_link($section, $course);
+             $data->sitehome = true;
+         } else {
+-            if ($format->get_section_number() === 0) {
++            if (is_null($format->get_sectionid())) {
+                 // All sections are displayed.
+                 if (!$data->editing) {
+                     $data->title = $output->section_title($section, $course);
+diff --git a/course/format/classes/output/local/content/sectionnavigation.php b/course/format/classes/output/local/content/sectionnavigation.php
+index ddf8295cf6f72be412c25b3cad88b40c058dff4b..44cec3662e6d358afece07958e0cbbd1e7f1d2ae 100644
+--- a/course/format/classes/output/local/content/sectionnavigation.php
++++ b/course/format/classes/output/local/content/sectionnavigation.php
+@@ -94,7 +94,7 @@ class sectionnavigation implements named_templatable, renderable {
+         ];
+ 
+         $back = $this->sectionno - 1;
+-        while ($back > 0 and empty($data->previousurl)) {
++        while ($back >= 0 && empty($data->previousurl)) {
+             if ($canviewhidden || $sections[$back]->uservisible) {
+                 if (!$sections[$back]->visible) {
+                     $data->previoushidden = true;
+diff --git a/course/format/templates/local/content/section/content.mustache b/course/format/templates/local/content/section/content.mustache
+index 832b1b508fd76e90ba6f73dac3ad1500bc243804..ce574c7c0b132c616e7ae22955386c7c4bfc87eb 100644
+--- a/course/format/templates/local/content/section/content.mustache
++++ b/course/format/templates/local/content/section/content.mustache
+@@ -106,19 +106,21 @@
+     {{/ core_courseformat/local/content/section/badges }}
+ </div>
+ {{#collapsemenu}}
+-<div class="flex-fill d-flex justify-content-end mr-2 align-self-start mt-2">
+-    <a
+-        id="collapsesections"
+-        class="section-collapsemenu"
+-        href="#"
+-        aria-expanded="true"
+-        role="button"
+-        data-toggle="toggleall"
+-    >
+-        <span class="collapseall text-nowrap">{{#str}}collapseall{{/str}}</span>
+-        <span class="expandall text-nowrap">{{#str}}expandall{{/str}}</span>
+-    </a>
++    {{^displayonesection}}
++    <div class="flex-fill d-flex justify-content-end mr-2 align-self-start mt-2">
++        <a
++            id="collapsesections"
++            class="section-collapsemenu"
++            href="#"
++            aria-expanded="true"
++            role="button"
++            data-toggle="toggleall"
++        >
++            <span class="collapseall text-nowrap">{{#str}}collapseall{{/str}}</span>
++            <span class="expandall text-nowrap">{{#str}}expandall{{/str}}</span>
++        </a>
+     </div>
++    {{/displayonesection}}
+ {{/collapsemenu}}
+ {{#controlmenu}}
+     {{$ core_courseformat/local/content/section/controlmenu }}
+diff --git a/course/format/topics/lib.php b/course/format/topics/lib.php
+index 096b3a2e2abe71a42f15e5fd9de61cd7b97bb10c..3595950b1cbdb70f71491741ff1e08d874319e32 100644
+--- a/course/format/topics/lib.php
++++ b/course/format/topics/lib.php
+@@ -114,7 +114,7 @@ class format_topics extends core_courseformat\base {
+      */
+     public function get_view_url($section, $options = []) {
+         $course = $this->get_course();
+-        if (array_key_exists('sr', $options)) {
++        if (array_key_exists('sr', $options) && !is_null($options['sr'])) {
+             $sectionno = $options['sr'];
+         } else if (is_object($section)) {
+             $sectionno = $section->section;
+diff --git a/course/format/weeks/lib.php b/course/format/weeks/lib.php
+index d54e0cf82ee8e33d3ca9fbbc5c7481b7c3cba958..042445c9f5a06f5845909a61b0ff5b05262b0981 100644
+--- a/course/format/weeks/lib.php
++++ b/course/format/weeks/lib.php
+@@ -124,7 +124,7 @@ class format_weeks extends core_courseformat\base {
+      */
+     public function get_view_url($section, $options = array()) {
+         $course = $this->get_course();
+-        if (array_key_exists('sr', $options)) {
++        if (array_key_exists('sr', $options) && !is_null($options['sr'])) {
+             $sectionno = $options['sr'];
+         } else if (is_object($section)) {
+             $sectionno = $section->section;
+diff --git a/course/mod.php b/course/mod.php
+index 3fc5647df946a3646b71a67f85b7da9a58d866e6..dd433c8da0da49c27e22eb837de8cc7123958070 100644
+--- a/course/mod.php
++++ b/course/mod.php
+@@ -51,7 +51,15 @@ foreach (compact('indent','update','hide','show','copy','moveto','movetosection'
+         $url->param($key, $value);
+     }
+ }
+-$url->param('sr', $sectionreturn);
++// Force it to be null if it's not a valid section number.
++if ($sectionreturn < 0) {
++    $sectionreturn = null;
++}
++$urloptions = [];
++if (!is_null($sectionreturn)) {
++    $url->param('sr', $sectionreturn);
++    $urloptions['sr'] = $sectionreturn;
++}
+ if ($add !== '') {
+     $url->param('add', $add);
+ }
+@@ -73,26 +81,42 @@ if (!empty($add)) {
+     $returntomod = optional_param('return', 0, PARAM_BOOL);
+     $beforemod   = optional_param('beforemod', 0, PARAM_INT);
+ 
++    $params = [
++        'add' => $add,
++        'type' => $type,
++        'course' => $id,
++        'section' => $section,
++        'return' => $returntomod,
++        'beforemod' => $beforemod,
++    ];
++    if (!is_null($sectionreturn)) {
++        $params['sr'] = $sectionreturn;
++    }
++
+     redirect(
+         new moodle_url(
+             '/course/modedit.php',
+-            [
+-                'add' => $add,
+-                'type' => $type,
+-                'course' => $id,
+-                'section' => $section,
+-                'return' => $returntomod,
+-                'sr' => $sectionreturn,
+-                'beforemod' => $beforemod,
+-            ]
++            $params,
+         )
+     );
+ 
+ } else if (!empty($update)) {
+     $cm = get_coursemodule_from_id('', $update, 0, true, MUST_EXIST);
+     $returntomod = optional_param('return', 0, PARAM_BOOL);
+-    redirect("$CFG->wwwroot/course/modedit.php?update=$update&return=$returntomod&sr=$sectionreturn");
+ 
++    $params = [
++        'update' => $update,
++        'return' => $returntomod,
++    ];
++    if (!is_null($sectionreturn)) {
++        $params['sr'] = $sectionreturn;
++    }
++    redirect(
++        new moodle_url(
++            '/course/modedit.php',
++            $params,
++        )
++    );
+ } else if (!empty($duplicate) and confirm_sesskey()) {
+      $cm     = get_coursemodule_from_id('', $duplicate, 0, true, MUST_EXIST);
+      $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+@@ -101,9 +125,9 @@ if (!empty($add)) {
+     $modcontext = context_module::instance($cm->id);
+     require_capability('moodle/course:manageactivities', $modcontext);
+ 
+-     // Duplicate the module.
+-     $newcm = duplicate_module($course, $cm);
+-     redirect(course_get_url($course, $cm->sectionnum, array('sr' => $sectionreturn)));
++    // Duplicate the module.
++    $newcm = duplicate_module($course, $cm);
++    redirect(course_get_url($course, $cm->sectionnum, $urloptions));
+ 
+ } else if (!empty($delete)) {
+     $cm     = get_coursemodule_from_id('', $delete, 0, true, MUST_EXIST);
+@@ -113,13 +137,19 @@ if (!empty($add)) {
+     $modcontext = context_module::instance($cm->id);
+     require_capability('moodle/course:manageactivities', $modcontext);
+ 
+-    $return = course_get_url($course, $cm->sectionnum, array('sr' => $sectionreturn));
++    $return = course_get_url($course, $cm->sectionnum, $urloptions);
+ 
+     if (!$confirm or !confirm_sesskey()) {
+         $fullmodulename = get_string('modulename', $cm->modname);
+ 
+-        $optionsyes = array('confirm'=>1, 'delete'=>$cm->id, 'sesskey'=>sesskey(), 'sr' => $sectionreturn);
+-
++        $optionsyes = [
++            'confirm' => 1,
++            'delete' => $cm->id,
++            'sesskey' => sesskey(),
++        ];
++        if (!is_null($sectionreturn)) {
++            $optionsyes['sr'] = $sectionreturn;
++        }
+         $strdeletecheck = get_string('deletecheck', '', $fullmodulename);
+         $strparams = (object)array('type' => $fullmodulename, 'name' => $cm->name);
+         $strdeletechecktypename = get_string('deletechecktypename', '', $strparams);
+@@ -183,7 +213,7 @@ if ((!empty($movetosection) or !empty($moveto)) and confirm_sesskey()) {
+     unset($USER->activitycopyname);
+     unset($USER->activitycopysectionreturn);
+ 
+-    redirect(course_get_url($course, $section->section, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $section->section, $urloptions));
+ 
+ } else if (!empty($indent) and confirm_sesskey()) {
+     $id = required_param('id', PARAM_INT);
+@@ -208,7 +238,7 @@ if ((!empty($movetosection) or !empty($moveto)) and confirm_sesskey()) {
+     // Rebuild invalidated module cache.
+     rebuild_course_cache($cm->course, false, true);
+ 
+-    redirect(course_get_url($course, $cm->sectionnum, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $cm->sectionnum, $urloptions));
+ 
+ } else if (!empty($hide) and confirm_sesskey()) {
+     $cm     = get_coursemodule_from_id('', $hide, 0, true, MUST_EXIST);
+@@ -222,7 +252,7 @@ if ((!empty($movetosection) or !empty($moveto)) and confirm_sesskey()) {
+     if (set_coursemodule_visible($cm->id, 0)) {
+         \core\event\course_module_updated::create_from_cm($cm, $modcontext)->trigger();
+     }
+-    redirect(course_get_url($course, $cm->sectionnum, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $cm->sectionnum, $urloptions));
+ 
+ } else if (!empty($stealth) and confirm_sesskey()) {
+     list($course, $cm) = get_course_and_cm_from_cmid($stealth);
+@@ -243,7 +273,7 @@ if ((!empty($movetosection) or !empty($moveto)) and confirm_sesskey()) {
+     if (set_coursemodule_visible($cm->id, 1)) {
+         \core\event\course_module_updated::create_from_cm($cm)->trigger();
+     }
+-    redirect(course_get_url($course, $section->section, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $section->section, $urloptions));
+ 
+ } else if ($groupmode > -1 and confirm_sesskey()) {
+     $id = required_param('id', PARAM_INT);
+@@ -258,7 +288,7 @@ if ((!empty($movetosection) or !empty($moveto)) and confirm_sesskey()) {
+ 
+     set_coursemodule_groupmode($cm->id, $groupmode);
+     \core\event\course_module_updated::create_from_cm($cm, $modcontext)->trigger();
+-    redirect(course_get_url($course, $cm->sectionnum, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $cm->sectionnum, $urloptions));
+ 
+ } else if (!empty($copy) and confirm_sesskey()) { // value = course module
+     $cm     = get_coursemodule_from_id('', $copy, 0, true, MUST_EXIST);
+@@ -276,7 +306,7 @@ if ((!empty($movetosection) or !empty($moveto)) and confirm_sesskey()) {
+     $USER->activitycopyname          = $cm->name;
+     $USER->activitycopysectionreturn = $sectionreturn;
+ 
+-    redirect(course_get_url($course, $section->section, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $section->section, $urloptions));
+ 
+ } else if (!empty($cancelcopy) and confirm_sesskey()) { // value = course module
+ 
+@@ -289,7 +319,7 @@ if ((!empty($movetosection) or !empty($moveto)) and confirm_sesskey()) {
+     unset($USER->activitycopycourse);
+     unset($USER->activitycopyname);
+     unset($USER->activitycopysectionreturn);
+-    redirect(course_get_url($course, $cm->sectionnum, array('sr' => $sectionreturn)));
++    redirect(course_get_url($course, $cm->sectionnum, $urloptions));
+ } else {
+     throw new \moodle_exception('unknowaction');
+ }
+diff --git a/course/modedit.php b/course/modedit.php
+index 82a4eed3e6567dc01e0001fb2f22082d7267ffd7..84c2666916b1c1f2a4799a8561c3d57cf3877b76 100644
+--- a/course/modedit.php
++++ b/course/modedit.php
+@@ -39,8 +39,15 @@ $sectionreturn = optional_param('sr', null, PARAM_INT);
+ $beforemod = optional_param('beforemod', 0, PARAM_INT);
+ $showonly = optional_param('showonly', '', PARAM_TAGLIST); // Settings group to show expanded and hide the rest.
+ 
++// Force it to be null if it's not a valid section number.
++if ($sectionreturn < 0) {
++    $sectionreturn = null;
++}
++
+ $url = new moodle_url('/course/modedit.php');
+-$url->param('sr', $sectionreturn);
++if (!is_null($sectionreturn)) {
++    $url->param('sr', $sectionreturn);
++}
+ if (!empty($return)) {
+     $url->param('return', $return);
+ }
+@@ -76,7 +83,9 @@ if (!empty($add)) {
+ 
+     list($module, $context, $cw, $cm, $data) = prepare_new_moduleinfo_data($course, $add, $section);
+     $data->return = 0;
+-    $data->sr = $sectionreturn;
++    if (!is_null($sectionreturn)) {
++        $data->sr = $sectionreturn;
++    }
+     $data->add = $add;
+     $data->beforemod = $beforemod;
+     if (!empty($type)) { //TODO: hopefully will be removed in 2.0
+@@ -115,7 +124,9 @@ if (!empty($add)) {
+ 
+     list($cm, $context, $module, $data, $cw) = get_moduleinfo_data($cm, $course);
+     $data->return = $return;
+-    $data->sr = $sectionreturn;
++    if (!is_null($sectionreturn)) {
++        $data->sr = $sectionreturn;
++    }
+     $data->update = $update;
+     if (!empty($showonly)) {
+         $data->showonly = $showonly;
+@@ -173,7 +184,11 @@ if ($mform->is_cancelled()) {
+         $activityurl = new moodle_url("/mod/$module->name/view.php", $urlparams);
+         redirect($activityurl);
+     } else {
+-        redirect(course_get_url($course, $cw->section, array('sr' => $sectionreturn)));
++        $options = [];
++        if (!is_null($sectionreturn)) {
++            $options['sr'] = $sectionreturn;
++        }
++        redirect(course_get_url($course, $cw->section, $options));
+     }
+ } else if ($fromform = $mform->get_data()) {
+     // Mark that this is happening in the front-end UI. This is used to indicate that we are able to
+@@ -193,7 +208,11 @@ if ($mform->is_cancelled()) {
+             $url = $fromform->gradingman->get_management_url($url);
+         }
+     } else {
+-        $url = course_get_url($course, $cw->section, array('sr' => $sectionreturn));
++        $options = [];
++        if (!is_null($sectionreturn)) {
++            $options['sr'] = $sectionreturn;
++        }
++        $url = course_get_url($course, $cw->section, $options);
+     }
+ 
+     // If we need to regrade the course with a progress bar as a result of updating this module,
+diff --git a/course/moodleform_mod.php b/course/moodleform_mod.php
+index 5924ff6bf45d2bcd4c4e727c83e823222a5bbcb1..bb7483809f5ca9fbc1934ba580356e10c58e6147 100644
+--- a/course/moodleform_mod.php
++++ b/course/moodleform_mod.php
+@@ -868,7 +868,9 @@ abstract class moodleform_mod extends moodleform {
+         $mform->addElement('hidden', 'return', 0);
+         $mform->setType('return', PARAM_BOOL);
+ 
+-        $mform->addElement('hidden', 'sr', 0);
++        // The section number where to return: -1 means no section (0 can't be used because it is a valid section number and
++        // null can't be used because it's converted to 0).
++        $mform->addElement('hidden', 'sr', -1);
+         $mform->setType('sr', PARAM_INT);
+ 
+         $mform->addElement('hidden', 'beforemod', 0);
+diff --git a/course/section.php b/course/section.php
+index 01e1aba09ea7218c4f4125473ae19b10a9866ba2..f6b8ab5e3fe801256fa3a702f1ddfffe4cfc0e8c 100644
+--- a/course/section.php
++++ b/course/section.php
+@@ -168,7 +168,7 @@ echo $renderer->container_start('course-content');
+ // Include course AJAX.
+ include_course_ajax($course, $modinfo->get_used_module_names());
+ 
+-$format->set_section_number($section->section);
++$format->set_sectionid($section->id);
+ $outputclass = $format->get_output_classname('content');
+ $widget = new $outputclass($format);
+ echo $renderer->render($widget);
+diff --git a/course/templates/activitychooserbutton.mustache b/course/templates/activitychooserbutton.mustache
+index 91615f7065fcb2e07f90951c3db85d5ca871752a..9ebe9b7d0c2d63ffb39b29ee0e574f357ecfad2f 100644
+--- a/course/templates/activitychooserbutton.mustache
++++ b/course/templates/activitychooserbutton.mustache
+@@ -30,7 +30,9 @@
+     }
+ }}
+ <button class="btn btn-link text-decoration-none section-modchooser section-modchooser-link activity-add bulk-hidden d-flex align-items-center p-3 mb-5"
+-     data-action="open-chooser" data-sectionid="{{sectionid}}" data-sectionreturnid="{{sectionreturn}}">
++     data-action="open-chooser"
++     data-sectionid="{{sectionid}}"
++     {{#sectionreturn}}data-sectionreturnid="{{.}}"{{/sectionreturn}}>
+     <span class="pluscontainer icon-no-margin icon-size-3 d-flex p-2 mr-2">
+         {{#pix}} t/add, core {{/pix}}
+     </span>
+diff --git a/course/templates/activitychooserbuttonactivity.mustache b/course/templates/activitychooserbuttonactivity.mustache
+index 3ea6aa8ec4acfb851c84b5f2394ff41227332f7f..773e665730700e491a235dd3b2fbf4ee7d95e351 100644
+--- a/course/templates/activitychooserbuttonactivity.mustache
++++ b/course/templates/activitychooserbuttonactivity.mustache
+@@ -32,6 +32,11 @@
+     }
+ }}
+ <button class="btn btn-link text-decoration-none section-modchooser section-modchooser-link activity-add d-flex align-items-center activitychooser-button"
+-     data-action="open-chooser" data-sectionid="{{num}}" data-sectionreturnid="{{sectionreturn}}" data-beforemod="{{id}}" aria-label="{{#str}}insertresourceoractivitybefore, core, { "activityname": {{#quote}} {{activityname}} {{/quote}} } {{/str}}" tabindex="0">
++     data-action="open-chooser"
++     data-sectionid="{{num}}"
++     {{#sectionreturn}}data-sectionreturnid="{{.}}"{{/sectionreturn}}
++     data-beforemod="{{id}}"
++     aria-label="{{#str}}insertresourceoractivitybefore, core, { "activityname": {{#quote}} {{activityname}} {{/quote}} } {{/str}}"
++     tabindex="0">
+      {{#pix}} t/add, core {{/pix}}
+ </button>
+diff --git a/course/view.php b/course/view.php
+index d9f1497c41725318bd59bf7150536b06ce2bc952..cd3aa8ee9bb81ffc32284ab317ca8fa9083fe921 100644
+--- a/course/view.php
++++ b/course/view.php
+@@ -36,7 +36,7 @@ $show = optional_param('show', 0, PARAM_INT);
+ $duplicatesection = optional_param('duplicatesection', 0, PARAM_INT);
+ $idnumber = optional_param('idnumber', '', PARAM_RAW);
+ $sectionid = optional_param('sectionid', 0, PARAM_INT);
+-$section = optional_param('section', 0, PARAM_INT);
++$section = optional_param('section', null, PARAM_INT);
+ $expandsection = optional_param('expandsection', -1, PARAM_INT);
+ $move = optional_param('move', 0, PARAM_INT);
+ $marker = optional_param('marker', -1 , PARAM_INT);
+@@ -62,7 +62,7 @@ $urlparams = ['id' => $course->id];
+ if ($sectionid) {
+     $section = $DB->get_field('course_sections', 'section', ['id' => $sectionid, 'course' => $course->id], MUST_EXIST);
+ }
+-if ($section) {
++if (!is_null($section)) {
+     $urlparams['section'] = $section;
+ }
+ if ($expandsection !== -1) {
+diff --git a/mod/lti/locallib.php b/mod/lti/locallib.php
+index d17f7111042480d0441960b148ee2fdb1881d46c..d627374ff8360805441eed76b1998a36f4e06e8c 100644
+--- a/mod/lti/locallib.php
++++ b/mod/lti/locallib.php
+@@ -2379,8 +2379,16 @@ function lti_get_configured_types($courseid, $sectionreturn = 0) {
+         }
+         $type->icon = html_writer::empty_tag('img', ['src' => $iconurl, 'alt' => '', 'class' => "icon $iconclass"]);
+ 
+-        $type->link = new moodle_url('/course/modedit.php', array('add' => 'lti', 'return' => 0, 'course' => $courseid,
+-            'sr' => $sectionreturn, 'typeid' => $ltitype->id));
++        $params = [
++            'add' => 'lti',
++            'return' => 0,
++            'course' => $courseid,
++            'typeid' => $ltitype->id,
++        ];
++        if (!is_null($sectionreturn)) {
++            $params['sr'] = $sectionreturn;
++        }
++        $type->link = new moodle_url('/course/modedit.php', $params);
+         $types[] = $type;
+     }
+     return $types;

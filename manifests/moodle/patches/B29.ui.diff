@@ -1,0 +1,275 @@
+diff --git a/blocks/navigation/amd/src/ajax_response_renderer.js b/blocks/navigation/amd/src/ajax_response_renderer.js
+index e92ed463beed0b7a0a6967b2de6f00c6cb36152f..8b6fc4672e9cafc4ca2f96438d4d07b94e4d8d62 100644
+--- a/blocks/navigation/amd/src/ajax_response_renderer.js
++++ b/blocks/navigation/amd/src/ajax_response_renderer.js
+@@ -68,22 +68,22 @@ define([
+             var icon = null;
+             var isBranch = (node.expandable || node.haschildren) ? true : false;
+ 
++            li.attr('role', 'treeitem');
+             p.addClass('tree_item');
+             p.attr('id', id);
+-            p.attr('role', 'treeitem');
+             // Negative tab index to allow it to receive focus.
+             p.attr('tabindex', '-1');
+ 
+             if (node.requiresajaxloading) {
+-                p.attr('data-requires-ajax', true);
+-                p.attr('data-node-id', node.id);
+-                p.attr('data-node-key', node.key);
+-                p.attr('data-node-type', node.type);
++                li.attr('data-requires-ajax', true);
++                li.attr('data-node-id', node.id);
++                li.attr('data-node-key', node.key);
++                li.attr('data-node-type', node.type);
+             }
+ 
+             if (isBranch) {
+                 li.addClass('collapsed contains_branch');
+-                p.attr('aria-expanded', false);
++                li.attr('aria-expanded', false);
+                 p.addClass('branch');
+             }
+ 
+@@ -141,14 +141,14 @@ define([
+             ul.append(li);
+ 
+             if (node.children && node.children.length) {
+-                buildDOM(p, node.children);
++                buildDOM(li, node.children);
+             } else if (isBranch && !node.requiresajaxloading) {
+                 li.removeClass('contains_branch');
+                 p.addClass('emptybranch');
+             }
+         });
+ 
+-        rootElement.parent().append(ul);
++        rootElement.append(ul);
+         var id = rootElement.attr('id') + '_group';
+         ul.attr('id', id);
+         rootElement.attr('aria-owns', id);
+@@ -167,8 +167,8 @@ define([
+                 item.attr('aria-expanded', true);
+                 Aria.unhide(group);
+             } else {
+-                if (element.parent().hasClass('contains_branch')) {
+-                    element.parent().removeClass('contains_branch');
++                if (element.hasClass('contains_branch')) {
++                    element.removeClass('contains_branch');
+                     element.addClass('emptybranch');
+                 }
+             }
+diff --git a/blocks/navigation/renderer.php b/blocks/navigation/renderer.php
+index c64e55d4d84d39f7c68aeb765ede5485f99ddf55..4583a12722aa56f274a3482637c5f4077303abc2 100644
+--- a/blocks/navigation/renderer.php
++++ b/blocks/navigation/renderer.php
+@@ -73,6 +73,7 @@ class block_navigation_renderer extends plugin_renderer_base {
+         $lis = array();
+         // Set the number to be static for unique id's.
+         static $number = 0;
++        $htmlidprefix = html_writer::random_id();
+         foreach ($items as $item) {
+             $number++;
+             if (!$item->display && !$item->contains_active_node()) {
+@@ -90,8 +91,8 @@ class block_navigation_renderer extends plugin_renderer_base {
+             $content = $item->get_content();
+             $title = $item->get_title();
+             $ulattr = ['id' => $id . '_group', 'role' => 'group'];
+-            $liattr = ['class' => [$item->get_css_type(), 'depth_'.$depth]];
+-            $pattr = ['class' => ['tree_item'], 'role' => 'treeitem'];
++            $liattr = ['class' => [$item->get_css_type(), 'depth_'.$depth], 'role' => 'treeitem'];
++            $pattr = ['class' => ['tree_item']];
+             $pattr += !empty($item->id) ? ['id' => $item->id] : [];
+             $isbranch = $isexpandable && ($item->children->count() > 0 || ($item->has_children() && (isloggedin() || $item->type <= navigation_node::TYPE_CATEGORY)));
+             $hasicon = ((!$isbranch || $item->type == navigation_node::TYPE_ACTIVITY || $item->type == navigation_node::TYPE_RESOURCE) && $item->icon instanceof renderable);
+@@ -112,7 +113,7 @@ class block_navigation_renderer extends plugin_renderer_base {
+                 continue;
+             }
+ 
+-            $nodetextid = 'label_' . $depth . '_' . $number;
++            $nodetextid = $htmlidprefix . '_label_' . $depth . '_' . $number;
+             $attributes = array('tabindex' => '-1', 'id' => $nodetextid);
+             if ($title !== '') {
+                 $attributes['title'] = $title;
+@@ -135,11 +136,12 @@ class block_navigation_renderer extends plugin_renderer_base {
+             }
+ 
+             if ($isbranch) {
++                $ariaexpanded = $item->has_children() && (!$item->forceopen || $item->collapse);
+                 $pattr['class'][] = 'branch';
+                 $liattr['class'][] = 'contains_branch';
+-                $pattr += ['aria-expanded' => ($item->has_children() && (!$item->forceopen || $item->collapse)) ? "false" : "true"];
++                $liattr += ['aria-expanded' => $ariaexpanded ? "false" : "true"];
+                 if ($item->requiresajaxloading) {
+-                    $pattr += [
++                    $liattr += [
+                         'data-requires-ajax' => 'true',
+                         'data-loaded' => 'false',
+                         'data-node-id' => $item->id,
+@@ -147,7 +149,7 @@ class block_navigation_renderer extends plugin_renderer_base {
+                         'data-node-type' => $item->type
+                     ];
+                 } else {
+-                    $pattr += ['aria-owns' => $id . '_group'];
++                    $liattr += ['aria-owns' => $id . '_group'];
+                 }
+             }
+ 
+@@ -161,8 +163,8 @@ class block_navigation_renderer extends plugin_renderer_base {
+             $liattr['class'] = join(' ', $liattr['class']);
+             $pattr['class'] = join(' ', $pattr['class']);
+ 
+-            $pattr += $depth == 1 ? ['data-collapsible' => 'false'] : [];
+-            if (isset($pattr['aria-expanded']) && $pattr['aria-expanded'] === 'false') {
++            $liattr += $depth == 1 ? ['data-collapsible' => 'false'] : [];
++            if (isset($liattr['aria-expanded']) && $liattr['aria-expanded'] === 'false') {
+                 $ulattr += ['aria-hidden' => 'true'];
+             }
+ 
+diff --git a/blocks/navigation/styles.css b/blocks/navigation/styles.css
+index 2369c1af0d6a77958f57b8d02448b3bbc4f373dd..0411381acca7e4828358ba6bf857d009cbf4786e 100644
+--- a/blocks/navigation/styles.css
++++ b/blocks/navigation/styles.css
+@@ -57,7 +57,7 @@
+     background-image: url('[[pix:t/collapsed_empty]]');
+ }
+ 
+-.block_navigation .block_tree [aria-expanded="false"].loading {
++.block_navigation .block_tree [aria-expanded="false"] p.loading {
+     background-image: url('[[pix:i/loading_small]]');
+ }
+ 
+diff --git a/blocks/settings/renderer.php b/blocks/settings/renderer.php
+index 3e928483a8d1b1f135f3d391b20a282f7e6c2dc3..1b73ad9b5512fd3ca726a3a317e28e069cc91e50 100644
+--- a/blocks/settings/renderer.php
++++ b/blocks/settings/renderer.php
+@@ -77,8 +77,8 @@ class block_settings_renderer extends plugin_renderer_base {
+             $content = $this->output->render($item);
+             $id = $item->id ? $item->id : html_writer::random_id();
+             $ulattr = ['id' => $id . '_group', 'role' => 'group'];
+-            $liattr = ['class' => [$item->get_css_type(), 'depth_'.$depth], 'tabindex' => '-1'];
+-            $pattr = ['class' => ['tree_item'], 'role' => 'treeitem'];
++            $liattr = ['class' => [$item->get_css_type(), 'depth_'.$depth], 'tabindex' => '-1', 'role' => 'treeitem'];
++            $pattr = ['class' => ['tree_item']];
+             $pattr += !empty($item->id) ? ['id' => $item->id] : [];
+             $hasicon = (!$isbranch && $item->icon instanceof renderable);
+ 
+@@ -86,15 +86,15 @@ class block_settings_renderer extends plugin_renderer_base {
+                 $liattr['class'][] = 'contains_branch';
+                 if (!$item->forceopen || (!$item->forceopen && $item->collapse) || ($item->children->count() == 0
+                         && $item->nodetype == navigation_node::NODETYPE_BRANCH)) {
+-                    $pattr += ['aria-expanded' => 'false'];
++                    $liattr += ['aria-expanded' => 'false'];
+                 } else {
+-                    $pattr += ['aria-expanded' => 'true'];
++                    $liattr += ['aria-expanded' => 'true'];
+                 }
+                 if ($item->requiresajaxloading) {
+-                    $pattr['data-requires-ajax'] = 'true';
+-                    $pattr['data-loaded'] = 'false';
++                    $liattr['data-requires-ajax'] = 'true';
++                    $liattr['data-loaded'] = 'false';
+                 } else {
+-                    $pattr += ['aria-owns' => $id . '_group'];
++                    $liattr += ['aria-owns' => $id . '_group'];
+                 }
+             } else if ($hasicon) {
+                 $liattr['class'][] = 'item_with_icon';
+@@ -106,7 +106,6 @@ class block_settings_renderer extends plugin_renderer_base {
+             if (!empty($item->classes) && count($item->classes) > 0) {
+                 $pattr['class'] = array_merge($pattr['class'], $item->classes);
+             }
+-            $nodetextid = 'label_' . $depth . '_' . $number;
+ 
+             // class attribute on the div item which only contains the item content
+             $pattr['class'][] = 'tree_item';
+@@ -119,7 +118,7 @@ class block_settings_renderer extends plugin_renderer_base {
+             $liattr['class'] = join(' ', $liattr['class']);
+             $pattr['class'] = join(' ', $pattr['class']);
+ 
+-            if (isset($pattr['aria-expanded']) && $pattr['aria-expanded'] === 'false') {
++            if (isset($liattr['aria-expanded']) && $liattr['aria-expanded'] === 'false') {
+                 $ulattr += ['aria-hidden' => 'true'];
+             }
+ 
+@@ -127,7 +126,6 @@ class block_settings_renderer extends plugin_renderer_base {
+             if (!empty($item->preceedwithhr) && $item->preceedwithhr===true) {
+                 $content = html_writer::empty_tag('hr') . $content;
+             }
+-            $liattr['aria-labelledby'] = $nodetextid;
+             $content = html_writer::tag('li', $content, $liattr);
+             $lis[] = $content;
+         }
+diff --git a/blocks/settings/styles.css b/blocks/settings/styles.css
+index 63c032dd13d170461ec024c6aa9dbd8809417e02..3c9fa588b0af6d33a373dbbb83e09d0a24534e17 100644
+--- a/blocks/settings/styles.css
++++ b/blocks/settings/styles.css
+@@ -46,7 +46,7 @@
+     background-image: url('[[pix:t/collapsed_empty]]');
+ }
+ 
+-.block_settings .block_tree [aria-expanded="false"].loading {
++.block_settings .block_tree [aria-expanded="false"] p.loading {
+     background-image: url('[[pix:i/loading_small]]');
+ }
+ /*rtl:raw:
+diff --git a/lib/amd/src/tree.js b/lib/amd/src/tree.js
+index 167e7bb91ad4d5c4a8e298827d58b3ae3e31863d..481ae1902662d89339acd77224f05920788c5285 100644
+--- a/lib/amd/src/tree.js
++++ b/lib/amd/src/tree.js
+@@ -269,7 +269,8 @@ define(['jquery'], function($) {
+                 var moduleName = item.closest('[data-ajax-loader]').attr('data-ajax-loader');
+                 var thisTree = this;
+                 // Flag this node as loading.
+-                item.addClass('loading');
++                const p = item.find('p');
++                p.addClass('loading');
+                 // Require the ajax module (must be AMD) and try to load the items.
+                 require([moduleName], function(loader) {
+                     // All ajax module must implement a "load" method.
+@@ -280,7 +281,7 @@ define(['jquery'], function($) {
+                         thisTree.initialiseNodes(item);
+                         thisTree.finishExpandingGroup(item);
+                         // Make sure no child elements of the item we just loaded are tabbable.
+-                        item.removeClass('loading');
++                        p.removeClass('loading');
+                         promise.resolve();
+                     });
+                 });
+diff --git a/theme/boost/scss/moodle/blocks.scss b/theme/boost/scss/moodle/blocks.scss
+index 95ac0b7fbe1e9a07d1bbd741899d23b6e38c5fca..6ca04b535646d681f9084feae75f2d95d0b780ce 100644
+--- a/theme/boost/scss/moodle/blocks.scss
++++ b/theme/boost/scss/moodle/blocks.scss
+@@ -322,8 +322,8 @@ body.drawer-open-left #region-main.has-blocks {
+ .block_navigation .block_tree [aria-expanded="false"] {
+     background-image: none;
+ }
+-.block_settings .block_tree [aria-expanded="true"]:before,
+-.block_navigation .block_tree [aria-expanded="true"]:before {
++.block_settings .block_tree [aria-expanded="true"] > p:before,
++.block_navigation .block_tree [aria-expanded="true"] > p:before {
+     content: $fa-var-angle-down;
+     margin-right: 0;
+     @include fa-icon();
+@@ -331,8 +331,8 @@ body.drawer-open-left #region-main.has-blocks {
+     width: 16px;
+ }
+ 
+-.block_settings .block_tree [aria-expanded="false"]:before,
+-.block_navigation .block_tree [aria-expanded="false"]:before {
++.block_settings .block_tree [aria-expanded="false"] > p:before,
++.block_navigation .block_tree [aria-expanded="false"] > p:before {
+     content: $fa-var-angle-right;
+     margin-right: 0;
+     @include fa-icon();
+@@ -340,8 +340,8 @@ body.drawer-open-left #region-main.has-blocks {
+     width: 16px;
+ }
+ .dir-rtl {
+-    .block_settings .block_tree [aria-expanded="false"]:before,
+-    .block_navigation .block_tree [aria-expanded="false"]:before {
++    .block_settings .block_tree [aria-expanded="false"] > p:before,
++    .block_navigation .block_tree [aria-expanded="false"] > p:before {
+         content: $fa-var-angle-left;
+     }
+ }

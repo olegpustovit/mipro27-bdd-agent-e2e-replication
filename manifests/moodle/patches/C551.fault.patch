@@ -1,0 +1,25 @@
+diff --git a/public/question/classes/local/bank/view.php b/public/question/classes/local/bank/view.php
+index 3d38497acabe71988e3dd2b7757a5119d8270faf..1ae66bf0fcc819de60543c79a60d262cd42af55a 100644
+--- a/public/question/classes/local/bank/view.php
++++ b/public/question/classes/local/bank/view.php
+@@ -267,9 +267,6 @@ class view {
+         $this->init_question_actions();
+         $this->init_sort();
+         $this->init_bulk_actions();
+-
+-        // Record that this question bank has been used.
+-        question_bank_helper::add_bank_context_to_recently_viewed($contexts->lowest());
+     }
+ 
+     /**
+diff --git a/public/question/edit.php b/public/question/edit.php
+index 349cd720f9a1dcad85020373f88803d015bd2150..124e947d54c8aca3d8d697b7c37ae0cba63d3400 100644
+--- a/public/question/edit.php
++++ b/public/question/edit.php
+@@ -100,5 +100,6 @@ $category->id = $categoryid;
+ $catcontext = context::instance_by_id($contextid);
+ $event = question_category_viewed::create_from_question_category_instance($category, $catcontext);
+ $event->trigger();
++\core_question\local\bank\question_bank_helper::add_bank_context_to_recently_viewed($catcontext);
+ 
+ echo $OUTPUT->footer();

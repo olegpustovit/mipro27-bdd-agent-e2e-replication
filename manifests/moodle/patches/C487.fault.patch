@@ -1,0 +1,26 @@
+diff --git a/public/mod/quiz/classes/output/edit_renderer.php b/public/mod/quiz/classes/output/edit_renderer.php
+index 643abd89f478fcbf0b9d2d74839f27ca632b51f7..4d83860aaac63466c5e6367fcb58b3fd0d860d1f 100644
+--- a/public/mod/quiz/classes/output/edit_renderer.php
++++ b/public/mod/quiz/classes/output/edit_renderer.php
+@@ -1172,10 +1172,19 @@ class edit_renderer extends \plugin_renderer_base {
+ 
+         $editicon = $this->pix_icon('t/edit', $configuretitle, 'moodle', ['title' => '']);
+         $qbankurlparams = [
+-            'cmid' => $structure->get_source_bank($slotnumber)->cminfo->id,
+-            'filter' => json_encode($slot->filtercondition['filter']),
++            'cmid' => $structure->get_cmid(),
++            'cat' => $slot->category . ',' . $slot->contextid,
+         ];
+ 
++        $slottags = [];
++        if (isset($slot->randomtags)) {
++            $slottags = $slot->randomtags;
++        }
++        foreach ($slottags as $index => $slottag) {
++            $slottag = explode(',', $slottag);
++            $qbankurlparams["qtagids[{$index}]"] = $slottag[0];
++        }
++
+         // If this is a random question, display a link to show the questions
+         // selected from in the question bank.
+         $qbankurl = new \moodle_url('/question/edit.php', $qbankurlparams);

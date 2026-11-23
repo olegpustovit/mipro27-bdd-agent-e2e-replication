@@ -1,0 +1,168 @@
+diff --git a/public/backup/moodle2/restore_root_task.class.php b/public/backup/moodle2/restore_root_task.class.php
+index 132a710ae86b72f56a98288099e21ee102da33e3..b3c31cf246bd3796f088f729a7cab5341bb966f0 100644
+--- a/public/backup/moodle2/restore_root_task.class.php
++++ b/public/backup/moodle2/restore_root_task.class.php
+@@ -78,9 +78,6 @@ class restore_root_task extends restore_task {
+         // Unconditionally, load create all the needed outcomes
+         $this->add_step(new restore_outcomes_structure_step('create_scales', 'outcomes.xml'));
+ 
+-        // If we haven't preloaded information, load all the question banks to temp_ids_table.
+-        $this->add_step(new \core\backup\restore_load_questionbanks('load_questionbanks'));
+-
+         // If we haven't preloaded information, load all the needed categories and questions (reduced) to temp_ids_table
+         $this->add_step(new restore_load_categories_and_questions('load_categories_and_questions'));
+ 
+diff --git a/public/backup/moodle2/restore_stepslib.php b/public/backup/moodle2/restore_stepslib.php
+index dbd58f6080b2fa316ed3872a46186282a49b118f..d4eb0e170a5265b09e74fe59a4a90248430d05fe 100644
+--- a/public/backup/moodle2/restore_stepslib.php
++++ b/public/backup/moodle2/restore_stepslib.php
+@@ -6652,12 +6652,6 @@ trait restore_question_set_reference_data_trait {
+         $data->usingcontextid = $this->get_mappingid('context', $data->usingcontextid);
+         $data->itemid = $this->get_new_parentid('quiz_question_instance');
+ 
+-        $originalbankinbackup = (bool) restore_dbops::get_backup_ids_record(
+-            $this->get_restoreid(),
+-            'questionbank',
+-            $data->questionscontextid,
+-        );
+-
+         if ($context = $this->get_mappingid('context', $data->questionscontextid)) {
+             $data->questionscontextid = $context;
+         } else {
+@@ -6686,7 +6680,7 @@ trait restore_question_set_reference_data_trait {
+             $qbankfeature = new $qbankfeatureclass();
+             $filters = $qbankfeature->get_question_filters();
+             foreach ($filters as $filter) {
+-                $filtercondition = $filter->restore_filtercondition($filtercondition, $data, $this, $originalbankinbackup);
++                $filtercondition = $filter->restore_filtercondition($filtercondition, $data, $this);
+             }
+         }
+ 
+diff --git a/public/lib/classes/backup/restore_load_questionbanks.php b/public/lib/classes/backup/restore_load_questionbanks.php
+deleted file mode 100644
+index fc069e6d96a614e54e7b01b7b7a3074b0da1dec4..0000000000000000000000000000000000000000
+--- a/public/lib/classes/backup/restore_load_questionbanks.php
++++ /dev/null
+@@ -1,48 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace core\backup;
+-
+-defined('MOODLE_INTERNAL') || die();
+-require_once($CFG->dirroot . '/backup/util/plan/restore_execution_step.class.php');
+-
+-/**
+- * Load question bank context IDs.
+- *
+- * Execution step that, *conditionally* (if there isn't preloaded information)
+- * will load the context IDs of activities in the backup containing questions
+- * to backup_temp_ids. They will be stored with "questionbank" itemname and their
+- * original context ID as itemid.
+- *
+- * @package   core
+- * @copyright 2026 onwards Catalyst IT EU {@link https://catalyst-eu.net}
+- * @author    Mark Johnson <mark.johnson@catalyst-eu.net>
+- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-class restore_load_questionbanks extends \restore_execution_step {
+-    /**
+-     * If restore data has not already been loaded in this request, load the question bank context IDs.
+-     */
+-    protected function define_execution(): void {
+-        global $CFG;
+-        require_once($CFG->dirroot . '/backup/util/dbops/restore_dbops.class.php');
+-        if ($this->task->get_preloaded_information()) { // If info is already preloaded, nothing to do.
+-            return;
+-        }
+-        $path = $this->get_basepath() . '/activities';
+-        \restore_dbops::load_questionbanks_to_tempids($this->get_restoreid(), $path);
+-    }
+-}
+diff --git a/public/question/bank/managecategories/classes/category_condition.php b/public/question/bank/managecategories/classes/category_condition.php
+index c3817bf910920383a6e6f7952fca03327cae8ab4..c953e4fb98f16da7438c6eaf0c6a164704f06d0f 100644
+--- a/public/question/bank/managecategories/classes/category_condition.php
++++ b/public/question/bank/managecategories/classes/category_condition.php
+@@ -20,7 +20,6 @@ use core\context;
+ use core\output\datafilter;
+ use core_question\local\bank\condition;
+ use core_question\local\bank\view;
+-use restore_dbops;
+ use restore_questions_activity_structure_step;
+ use stdClass;
+ 
+@@ -264,7 +263,6 @@ class category_condition extends condition {
+         array $filtercondition,
+         stdClass $setreference,
+         restore_questions_activity_structure_step $restorestep,
+-        bool $originalbankinbackup = false,
+     ): array {
+         global $DB;
+         // Map category id used for category filter condition and corresponding context id.
+@@ -272,7 +270,6 @@ class category_condition extends condition {
+         // Decide if we're going to refer back to the original category, or to the new category.
+         // Are we restoring to a different site?
+         // Has the original context or category been deleted?
+-        // Was a copy of the original context created during this restore?
+         // Did the old category belong to the same context as the original set reference?
+         // Are we allowed to use its questions?
+         $questionscontext = context::instance_by_id($setreference->questionscontextid, IGNORE_MISSING);
+@@ -280,12 +277,13 @@ class category_condition extends condition {
+             !$restorestep->get_task()->is_samesite()
+             || !$questionscontext
+             || !$DB->record_exists('question_categories', ['id' => $oldcategoryid])
+-            || $originalbankinbackup
+             || $setreference->usingcontextid == $setreference->questionscontextid
+             || !has_capability('moodle/question:useall', $questionscontext)
+         ) {
+             $newcategoryid = $restorestep->get_mappingid('question_category', $oldcategoryid);
+             $filtercondition['filter']['category']['values'][0] = $newcategoryid;
++            // Make sure the questions context matches the new category.
++            $setreference->questionscontextid = $DB->get_field('question_categories', 'contextid', ['id' => $newcategoryid]);
+         }
+ 
+         $filtercondition['cat'] = implode(
+diff --git a/public/question/bank/tagquestion/classes/tag_condition.php b/public/question/bank/tagquestion/classes/tag_condition.php
+index b6360fce4056bfd74bcc66685df476a271b0e8c6..02c6a3f3c9c789f9ed27156983d98c60c9b9c631 100644
+--- a/public/question/bank/tagquestion/classes/tag_condition.php
++++ b/public/question/bank/tagquestion/classes/tag_condition.php
+@@ -167,7 +167,6 @@ class tag_condition extends condition {
+         array $filtercondition,
+         stdClass $setreference,
+         restore_questions_activity_structure_step $restorestep,
+-        bool $originalbankinbackup = false,
+     ): array {
+         if (isset($filtercondition['filter']['qtagids'])) {
+             $newtagids = [];
+diff --git a/public/question/classes/local/bank/condition.php b/public/question/classes/local/bank/condition.php
+index 92c6dcc22933d6ce7edefca9880ddde1d4d236b9..8897881d7bc7aa963e4a18ebfb32c1680b84eec6 100644
+--- a/public/question/classes/local/bank/condition.php
++++ b/public/question/classes/local/bank/condition.php
+@@ -249,14 +249,12 @@ abstract class condition {
+      * @param array $filtercondition The origin $filtercondition with preceding conversions applied.
+      * @param stdClass $setreference The set reference record from the backup.
+      * @param restore_questions_activity_structure_step $restorestep The restore step.
+-     * @param bool $originalbankinbackup Was the original question bank these questions belonged to included in the backup?
+      * @return array the modified $filtercondition
+      */
+     public function restore_filtercondition(
+         array $filtercondition,
+         stdClass $setreference,
+         restore_questions_activity_structure_step $restorestep,
+-        bool $originalbankinbackup = false,
+     ): array {
+         return $filtercondition;
+     }

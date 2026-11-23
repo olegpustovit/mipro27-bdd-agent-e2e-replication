@@ -1,0 +1,44 @@
+diff --git a/public/question/bank/editquestion/classes/editquestion_helper.php b/public/question/bank/editquestion/classes/editquestion_helper.php
+index c88c27dd6b93c38dd557fc2acff19951c19fd15e..6eb1b25e9013b2b70d20dbbf6ae95c26fb001c0e 100644
+--- a/public/question/bank/editquestion/classes/editquestion_helper.php
++++ b/public/question/bank/editquestion/classes/editquestion_helper.php
+@@ -92,16 +92,12 @@ class editquestion_helper {
+     /**
+      * Get the array of status of the questions.
+      *
+-     * @param bool $includehidden Include QUESTION_STATUS_HIDDEN in the returned list?
+      * @return array
+      */
+-    public static function get_question_status_list(bool $includehidden = false): array {
++    public static function get_question_status_list(): array {
+         $statuslist = [];
+         $statuslist[question_version_status::QUESTION_STATUS_READY] = get_string('questionstatusready', 'qbank_editquestion');
+         $statuslist[question_version_status::QUESTION_STATUS_DRAFT] = get_string('questionstatusdraft', 'qbank_editquestion');
+-        if ($includehidden) {
+-            $statuslist[question_version_status::QUESTION_STATUS_HIDDEN] = get_string('questionstatushidden', 'qbank_editquestion');
+-        }
+         return $statuslist;
+     }
+ 
+diff --git a/public/question/bank/editquestion/classes/question_status_column.php b/public/question/bank/editquestion/classes/question_status_column.php
+index 33793f5e2df90f9086159850508e2249a5f87d43..7b6b6b822c6b3e2b11d5e7f04ec912ef75d2b4e3 100644
+--- a/public/question/bank/editquestion/classes/question_status_column.php
++++ b/public/question/bank/editquestion/classes/question_status_column.php
+@@ -39,6 +39,7 @@ class question_status_column extends column_base {
+ 
+     protected function display_content($question, $rowclasses): void {
+         global $PAGE;
++        $attributes = [];
+         if (question_has_capability_on($question, 'edit')
+             && $question->status !== question_version_status::QUESTION_STATUS_HIDDEN) {
+             $options = [];
+@@ -53,9 +54,6 @@ class question_status_column extends column_base {
+             }
+             echo $PAGE->get_renderer('qbank_editquestion')->render_status_dropdown($options);
+             $PAGE->requires->js_call_amd('qbank_editquestion/question_status', 'init', [$question->id]);
+-        } else {
+-            $statuslist = editquestion_helper::get_question_status_list(true);
+-            echo $statuslist[$question->status];
+         }
+     }
+ 

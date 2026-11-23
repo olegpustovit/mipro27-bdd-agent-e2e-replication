@@ -1,0 +1,27 @@
+diff --git a/public/message/amd/src/message_drawer_view_overview_section.js b/public/message/amd/src/message_drawer_view_overview_section.js
+index 982dbc007b455cb452474be3fd4843c31b166912..d06e114011eb45728f232ec4f592aa21217a1f0a 100644
+--- a/public/message/amd/src/message_drawer_view_overview_section.js
++++ b/public/message/amd/src/message_drawer_view_overview_section.js
+@@ -160,8 +160,6 @@ function(
+ 
+         if (count > 0) {
+             container.removeClass('hidden');
+-        } else {
+-            container.addClass('hidden');
+         }
+     };
+ 
+@@ -449,8 +447,11 @@ function(
+             var element = getTotalUnreadConversationCountElement(root);
+             var count = parseInt(element.text());
+             count = count - 1;
+-            // Re-render the unread count.
+-            renderUnreadCount(root, count);
++            element.text(count);
++
++            if (count < 1) {
++                element.addClass('hidden');
++            }
+         }
+     };
+ 

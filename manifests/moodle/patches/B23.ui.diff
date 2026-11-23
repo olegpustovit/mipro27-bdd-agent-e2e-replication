@@ -1,0 +1,166 @@
+diff --git a/grade/classes/output/export_action_bar.php b/grade/classes/output/export_action_bar.php
+index 8186ad45cd4c8875f1f89ed2ad5b35e33074d355..2b96906f7398e7fd16006b38aea067d1d3ce4d6e 100644
+--- a/grade/classes/output/export_action_bar.php
++++ b/grade/classes/output/export_action_bar.php
+@@ -91,8 +91,8 @@ class export_action_bar extends action_bar {
+         }
+ 
+         // This navigation selector menu will contain the links to all available grade export plugin pages.
+-        $exportsurlselect = new \url_select($exportsmenu, $this->exportactiveurl->out(false), null,
+-            'gradesexportactionselect');
++        $exportsurlselect = new \core\output\select_menu('exportas', $exportsmenu, $this->exportactiveurl->out());
++        $exportsurlselect->set_label(get_string('exportas', 'grades'));
+         $data['exportselector'] = $exportsurlselect->export_for_template($output);
+ 
+         return $data;
+diff --git a/grade/classes/output/import_action_bar.php b/grade/classes/output/import_action_bar.php
+index e856c9df56a4f90407e207851edb30f01aba51e0..123d63fda3d8aed765c46af6d14a5a65b62ab6ce 100644
+--- a/grade/classes/output/import_action_bar.php
++++ b/grade/classes/output/import_action_bar.php
+@@ -91,8 +91,8 @@ class import_action_bar extends action_bar {
+         }
+ 
+         // This navigation selector menu will contain the links to all available grade export plugin pages.
+-        $importsurlselect = new \url_select($importsmenu, $this->importactiveurl->out(false), null,
+-            'gradesimportactionselect');
++        $importsurlselect = new \core\output\select_menu('importas', $importsmenu, $this->importactiveurl->out());
++        $importsurlselect->set_label(get_string('importas', 'grades'));
+         $data['importselector'] = $importsurlselect->export_for_template($output);
+ 
+         return $data;
+diff --git a/grade/templates/export_action_bar.mustache b/grade/templates/export_action_bar.mustache
+index 79b75ca45a7e844fa12c80886c08953a981b9624..9156d71b32963e61ae1c8fdf76f0a66da7a6f7ee 100644
+--- a/grade/templates/export_action_bar.mustache
++++ b/grade/templates/export_action_bar.mustache
+@@ -44,23 +44,25 @@
+             "title": null
+         },
+         "exportselector": {
+-            "id": "url_select56789",
+-            "action": "https://example.com/get",
+-            "formid": "gradesexportactionselect",
+-            "sesskey": "sesskey",
+-            "classes": "urlselect",
+-            "label": "",
+-            "helpicon": false,
+-            "showbutton": null,
++            "name": "exportas",
++            "value": "https://example.com/grade/export/ods/index.php",
++            "baseid": "select-menu56789",
++            "label": "Export as",
++            "labelattributes": [
++                {
++                    "name": "class",
++                    "value": "font-weight-bold"
++                }
++            ],
++            "selectedoption": "OpenDocument spreadsheet",
+             "options": [
+                 {
+                     "name": "OpenDocument spreadsheet",
+-                    "value": "/grade/export/ods/index.php",
+-                    "selected": true
++                    "value": "https://example.com/grade/export/ods/index.php",
++                    "selected": true,
++                    "id": "select-menu-option56789"
+                 }
+-            ],
+-            "disabled": false,
+-            "title": null
++            ]
+         }
+     }
+ }}
+@@ -73,8 +75,13 @@
+         {{/generalnavselector}}
+         {{#exportselector}}
+             <div class="navitem">
+-                {{>core/url_select}}
++                {{>core/select_menu}}
+             </div>
++            {{#js}}
++                document.querySelector('#{{baseid}}').addEventListener('change', function(e) {
++                    window.location.href = e.target.value;
++                });
++            {{/js}}
+         {{/exportselector}}
+     </div>
+ </div>
+diff --git a/grade/templates/import_action_bar.mustache b/grade/templates/import_action_bar.mustache
+index 7a1334f1c42af51051ac2101f89ee3b7f2c8d17a..423277017d075b7d0a4e0e00d7aa42f0c385a72f 100644
+--- a/grade/templates/import_action_bar.mustache
++++ b/grade/templates/import_action_bar.mustache
+@@ -44,23 +44,25 @@
+             "title": null
+         },
+         "importselector": {
+-            "id": "url_select56789",
+-            "action": "https://example.com/get",
+-            "formid": "gradesimportactionselect",
+-            "sesskey": "sesskey",
+-            "classes": "urlselect",
+-            "label": "",
+-            "helpicon": false,
+-            "showbutton": null,
++            "name": "importas",
++            "value": "https://example.com/grade/import/csv/index.php",
++            "baseid": "select-menu56789",
++            "label": "Import as",
++            "labelattributes": [
++                {
++                    "name": "class",
++                    "value": "font-weight-bold"
++                }
++            ],
++            "selectedoption": "CSV file",
+             "options": [
+                 {
+                     "name": "CSV file",
+-                    "value": "/grade/import/csv/index.php",
+-                    "selected": true
++                    "value": "https://example.com/grade/import/csv/index.php",
++                    "selected": true,
++                    "id": "select-menu-option56789"
+                 }
+-            ],
+-            "disabled": false,
+-            "title": null
++            ]
+         }
+     }
+ }}
+@@ -73,8 +75,13 @@
+         {{/generalnavselector}}
+         {{#importselector}}
+             <div class="navitem">
+-                {{>core/url_select}}
++                {{>core/select_menu}}
+             </div>
++            {{#js}}
++                document.querySelector('#{{baseid}}').addEventListener('change', function(e) {
++                window.location.href = e.target.value;
++                });
++            {{/js}}
+         {{/importselector}}
+     </div>
+ </div>
+diff --git a/lang/en/grades.php b/lang/en/grades.php
+index 1f58070512e38f3c62aa60beec739f24118645c6..13ade09c3713aa979b75db2c4cd7077797c4d762 100644
+--- a/lang/en/grades.php
++++ b/lang/en/grades.php
+@@ -212,6 +212,7 @@ $string['excluded_help'] = 'If ticked, the grade will not be included in any agg
+ $string['expand'] = 'Expand category';
+ $string['expandcriterion'] = 'Expand criterion';
+ $string['export'] = 'Export';
++$string['exportas'] = 'Export as';
+ $string['exportalloutcomes'] = 'Export all outcomes';
+ $string['exportfeedback'] = 'Include feedback in export';
+ $string['exportfeedback_desc'] = 'This can be overridden during export.';
+@@ -400,6 +401,7 @@ $string['identifier'] = 'Identify user by';
+ $string['idnumbers'] = 'ID numbers';
+ $string['ignore'] = 'Ignore';
+ $string['import'] = 'Import';
++$string['importas'] = 'Import as';
+ $string['importcsv'] = 'Import CSV';
+ $string['importcsv_help'] = 'Grades can be imported via a CSV file with format as follows:
+ 

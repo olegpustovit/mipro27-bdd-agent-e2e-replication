@@ -1,0 +1,4362 @@
+diff --git a/admin/admin_settings_search_form.php b/admin/admin_settings_search_form.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..ad42300b85358ae3b9c78eb32d9ca94403d9870b
+--- /dev/null
++++ b/admin/admin_settings_search_form.php
+@@ -0,0 +1,48 @@
++<?php
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Admin settings search form
++ *
++ * @package    admin
++ * @copyright  2016 Damyon Wiese
++ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++defined('MOODLE_INTERNAL') || die();
++
++require_once $CFG->libdir.'/formslib.php';
++
++/**
++ * Admin settings search form
++ *
++ * @package    admin
++ * @copyright  2016 Damyon Wiese
++ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++class admin_settings_search_form extends moodleform {
++    function definition () {
++        $mform = $this->_form;
++
++        //$mform->addElement('header', 'settingsheader', get_string('search', 'admin'));
++        $elements = [];
++        $elements[] = $mform->createElement('text', 'query', get_string('query', 'admin'));
++        $elements[] = $mform->createElement('submit', 'search', get_string('search'));
++        $mform->addGroup($elements);
++        $mform->setType('query', PARAM_RAW);
++        $mform->setDefault('query', optional_param('query', '', PARAM_RAW));
++    }
++}
+diff --git a/admin/search.php b/admin/search.php
+index 6c255c6d336c9f77afa0f654ae48781d7641545b..0e9a531944ef6fa3277c649659a4c1c1355e4f18 100644
+--- a/admin/search.php
++++ b/admin/search.php
+@@ -36,6 +36,8 @@ if ($data = data_submitted() and confirm_sesskey()) {
+ // to modify them
+ echo $OUTPUT->header($focus);
+ 
++echo $OUTPUT->heading(get_string('administrationsite'));
++
+ if ($errormsg !== '') {
+     echo $OUTPUT->notification($errormsg);
+ 
+@@ -43,6 +45,18 @@ if ($errormsg !== '') {
+     echo $OUTPUT->notification($statusmsg, 'notifysuccess');
+ }
+ 
+-echo admin_search_settings_html($query);
++require_once("admin_settings_search_form.php");
++$form = new admin_settings_search_form();
++$form->display();
++echo '<hr>';
++
++if ($query) {
++    echo admin_search_settings_html($query);
++} else {
++    $node = $PAGE->settingsnav->find('root', navigation_node::TYPE_SITE_ADMIN);
++    if ($node) {
++        echo $OUTPUT->render_from_template('core/settings_link_page', ['node' => $node]);
++    }
++}
+ 
+ echo $OUTPUT->footer();
+diff --git a/admin/settings/top.php b/admin/settings/top.php
+index 223af0cfc5969fd71524325734950326d4db6ea0..59a6102e9ae82f6796e8f3ef4eeac925a4d45a27 100644
+--- a/admin/settings/top.php
++++ b/admin/settings/top.php
+@@ -47,4 +47,4 @@ $ADMIN->add('root', new admin_category('development', new lang_string('developme
+ $ADMIN->add('root', new admin_category('unsupported', new lang_string('unsupported', 'admin'), true));
+ 
+ // hidden search script
+-$ADMIN->add('root', new admin_externalpage('search', new lang_string('searchresults'), "$CFG->wwwroot/$CFG->admin/search.php", 'moodle/site:config', true));
++$ADMIN->add('root', new admin_externalpage('search', new lang_string('search', 'admin'), "$CFG->wwwroot/$CFG->admin/search.php", 'moodle/site:config', true));
+diff --git a/course/admin.php b/course/admin.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..b89b382332e62e54e170f2f46f837aa2c643ac89
+--- /dev/null
++++ b/course/admin.php
+@@ -0,0 +1,48 @@
++<?php
++
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Listing of the course administration pages for this course.
++ *
++ * @copyright 2016 Damyon Wiese
++ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++require_once("../config.php");
++
++$courseid = required_param('courseid', PARAM_INT);
++
++$PAGE->set_url('/course/admin.php', array('courseid'=>$courseid));
++
++$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
++
++require_login($course);
++$context = context_course::instance($course->id);
++
++$PAGE->set_pagelayout('incourse');
++$PAGE->set_title(get_string('courseadministration'));
++$PAGE->set_heading($course->fullname);
++$PAGE->navbar->add(get_string('courseadministration'));
++echo $OUTPUT->header();
++echo $OUTPUT->heading(get_string('courseadministration'));
++
++$node = $PAGE->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE);
++if ($node) {
++    echo $OUTPUT->render_from_template('core/settings_link_page', ['node' => $node]);
++}
++
++echo $OUTPUT->footer();
+diff --git a/course/format/topics/lib.php b/course/format/topics/lib.php
+index da48e81017c46c87ce6a5c1020f290bbab56b3db..4f01d7db5e68542996948601cc1322724538c7f5 100644
+--- a/course/format/topics/lib.php
++++ b/course/format/topics/lib.php
+@@ -121,9 +121,6 @@ class format_topics extends format_base {
+             if ($sectionno != 0 && $usercoursedisplay == COURSE_DISPLAY_MULTIPAGE) {
+                 $url->param('section', $sectionno);
+             } else {
+-                if (empty($CFG->linkcoursesections) && !empty($options['navigation'])) {
+-                    return null;
+-                }
+                 $url->set_anchor('section-'.$sectionno);
+             }
+         }
+diff --git a/course/format/weeks/lib.php b/course/format/weeks/lib.php
+index d32664cc8a7cfd4eea3d7df67e72677e1bf0f958..db096788708dbb67157c156ea0dd73a3eff020c8 100644
+--- a/course/format/weeks/lib.php
++++ b/course/format/weeks/lib.php
+@@ -124,9 +124,6 @@ class format_weeks extends format_base {
+             if ($sectionno != 0 && $usercoursedisplay == COURSE_DISPLAY_MULTIPAGE) {
+                 $url->param('section', $sectionno);
+             } else {
+-                if (empty($CFG->linkcoursesections) && !empty($options['navigation'])) {
+-                    return null;
+-                }
+                 $url->set_anchor('section-'.$sectionno);
+             }
+         }
+diff --git a/course/lib.php b/course/lib.php
+index e731709b266a84d959b7ec64e82d0cd9f14c64f1..8d89b8dd8042ff5dc2bed7d2d1f31676879181ad 100644
+--- a/course/lib.php
++++ b/course/lib.php
+@@ -3510,6 +3510,29 @@ function course_get_user_navigation_options($context, $course = null) {
+         $options->participants = has_capability('moodle/course:viewparticipants', $context);
+         $options->badges = !empty($CFG->enablebadges) && !empty($CFG->badges_allowcoursebadges) &&
+                             has_capability('moodle/badges:viewbadges', $context);
++        // Add view grade report is permitted.
++        $grades = false;
++        if (has_capability('moodle/grade:viewall', $context)) {
++            $grades = true;
++        } else if (!empty($course->showgrades)) {
++            $reports = core_component::get_plugin_list('gradereport');
++            if (is_array($reports) && count($reports) > 0) {  // Get all installed reports.
++                arsort($reports);   // User is last, we want to test it first.
++                foreach ($reports as $plugin => $plugindir) {
++                    if (has_capability('gradereport/'.$plugin.':view', $context)) {
++                        // Stop when the first visible plugin is found.
++                        $grades = true;
++                        break;
++                    }
++                }
++            }
++        }
++        $options->grades = $grades;
++    }
++
++    if (\core_competency\api::is_enabled()) {
++        $capabilities = array('moodle/competency:coursecompetencyview', 'moodle/competency:coursecompetencymanage');
++        $options->competencies = has_any_capability($capabilities, $context);
+     }
+     return $options;
+ }
+diff --git a/course/switchrole.php b/course/switchrole.php
+index a682c37a84222c0870c60834a9586cd1a32f51e1..4e7c2379a28f7f1ae2b0ed4e1552ff06c9a75740 100644
+--- a/course/switchrole.php
++++ b/course/switchrole.php
+@@ -46,9 +46,11 @@ if (strpos($returnurl, '?') === false) {
+     $returnurl  = clean_param($returnurl, PARAM_URL);
+ }
+ 
+-$PAGE->set_url('/course/switchrole.php', array('id'=>$id));
++$PAGE->set_url('/course/switchrole.php', array('id'=>$id, 'switchrole'=>$switchrole));
+ 
+-require_sesskey();
++if ($switchrole >= 0) {
++    require_sesskey();
++}
+ 
+ if (!$course = $DB->get_record('course', array('id'=>$id))) {
+     redirect(new moodle_url('/'));
+@@ -70,6 +72,21 @@ if ($switchrole > 0 && has_capability('moodle/role:switchroles', $context)) {
+     if (is_array($aroles) && isset($aroles[$switchrole])) {
+         role_switch($switchrole, $context);
+     }
++} else if ($switchrole < 0) {
++
++    $PAGE->set_title(get_string('switchroleto'));
++    $PAGE->set_heading($course->fullname);
++    $PAGE->set_pagelayout('incourse');
++
++    echo $OUTPUT->header();
++    echo $OUTPUT->heading(get_string('switchroleto'));
++
++    require_once($CFG->dirroot.'/course/switchrole_form.php');
++    $form = new switchrole_form(null, ['course' => $course]);
++    $form->display();
++
++    echo $OUTPUT->footer();
++    exit;
+ }
+ 
+ redirect($returnurl);
+diff --git a/course/switchrole_form.php b/course/switchrole_form.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..57886564c04dcabdf96c3d2615ad80cdd0b1dc3e
+--- /dev/null
++++ b/course/switchrole_form.php
+@@ -0,0 +1,96 @@
++<?php
++
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Switch roles form.
++ *
++ * @package     core_course
++ * @copyright   2016 Damyon Wiese
++ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++defined('MOODLE_INTERNAL') || die();
++
++require_once($CFG->libdir.'/formslib.php');
++
++/**
++ * Defines the course completion settings form.
++ */
++class switchrole_form extends moodleform {
++
++    /**
++     * Determine whether the user is assuming another role
++     *
++     * This function checks to see if the user is assuming another role by means of
++     * role switching. In doing this we compare each RSW key (context path) against
++     * the current context path. This ensures that we can provide the switching
++     * options against both the course and any page shown under the course.
++     *
++     * @param context $context
++     * @return bool|int The role(int) if the user is in another role, false otherwise
++     */
++    protected function in_alternative_role($context) {
++        global $USER, $PAGE;
++        if (!empty($USER->access['rsw']) && is_array($USER->access['rsw'])) {
++            if (!empty($PAGE->context) && !empty($USER->access['rsw'][$PAGE->context->path])) {
++                return $USER->access['rsw'][$PAGE->context->path];
++            }
++            foreach ($USER->access['rsw'] as $key=>$role) {
++                if (strpos($context->path, $key)===0) {
++                    return $role;
++                }
++            }
++        }
++        return false;
++    }
++
++    /**
++     * Defines the form fields.
++     */
++    public function definition() {
++        global $USER, $CFG, $DB;
++
++        $mform = $this->_form;
++        $course = $this->_customdata['course'];
++
++        // Overall criteria aggregation.
++        $context = context_course::instance($course->id);
++        $roles = array();
++        $assumedrole = -1;
++        if (is_role_switched($course->id)) {
++            $roles[0] = get_string('switchrolereturn');
++            $assumedrole = $USER->access['rsw'][$context->path];
++        }
++        $availableroles = get_switchable_roles($context);
++        if (is_array($availableroles)) {
++            foreach ($availableroles as $key=>$role) {
++                if ($assumedrole == (int)$key) {
++                    continue;
++                }
++                $roles[$key] = $role;
++            }
++        }
++        $mform->addElement('select', 'switchrole', get_string('role'), $roles);
++
++        // Add common action buttons.
++        $this->add_action_buttons();
++
++        // Add hidden fields.
++        $mform->addElement('hidden', 'id', $course->id);
++        $mform->setType('id', PARAM_INT);
++    }
++}
+diff --git a/lang/en/admin.php b/lang/en/admin.php
+index 0f833aca334aeb8c2111151d15cd25fed5bda8fc..50cae402f68f646d0862a6fa2c539b5cd59dd017 100644
+--- a/lang/en/admin.php
++++ b/lang/en/admin.php
+@@ -889,6 +889,7 @@ $string['proxypassword'] = 'Proxy password';
+ $string['proxyport'] = 'Proxy port';
+ $string['proxytype'] = 'Proxy type';
+ $string['proxyuser'] = 'Proxy username';
++$string['query'] = 'Query';
+ $string['question'] = 'Question';
+ $string['questionbehaviours'] = 'Question behaviours';
+ $string['questioncwqpfscheck'] = 'One or more \'random\' questions in a quiz are set up to select questions from a mixture of shared and unshared question categories. There is a more detailed report <a href="{$a->reporturl}">here</a> and see Moodle Docs page <a href="{$a->docsurl}">here</a>.';
+diff --git a/lang/en/block.php b/lang/en/block.php
+index 7b3185951844b6735cf810b1a4f3b1a3b50f5c01..ad04aef94cc49b4871a696afdb22dd3f1dde8721 100644
+--- a/lang/en/block.php
++++ b/lang/en/block.php
+@@ -26,6 +26,7 @@ $string['addtodock'] = 'Move this to the dock';
+ $string['anypagematchingtheabove'] = 'Any page matching the above';
+ $string['appearsinsubcontexts'] = 'Appears in sub-contexts';
+ $string['assignrolesinblock'] = 'Assign roles in {$a} block';
++$string['blocksdrawertoggle'] = 'Hide/show blocks drawer';
+ $string['blocksettings'] = 'Block settings';
+ $string['bracketfirst'] = '{$a} (first)';
+ $string['bracketlast'] = '{$a} (last)';
+@@ -51,6 +52,7 @@ $string['moveblockafter'] = 'Move block to after {$a} block';
+ $string['moveblockbefore'] = 'Move block to before {$a} block';
+ $string['moveblockinregion'] = 'Move block to {$a} region';
+ $string['movingthisblockcancel'] = 'Moving this block ({$a})';
++$string['myblocks'] = 'My blocks';
+ $string['onthispage'] = 'On this page';
+ $string['pagetypes'] = 'Page types';
+ $string['pagetypewarning'] = 'The previously specified page type is no longer selectable. Please choose the most appropriate page type below.';
+diff --git a/lib/navigationlib.php b/lib/navigationlib.php
+index b6ebf72769d1613aae48b3da94503d2c318eed2e..c12cf634f5d48028750eeb678155ea281b9adccf 100644
+--- a/lib/navigationlib.php
++++ b/lib/navigationlib.php
+@@ -143,6 +143,8 @@ class navigation_node implements renderable {
+     public $includesectionnum = false;
+     /** @var bool does the node need to be loaded via ajax */
+     public $requiresajaxloading = false;
++    /** @var bool If set to true this node will be added to the "flat" navigation */
++    public $showinflatnavigation = false;
+ 
+     /**
+      * Constructs a new navigation_node
+@@ -236,6 +238,65 @@ class navigation_node implements renderable {
+         return false;
+     }
+ 
++    /**
++     * True if this nav node has siblings in the tree.
++     *
++     * @return bool
++     */
++    public function has_siblings() {
++        if (empty($this->parent) || empty($this->parent->children)) {
++            return false;
++        }
++        if ($this->parent->children instanceof navigation_node_collection) {
++            $count = $this->parent->children->count();
++        } else {
++            $count = count($this->parent->children);
++        }
++        return ($count > 1);
++    }
++
++    /**
++     * Recursively walk the tree looking for a node with a valid action.
++     * Depth first search.
++     *
++     * @return bool
++     */
++    public function resolve_action() {
++        if ($this->action) {
++            return $this->action;
++        }
++        if (!empty($this->children)) {
++            foreach ($this->children as $child) {
++                $action = $child->resolve_action();
++                if (!empty($action)) {
++                    return $action;
++                }
++            }
++        }
++        return false;
++    }
++
++    /**
++     * Get a list of sibling navigation nodes at the same level as this one.
++     *
++     * @return bool|array of navigation_node
++     */
++    public function get_siblings() {
++        // Returns a list of the siblings of the current node for display in a flat navigation element. Either
++        // the in-page links or the breadcrumb links.
++        $siblings = false;
++
++        if ($this->has_siblings()) {
++            $siblings = [];
++            foreach ($this->parent->children as $child) {
++                if ($child->display) {
++                    $siblings[] = $child;
++                }
++            }
++        }
++        return $siblings;
++    }
++
+     /**
+      * This sets the URL that the URL of new nodes get compared to when locating
+      * the active node.
+@@ -381,6 +442,24 @@ class navigation_node implements renderable {
+         return $this->children->find($key, $type);
+     }
+ 
++    /**
++     * Walk the tree building up a list of all the flat navigation nodes.
++     *
++     * @param flat_navigation $nodes List of the found flat navigation nodes.
++     */
++    public function build_flat_navigation_list(flat_navigation $nodes) {
++        if ($this->showinflatnavigation) {
++            $indent = 0;
++            if ($this->type == self::TYPE_COURSE) {
++                $indent = 1;
++            }
++            $nodes->add(new flat_navigation_node($this, $indent));
++        }
++        foreach ($this->children as $child) {
++            $child->build_flat_navigation_list($nodes);
++        }
++    }
++
+     /**
+      * Get the child of this node that has the given key + (optional) type.
+      *
+@@ -1053,6 +1132,7 @@ class global_navigation extends navigation_node {
+ 
+         // Use the parents constructor.... good good reuse
+         parent::__construct($properties);
++        $this->showinflatnavigation = true;
+ 
+         // Initalise and set defaults
+         $this->page = $page;
+@@ -1128,15 +1208,18 @@ class global_navigation extends navigation_node {
+         $this->load_course_sections($SITE, $this->rootnodes['site']);
+ 
+         $course = $this->page->course;
++        $this->load_courses_enrolled();
+ 
+         // $issite gets set to true if the current pages course is the sites frontpage course
+         $issite = ($this->page->course->id == $SITE->id);
++
+         // Determine if the user is enrolled in any course.
+         $enrolledinanycourse = enrol_user_sees_own_courses();
+ 
+         $this->rootnodes['currentcourse']->mainnavonly = true;
+         if ($enrolledinanycourse) {
+             $this->rootnodes['mycourses']->isexpandable = true;
++            $this->rootnodes['mycourses']->showinflatnavigation = true;
+             if ($CFG->navshowallcourses) {
+                 // When we show all courses we need to show both the my courses and the regular courses branch.
+                 $this->rootnodes['courses']->isexpandable = true;
+@@ -2428,6 +2511,14 @@ class global_navigation extends navigation_node {
+         // This is the name that will be shown for the course.
+         $coursename = empty($CFG->navshowfullcoursenames) ? $shortname : $fullname;
+ 
++        if ($coursetype == self::COURSE_CURRENT) {
++            if ($coursenode = $this->rootnodes['mycourses']->find($course->id, self::TYPE_COURSE)) {
++                return $coursenode;
++            } else {
++                $coursetype = self::COURSE_OTHER;
++            }
++        }
++
+         // Can the user expand the course to see its content.
+         $canexpandcourse = true;
+         if ($issite) {
+@@ -2468,6 +2559,7 @@ class global_navigation extends navigation_node {
+         }
+ 
+         $coursenode = $parent->add($coursename, $url, self::TYPE_COURSE, $shortname, $course->id);
++        $coursenode->showinflatnavigation = $coursetype == self::COURSE_MY;
+         $coursenode->hidden = (!$course->visible);
+         $coursenode->title(format_string($course->fullname, true, array('context' => $coursecontext, 'escape' => false)));
+         if ($canexpandcourse) {
+@@ -2582,11 +2674,21 @@ class global_navigation extends navigation_node {
+         if ($navoptions->badges) {
+             $url = new moodle_url('/badges/view.php', array('type' => 2, 'id' => $course->id));
+ 
+-            $coursenode->add(get_string('coursebadges', 'badges'), null,
+-                    navigation_node::TYPE_CONTAINER, null, 'coursebadges');
+-            $coursenode->get('coursebadges')->add(get_string('badgesview', 'badges'), $url,
++            $coursenode->add(get_string('coursebadges', 'badges'), $url,
+                     navigation_node::TYPE_SETTING, null, 'badgesview',
+-                    new pix_icon('i/badge', get_string('badgesview', 'badges')));
++                    new pix_icon('i/badge', get_string('coursebadges', 'badges')));
++        }
++
++        // Check access to the course and competencies page.
++        if ($navoptions->competencies) {
++            // Just a link to course competency.
++            $title = get_string('competencies', 'core_competency');
++            $path = new moodle_url("/admin/tool/lp/coursecompetencies.php", array('courseid' => $course->id));
++            $coursenode->add($title, $path, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/competencies', ''));
++        }
++        if ($navoptions->grades) {
++            $url = new moodle_url('/grade/report/index.php', array('id'=>$course->id));
++            $gradenode = $coursenode->add(get_string('grades'), $url, self::TYPE_SETTING, null, 'grades', new pix_icon('i/grades', ''));
+         }
+ 
+         return true;
+@@ -2603,7 +2705,7 @@ class global_navigation extends navigation_node {
+      * @return bool True for successfull generation
+      */
+     public function add_front_page_course_essentials(navigation_node $coursenode, stdClass $course) {
+-        global $CFG;
++        global $CFG, $USER;
+         require_once($CFG->dirroot . '/course/lib.php');
+ 
+         if ($coursenode == false || $coursenode->get('frontpageloaded', navigation_node::TYPE_CUSTOM)) {
+@@ -2657,7 +2759,18 @@ class global_navigation extends navigation_node {
+         if ($navoptions->calendar) {
+             // Calendar
+             $calendarurl = new moodle_url('/calendar/view.php', array('view' => 'month'));
+-            $coursenode->add(get_string('calendar', 'calendar'), $calendarurl, self::TYPE_CUSTOM, null, 'calendar');
++            $node = $coursenode->add(get_string('calendar', 'calendar'), $calendarurl, self::TYPE_CUSTOM, null, 'calendar');
++            $node->showinflatnavigation = true;
++        }
++
++        if (isloggedin()) {
++            $usercontext = context_user::instance($USER->id);
++            if (has_capability('moodle/user:manageownfiles', $usercontext)) {
++                $url = new moodle_url('/user/files.php');
++                $node = $coursenode->add(get_string('privatefiles'), $url, self::TYPE_SETTING);
++                $node->display = false;
++                $node->showinflatnavigation = true;
++            }
+         }
+ 
+         return true;
+@@ -3090,13 +3203,12 @@ class navbar extends navigation_node {
+     public $includesettingsbase = false;
+     /** @var breadcrumb_navigation_node[] $prependchildren */
+     protected $prependchildren = array();
++
+     /**
+      * The almighty constructor
+      *
+      * @param moodle_page $page
+      */
+-
+-
+     public function __construct(moodle_page $page) {
+         global $CFG;
+         if (during_initial_install()) {
+@@ -3255,6 +3367,10 @@ class navbar extends navigation_node {
+             $items = array_merge($items, array_reverse($this->prependchildren));
+         }
+ 
++        $last = reset($items);
++        if ($last) {
++            $last->set_last(true);
++        }
+         $this->items = array_reverse($items);
+         return $this->items;
+     }
+@@ -3416,6 +3532,9 @@ class navbar extends navigation_node {
+  */
+ class breadcrumb_navigation_node extends navigation_node {
+ 
++    /** @var $last boolean A flag indicating this is the last item in the list of breadcrumbs. */
++    private $last = false;
++
+     /**
+      * A proxy constructor
+      *
+@@ -3436,6 +3555,251 @@ class breadcrumb_navigation_node extends navigation_node {
+         }
+     }
+ 
++    /**
++     * Getter for "last"
++     * @return boolean
++     */
++    public function is_last() {
++        return $this->last;
++    }
++
++    /**
++     * Setter for "last"
++     * @param $val boolean
++     */
++    public function set_last($val) {
++        $this->last = $val;
++    }
++}
++
++/**
++ * Subclass of navigation_node allowing different rendering for the flat navigation
++ * in particular allowing dividers and indents.
++ *
++ * @package   core
++ * @category  navigation
++ * @copyright 2016 Damyon Wiese
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++class flat_navigation_node extends navigation_node {
++
++    /** @var $indent integer The indent level */
++    private $indent = 0;
++
++    /** @var $showdivider bool Show a divider before this element */
++    private $showdivider = false;
++
++    /** @var $smscreenonly bool Only show this menu item on xs and sm screen sizes */
++    private $smscreenonly = false;
++
++    /**
++     * A proxy constructor
++     *
++     * @param mixed $navnode A navigation_node or an array
++     */
++    public function __construct($navnode, $indent) {
++        if (is_array($navnode)) {
++            parent::__construct($navnode);
++        } else if ($navnode instanceof navigation_node) {
++
++            // Just clone everything.
++            $objvalues = get_object_vars($navnode);
++            foreach ($objvalues as $key => $value) {
++                 $this->$key = $value;
++            }
++        } else {
++            throw coding_exception('Not a valid flat_navigation_node');
++        }
++        $this->indent = $indent;
++    }
++
++    /**
++     * Getter for "showdivider"
++     * @return boolean
++     */
++    public function showdivider() {
++        return $this->showdivider;
++    }
++
++    /**
++     * Setter for "showdivider"
++     * @param $val boolean
++     */
++    public function set_showdivider($val) {
++        $this->showdivider = $val;
++    }
++
++    /**
++     * Getter for "indent"
++     * @return boolean
++     */
++    public function get_indent() {
++        return $this->indent;
++    }
++
++    /**
++     * Setter for "indent"
++     * @param $val boolean
++     */
++    public function set_indent($val) {
++        $this->indent = $val;
++    }
++
++    /**
++     * Getter for "smscreenonly"
++     * @return boolean
++     */
++    public function get_smscreenonly() {
++        return $this->smscreenonly;
++    }
++
++    /**
++     * Setter for "smscreenonly"
++     * @param $val boolean
++     */
++    public function set_smscreenonly($val) {
++        $this->smscreenonly = $val;
++    }
++}
++
++/**
++ * Class used to generate a collection of navigation nodes most closely related
++ * to the current page.
++ *
++ * @package core
++ * @copyright 2016 Damyon Wiese
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++class flat_navigation extends navigation_node_collection {
++    /** @var moodle_page the moodle page that the navigation belongs to */
++    protected $page;
++
++    /**
++     * Constructor.
++     *
++     * @param moodle_page $page
++     */
++    public function __construct(moodle_page &$page) {
++        if (during_initial_install()) {
++            return false;
++        }
++        $this->page = $page;
++    }
++
++    /**
++     * Build the list of navigation nodes based on the current navigation and settings trees.
++     *
++     */
++    public function initialise() {
++        global $PAGE, $USER, $OUTPUT, $CFG;
++        if (during_initial_install()) {
++            return;
++        }
++
++        $current = false;
++
++        $course = $PAGE->course;
++
++        $PAGE->navigation->build_flat_navigation_list($this);
++
++        // First walk the nav tree looking for "flat_navigation" nodes.
++        if ($course->id > 1) {
++            // It's a real course.
++            // 'dh' is an unused param used to give this node a different url to the default.
++            // This is so we don't have 2 nodes in the flat have with the same url (both would be highlighted).
++            // 'dh' means "don't highlight".
++            $url = new moodle_url('/course/view.php', array('id' => $course->id, 'dh' => 1));
++            $flat = new flat_navigation_node(navigation_node::create($course->shortname, $url), 0);
++            $flat->key = 'coursehome';
++            $flat->set_showdivider(true);
++            $this->add($flat);
++
++            $coursenode = $PAGE->navigation->find_active_node();
++            if ($coursenode) {
++                foreach ($coursenode->children as $child) {
++                    if ($child->action) {
++                        $flat = new flat_navigation_node($child, 1);
++                        $this->add($flat);
++                    }
++                }
++            }
++
++        }
++        $admin = $PAGE->settingsnav->find('siteadministration', navigation_node::TYPE_SITE_ADMIN);
++        if (!$admin) {
++            // Try again - crazy nav tree!
++            $admin = $PAGE->settingsnav->find('root', navigation_node::TYPE_SITE_ADMIN);
++        }
++        if ($admin) {
++            $flat = new flat_navigation_node($admin, 0);
++            $flat->set_showdivider(true);
++            $flat->key = 'sitesettings';
++            $this->add($flat);
++        }
++
++        // Add the lang menu for small screens (it doesn't fit in the header).
++        if (!empty($CFG->langmenu)) {
++            if ($PAGE->course == SITEID || empty($PAGE->course->lang)) {
++                $langs = get_string_manager()->get_list_of_translations();
++                if (count($langs) >= 2) {
++                    $first = true;
++                    foreach ($langs as $lang => $name) {
++                        $url = clone($PAGE->url);
++                        $url->params(['lang' => $lang]);
++                        $flat = new flat_navigation_node(navigation_node::create($name, $url), 0);
++                        if ($first) {
++                            $flat->set_showdivider(true);
++                            $first = false;
++                        }
++                        $flat->set_smscreenonly(true);
++                        $flat->key = $lang;
++                        $this->add($flat);
++                    }
++                }
++            }
++        }
++
++        // Add the custom menu for small screens (it doesn't fit in the header).
++        $customcount = 0;
++        if (!empty($CFG->custommenuitems)) {
++            $custommenus = custom_menu::convert_text_to_menu_nodes($CFG->custommenuitems, current_language());
++            $first = true;
++            foreach ($custommenus as $menu) {
++                if (preg_match("/^#+$/", $menu->get_text())) {
++                    $first = true;
++                } else {
++                    $url = $menu->get_url();
++                    if ($url) {
++                        $url = $url->out(false);
++                    }
++                    $flat = new flat_navigation_node(navigation_node::create($menu->get_text(), $url), 0);
++                    if ($first) {
++                        $flat->set_showdivider(true);
++                        $first = false;
++                    }
++                    $flat->set_smscreenonly(true);
++                    $flat->key = 'c-' . $customcount++;
++                    $this->add($flat);
++                }
++                foreach ($menu->get_children() as $child) {
++                    if (preg_match("/^#+$/", $child->get_text())) {
++                        $first = true;
++                    } else {
++                        $url = $child->get_url();
++                        if ($url) {
++                            $url = $url->out(false);
++                        }
++                        $flat = new flat_navigation_node(navigation_node::create($child->get_text(), $url), 1);
++                        $flat->set_smscreenonly(true);
++                        $flat->key = 'c-' . $customcount++;
++                        $this->add($flat);
++                    }
++                }
++            }
++
++        }
++    }
++
+ }
+ 
+ /**
+@@ -3480,6 +3844,7 @@ class settings_navigation extends navigation_node {
+         $this->cache = new navigation_cache(NAVIGATION_CACHE_NAME);
+         $this->children = new navigation_node_collection();
+     }
++
+     /**
+      * Initialise the settings navigation based on the current context
+      *
+@@ -3561,7 +3926,7 @@ class settings_navigation extends navigation_node {
+                     $adminsettings->remove();
+                     $adminsettings = false;
+                 }
+-                $siteadminnode = $this->add(get_string('administrationsite'), new moodle_url('/admin'), self::TYPE_SITE_ADMIN, null, 'siteadministration');
++                $siteadminnode = $this->add(get_string('administrationsite'), new moodle_url('/admin/search.php'), self::TYPE_SITE_ADMIN, null, 'siteadministration');
+                 $siteadminnode->id = 'expandable_branch_'.$siteadminnode->type.'_'.clean_param($siteadminnode->key, PARAM_ALPHANUMEXT);
+                 $siteadminnode->requiresajaxloading = 'true';
+             }
+@@ -3681,7 +4046,7 @@ class settings_navigation extends navigation_node {
+ 
+             // Disable the navigation from automatically finding the active node
+             navigation_node::$autofindactive = false;
+-            $referencebranch = $this->add(get_string('administrationsite'), null, self::TYPE_SITE_ADMIN, null, 'root');
++            $referencebranch = $this->add(get_string('administrationsite'), '/admin/search.php', self::TYPE_SITE_ADMIN, null, 'root');
+             foreach ($adminroot->children as $adminbranch) {
+                 $this->load_administration_settings($referencebranch, $adminbranch);
+             }
+@@ -3789,29 +4154,6 @@ class settings_navigation extends navigation_node {
+             $coursenode->force_open();
+         }
+ 
+-        if ($this->page->user_allowed_editing()) {
+-            // Add the turn on/off settings
+-
+-            if ($this->page->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE)) {
+-                // We are on the course page, retain the current page params e.g. section.
+-                $baseurl = clone($this->page->url);
+-                $baseurl->param('sesskey', sesskey());
+-            } else {
+-                // Edit on the main course page.
+-                $baseurl = new moodle_url('/course/view.php', array('id'=>$course->id, 'return'=>$this->page->url->out_as_local_url(false), 'sesskey'=>sesskey()));
+-            }
+-
+-            $editurl = clone($baseurl);
+-            if ($this->page->user_is_editing()) {
+-                $editurl->param('edit', 'off');
+-                $editstring = get_string('turneditingoff');
+-            } else {
+-                $editurl->param('edit', 'on');
+-                $editstring = get_string('turneditingon');
+-            }
+-            $coursenode->add($editstring, $editurl, self::TYPE_SETTING, null, 'turneditingonoff', new pix_icon('i/edit', ''));
+-        }
+-
+         if ($adminoptions->update) {
+             // Add the course settings link
+             $url = new moodle_url('/course/edit.php', array('id'=>$course->id));
+@@ -3959,7 +4301,8 @@ class settings_navigation extends navigation_node {
+             }
+         }
+         if (is_array($roles) && count($roles)>0) {
+-            $switchroles = $this->add(get_string('switchroleto'), null, self::TYPE_CONTAINER, null, 'switchroleto');
++            $url = new moodle_url('/course/switchrole.php', array('id'=>$course->id, 'switchrole'=>'-1', 'returnurl'=>$this->page->url->out_as_local_url(false)));
++            $switchroles = $coursenode->add(get_string('switchroleto'), $url, self::TYPE_CONTAINER, null, 'switchroleto');
+             if ((count($roles)==1 && array_key_exists(0, $roles))|| $assumedrole!==false) {
+                 $switchroles->force_open();
+             }
+@@ -4393,7 +4736,7 @@ class settings_navigation extends navigation_node {
+             if (($currentuser || is_siteadmin($USER) || !is_siteadmin($user)) &&
+                     has_capability('moodle/user:update', $systemcontext)) {
+                 $url = new moodle_url('/user/editadvanced.php', array('id'=>$user->id, 'course'=>$course->id));
+-                $useraccount->add(get_string('editmyprofile'), $url, self::TYPE_SETTING);
++                $useraccount->add(get_string('editmyprofile'), $url, self::TYPE_SETTING, null, 'editprofile');
+             } else if ((has_capability('moodle/user:editprofile', $usercontext) && !is_siteadmin($user)) ||
+                     ($currentuser && has_capability('moodle/user:editownprofile', $systemcontext))) {
+                 if ($userauthplugin && $userauthplugin->can_edit_profile()) {
+@@ -4401,7 +4744,7 @@ class settings_navigation extends navigation_node {
+                     if (empty($url)) {
+                         $url = new moodle_url('/user/edit.php', array('id'=>$user->id, 'course'=>$course->id));
+                     }
+-                    $useraccount->add(get_string('editmyprofile'), $url, self::TYPE_SETTING);
++                    $useraccount->add(get_string('editmyprofile'), $url, self::TYPE_SETTING, null, 'editprofile');
+                 }
+             }
+         }
+diff --git a/lib/outputcomponents.php b/lib/outputcomponents.php
+index edea6df9c582448cf737c1eeb4aeb62f7d4221c4..157bb158d09fdd2bdd828c9529d90edce9a4f8e4 100644
+--- a/lib/outputcomponents.php
++++ b/lib/outputcomponents.php
+@@ -3905,6 +3905,15 @@ class action_menu implements renderable, templatable {
+         $this->menutrigger = $trigger;
+     }
+ 
++    /**
++     * Return true if there is at least one visible link in the menu.
++     *
++     * @return bool
++     */
++    public function is_empty() {
++        return !count($this->primaryactions) && !count($this->secondaryactions);
++    }
++
+     /**
+      * Initialises JS required fore the action menu.
+      * The JS is only required once as it manages all action menu's on the page.
+diff --git a/lib/outputrenderers.php b/lib/outputrenderers.php
+index c5d29ca21f96c33f688ecb227697be0aa74dbc20..c4d7bb8f4661f92325c79e39951802c524e1c67a 100644
+--- a/lib/outputrenderers.php
++++ b/lib/outputrenderers.php
+@@ -4086,18 +4086,6 @@ EOD;
+         return $html;
+     }
+ 
+-    /**
+-     * Returns the header bar.
+-     *
+-     * @since Moodle 2.9
+-     * @param array $headerinfo An array of header information, dependant on what type of header is being displayed. The following
+-     *                          array example is user specific.
+-     *                          heading => Override the page heading.
+-     *                          user => User object.
+-     *                          usercontext => user context.
+-     * @param int $headinglevel What level the 'h' tag will be.
+-     * @return string HTML for the header bar.
+-     */
+     public function context_header($headerinfo = null, $headinglevel = 1) {
+         global $DB, $USER, $CFG;
+         $context = $this->page->context;
+@@ -4390,6 +4378,18 @@ EOD;
+         }
+     }
+ 
++    /**
++     * Render the login signup form into a nice template for the theme.
++     *
++     * @param mform $form
++     * @return string
++     */
++    public function render_login_signup_form($form) {
++        $context = $form->export_for_template($this);
++
++        return $this->render_from_template('core/signup_form_layout', $context);
++    }
++
+     /**
+      * Renders a progress bar.
+      *
+diff --git a/lib/pagelib.php b/lib/pagelib.php
+index 061335d9d9ec58c462ed6711cc073b8d2ada480e..df546f5aa7d8e3d346b4bb649f71598d4f28bb3c 100644
+--- a/lib/pagelib.php
++++ b/lib/pagelib.php
+@@ -286,6 +286,11 @@ class moodle_page {
+      */
+     protected $_settingsnav = null;
+ 
++    /**
++     * @var flat_navigation Contains a list of nav nodes, most closely related to the current page.
++     */
++    protected $_flatnav = null;
++
+     /**
+      * @var navbar Contains the navbar structure.
+      */
+@@ -726,6 +731,18 @@ class moodle_page {
+         return $this->_settingsnav;
+     }
+ 
++    /**
++     * Returns the flat navigation object
++     * @return flat_navigation
++     */
++    protected function magic_get_flatnav() {
++        if ($this->_flatnav === null) {
++            $this->_flatnav = new flat_navigation($this);
++            $this->_flatnav->initialise();
++        }
++        return $this->_flatnav;
++    }
++
+     /**
+      * Returns request IP address.
+      *
+diff --git a/lib/templates/settings_link_page.mustache b/lib/templates/settings_link_page.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..608e64939e35f15d212888294f0e7d5ee01b1da2
+--- /dev/null
++++ b/lib/templates/settings_link_page.mustache
+@@ -0,0 +1,43 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template core_admin/admin_settings_links
++
++    Displays the admin tree as a list of grouped links.
++
++    Example context (json):
++    {
++        "name": "test",
++        "id": "test0",
++        "checked": true,
++        "label": "Do you like crackers?"
++    }
++}}
++
++<div class="container">
++    <div class="row">
++        <div class="col-md-6 push-md-3">
++            <div class="card">
++                <div class="card-block">
++                    {{#node}}
++                        {{> core/settings_link_page_single }}
++                    {{/node}}
++                </div>
++            </div>
++        </div>
++    </div>
++</div>
+diff --git a/lib/templates/settings_link_page_single.mustache b/lib/templates/settings_link_page_single.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..525e7bfb3bb3abff7f88abbccb1441ccd84b5766
+--- /dev/null
++++ b/lib/templates/settings_link_page_single.mustache
+@@ -0,0 +1,39 @@
++{{!
++    This file is part of Moodle - http://moodle.org/
++
++    Moodle is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Moodle is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++}}
++{{!
++    @template core/settings_link_page_single
++
++    Displays the admin tree as a list of grouped links.
++
++    Example context (json):
++    {
++    }
++}}
++
++<ul class="nav m-l-2">
++    {{#has_action}}
++    <li class="nav-item"><a class="nav-link" href="{{{action}}}">{{text}}</a></li>
++    {{/has_action}}
++    {{^has_action}}
++    <li class="nav-item">{{text}}</li>
++    {{/has_action}}
++    {{#children.count}}
++        {{#children}}
++            {{> core/settings_link_page_single }}
++        {{/children}}
++    {{/children.count}}
++</ul>
+diff --git a/lib/templates/signup_form_layout.mustache b/lib/templates/signup_form_layout.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..80bd360b2534acc9ac39057d04552dec0ae3da9e
+--- /dev/null
++++ b/lib/templates/signup_form_layout.mustache
+@@ -0,0 +1,2 @@
++<h3>{{#str}}newaccount{{/str}}</h3>
++{{{formhtml}}}
+diff --git a/login/signup.php b/login/signup.php
+index 1e54597dbac08b448e51e6d689690e4a4711f29e..abe977e0e0b1d830052120419f2be90fd37c34d4 100644
+--- a/login/signup.php
++++ b/login/signup.php
+@@ -87,10 +87,11 @@ $login      = get_string('login');
+ $PAGE->navbar->add($login);
+ $PAGE->navbar->add($newaccount);
+ 
++$PAGE->set_pagelayout('login');
+ $PAGE->set_title($newaccount);
+ $PAGE->set_heading($SITE->fullname);
+ 
+ echo $OUTPUT->header();
+-echo $OUTPUT->heading($newaccount);
+-$mform_signup->display();
++
++echo $OUTPUT->render($mform_signup);
+ echo $OUTPUT->footer();
+diff --git a/login/signup_form.php b/login/signup_form.php
+index 185cb69ac66f3045e6f39a49618f14df51e1db31..07980d8bc0ff50eb02fc5542fe4f9a6e6e5b0be0 100644
+--- a/login/signup_form.php
++++ b/login/signup_form.php
+@@ -30,7 +30,7 @@ require_once($CFG->libdir.'/formslib.php');
+ require_once($CFG->dirroot.'/user/profile/lib.php');
+ require_once($CFG->dirroot . '/user/editlib.php');
+ 
+-class login_signup_form extends moodleform {
++class login_signup_form extends moodleform implements renderable, templatable {
+     function definition() {
+         global $USER, $CFG;
+ 
+@@ -142,4 +142,21 @@ class login_signup_form extends moodleform {
+         return $errors;
+ 
+     }
++
++    /**
++     * Export this data so it can be used as the context for a mustache template.
++     *
++     * @param renderer_base $output Used to do a final render of any components that need to be rendered for export.
++     * @return array
++     */
++    public function export_for_template(renderer_base $output) {
++        ob_start();
++        $this->display();
++        $formhtml = ob_get_contents();
++        ob_end_clean();
++        $context = [
++            'formhtml' => $formhtml
++        ];
++        return $context;
++    }
+ }
+diff --git a/theme/boost/amd/src/drawer.js b/theme/boost/amd/src/drawer.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..74c307cf3f67fcc6004e9dcec2d193d528b060f3
+--- /dev/null
++++ b/theme/boost/amd/src/drawer.js
+@@ -0,0 +1,139 @@
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Contain the logic for a drawer.
++ *
++ * @package    theme_boost
++ * @copyright  2016 Damyon Wiese
++ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++define(['jquery', 'core/custom_interaction_events', 'core/notification'],
++     function($, CustomEvents, Notification) {
++
++    var SELECTORS = {
++        TOGGLE_REGION: '[data-region="drawer-toggle"]',
++        TOGGLE_ACTION: '[data-action="toggle-drawer"]',
++        TOGGLE_TARGET: 'aria-controls',
++        TOGGLE_SIDE: 'left',
++        BODY: 'body'
++    };
++
++    /**
++     * Constructor for the Drawer.
++     *
++     * @param {object} root The root jQuery element for the modal
++     */
++    var Drawer = function() {
++
++        if (!$(SELECTORS.TOGGLE_REGION).length) {
++            Notification.exception({message: 'Page is missing a drawer toggle region'});
++        }
++        if (!$(SELECTORS.TOGGLE_ACTION).length) {
++            Notification.exception({message: 'Page is missing a drawer toggle link'});
++        }
++        $(SELECTORS.TOGGLE_REGION).each(function(index, ele) {
++            var trigger = $(ele).find(SELECTORS.TOGGLE_ACTION);
++            var hidden = trigger.attr('aria-expanded') == 'false';
++            var side = trigger.attr('data-side');
++            var body = $(SELECTORS.BODY);
++
++            if (!hidden) {
++                body.addClass('drawer-open-' + side);
++                trigger.attr('aria-expanded', 'true');
++            } else {
++                trigger.attr('aria-expanded', 'false');
++            }
++        }.bind(this));
++
++        this.registerEventListeners();
++    };
++
++    Drawer.prototype.closeAll = function() {
++        $(SELECTORS.TOGGLE_REGION).each(function(index, ele) {
++            var trigger = $(ele).find(SELECTORS.TOGGLE_ACTION);
++            var side = trigger.attr('data-side');
++            var body = $(SELECTORS.BODY);
++            var drawerid = trigger.attr('aria-controls');
++            var drawer = $(document.getElementById(drawerid));
++            var preference = trigger.attr('data-preference');
++
++            trigger.attr('aria-expanded', 'false');
++            body.removeClass('drawer-open-' + side);
++            drawer.attr('aria-hidden', 'true');
++            drawer.addClass('closed');
++            M.util.set_user_preference(preference, 'false');
++        }.bind(this));
++    };
++
++    /**
++     * Open / close the blocks drawer.
++     *
++     * @method toggleDrawer
++     * @param {Event} e
++     */
++    Drawer.prototype.toggleDrawer = function(e) {
++        var trigger = $(e.target).closest('[data-action=toggle-drawer]');
++        var drawerid = trigger.attr('aria-controls');
++        var drawer = $(document.getElementById(drawerid));
++        var body = $(SELECTORS.BODY);
++        var side = trigger.attr('data-side');
++        var preference = trigger.attr('data-preference');
++
++        body.addClass('drawer-ease');
++        var open = trigger.attr('aria-expanded') == 'true';
++        if (!open) {
++            var small = $(document).width() < 512;
++            if (small) {
++                this.closeAll();
++            }
++            // Open.
++            trigger.attr('aria-expanded', 'true');
++            drawer.attr('aria-hidden', 'false');
++            body.addClass('drawer-open-' + side);
++            drawer.removeClass('closed');
++            M.util.set_user_preference(preference, 'true');
++        } else {
++            // Close.
++            body.removeClass('drawer-open-' + side);
++            trigger.attr('aria-expanded', 'false');
++            drawer.attr('aria-hidden', 'true');
++            drawer.addClass('closed');
++            M.util.set_user_preference(preference, 'false');
++        }
++    };
++
++    /**
++     * Set up all of the event handling for the modal.
++     *
++     * @method registerEventListeners
++     */
++    Drawer.prototype.registerEventListeners = function() {
++        var body = $(SELECTORS.BODY);
++
++        CustomEvents.define(body, [CustomEvents.events.activate]);
++
++        body.on(CustomEvents.events.activate, SELECTORS.TOGGLE_ACTION, function(e, data) {
++            this.toggleDrawer(data.originalEvent);
++            data.originalEvent.preventDefault();
++        }.bind(this));
++    };
++
++    return {
++        'init': function() {
++            return new Drawer();
++        }
++    };
++});
+diff --git a/theme/boost/classes/output/core_renderer.php b/theme/boost/classes/output/core_renderer.php
+index afe5a60c9a902f4a431e8b819b82d2e2e399a358..ffd652ea960d86ccbc954ffa9ea5639c61a4032e 100644
+--- a/theme/boost/classes/output/core_renderer.php
++++ b/theme/boost/classes/output/core_renderer.php
+@@ -23,6 +23,8 @@ use tabtree;
+ use custom_menu_item;
+ use custom_menu;
+ use block_contents;
++use navigation_node;
++use action_link;
+ use stdClass;
+ use moodle_url;
+ use preferences_groups;
+@@ -73,6 +75,7 @@ class core_renderer extends \core_renderer {
+     public function full_header() {
+         $html = html_writer::start_tag('header', array('id' => 'page-header', 'class' => 'row'));
+         $html .= html_writer::start_div('col-xs-12 p-t-1 p-b-1');
++        $html .= html_writer::div($this->context_header_settings_menu(), 'pull-xs-right context-header-settings-menu');
+         $html .= $this->context_header();
+         $html .= html_writer::start_div('clearfix', array('id' => 'page-navbar'));
+         $html .= html_writer::tag('div', $this->navbar(), array('class' => 'breadcrumb-nav'));
+@@ -319,7 +322,7 @@ class core_renderer extends \core_renderer {
+      * @return string
+      */
+     public function body_css_classes(array $additionalclasses = array()) {
+-        return $this->page->bodyclasses;
++        return $this->page->bodyclasses . ' ' . implode(' ', $additionalclasses);
+     }
+ 
+     /**
+@@ -347,6 +350,9 @@ class core_renderer extends \core_renderer {
+             }
+         }
+ 
++        if ($menu->is_empty()) {
++            return '';
++        }
+         $context = $menu->export_for_template($this);
+ 
+         // We do not want the icon with the caret, the caret is added by Bootstrap.
+@@ -441,4 +447,152 @@ class core_renderer extends \core_renderer {
+         }
+         return $this->render_from_template('core/pix_icon', $data);
+     }
++
++    /**
++     * Renders the login form.
++     *
++     * @param \core_auth\output\login $form The renderable.
++     * @return string
++     */
++    public function render_login(\core_auth\output\login $form) {
++        global $SITE;
++
++        $context = $form->export_for_template($this);
++
++        // Override because rendering is not supported in template yet.
++        $context->cookieshelpiconformatted = $this->help_icon('cookiesenabled');
++        $context->errorformatted = $this->error_text($context->error);
++        $url = $this->get_logo_url();
++        if ($url) {
++            $url = $url->out(false);
++        }
++        $context->logourl = $url;
++        $context->sitename = format_string($SITE->fullname, true, array('context' => context_course::instance(SITEID)));
++
++        return $this->render_from_template('core/login', $context);
++    }
++
++    /**
++     * Render the login signup form into a nice template for the theme.
++     *
++     * @param mform $form
++     * @return string
++     */
++    public function render_login_signup_form($form) {
++        global $SITE;
++
++        $context = $form->export_for_template($this);
++        $url = $this->get_logo_url();
++        if ($url) {
++            $url = $url->out(false);
++        }
++        $context['logourl'] = $url;
++        $context['sitename'] = format_string($SITE->fullname, true, array('context' => context_course::instance(SITEID)));
++
++        return $this->render_from_template('core/signup_form_layout', $context);
++    }
++
++    /**
++     * This is an optional menu that can be added to a layout by a theme. It contains the
++     * menu for the course administration, only on the course main page.
++     *
++     * @return string
++     */
++    public function context_header_settings_menu() {
++        $context = $this->page->context;
++        $menu = new action_menu();
++        if ($context->contextlevel == CONTEXT_COURSE) {
++            // Get the course admin node from the settings navigation.
++            $items = $this->page->navbar->get_items();
++            $node = end($items);
++            if (($node->type == navigation_node::TYPE_COURSE)) {
++                $node = $this->page->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE);
++                if ($node) {
++                    // Build an action menu based on the visible nodes from this navigation tree.
++                    $this->build_action_menu_from_navigation($menu, $node, false, true);
++
++                    $text = get_string('courseadministration');
++                    $url = new moodle_url('/course/admin.php', array('courseid' => $this->page->course->id));
++                    $link = new action_link($url, $text, null, null, new pix_icon('t/edit', $text));
++                    $menu->add_secondary_action($link);
++                }
++            }
++        } else if ($context->contextlevel == CONTEXT_USER) {
++            $items = $this->page->navbar->get_items();
++            $node = end($items);
++            if ($node->key === 'myprofile') {
++                // Get the course admin node from the settings navigation.
++                $node = $this->page->settingsnav->find('useraccount', navigation_node::TYPE_CONTAINER);
++                if ($node) {
++                    // Build an action menu based on the visible nodes from this navigation tree.
++                    $this->build_action_menu_from_navigation($menu, $node);
++                }
++            }
++        }
++        return $this->render($menu);
++    }
++
++    /**
++     * This is an optional menu that can be added to a layout by a theme. It contains the
++     * menu for the most specific thing from the settings block. E.g. Module administration.
++     *
++     * @return string
++     */
++    public function region_main_settings_menu() {
++        $context = $this->page->context;
++        $menu = new action_menu();
++
++        if ($context->contextlevel == CONTEXT_MODULE) {
++
++            $node = $this->page->navigation->find_active_node();
++            if (($node->type == navigation_node::TYPE_ACTIVITY ||
++                    $node->type == navigation_node::TYPE_RESOURCE)) {
++                // Get the course admin node from the settings navigation.
++                $node = $this->page->settingsnav->find('modulesettings', navigation_node::TYPE_SETTING);
++                if ($node) {
++                    // Build an action menu based on the visible nodes from this navigation tree.
++                    $this->build_action_menu_from_navigation($menu, $node);
++                }
++            }
++        }
++        return $this->render($menu);
++    }
++
++    /**
++     * Take a node in the nav tree and make an action menu out of it.
++     * The links are injected in the action menu.
++     *
++     * @param action_menu $menu
++     * @param navigation_node $node
++     * @param boolean $indent
++     * @param boolean $onlytopleafnodes
++     */
++    private function build_action_menu_from_navigation(action_menu $menu,
++                                                       navigation_node $node,
++                                                       $indent = false,
++                                                       $onlytopleafnodes = false) {
++        // Build an action menu based on the visible nodes from this navigation tree.
++        foreach ($node->children as $menuitem) {
++            if ($menuitem->display) {
++                if ($onlytopleafnodes && $menuitem->children->count()) {
++                    continue;
++                }
++                if ($menuitem->action) {
++                    $text = $menuitem->text;
++                    $link = new action_link($menuitem->action, $menuitem->text, null, null, $menuitem->icon);
++                    if ($indent) {
++                        $link->add_class('m-l-1');
++                    }
++                } else {
++                    if ($onlytopleafnodes) {
++                        continue;
++                    }
++                    $link = $menuitem->text;
++                }
++                $menu->add_secondary_action($link);
++                $this->build_action_menu_from_navigation($menu, $menuitem, true);
++            }
++        }
++    }
++
+ }
+diff --git a/theme/boost/config.php b/theme/boost/config.php
+index f52949d803fcdfc3ddf92045f7622ef8fda397c8..65f04bf32fe25988f8e8e8e06ed22f7ec44f78a6 100644
+--- a/theme/boost/config.php
++++ b/theme/boost/config.php
+@@ -88,7 +88,7 @@ $THEME->layouts = [
+         'defaultregion' => 'side-pre',
+     ),
+     'login' => array(
+-        'file' => 'columns1.php',
++        'file' => 'login.php',
+         'regions' => array(),
+         'options' => array('langmenu' => true),
+     ),
+diff --git a/theme/boost/layout/columns1.php b/theme/boost/layout/columns1.php
+index 618eb77ed3869580e9be1002a179c5cbbf62b6cd..8b0b48281f2cbdf7cd63f03234e647ef15e7e092 100644
+--- a/theme/boost/layout/columns1.php
++++ b/theme/boost/layout/columns1.php
+@@ -15,7 +15,7 @@
+ // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ /**
+- * A one column layout for the boost theme.
++ * A two column layout for the boost theme.
+  *
+  * @package   theme_boost
+  * @copyright 2016 Damyon Wiese
+@@ -24,9 +24,29 @@
+ 
+ defined('MOODLE_INTERNAL') || die();
+ 
++user_preference_allow_ajax_update('drawer-open-blocks', PARAM_ALPHA);
++user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
++
++$navdraweropen = (get_user_preferences('drawer-open-nav', 'true') == 'true');
++$blocksdraweropen = (get_user_preferences('drawer-open-blocks', 'true') == 'true');
++$extraclasses = [];
++if ($blocksdraweropen) {
++    $extraclasses[] = 'drawer-open-right';
++}
++if ($navdraweropen) {
++    $extraclasses[] = 'drawer-open-left';
++}
++$bodyattributes = $OUTPUT->body_attributes($extraclasses);
++
+ $templatecontext = [
+     'sitename' => format_string($SITE->shortname, true, array('context' => context_course::instance(SITEID))),
+-    'output' => $OUTPUT
++    'output' => $OUTPUT,
++    'sidepreblocks' => $OUTPUT->blocks('side-pre'),
++    'bodyattributes' => $bodyattributes,
++    'blocksdraweropen' => $blocksdraweropen,
++    'navdraweropen' => $navdraweropen
+ ];
+ 
++$templatecontext['flatnavigation'] = $PAGE->flatnav;
+ echo $OUTPUT->render_from_template('theme_boost/columns1', $templatecontext);
++
+diff --git a/theme/boost/layout/columns2.php b/theme/boost/layout/columns2.php
+index 90c4fc1e18e25daa6cd7e27fe957803949aeef39..e0664b9286b3b58d973287ace37bdc8d857eb827 100644
+--- a/theme/boost/layout/columns2.php
++++ b/theme/boost/layout/columns2.php
+@@ -24,10 +24,29 @@
+ 
+ defined('MOODLE_INTERNAL') || die();
+ 
++user_preference_allow_ajax_update('drawer-open-blocks', PARAM_ALPHA);
++user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
++
++$navdraweropen = (get_user_preferences('drawer-open-nav', 'true') == 'true');
++$blocksdraweropen = (get_user_preferences('drawer-open-blocks', 'true') == 'true');
++$extraclasses = [];
++if ($blocksdraweropen) {
++    $extraclasses[] = 'drawer-open-right';
++}
++if ($navdraweropen) {
++    $extraclasses[] = 'drawer-open-left';
++}
++$bodyattributes = $OUTPUT->body_attributes($extraclasses);
++
+ $templatecontext = [
+     'sitename' => format_string($SITE->shortname, true, array('context' => context_course::instance(SITEID))),
+     'output' => $OUTPUT,
+-    'sidepreblocks' => $OUTPUT->blocks('side-pre', 'col-md-4 pull-md-8'),
++    'sidepreblocks' => $OUTPUT->blocks('side-pre'),
++    'bodyattributes' => $bodyattributes,
++    'blocksdraweropen' => $blocksdraweropen,
++    'navdraweropen' => $navdraweropen
+ ];
+ 
++$templatecontext['flatnavigation'] = $PAGE->flatnav;
+ echo $OUTPUT->render_from_template('theme_boost/columns2', $templatecontext);
++
+diff --git a/theme/boost/layout/login.php b/theme/boost/layout/login.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..0ae675d00504fc1aae90bee00de062f71fdc905e
+--- /dev/null
++++ b/theme/boost/layout/login.php
+@@ -0,0 +1,36 @@
++<?php
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++defined('MOODLE_INTERNAL') || die();
++
++/**
++ * A two column layout for the boost theme.
++ *
++ * @package   theme_boost
++ * @copyright 2016 Damyon Wiese
++ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++
++$bodyattributes = $OUTPUT->body_attributes();
++
++$templatecontext = [
++    'sitename' => format_string($SITE->shortname, true, array('context' => context_course::instance(SITEID))),
++    'output' => $OUTPUT,
++    'bodyattributes' => $bodyattributes
++];
++
++echo $OUTPUT->render_from_template('theme_boost/login', $templatecontext);
++
+diff --git a/theme/boost/layout/secure.php b/theme/boost/layout/secure.php
+index c1217901b7d4c48c958c6415f52786a53b36d824..b0ae36aad9a14bea1d2681f38be759e2ce0b2ec7 100644
+--- a/theme/boost/layout/secure.php
++++ b/theme/boost/layout/secure.php
+@@ -27,8 +27,7 @@ defined('MOODLE_INTERNAL') || die();
+ $templatecontext = [
+     'sitename' => format_string($SITE->shortname, true, array('context' => context_course::instance(SITEID))),
+     'output' => $OUTPUT,
+-    'sidepreblocks' => $OUTPUT->blocks('side-pre', 'col-md-4 pull-md-8 col-lg-3 pull-lg-9'),
+-    'sidepostblocks' => $OUTPUT->blocks('side-post', 'col-md-3')
++    'sidepreblocks' => $OUTPUT->blocks('side-pre'),
+ ];
+ 
+ echo $OUTPUT->render_from_template('theme_boost/secure', $templatecontext);
+diff --git a/theme/boost/pix/blocksdrawer.png b/theme/boost/pix/blocksdrawer.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..a296436a70553b3d2d82daf8f4d764745938359b
+GIT binary patch
+literal 785
+zcmeAS@N?(olHy`uVBq!ia0y~yV9)?z4mJh`hMs>rav2yH*pj^6T^Rm@;DWu&Co?cG
+za29w(7BevLUI$@DCym(^3=9nHC7!;n><_qD*bFVcPWbD^z`!)m)5S3);_%z)=e<J$
+zMULA)-}k(@?F0L*Wd(r>e;K+xiswuWTpU{OFq<PPOu*G;wt|vV)Rj}dyBEcB<Te!u
+z8~Pge<)>r>&gPiZ#U#EmB;{Al_bmY-Y)9F9&pLdL-CNGL=lkCK@BiLAEZUG_B+1`v
+z*?lS3C2ECI$j{D6(NS~iW3;B$dFJQm@7{6GVnhF}L+KmeHC*19{yz4B%GP$VBV`hS
+zY%3#A6fV9Hwwq<^-GIj{g#SeENPS;?z-OxER>rl`f^%}SGjExinQaU3EjyWFly`I{
+z+pJT%^VXYLHaIOb;Qw>u%%jjRU%tOLSK64Q_nmD6!`-`gdFO3keA;T;qU!61-lXV#
+zS3D&bGttsEBh*+!<=5r!fBvk_X2?ta(|0s3c3JezC34=pJbr!Yn<oazEb@K5to-w?
+zu*=)d@@zdjQM82Pxb8U)0pY{VrSX*=r^-J3erx$eSy)Ge%lN?4PrK%y_h%6P+FYg0
+zD%|O^*@Abv&Jh)p{u=w=atqX_zACz6xpvXALt1CM+LX23&s<}<`tj0&?W_m3S~q@X
+z=$p~K;JMabZqW^o_OZ@$-4wymyj9@!Be(OS{u^%`Jt217_WjXAP8Lg6@n$t&U){U(
+z!8D2YnNLr8UU;$dV(^@kDbpIJKmD4t@ds~3od3sbi}h}1_I_qjRa<1P_UUI}gNs%z
+z+YZjCm#t@4W&4S4zPYkPvy3mva*qs;C1cOJl1mQHw?$;;iW`WYOln>4z_36`{`#e}
+z%X5p2B7UZubpMT6$5Qe1Yv;#11_m+wo->>7H{NxKj*tJ9@#0lX>H0%b$1ffFv}0DW
+z>(TIw%nm-i(|Xo!OJmC3e8s$P<Ml>;(--f0B8puZ`gnM^nz0>Z4dLs|sq_D7&L_;Z
+r=d!_$_rL#{lwJvRm;G<~kD)u|%}!pi9S0Z~7#KWV{an^LB{Ts53#V#-
+
+literal 0
+HcmV?d00001
+
+diff --git a/theme/boost/pix/blocksdrawer.svg b/theme/boost/pix/blocksdrawer.svg
+new file mode 100644
+index 0000000000000000000000000000000000000000..eac1f212149302f537bbdc6d7ea0cff52c4fd6f2
+--- /dev/null
++++ b/theme/boost/pix/blocksdrawer.svg
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Generator: Adobe Illustrator 20.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
++<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
++	 viewBox="0 0 40 40" style="enable-background:new 0 0 40 40;" xml:space="preserve">
++<style type="text/css">
++	.st0{fill:#373A3C;}
++</style>
++<path class="st0" d="M40,3.9v24.3c0,1-0.3,1.8-1,2.5s-1.5,1-2.5,1H3.6c-1,0-1.8-0.3-2.5-1s-1-1.5-1-2.5V3.9c0-1,0.3-1.8,1-2.5
++	s1.5-1,2.5-1h32.9c1,0,1.8,0.4,2.5,1C39.7,2.1,40,2.9,40,3.9z M37.1,28.2V9.6c0-0.2-0.1-0.4-0.2-0.5c-0.1-0.1-0.3-0.2-0.5-0.2H3.6
++	C3.4,8.9,3.2,9,3.1,9.1C2.9,9.3,2.9,9.4,2.9,9.6v18.6c0,0.2,0.1,0.4,0.2,0.5c0.1,0.1,0.3,0.2,0.5,0.2h32.9c0.2,0,0.4-0.1,0.5-0.2
++	S37.1,28.4,37.1,28.2z M8.6,12.5v1.4c0,0.2-0.1,0.4-0.2,0.5c-0.1,0.1-0.3,0.2-0.5,0.2H6.4c-0.2,0-0.4-0.1-0.5-0.2
++	c-0.1-0.1-0.2-0.3-0.2-0.5v-1.4c0-0.2,0.1-0.4,0.2-0.5s0.3-0.2,0.5-0.2h1.4c0.2,0,0.4,0.1,0.5,0.2C8.5,12.1,8.6,12.3,8.6,12.5z
++	 M8.6,18.2v1.4c0,0.2-0.1,0.4-0.2,0.5c-0.1,0.1-0.3,0.2-0.5,0.2H6.4c-0.2,0-0.4-0.1-0.5-0.2s-0.2-0.3-0.2-0.5v-1.4
++	c0-0.2,0.1-0.4,0.2-0.5s0.3-0.2,0.5-0.2h1.4c0.2,0,0.4,0.1,0.5,0.2C8.5,17.9,8.6,18,8.6,18.2z M8.6,23.9v1.4c0,0.2-0.1,0.4-0.2,0.5
++	C8.3,25.9,8.1,26,7.9,26H6.4c-0.2,0-0.4-0.1-0.5-0.2s-0.2-0.3-0.2-0.5v-1.4c0-0.2,0.1-0.4,0.2-0.5s0.3-0.2,0.5-0.2h1.4
++	c0.2,0,0.4,0.1,0.5,0.2C8.5,23.6,8.6,23.7,8.6,23.9z M34.3,12.5v1.4c0,0.2-0.1,0.4-0.2,0.5c-0.1,0.1-0.3,0.2-0.5,0.2H12.1
++	c-0.2,0-0.4-0.1-0.5-0.2c-0.1-0.1-0.2-0.3-0.2-0.5v-1.4c0-0.2,0.1-0.4,0.2-0.5c0.1-0.1,0.3-0.2,0.5-0.2h21.4c0.2,0,0.4,0.1,0.5,0.2
++	C34.2,12.1,34.3,12.3,34.3,12.5z M34.3,18.2v1.4c0,0.2-0.1,0.4-0.2,0.5c-0.1,0.1-0.3,0.2-0.5,0.2H12.1c-0.2,0-0.4-0.1-0.5-0.2
++	s-0.2-0.3-0.2-0.5v-1.4c0-0.2,0.1-0.4,0.2-0.5c0.1-0.1,0.3-0.2,0.5-0.2h21.4c0.2,0,0.4,0.1,0.5,0.2C34.2,17.9,34.3,18,34.3,18.2z
++	 M34.3,23.9v1.4c0,0.2-0.1,0.4-0.2,0.5C34,25.9,33.8,26,33.6,26H12.1c-0.2,0-0.4-0.1-0.5-0.2s-0.2-0.3-0.2-0.5v-1.4
++	c0-0.2,0.1-0.4,0.2-0.5c0.1-0.1,0.3-0.2,0.5-0.2h21.4c0.2,0,0.4,0.1,0.5,0.2C34.2,23.6,34.3,23.7,34.3,23.9z"/>
++</svg>
+diff --git a/theme/boost/scss/moodle.scss b/theme/boost/scss/moodle.scss
+index 9080050c6a07ea62944d007147393a702203f641..c92deac35082b02a19ebbf55e4212fdfac2b545c 100644
+--- a/theme/boost/scss/moodle.scss
++++ b/theme/boost/scss/moodle.scss
+@@ -17,14 +17,17 @@ $breadcrumb-divider-rtl: "◀" !default;
+ @import "moodle/icons";
+ @import "moodle/admin";
+ @import "moodle/blocks";
++@import "moodle/bootswatch";
+ @import "moodle/calendar";
+ @import "moodle/course";
++@import "moodle/drawer";
+ @import "moodle/filemanager";
+ @import "moodle/message";
+ @import "moodle/question";
+ @import "moodle/user";
+ @import "moodle/search";
+ @import "moodle/forms";
++@import "moodle/login";
+ @import "moodle/modules";
+ @import "moodle/chat";
+ @import "moodle/reports";
+diff --git a/theme/boost/scss/moodle/blocks.scss b/theme/boost/scss/moodle/blocks.scss
+index f1504fa528e6bde97df40597afd4288ab037c9dd..9b15639f9709857d3528de8f43e8a444fba5abc9 100644
+--- a/theme/boost/scss/moodle/blocks.scss
++++ b/theme/boost/scss/moodle/blocks.scss
+@@ -27,3 +27,52 @@
+         }
+     }
+ }
++
++#nav-drawer.closed {
++    left: -285px;
++}
++#blocks-drawer.closed {
++    right: -285px;
++}
++
++/* Use a variable for the drawer background colors. */
++$drawer-bg: $gray-lighter !default;
++
++[data-region="drawer"] {
++    position: fixed;
++    padding: 20px;
++    width: 265px;
++    top: ($navbar-padding-y * 2) + ($navbar-brand-padding-y * 2) + $font-size-lg * 1.5;
++    height: 100%;
++    overflow-y: scroll;
++    -webkit-overflow-scrolling: touch;
++    z-index: 100;
++    background-color: $drawer-bg;
++    -webkit-transition: right 0.5s ease, left 0.5s ease;
++       -moz-transition: right 0.5s ease, left 0.5s ease;
++            transition: right 0.5s ease, left 0.5s ease;
++}
++#nav-drawer {
++    right: auto;
++    left: 0px;
++}
++#blocks-drawer {
++    left: auto;
++    right: 0px;
++}
++body.drawer-ease {
++    -webkit-transition: margin-left 0.5s ease, margin-right 0.5s ease;
++       -moz-transition: margin-left 0.5s ease, margin-right 0.5s ease;
++            transition: margin-left 0.5s ease, margin-right 0.5s ease;
++}
++
++body.drawer-open-left {
++    @include media-breakpoint-up(md) {
++        margin-left: 265px;
++    }
++}
++body.drawer-open-right {
++    @include media-breakpoint-up(md) {
++        margin-right: 265px;
++    }
++}
+diff --git a/theme/boost/scss/moodle/bootswatch.scss b/theme/boost/scss/moodle/bootswatch.scss
+new file mode 100644
+index 0000000000000000000000000000000000000000..60afab5b269a04a063a25d88650388d82d6e5f9f
+--- /dev/null
++++ b/theme/boost/scss/moodle/bootswatch.scss
+@@ -0,0 +1,10 @@
++// Adjustments to make bootstrap 4 work better with some variables from bootstrap 3 bootswatches
++$navbar-height: 60px !default;
++
++.navbar {
++    max-height: $navbar-height;
++}
++
++.navbar-brand {
++    margin-top: (($font-size-base * $line-height-base) - ($font-size-lg * $line-height-base)) / 2;
++}
+diff --git a/theme/boost/scss/moodle/core.scss b/theme/boost/scss/moodle/core.scss
+index ffa9548305d0a4c4b4e5d175e826553d2849129f..12443b569442767fd4b13edb61b689e2d7b4bfc4 100644
+--- a/theme/boost/scss/moodle/core.scss
++++ b/theme/boost/scss/moodle/core.scss
+@@ -1,5 +1,20 @@
+ /* core.less */
+ 
++
++.context-header-settings-menu,
++.region-main-settings-menu {
++    float: right;
++    width: 4em;
++    height: 2em;
++    display: block;
++}
++
++.context-header-settings-menu .dropdown-toggle > .icon,
++.region-main-settings-menu .dropdown-toggle > .icon {
++    height: 24px;
++    width: auto;
++}
++
+ /** Page layout CSS starts **/
+ .layout-option-noheader #page-header,
+ .layout-option-nonavbar #page-navbar,
+@@ -1227,11 +1242,6 @@ body#page-lib-editor-tinymce-plugins-moodlemedia-preview {
+     }
+ }
+ 
+-/** Moodle modals. */
+-.modal.show {
+-    display: block;
+-}
+-
+ /* Moodle Dialogue Settings (moodle-core-dialogue)  */
+ .moodle-dialogue-base .moodle-dialogue-lightbox {
+     background-color: $gray;
+@@ -1920,38 +1930,6 @@ img#persona_signin {
+ .breadcrumb-nav .breadcrumb {
+     margin: 0;
+ }
+-/** Navbar */
+-.navbar-brand {
+-    .logo {
+-        display: inline-block;
+-        margin: -$navbar-brand-padding-y 0;
+-    }
+-
+-    .site-name {
+-        display: inline-block;
+-    }
+-
+-    &.has-logo {
+-        .site-name {
+-            margin-left: $spacer / 2;
+-        }
+-    }
+-}
+-
+-@include media-breakpoint-down(xs) {
+-    .navbar {
+-        .navbar-brand {
+-            max-width: 80%;
+-            margin-right: 0;
+-
+-            &.has-logo {
+-                .site-name {
+-                    display: none;
+-                }
+-            }
+-        }
+-    }
+-}
+ 
+ /** Page header */
+ #page-header {
+@@ -2207,3 +2185,18 @@ ul {
+         }
+     }
+ }
++
++#region-flat-nav {
++    padding-right: 0;
++    padding-left: 0;
++    .nav {
++        margin-right: $grid-gutter-width / 2;
++        background-color: $card-bg;
++    }
++    @include media-breakpoint-down(sm) {
++        .nav {
++            margin-top: $grid-gutter-width;
++            margin-right: 0;
++        }
++    }
++}
+diff --git a/theme/boost/scss/moodle/course.scss b/theme/boost/scss/moodle/course.scss
+index 3e7e55b123e8d6764a0073e8c6eb5d6962a2883d..1e0a54a70f5beeace4cb3eedf51c82d6505bab75 100644
+--- a/theme/boost/scss/moodle/course.scss
++++ b/theme/boost/scss/moodle/course.scss
+@@ -54,7 +54,9 @@
+ 
+         &.right {
+             float: right;
++            clear: right;
+         }
++        margin-top: 0.5rem;
+     }
+ 
+     .spinner {
+@@ -1204,3 +1206,8 @@ span.editinstructions {
+         }
+     }
+ }
++
++.page-settings-menu .menubar > a > .icon {
++    width: auto;
++    height: 32px;
++}
+diff --git a/theme/boost/scss/moodle/drawer.scss b/theme/boost/scss/moodle/drawer.scss
+new file mode 100644
+index 0000000000000000000000000000000000000000..7c215e1a56f9c3c3bf8e9c7925268d97f07fe4ed
+--- /dev/null
++++ b/theme/boost/scss/moodle/drawer.scss
+@@ -0,0 +1,75 @@
++/* Anchor link offset fix. This makes hash links scroll 60px down to account for the fixed header. */
++$fixed-header-y: $navbar-height;
++
++$drawer-width: 285px;
++$drawer-padding-x: 20px;
++$drawer-padding-y: 20px;
++$drawer-offscreen-gutter: 20px;
++
++:target {
++  padding-top: ($fixed-header-y + 30px) ! important; /* negative fixed header height */
++  margin-top: -$fixed-header-y ! important; /* negative fixed header height */
++}
++
++#nav-drawer.closed {
++    left: - ($drawer-width + $drawer-offscreen-gutter);
++}
++#blocks-drawer.closed {
++    right: - ($drawer-width + $drawer-offscreen-gutter);
++}
++#page {
++    margin-top: $navbar-height;
++}
++
++/* Use a variable for the drawer background colors. */
++$drawer-bg: $gray-lighter !default;
++
++[data-region="drawer"] {
++    position: fixed;
++    padding: $drawer-padding-x $drawer-padding-y;
++    width: $drawer-width;
++    top: $fixed-header-y;
++    height: 100%;
++    overflow-y: scroll;
++    -webkit-overflow-scrolling: touch;
++    z-index: $zindex-dropdown - 1;
++    background-color: $drawer-bg;
++    -webkit-transition: right 0.5s ease, left 0.5s ease;
++       -moz-transition: right 0.5s ease, left 0.5s ease;
++            transition: right 0.5s ease, left 0.5s ease;
++    .dropdown-menu {
++        max-width: $drawer-width - $drawer-padding-x * 4;
++    }
++    .dropdown-item {
++        max-width: 100%;
++        overflow-x: hidden;
++        text-overflow: ellipsis;
++    }
++}
++#nav-drawer {
++    right: auto;
++    left: 0px;
++}
++#blocks-drawer {
++    left: auto;
++    right: 0px;
++}
++#page {
++    margin-top: $fixed-header-y;
++}
++body.drawer-ease {
++    -webkit-transition: margin-left 0.5s ease, margin-right 0.5s ease;
++       -moz-transition: margin-left 0.5s ease, margin-right 0.5s ease;
++            transition: margin-left 0.5s ease, margin-right 0.5s ease;
++}
++
++body.drawer-open-left {
++    @include media-breakpoint-up(lg) {
++        margin-left: $drawer-width;
++    }
++}
++body.drawer-open-right {
++    @include media-breakpoint-up(lg) {
++        margin-right: $drawer-width;
++    }
++}
+diff --git a/theme/boost/scss/moodle/icons.scss b/theme/boost/scss/moodle/icons.scss
+index eb2f8029412b36e2bc2e80dd00b7e8aa111f694e..70887e8044eb9f6e7deaa70319113475f910de36 100644
+--- a/theme/boost/scss/moodle/icons.scss
++++ b/theme/boost/scss/moodle/icons.scss
+@@ -36,3 +36,7 @@ a:first-of-type > .icon {
+         margin-left: 0;
+     }
+ }
++
++[data-action=toggle-drawer] .icon {
++    margin: 0px;
++}
+diff --git a/theme/boost/scss/moodle/login.scss b/theme/boost/scss/moodle/login.scss
+new file mode 100644
+index 0000000000000000000000000000000000000000..c96744bd9fe570f5a2cbf725dc80db6b16683827
+--- /dev/null
++++ b/theme/boost/scss/moodle/login.scss
+@@ -0,0 +1,8 @@
++.pagelayout-login .card-img-top {
++    max-width: 100%;
++}
++
++.pagelayout-login #region-main {
++    border: 0;
++    background-color: inherit;
++}
+diff --git a/theme/boost/scss/preset-default.scss b/theme/boost/scss/preset-default.scss
+index c61bb463348c752054a56a99d50e9be51bd62cdc..e7224c3222c4ad496e1d4787213d97bc29608a02 100644
+--- a/theme/boost/scss/preset-default.scss
++++ b/theme/boost/scss/preset-default.scss
+@@ -18,6 +18,7 @@ $brand-info:                #9954bb !default;
+ $brand-warning:             #ff8800 !default;
+ $brand-danger:              #ff4136 !default;
+ $brand-inverse:             $gray-dark !default;
++$navbar-height:             50px !default;
+ 
+ // Spacing
+ $spacer:   1rem !default;
+@@ -166,26 +167,6 @@ $breadcrumb-divider-rtl: "/" !default;
+     border-top: none;
+ }
+ 
+-/**
+- * Login page.
+- */
+-.pagelayout-login {
+-    &.notloggedin {
+-        #region-main {
+-            background-color: transparent;
+-            border: 0;
+-            padding: 0;
+-        }
+-        .login-wrapper {
+-            background-color: #fff;
+-            border: $border-width solid $card-border-color;
+-        }
+-    }
+-    #notice {
+-        text-align: center;
+-    }
+-}
+-
+ /**
+  * Dashboard styling.
+  */
+@@ -239,3 +220,23 @@ $breadcrumb-divider-rtl: "/" !default;
+ .form-inline .form-group {
+     margin-top: 0;
+ }
++
++
++// Custom transitions for open/close of menus.
++.dropdown-menu {
++    display: block;
++    max-height: 0px;
++    overflow: hidden;
++    opacity: 0;
++    -webkit-transition: max-height 1s ease, opacity 0.4s ease;
++       -moz-transition: max-height 1s ease, opacity 0.4s ease;
++            transition: max-height 1s ease, opacity 0.4s ease;
++}
++.open {
++  // Show the menu
++  > .dropdown-menu {
++    max-height: 2048px;
++    opacity: 100;
++  }
++}
++
+diff --git a/theme/boost/templates/blocks-drawer.mustache b/theme/boost/templates/blocks-drawer.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..e353e034e371fd2e21b83199ae2194b3bc24c2e8
+--- /dev/null
++++ b/theme/boost/templates/blocks-drawer.mustache
+@@ -0,0 +1,3 @@
++<div id="blocks-drawer" data-region="drawer" class="moodle-has-zindex {{^blocksdraweropen}}closed{{/blocksdraweropen}}" aria-hidden="{{#blocksdraweropen}}false{{/blocksdraweropen}}{{^blocksdraweropen}}true{{/blocksdraweropen}}">
++    {{{ sidepreblocks }}}
++</div>
+diff --git a/theme/boost/templates/columns1.mustache b/theme/boost/templates/columns1.mustache
+index 67dbd8a1acc2d792c043bb1962fc85dc6d92faf7..c96e422f34e1afd1a5f2368bb6be21e8f647f358 100644
+--- a/theme/boost/templates/columns1.mustache
++++ b/theme/boost/templates/columns1.mustache
+@@ -7,7 +7,7 @@
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ </head>
+ 
+-<body {{{ output.body_attributes }}}>
++<body {{{ bodyattributes }}}>
+ 
+ <div id="page-wrapper">
+ 
+@@ -15,21 +15,24 @@
+ 
+     {{>theme_boost/header}}
+ 
+-    <div id="page" class="container">
++    <div id="page" class="container-fluid">
+         {{{ output.full_header }}}
+ 
+         <div id="page-content" class="row">
+-            <div id="region-main-box" class="col-xs-12">
+-                <div class="row">
+-                    <section id="region-main" class="col-xs-12">
+-                        {{{ output.course_content_header }}}
+-                        {{{ output.main_content }}}
+-                        {{{ output.course_content_footer }}}
+-                    </section>
+-                </div>
++            <div id="region-main-box">
++                <section id="region-main" class="col-xs-12">
++                    <span class="pull-xs-right page-settings-menu">
++                        {{{ output.page_settings_menu }}}
++                    </span>
++                    {{{ output.course_content_header }}}
++                    {{{ output.main_content }}}
++                    {{{ output.course_content_footer }}}
++                </section>
+             </div>
+         </div>
+     </div>
++    {{> theme_boost/blocks-drawer }}
++    {{> theme_boost/nav-drawer }}
+ </div>
+ <footer id="page-footer" class="p-y-1">
+     <div class="container">
+@@ -42,7 +45,6 @@
+         {{{ output.login_info }}}
+         {{{ output.home_link }}}
+         {{{ output.standard_footer_html }}}
+-
+         {{{ output.standard_end_of_body_html }}}
+     </div>
+ </footer>
+@@ -51,4 +53,5 @@
+ </html>
+ {{#js}}
+ require(['theme_boost/loader'], function() {});
++require(['theme_boost/drawer'], function(mod) {mod.init();});
+ {{/js}}
+diff --git a/theme/boost/templates/columns2.mustache b/theme/boost/templates/columns2.mustache
+index 98668cc58f56a348ed3decc8540c234e5ca84482..9b0335cdf61ca4362f3a16bad1b7e9bcc33cc001 100644
+--- a/theme/boost/templates/columns2.mustache
++++ b/theme/boost/templates/columns2.mustache
+@@ -7,7 +7,7 @@
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ </head>
+ 
+-<body {{{ output.body_attributes }}}>
++<body {{{ bodyattributes }}}>
+ 
+ <div id="page-wrapper">
+ 
+@@ -15,23 +15,24 @@
+ 
+     {{>theme_boost/header}}
+ 
+-    <div id="page" class="container">
++    <div id="page" class="container-fluid">
+         {{{ output.full_header }}}
+ 
+         <div id="page-content" class="row">
+-            <div id="region-main-box" class="col-md-8 push-md-4">
+-                <div class="row">
+-                    <section id="region-main" class="col-xs-12">
+-                        {{{ output.course_content_header }}}
+-                        {{{ output.main_content }}}
+-                        {{{ output.course_content_footer }}}
+-                    </section>
+-                </div>
++            <div id="region-main-box">
++                <section id="region-main" class="col-xs-12">
++                    <span class="pull-xs-right region-main-settings-menu">
++                        {{{ output.region_main_settings_menu }}}
++                    </span>
++                    {{{ output.course_content_header }}}
++                    {{{ output.main_content }}}
++                    {{{ output.course_content_footer }}}
++                </section>
+             </div>
+-            {{{ sidepreblocks }}}
+         </div>
+-
+     </div>
++    {{> theme_boost/blocks-drawer }}
++    {{> theme_boost/nav-drawer }}
+ </div>
+ <footer id="page-footer" class="p-y-1">
+     <div class="container">
+@@ -52,4 +53,5 @@
+ </html>
+ {{#js}}
+ require(['theme_boost/loader'], function() {});
++require(['theme_boost/drawer'], function(mod) {mod.init();});
+ {{/js}}
+diff --git a/theme/boost/templates/core/login.mustache b/theme/boost/templates/core/login.mustache
+index 77a7a7c9d9a34fe2f68d99d2da39f5b68111a43a..eb50c468c0a9cf9a2adf3f5466d9e9467f5fdb2d 100644
+--- a/theme/boost/templates/core/login.mustache
++++ b/theme/boost/templates/core/login.mustache
+@@ -20,32 +20,33 @@
+     Moodle template for the login page.
+ }}
+ 
+-<div class="container-fluid login-page">
++<div class="m-y-3 hidden-sm-down"></div>
+ <div class="row">
+-    <div class="col-sm-12 col-md-12 col-lg-10 offset-lg-1 col-xl-8 offset-xl-2 login-wrapper">
+-        <div class="row">
+-            {{#hasinstructions}}
+-            <div class="col-sm-6 p-b-1 login-form">
+-            {{/hasinstructions}}
+-            {{^hasinstructions}}
+-            <div class="col-sm-6 offset-sm-3 col-md-4 offset-md-4 p-b-1 login-form">
+-            {{/hasinstructions}}
+-
+-                <h2 class="m-t-1">{{#str}} login {{/str}}</h2>
+-
+-                {{#cansignup}}
+-                    <div class="sr-only">
+-                        <a href="{{signupurl}}">{{#str}} tocreatenewaccount {{/str}}</a>
+-                    </div>
+-                {{/cansignup}}
+-
+-                {{#error}}
+-                    <div class="loginerrors m-t-1">
+-                        <a href="#" id="loginerrormessage" class="accesshide">{{error}}</a>
+-                        <div class="alert alert-danger" role="alert">{{error}}</div>
+-                    </div>
+-                {{/error}}
++<div class="col-xl-6 push-xl-3 m-2-md col-sm-8 push-sm-2">
++<div class="card">
++    {{#logourl}}
++        <img class="card-img-top" src="{{logourl}}" alt="" role="presentation"/>
++    {{/logourl}}
++    <div class="card-block">
++        <div class="card-title">
++            <h2 class="m-t-1">{{sitename}}</h2>
++        </div>
++
++        {{#cansignup}}
++            <div class="sr-only">
++                <a href="{{signupurl}}">{{#str}} tocreatenewaccount {{/str}}</a>
++            </div>
++        {{/cansignup}}
+ 
++        {{#error}}
++            <div class="loginerrors m-t-1">
++                <a href="#" id="loginerrormessage" class="accesshide">{{error}}</a>
++                <div class="alert alert-danger" role="alert">{{error}}</div>
++            </div>
++        {{/error}}
++
++        <div class="row">
++            <div class="col-md-4 push-md-1">
+                 <form class="m-t-1" action="{{loginurl}}" method="post" id="login" {{^passwordautocomplete}}autocomplete="off"{{/passwordautocomplete}}>
+                     <input id="anchor" type="hidden" name="anchor" value="">
+                     <script>document.getElementById('anchor').value = location.hash;</script>
+@@ -76,60 +77,69 @@
+                     {{/rememberusername}}
+ 
+                     <button type="submit" class="btn btn-primary btn-block m-t-1" id="loginbtn">{{#str}}login{{/str}}</button>
+-
+-                    <div class="forgetpass m-t-1">
+-                        <p><a href="{{forgotpasswordurl}}">{{#str}}forgotten{{/str}}</a></p>
+-                    </div>
+-
+-                    <div class="m-t-1">
+-                        {{#str}} cookiesenabled {{/str}}
+-                        {{{cookieshelpiconformatted}}}
+-                    </div>
+-
+                 </form>
++            </div>
+ 
+-                {{#canloginasguest}}
+-                    <div class="m-t-2">
+-                        <p>{{#str}}someallowguest{{/str}}</p>
+-                        <form action="{{loginurl}}" method="post" id="guestlogin">
+-                            <input type="hidden" name="username" value="guest" />
+-                            <input type="hidden" name="password" value="guest" />
+-                            <button class="btn btn-secondary btn-block" type="submit">{{#str}}loginguest{{/str}}</button>
+-                        </form>
+-                    </div>
+-                {{/canloginasguest}}
+-
+-                {{#hasidentityproviders}}
+-                    <h6 class="m-t-2">{{#str}} potentialidps, auth {{/str}}</h6>
+-                    <div class="potentialidplist" class="m-t-1">
+-                        {{#identityproviders}}
+-                            <div class="potentialidp">
+-                                <a href="{{url}}" title={{#quote}}{{name}}{{/quote}}>{{#icon}}{{>core/pix_icon}}{{/icon}}{{name}}</a>
+-                            </div>
+-                        {{/identityproviders}}
+-                    </div>
+-                {{/hasidentityproviders}}
++            <div class="col-md-4 push-md-3">
++                <div class="forgetpass m-t-1">
++                    <p><a href="{{forgotpasswordurl}}">{{#str}}forgotten{{/str}}</a></p>
++                </div>
+ 
++                <div class="m-t-1">
++                    {{#str}} cookiesenabled {{/str}}
++                    {{{cookieshelpiconformatted}}}
++                </div>
++            {{#canloginasguest}}
++                <div class="m-t-2">
++                    <p>{{#str}}someallowguest{{/str}}</p>
++                    <form action="{{loginurl}}" method="post" id="guestlogin">
++                        <input type="hidden" name="username" value="guest" />
++                        <input type="hidden" name="password" value="guest" />
++                        <button class="btn btn-secondary btn-block" type="submit">{{#str}}loginguest{{/str}}</button>
++                    </form>
++                </div>
++            {{/canloginasguest}}
++
++        {{#hasidentityproviders}}
++                <h6 class="m-t-2">{{#str}} potentialidps, auth {{/str}}</h6>
++                <div class="potentialidplist" class="m-t-1">
++                    {{#identityproviders}}
++                        <div class="potentialidp">
++                            <a href="{{url}}" title={{#quote}}{{name}}{{/quote}}>{{#icon}}{{>core/pix_icon}}{{/icon}}{{name}}</a>
++                        </div>
++                    {{/identityproviders}}
++                </div>
++        {{/hasidentityproviders}}
+             </div>
++        </div>
++    </div>
++</div>
++</div>
++</div>
+ 
+-            {{#hasinstructions}}
+-                <div class="col-sm-6 p-b-1 login-instructions">
+-                    <h2 class="m-t-1">{{#str}}firsttime{{/str}}</h2>
+-                    <div>
+-                        {{{instructions}}}
+-                        {{#cansignup}}
+-                            <form class="m-t-1" action="{{signupurl}}" method="get" id="signup">
+-                                <button type="submit" class="btn btn-secondary">{{#str}}startsignup{{/str}}</button>
+-                            </form>
+-                        {{/cansignup}}
+-                    </div>
+-                </div>
+-            {{/hasinstructions}}
+ 
++{{#hasinstructions}}
++<div class="row">
++<div class="col-xl-6 push-xl-3 m-2-md col-sm-8 push-sm-2">
++<div class="card">
++    <div class="card-block">
++        <div class="card-title">
++            <h2>{{#str}}firsttime{{/str}}</h2>
++        </div>
++        <div>
++        {{{instructions}}}
++        {{#cansignup}}
++            <form class="m-t-1" action="{{signupurl}}" method="get" id="signup">
++                <button type="submit" class="btn btn-secondary">{{#str}}startsignup{{/str}}</button>
++            </form>
++        {{/cansignup}}
+         </div>
+     </div>
+ </div>
+ </div>
++</div>
++{{/hasinstructions}}
++
+ 
+ {{#js}}
+     require(['jquery', 'core/yui'], function($, Y) {
+diff --git a/theme/boost/templates/core/navbar.mustache b/theme/boost/templates/core/navbar.mustache
+index a9a407d511d5d1c5c60d0fc7a4f41308e30d0bb3..1a424ca572fd0ca28e11d62f6cc431c0d6e705b0 100644
+--- a/theme/boost/templates/core/navbar.mustache
++++ b/theme/boost/templates/core/navbar.mustache
+@@ -1,10 +1,10 @@
+ <ol class="breadcrumb" role="navigation">
+     {{#get_items}}
+         {{#has_action}}
+-        <li class="breadcrumb-item {{#is_active}}active{{/is_active}}"><a href="{{{action}}}" {{#get_title}}title="{{get_title}}"{{/get_title}}>{{text}}</a></li>
++        <li class="breadcrumb-item"><a href="{{{action}}}" {{#get_title}}title="{{get_title}}"{{/get_title}}>{{text}}</a></li>
+         {{/has_action}}
+         {{^has_action}}
+-        <li class="breadcrumb-item {{#is_active}}active{{/is_active}}">{{text}}</li>
++        <li class="breadcrumb-item">{{text}}</li>
+         {{/has_action}}
+     {{/get_items}}
+ </ol>
+diff --git a/theme/boost/templates/core/signup_form_layout.mustache b/theme/boost/templates/core/signup_form_layout.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..0f59efe4c14546d3b6594777a3795574aa78ed41
+--- /dev/null
++++ b/theme/boost/templates/core/signup_form_layout.mustache
+@@ -0,0 +1,17 @@
++<div class="container-fluid">
++    <div class="row">
++        <div class="col-md-8 push-md-2 col-xl-6 push-xl-3">
++            <div class="card">
++                {{#logourl}}
++                    <img class="card-img-top" src="{{logourl}}">
++                {{/logourl}}
++                <div class="card-block">
++                    <div class="card-title">
++                        <h3>{{#str}}newaccount{{/str}}</h3>
++                    </div>
++                    {{{formhtml}}}
++                </div>
++            </div>
++        </div>
++    </div>
++</div>
+diff --git a/theme/boost/templates/flat_navigation.mustache b/theme/boost/templates/flat_navigation.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..93c1b92562e6f4aefd659316ca5dadd235b9fb53
+--- /dev/null
++++ b/theme/boost/templates/flat_navigation.mustache
+@@ -0,0 +1,19 @@
++<nav class="nav nav-stacked nav-pills">
++{{# flatnavigation }}
++    {{#get_smscreenonly}}
++    <div class="hidden-lg-up">
++    {{/get_smscreenonly}}
++    {{#showdivider}}
++    <div class="nav-item"><hr></div>
++    {{/showdivider}}
++    {{#action}}
++    <div class="nav-item"><a class="nav-link {{#isactive}}active{{/isactive}} m-l-{{get_indent}}" href="{{{action}}}">{{text}}</a></div>
++    {{/action}}
++    {{^action}}
++    <div class="nav-item"><span class="nav-link m-l-{{get_indent}}">{{text}}</span></div>
++    {{/action}}
++    {{#get_smscreenonly}}
++    </div>
++    {{/get_smscreenonly}}
++{{/ flatnavigation }}
++</div>
+diff --git a/theme/boost/templates/header.mustache b/theme/boost/templates/header.mustache
+index d6e50a993fda62ac3912c1653e0c597107ad5f0f..27475173a59a4a32681344054936376184d0894c 100644
+--- a/theme/boost/templates/header.mustache
++++ b/theme/boost/templates/header.mustache
+@@ -17,21 +17,27 @@
+ {{!
+     Page header.
+ }}
+-<header role="banner" class="navbar navbar-full navbar-light bg-faded navbar-static-top moodle-has-zindex">
++<header role="banner" class="pos-f-t navbar navbar-full navbar-light bg-faded navbar-static-top moodle-has-zindex">
+ 
+-    <div class="container">
++    <div class="container-fluid">
+ 
+-        <button class="navbar-toggler pull-xs-right hidden-sm-up" data-toggle="collapse" data-target="#bd-main-nav" aria-expanded="false" aria-controls="bd-main-nav" type="button">☰<span class="sr-only">{{#str}}expand{{/str}}</span></button>
++        <div data-region="drawer-toggle">
++        <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn pull-xs-left m-r-1 btn-secondary" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">&#9776;<span class="sr-only">{{#str}}expand, core{{/str}}</span></button>
++        </div>
+ 
+         <a role="banner" href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}">
+             {{# output.should_display_navbar_logo }}
+-                <div class="logo">
++                <span class="logo hidden-xs-down">
+                     <img src="{{output.get_compact_logo_url}}" alt="{{sitename}}">
+-                </div>
++                </span>
+             {{/ output.should_display_navbar_logo }}
+-            <div class="site-name">{{{ sitename }}}</div>
++            <span class="site-name hidden-sm-down">{{{ sitename }}}</span>
+         </a>
+ 
++        <div data-region="drawer-toggle">
++        <button aria-expanded="{{#blocksdraweropen}}true{{/blocksdraweropen}}{{^blocksdraweropen}}false{{/blocksdraweropen}}" aria-controls="blocks-drawer" type="button" class="pull-xs-right m-l-1 btn btn-secondary" data-side="right" data-preference="drawer-open-blocks" data-action="toggle-drawer">{{#pix}}blocksdrawer, theme_boost{{/pix}}<span class="sr-only">{{#str}}expand, core{{/str}}</span></button>
++        </div>
++
+         <!-- user_menu -->
+         {{{ output.user_menu }}}
+ 
+@@ -39,16 +45,16 @@
+         {{{ output.navbar_plugin_output }}}
+ 
+         <!-- search_box -->
++        <span class="hidden-md-down">
+         {{{ output.search_box }}}
+-
+-        <div class="collapse navbar-toggleable-xs" id="bd-main-nav">
+-            <nav class="nav navbar-nav">
+-                <!-- custom_menu -->
+-                {{{ output.custom_menu }}}
+-                <!-- page_heading_menu -->
+-                {{{ output.page_heading_menu }}}
+-            </nav>
+-        </div>
++        </span>
++
++        <nav class="nav navbar-nav hidden-md-down">
++            <!-- custom_menu -->
++            {{{ output.custom_menu }}}
++            <!-- page_heading_menu -->
++            {{{ output.page_heading_menu }}}
++        </nav>
+     </div>
+ </header>
+ 
+diff --git a/theme/boost/templates/login.mustache b/theme/boost/templates/login.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..980b0787cb6d3235dfdc8ce66d49f36450364753
+--- /dev/null
++++ b/theme/boost/templates/login.mustache
+@@ -0,0 +1,44 @@
++{{{ output.doctype }}}
++<html {{{ output.htmlattributes }}}>
++<head>
++    <title>{{ output.page_title }}</title>
++    <link rel="shortcut icon" href="{{{ output.favicon }}}" />
++    {{{ output.standard_head_html }}}
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++</head>
++
++<body {{{ bodyattributes }}}>
++
++<div id="page-wrapper">
++
++    {{{ output.standard_top_of_body_html }}}
++
++    <div id="page" class="container-fluid">
++        <div id="page-content" class="row">
++            <div id="region-main-box">
++                <section id="region-main" class="col-xs-12">
++                    {{{ output.course_content_header }}}
++                    {{{ output.main_content }}}
++                    {{{ output.course_content_footer }}}
++                </section>
++            </div>
++        </div>
++    </div>
++</div>
++<footer id="page-footer" class="p-y-1">
++    <div class="container">
++        <div id="course-footer">{{{ output.course_footer }}}</div>
++
++        {{# output.page_doc_link }}
++            <p class="helplink">{{{ output.page_doc_link }}}</p>
++        {{/ output.page_doc_link }}
++
++        {{{ output.login_info }}}
++        {{{ output.home_link }}}
++        {{{ output.standard_footer_html }}}
++        {{{ output.standard_end_of_body_html }}}
++    </div>
++</footer>
++
++</body>
++</html>
+diff --git a/theme/boost/templates/nav-drawer.mustache b/theme/boost/templates/nav-drawer.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..3b7573092f31ea92e78350080fabdbf85e625662
+--- /dev/null
++++ b/theme/boost/templates/nav-drawer.mustache
+@@ -0,0 +1,3 @@
++<div id="nav-drawer" data-region="drawer" class="moodle-has-zindex {{^navdraweropen}}closed{{/navdraweropen}}" aria-hidden="{{#navdraweropen}}false{{/navdraweropen}}{{^navdraweropen}}true{{/navdraweropen}}">
++    {{> theme_boost/flat_navigation }}
++</div>
+diff --git a/theme/boost/templates/secure.mustache b/theme/boost/templates/secure.mustache
+index 3c2af3ce09dbfeea054a808fbebaddd99f04a70c..2076bd22dc012d3e3d32777a96d2172b0fb42fbe 100644
+--- a/theme/boost/templates/secure.mustache
++++ b/theme/boost/templates/secure.mustache
+@@ -45,15 +45,13 @@
+     {{{ output.full_header }}}
+ 
+     <div id="page-content" class="row">
+-        <div id="region-main-box" class="col-md-9">
++        <div id="region-main-box" class="col-xs-12">
+             <div class="row">
+-                <section id="region-main" class="col-md-8 push-md-4 col-lg-9 push-lg-3">
++                <section id="region-main" class="col-xs-12">
+                     {{{ output.main_content }}}
+                 </section>
+-                {{{ sidepreblocks }}}
+             </div>
+         </div>
+-        {{{ sidepostblocks }}}
+     </div>
+ 
+     {{{ output.standard_end_of_body_html }}}
+@@ -64,4 +62,3 @@
+ {{#js}}
+ require(['theme_boost/loader'], function() {});
+ {{/js}}
+-
+diff --git a/theme/boost/amd/src/drawer.js b/theme/boost/amd/src/drawer.js
+index 74c307cf3f67fcc6004e9dcec2d193d528b060f3..c6a078d2ff35f1ca7d41262b19748865d0cf28a1 100644
+--- a/theme/boost/amd/src/drawer.js
++++ b/theme/boost/amd/src/drawer.js
+@@ -20,8 +20,8 @@
+  * @copyright  2016 Damyon Wiese
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+-define(['jquery', 'core/custom_interaction_events', 'core/notification'],
+-     function($, CustomEvents, Notification) {
++define(['jquery', 'core/custom_interaction_events', 'core/log'],
++     function($, CustomEvents, Log) {
+ 
+     var SELECTORS = {
+         TOGGLE_REGION: '[data-region="drawer-toggle"]',
+@@ -39,17 +39,21 @@ define(['jquery', 'core/custom_interaction_events', 'core/notification'],
+     var Drawer = function() {
+ 
+         if (!$(SELECTORS.TOGGLE_REGION).length) {
+-            Notification.exception({message: 'Page is missing a drawer toggle region'});
++            Log.debug('Page is missing a drawer region');
+         }
+         if (!$(SELECTORS.TOGGLE_ACTION).length) {
+-            Notification.exception({message: 'Page is missing a drawer toggle link'});
++            Log.debug('Page is missing a drawer toggle link');
+         }
+         $(SELECTORS.TOGGLE_REGION).each(function(index, ele) {
+             var trigger = $(ele).find(SELECTORS.TOGGLE_ACTION);
++            var drawerid = trigger.attr('aria-controls');
++            var drawer = $(document.getElementById(drawerid));
+             var hidden = trigger.attr('aria-expanded') == 'false';
+             var side = trigger.attr('data-side');
+             var body = $(SELECTORS.BODY);
+ 
++            drawer.on('mousewheel DOMMouseScroll', this.preventPageScroll);
++
+             if (!hidden) {
+                 body.addClass('drawer-open-' + side);
+                 trigger.attr('aria-expanded', 'true');
+@@ -115,6 +119,21 @@ define(['jquery', 'core/custom_interaction_events', 'core/notification'],
+         }
+     };
+ 
++    /**
++     * Prevent the page from scrolling when the drawer is at max scroll.
++     *
++     * @method preventPageScroll
++     */
++    Drawer.prototype.preventPageScroll = function(e) {
++        var delta = e.wheelDelta || (e.originalEvent && e.originalEvent.wheelDelta) || -e.originalEvent.detail,
++            bottomOverflow = (this.scrollTop + $(this).outerHeight() - this.scrollHeight) >= 0,
++            topOverflow = this.scrollTop <= 0;
++
++        if ((delta < 0 && bottomOverflow) || (delta > 0 && topOverflow)) {
++            e.preventDefault();
++        }
++    };
++
+     /**
+      * Set up all of the event handling for the modal.
+      *
+diff --git a/course/admin.php b/course/admin.php
+index b89b382332e62e54e170f2f46f837aa2c643ac89..959101b17be4e4a61653a3ee0a921b09b30f8b7b 100644
+--- a/course/admin.php
++++ b/course/admin.php
+@@ -34,13 +34,20 @@ require_login($course);
+ $context = context_course::instance($course->id);
+ 
+ $PAGE->set_pagelayout('incourse');
+-$PAGE->set_title(get_string('courseadministration'));
++
++if ($courseid == $SITE->id) {
++    $title = get_string('frontpagesettings');
++    $node = $PAGE->settingsnav->find('frontpage', navigation_node::TYPE_SETTING);
++} else {
++    $title = get_string('courseadministration');
++    $node = $PAGE->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE);
++}
++$PAGE->set_title($title);
+ $PAGE->set_heading($course->fullname);
+-$PAGE->navbar->add(get_string('courseadministration'));
++$PAGE->navbar->add($title);
+ echo $OUTPUT->header();
+-echo $OUTPUT->heading(get_string('courseadministration'));
++echo $OUTPUT->heading($title);
+ 
+-$node = $PAGE->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE);
+ if ($node) {
+     echo $OUTPUT->render_from_template('core/settings_link_page', ['node' => $node]);
+ }
+diff --git a/lib/navigationlib.php b/lib/navigationlib.php
+index bcdce0cdf2bb80c63abb8cde83963c4baddd8ec8..d13fc2ff0060fc6324015500a0a5b10670471ec2 100644
+--- a/lib/navigationlib.php
++++ b/lib/navigationlib.php
+@@ -1186,10 +1186,12 @@ class global_navigation extends navigation_node {
+             // The home element should be my moodle because the root element is the site
+             if (isloggedin() && !isguestuser()) {  // Makes no sense if you aren't logged in
+                 $this->rootnodes['home'] = $this->add(get_string('myhome'), new moodle_url('/my/'), self::TYPE_SETTING, null, 'home');
++                $this->rootnodes['home']->showinflatnavigation = true;
+             }
+         } else {
+             // The home element should be the site because the root node is my moodle
+             $this->rootnodes['home'] = $this->add(get_string('sitehome'), new moodle_url('/'), self::TYPE_SETTING, null, 'home');
++            $this->rootnodes['home']->showinflatnavigation = true;
+             if (!empty($CFG->defaulthomepage) && ($CFG->defaulthomepage == HOMEPAGE_MY)) {
+                 // We need to stop automatic redirection
+                 $this->rootnodes['home']->action->param('redirect', '0');
+@@ -1230,13 +1232,8 @@ class global_navigation extends navigation_node {
+ 
+         // Load the users enrolled courses if they are viewing the My Moodle page AND the admin has not
+         // set that they wish to keep the My Courses branch collapsed by default.
+-        if (!empty($CFG->navexpandmycourses) && $this->page->pagelayout === 'mydashboard'){
+-            $this->rootnodes['mycourses']->forceopen = true;
+-            $this->load_courses_enrolled();
+-        } else {
+-            $this->rootnodes['mycourses']->collapse = true;
+-            $this->rootnodes['mycourses']->make_inactive();
+-        }
++        $this->rootnodes['mycourses']->forceopen = true;
++        $this->load_courses_enrolled();
+ 
+         $canviewcourseprofile = true;
+ 
+diff --git a/theme/boost/classes/output/core_renderer.php b/theme/boost/classes/output/core_renderer.php
+index ffd652ea960d86ccbc954ffa9ea5639c61a4032e..a79f2544a9a20de8666e25371a19466675e2746d 100644
+--- a/theme/boost/classes/output/core_renderer.php
++++ b/theme/boost/classes/output/core_renderer.php
+@@ -505,11 +505,23 @@ class core_renderer extends \core_renderer {
+             // Get the course admin node from the settings navigation.
+             $items = $this->page->navbar->get_items();
+             $node = end($items);
+-            if (($node->type == navigation_node::TYPE_COURSE)) {
+-                $node = $this->page->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE);
+-                if ($node) {
++            $settingsnode = false;
++            if ($node->key === 'home') {
++                $settingsnode = $this->page->settingsnav->find('frontpage', navigation_node::TYPE_SETTING);
++                if ($settingsnode) {
++                    // Build an action menu based on the visible nodes from this navigation tree.
++                    $this->build_action_menu_from_navigation($menu, $settingsnode, false, true);
++
++                    $text = get_string('frontpagesettings');
++                    $url = new moodle_url('/course/admin.php', array('courseid' => $this->page->course->id));
++                    $link = new action_link($url, $text, null, null, new pix_icon('t/edit', $text));
++                    $menu->add_secondary_action($link);
++                }
++            } else if ($node->type == navigation_node::TYPE_COURSE) {
++                $settingsnode = $this->page->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE);
++                if ($settingsnode) {
+                     // Build an action menu based on the visible nodes from this navigation tree.
+-                    $this->build_action_menu_from_navigation($menu, $node, false, true);
++                    $this->build_action_menu_from_navigation($menu, $settingsnode, false, true);
+ 
+                     $text = get_string('courseadministration');
+                     $url = new moodle_url('/course/admin.php', array('courseid' => $this->page->course->id));
+diff --git a/lib/navigationlib.php b/lib/navigationlib.php
+index d13fc2ff0060fc6324015500a0a5b10670471ec2..ca74df7be888ec9fd2ef7fb4a5c1b3cfbef3d77d 100644
+--- a/lib/navigationlib.php
++++ b/lib/navigationlib.php
+@@ -3610,6 +3610,14 @@ class flat_navigation_node extends navigation_node {
+         $this->indent = $indent;
+     }
+ 
++    /**
++     * Does this node represent a course section link.
++     * @return boolean
++     */
++    public function is_section() {
++        return $this->type == navigation_node::TYPE_SECTION;
++    }
++
+     /**
+      * Getter for "showdivider"
+      * @return boolean
+diff --git a/theme/boost/templates/flat_navigation.mustache b/theme/boost/templates/flat_navigation.mustache
+index 93c1b92562e6f4aefd659316ca5dadd235b9fb53..bfb41b0fdb1e1902d5365b50e258551fcbed6561 100644
+--- a/theme/boost/templates/flat_navigation.mustache
++++ b/theme/boost/templates/flat_navigation.mustache
+@@ -1,19 +1,30 @@
+-<nav class="nav nav-stacked nav-pills">
++<nav class="list-group">
+ {{# flatnavigation }}
++    {{#showdivider}}
++</nav>
++<nav class="list-group m-t-1">
++    {{/showdivider}}
+     {{#get_smscreenonly}}
+     <div class="hidden-lg-up">
+     {{/get_smscreenonly}}
+-    {{#showdivider}}
+-    <div class="nav-item"><hr></div>
+-    {{/showdivider}}
+     {{#action}}
+-    <div class="nav-item"><a class="nav-link {{#isactive}}active{{/isactive}} m-l-{{get_indent}}" href="{{{action}}}">{{text}}</a></div>
++    <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{action}}}"><span class="m-l-{{get_indent}}">
++        {{#is_section}}
++            {{#pix}}i/folder{{/pix}}
++        {{/is_section}}
++        {{text}}
++    </span></a>
+     {{/action}}
+     {{^action}}
+-    <div class="nav-item"><span class="nav-link m-l-{{get_indent}}">{{text}}</span></div>
++    <div class="list-group-item"><span class="m-l-{{get_indent}}">
++        {{#is_section}}
++            {{#pix}}i/folder{{/pix}}
++        {{/is_section}}
++        {{text}}
++    </span></div>
+     {{/action}}
+     {{#get_smscreenonly}}
+     </div>
+     {{/get_smscreenonly}}
+ {{/ flatnavigation }}
+-</div>
++</nav>
+diff --git a/lib/navigationlib.php b/lib/navigationlib.php
+index ca74df7be888ec9fd2ef7fb4a5c1b3cfbef3d77d..7a00ee04b0529d25a14324cf407921210e26d359 100644
+--- a/lib/navigationlib.php
++++ b/lib/navigationlib.php
+@@ -4160,10 +4160,37 @@ class settings_navigation extends navigation_node {
+             $coursenode->force_open();
+         }
+ 
++
+         if ($adminoptions->update) {
+             // Add the course settings link
+             $url = new moodle_url('/course/edit.php', array('id'=>$course->id));
+             $coursenode->add(get_string('editsettings'), $url, self::TYPE_SETTING, null, 'editsettings', new pix_icon('i/settings', ''));
++        }
++
++        if ($this->page->user_allowed_editing()) {
++            // Add the turn on/off settings
++
++            if ($this->page->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE)) {
++                // We are on the course page, retain the current page params e.g. section.
++                $baseurl = clone($this->page->url);
++                $baseurl->param('sesskey', sesskey());
++            } else {
++                // Edit on the main course page.
++                $baseurl = new moodle_url('/course/view.php', array('id'=>$course->id, 'return'=>$this->page->url->out_as_local_url(false), 'sesskey'=>sesskey()));
++            }
++
++            $editurl = clone($baseurl);
++            if ($this->page->user_is_editing()) {
++                $editurl->param('edit', 'off');
++                $editstring = get_string('turneditingoff');
++            } else {
++                $editurl->param('edit', 'on');
++                $editstring = get_string('turneditingon');
++            }
++            $coursenode->add($editstring, $editurl, self::TYPE_SETTING, null, 'turneditingonoff', new pix_icon('i/edit', ''));
++        }
++
++        if ($adminoptions->update) {
+ 
+             // Add the course completion settings link
+             if ($CFG->enablecompletion && $course->enablecompletion) {
+diff --git a/theme/boost/classes/output/core_renderer.php b/theme/boost/classes/output/core_renderer.php
+index a79f2544a9a20de8666e25371a19466675e2746d..3b478d4ad60824bbb02b12bbb0fcb982c6a8b01f 100644
+--- a/theme/boost/classes/output/core_renderer.php
++++ b/theme/boost/classes/output/core_renderer.php
+@@ -115,6 +115,14 @@ class core_renderer extends \core_renderer {
+         return $this->render_from_template('core/navbar', $this->page->navbar);
+     }
+ 
++    /**
++     * We don't like these...
++     *
++     */
++    public function edit_button(moodle_url $url) {
++        return '';
++    }
++
+     /**
+      * Override to inject the logo.
+      *
+diff --git a/theme/boost/classes/output/core_renderer.php b/theme/boost/classes/output/core_renderer.php
+index 3b478d4ad60824bbb02b12bbb0fcb982c6a8b01f..0b78ae2259fe812a07a8c231f269da27b995b454 100644
+--- a/theme/boost/classes/output/core_renderer.php
++++ b/theme/boost/classes/output/core_renderer.php
+@@ -567,11 +567,18 @@ class core_renderer extends \core_renderer {
+             $node = $this->page->navigation->find_active_node();
+             if (($node->type == navigation_node::TYPE_ACTIVITY ||
+                     $node->type == navigation_node::TYPE_RESOURCE)) {
+-                // Get the course admin node from the settings navigation.
+-                $node = $this->page->settingsnav->find('modulesettings', navigation_node::TYPE_SETTING);
+-                if ($node) {
+-                    // Build an action menu based on the visible nodes from this navigation tree.
+-                    $this->build_action_menu_from_navigation($menu, $node);
++
++                $items = $this->page->navbar->get_items();
++                $navbarnode = end($items);
++                // We only want to show the menu on the first page of the activity. This means
++                // the breadcrumb has no additional nodes.
++                if ($navbarnode->key == $node->key && $navbarnode->type == $node->type) {
++                    // Get the course admin node from the settings navigation.
++                    $node = $this->page->settingsnav->find('modulesettings', navigation_node::TYPE_SETTING);
++                    if ($node) {
++                        // Build an action menu based on the visible nodes from this navigation tree.
++                        $this->build_action_menu_from_navigation($menu, $node);
++                    }
+                 }
+             }
+         }
+diff --git a/theme/boost/classes/output/core_renderer.php b/theme/boost/classes/output/core_renderer.php
+index 0b78ae2259fe812a07a8c231f269da27b995b454..60703d4bc69f1f6c79696ddd39f8078118b5a550 100644
+--- a/theme/boost/classes/output/core_renderer.php
++++ b/theme/boost/classes/output/core_renderer.php
+@@ -74,7 +74,9 @@ class core_renderer extends \core_renderer {
+      */
+     public function full_header() {
+         $html = html_writer::start_tag('header', array('id' => 'page-header', 'class' => 'row'));
+-        $html .= html_writer::start_div('col-xs-12 p-t-1 p-b-1');
++        $html .= html_writer::start_div('col-xs-12 p-a-1');
++        $html .= html_writer::start_div('card');
++        $html .= html_writer::start_div('card-block');
+         $html .= html_writer::div($this->context_header_settings_menu(), 'pull-xs-right context-header-settings-menu');
+         $html .= $this->context_header();
+         $html .= html_writer::start_div('clearfix', array('id' => 'page-navbar'));
+@@ -83,6 +85,8 @@ class core_renderer extends \core_renderer {
+         $html .= html_writer::end_div();
+         $html .= html_writer::tag('div', $this->course_header(), array('id' => 'course-header'));
+         $html .= html_writer::end_div();
++        $html .= html_writer::end_div();
++        $html .= html_writer::end_div();
+         $html .= html_writer::end_tag('header');
+         return $html;
+     }
+diff --git a/theme/boost/layout/columns1.php b/theme/boost/layout/columns1.php
+index 8b0b48281f2cbdf7cd63f03234e647ef15e7e092..d1febaffacd8eebb275eeeecf8b592fc5039a914 100644
+--- a/theme/boost/layout/columns1.php
++++ b/theme/boost/layout/columns1.php
+@@ -24,29 +24,13 @@
+ 
+ defined('MOODLE_INTERNAL') || die();
+ 
+-user_preference_allow_ajax_update('drawer-open-blocks', PARAM_ALPHA);
+-user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
+-
+-$navdraweropen = (get_user_preferences('drawer-open-nav', 'true') == 'true');
+-$blocksdraweropen = (get_user_preferences('drawer-open-blocks', 'true') == 'true');
+-$extraclasses = [];
+-if ($blocksdraweropen) {
+-    $extraclasses[] = 'drawer-open-right';
+-}
+-if ($navdraweropen) {
+-    $extraclasses[] = 'drawer-open-left';
+-}
+-$bodyattributes = $OUTPUT->body_attributes($extraclasses);
++$bodyattributes = $OUTPUT->body_attributes([]);
+ 
+ $templatecontext = [
+     'sitename' => format_string($SITE->shortname, true, array('context' => context_course::instance(SITEID))),
+     'output' => $OUTPUT,
+-    'sidepreblocks' => $OUTPUT->blocks('side-pre'),
+     'bodyattributes' => $bodyattributes,
+-    'blocksdraweropen' => $blocksdraweropen,
+-    'navdraweropen' => $navdraweropen
+ ];
+ 
+-$templatecontext['flatnavigation'] = $PAGE->flatnav;
+ echo $OUTPUT->render_from_template('theme_boost/columns1', $templatecontext);
+ 
+diff --git a/theme/boost/layout/columns2.php b/theme/boost/layout/columns2.php
+index e0664b9286b3b58d973287ace37bdc8d857eb827..b4d65ddf02a2d3ed4f9304a4b467d0352d134133 100644
+--- a/theme/boost/layout/columns2.php
++++ b/theme/boost/layout/columns2.php
+@@ -24,26 +24,23 @@
+ 
+ defined('MOODLE_INTERNAL') || die();
+ 
+-user_preference_allow_ajax_update('drawer-open-blocks', PARAM_ALPHA);
+ user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
+ 
+ $navdraweropen = (get_user_preferences('drawer-open-nav', 'true') == 'true');
+-$blocksdraweropen = (get_user_preferences('drawer-open-blocks', 'true') == 'true');
+ $extraclasses = [];
+-if ($blocksdraweropen) {
+-    $extraclasses[] = 'drawer-open-right';
+-}
+ if ($navdraweropen) {
+     $extraclasses[] = 'drawer-open-left';
+ }
+ $bodyattributes = $OUTPUT->body_attributes($extraclasses);
++$blockshtml = $OUTPUT->blocks('side-pre');
++$hasblocks = strpos($blockshtml, 'data-block=') !== false;
+ 
+ $templatecontext = [
+     'sitename' => format_string($SITE->shortname, true, array('context' => context_course::instance(SITEID))),
+     'output' => $OUTPUT,
+-    'sidepreblocks' => $OUTPUT->blocks('side-pre'),
++    'sidepreblocks' => $blockshtml,
++    'hasblocks' => $hasblocks,
+     'bodyattributes' => $bodyattributes,
+-    'blocksdraweropen' => $blocksdraweropen,
+     'navdraweropen' => $navdraweropen
+ ];
+ 
+diff --git a/theme/boost/scss/moodle/blocks.scss b/theme/boost/scss/moodle/blocks.scss
+index 9b15639f9709857d3528de8f43e8a444fba5abc9..da31b876d6745d4efe04e0ba727491ef21151dc0 100644
+--- a/theme/boost/scss/moodle/blocks.scss
++++ b/theme/boost/scss/moodle/blocks.scss
+@@ -28,51 +28,19 @@
+     }
+ }
+ 
+-#nav-drawer.closed {
+-    left: -285px;
+-}
+-#blocks-drawer.closed {
+-    right: -285px;
+-}
+-
+-/* Use a variable for the drawer background colors. */
+-$drawer-bg: $gray-lighter !default;
++$blocks-column-width: 250px !default;
+ 
+-[data-region="drawer"] {
+-    position: fixed;
+-    padding: 20px;
+-    width: 265px;
+-    top: ($navbar-padding-y * 2) + ($navbar-brand-padding-y * 2) + $font-size-lg * 1.5;
+-    height: 100%;
+-    overflow-y: scroll;
+-    -webkit-overflow-scrolling: touch;
+-    z-index: 100;
+-    background-color: $drawer-bg;
+-    -webkit-transition: right 0.5s ease, left 0.5s ease;
+-       -moz-transition: right 0.5s ease, left 0.5s ease;
+-            transition: right 0.5s ease, left 0.5s ease;
+-}
+-#nav-drawer {
+-    right: auto;
+-    left: 0px;
+-}
+-#blocks-drawer {
+-    left: auto;
+-    right: 0px;
+-}
+-body.drawer-ease {
+-    -webkit-transition: margin-left 0.5s ease, margin-right 0.5s ease;
+-       -moz-transition: margin-left 0.5s ease, margin-right 0.5s ease;
+-            transition: margin-left 0.5s ease, margin-right 0.5s ease;
++[data-region="blocks-column"] {
++    width: $blocks-column-width;
++    float: right;
+ }
+ 
+-body.drawer-open-left {
+-    @include media-breakpoint-up(md) {
+-        margin-left: 265px;
+-    }
+-}
+-body.drawer-open-right {
+-    @include media-breakpoint-up(md) {
+-        margin-right: 265px;
++$blocks-plus-gutter: $blocks-column-width + $grid-gutter-width;
++
++#region-main.has-blocks {
++    display: inline-block;
++    width: calc(100% - #{$blocks-plus-gutter});
++    @include media-breakpoint-down(md) {
++        width: 100%;
+     }
+ }
+diff --git a/theme/boost/scss/moodle/core.scss b/theme/boost/scss/moodle/core.scss
+index 12443b569442767fd4b13edb61b689e2d7b4bfc4..337b00721dbc3581d96b2512bf5038d17aafbe71 100644
+--- a/theme/boost/scss/moodle/core.scss
++++ b/theme/boost/scss/moodle/core.scss
+@@ -269,14 +269,8 @@ form.popupform div {
+ .arrow_button input {
+     overflow: hidden;
+ }
+-/** The 1-pixel padding is there to avoid phantom scroll bars on OS X (FF, Safari and Chrome)**/
+ .no-overflow {
+     overflow: auto;
+-    padding-bottom: 1px;
+-}
+-
+-.pagelayout-report .no-overflow {
+-    overflow: visible;
+ }
+ 
+ .no-overflow > .generaltable {
+diff --git a/theme/boost/scss/moodle/drawer.scss b/theme/boost/scss/moodle/drawer.scss
+index 7c215e1a56f9c3c3bf8e9c7925268d97f07fe4ed..c5c507ab49fb0da3fe970c9929dae8ab71d16b39 100644
+--- a/theme/boost/scss/moodle/drawer.scss
++++ b/theme/boost/scss/moodle/drawer.scss
+@@ -12,10 +12,7 @@ $drawer-offscreen-gutter: 20px;
+ }
+ 
+ #nav-drawer.closed {
+-    left: - ($drawer-width + $drawer-offscreen-gutter);
+-}
+-#blocks-drawer.closed {
+-    right: - ($drawer-width + $drawer-offscreen-gutter);
++    left: -($drawer-width + $drawer-offscreen-gutter);
+ }
+ #page {
+     margin-top: $navbar-height;
+@@ -37,23 +34,11 @@ $drawer-bg: $gray-lighter !default;
+     -webkit-transition: right 0.5s ease, left 0.5s ease;
+        -moz-transition: right 0.5s ease, left 0.5s ease;
+             transition: right 0.5s ease, left 0.5s ease;
+-    .dropdown-menu {
+-        max-width: $drawer-width - $drawer-padding-x * 4;
+-    }
+-    .dropdown-item {
+-        max-width: 100%;
+-        overflow-x: hidden;
+-        text-overflow: ellipsis;
+-    }
+ }
+ #nav-drawer {
+     right: auto;
+     left: 0px;
+ }
+-#blocks-drawer {
+-    left: auto;
+-    right: 0px;
+-}
+ #page {
+     margin-top: $fixed-header-y;
+ }
+@@ -64,12 +49,12 @@ body.drawer-ease {
+ }
+ 
+ body.drawer-open-left {
+-    @include media-breakpoint-up(lg) {
++    @include media-breakpoint-up(md) {
+         margin-left: $drawer-width;
+     }
+ }
+ body.drawer-open-right {
+-    @include media-breakpoint-up(lg) {
++    @include media-breakpoint-up(md) {
+         margin-right: $drawer-width;
+     }
+ }
+diff --git a/theme/boost/scss/preset-default.scss b/theme/boost/scss/preset-default.scss
+index e7224c3222c4ad496e1d4787213d97bc29608a02..6033382b834d54cc08e4815a8bd05c8ee626f154 100644
+--- a/theme/boost/scss/preset-default.scss
++++ b/theme/boost/scss/preset-default.scss
+@@ -14,7 +14,6 @@ $gray-lightest:             #f7f7f9 !default;
+ 
+ $brand-primary:             #00acdf !default;
+ $brand-success:             #77b300 !default;
+-$brand-info:                #9954bb !default;
+ $brand-warning:             #ff8800 !default;
+ $brand-danger:              #ff4136 !default;
+ $brand-inverse:             $gray-dark !default;
+@@ -146,20 +145,6 @@ $breadcrumb-divider-rtl: "/" !default;
+     padding-right: 0;
+ }
+ 
+-#page-header {
+-    background-color: #fff;
+-    border: $border-width solid $card-border-color;
+-    margin-top: $spacer;
+-    margin-bottom: $spacer;
+-}
+-
+-#region-main {
+-    background-color: #fff;
+-    border: $border-width solid $card-border-color;
+-    padding-top: $spacer;
+-    padding-bottom: $spacer;
+-}
+-
+ #page-footer {
+     color: #fff;
+     text-align: right;
+diff --git a/theme/boost/templates/columns1.mustache b/theme/boost/templates/columns1.mustache
+index c96e422f34e1afd1a5f2368bb6be21e8f647f358..6f0f9305a28a633d1fa1dabf966cd3167b6f4363 100644
+--- a/theme/boost/templates/columns1.mustache
++++ b/theme/boost/templates/columns1.mustache
+@@ -13,45 +13,26 @@
+ 
+     {{{ output.standard_top_of_body_html }}}
+ 
+-    {{>theme_boost/header}}
+-
+     <div id="page" class="container-fluid">
+-        {{{ output.full_header }}}
+-
+         <div id="page-content" class="row">
+-            <div id="region-main-box">
+-                <section id="region-main" class="col-xs-12">
+-                    <span class="pull-xs-right page-settings-menu">
+-                        {{{ output.page_settings_menu }}}
++            <div id="region-main-box" class="col-xs-12">
++                <section id="region-main">
++                    <div class="card card-block">
++                    <span class="pull-xs-right region-main-settings-menu">
++                        {{{ output.region_main_settings_menu }}}
+                     </span>
+                     {{{ output.course_content_header }}}
+                     {{{ output.main_content }}}
+                     {{{ output.course_content_footer }}}
++                    </div>
+                 </section>
+             </div>
+         </div>
+     </div>
+-    {{> theme_boost/blocks-drawer }}
+-    {{> theme_boost/nav-drawer }}
+ </div>
+-<footer id="page-footer" class="p-y-1">
+-    <div class="container">
+-        <div id="course-footer">{{{ output.course_footer }}}</div>
+-
+-        {{# output.page_doc_link }}
+-            <p class="helplink">{{{ output.page_doc_link }}}</p>
+-        {{/ output.page_doc_link }}
+-
+-        {{{ output.login_info }}}
+-        {{{ output.home_link }}}
+-        {{{ output.standard_footer_html }}}
+-        {{{ output.standard_end_of_body_html }}}
+-    </div>
+-</footer>
+-
++{{{ output.standard_end_of_body_html }}}
+ </body>
+ </html>
+ {{#js}}
+ require(['theme_boost/loader'], function() {});
+-require(['theme_boost/drawer'], function(mod) {mod.init();});
+ {{/js}}
+diff --git a/theme/boost/templates/columns2.mustache b/theme/boost/templates/columns2.mustache
+index 9b0335cdf61ca4362f3a16bad1b7e9bcc33cc001..1fbe9339f965b7953d5028648aa07b107a49b0ba 100644
+--- a/theme/boost/templates/columns2.mustache
++++ b/theme/boost/templates/columns2.mustache
+@@ -19,19 +19,28 @@
+         {{{ output.full_header }}}
+ 
+         <div id="page-content" class="row">
+-            <div id="region-main-box">
+-                <section id="region-main" class="col-xs-12">
++            <div id="region-main-box" class="col-xs-12">
++                {{#hasblocks}}
++                <section data-region="blocks-column" class="hidden-md-down">
++                    {{{ sidepreblocks }}}
++                </section>
++                <section id="region-main" class="has-blocks">
++                {{/hasblocks}}
++                {{^hasblocks}}
++                <section id="region-main">
++                {{/hasblocks}}
++                    <div class="card card-block">
+                     <span class="pull-xs-right region-main-settings-menu">
+                         {{{ output.region_main_settings_menu }}}
+                     </span>
+                     {{{ output.course_content_header }}}
+                     {{{ output.main_content }}}
+                     {{{ output.course_content_footer }}}
++                    </div>
+                 </section>
+             </div>
+         </div>
+     </div>
+-    {{> theme_boost/blocks-drawer }}
+     {{> theme_boost/nav-drawer }}
+ </div>
+ <footer id="page-footer" class="p-y-1">
+diff --git a/theme/boost/templates/core/block.mustache b/theme/boost/templates/core/block.mustache
+index 8b80d1ad71c296ca20f8efeda6949e4bef6e8f2c..783fe9aebd2301f03f801a0f324747ba36969ce1 100644
+--- a/theme/boost/templates/core/block.mustache
++++ b/theme/boost/templates/core/block.mustache
+@@ -21,7 +21,7 @@
+     <div class="card-block">
+ 
+         {{#hascontrols}}
+-            <div class="pull-xs-right block-controls">
++            <div class="block-controls pull-xs-right">
+                 {{{controls}}}
+             </div>
+         {{/hascontrols}}
+@@ -36,6 +36,7 @@
+             {{{footer}}}
+             {{{annotation}}}
+         </div>
++
+     </div>
+ 
+ {{! End Block Container }}
+diff --git a/theme/boost/templates/header.mustache b/theme/boost/templates/header.mustache
+index 27475173a59a4a32681344054936376184d0894c..d70d7622bba953fc4bdece2aec651e8dc8996ffc 100644
+--- a/theme/boost/templates/header.mustache
++++ b/theme/boost/templates/header.mustache
+@@ -34,10 +34,6 @@
+             <span class="site-name hidden-sm-down">{{{ sitename }}}</span>
+         </a>
+ 
+-        <div data-region="drawer-toggle">
+-        <button aria-expanded="{{#blocksdraweropen}}true{{/blocksdraweropen}}{{^blocksdraweropen}}false{{/blocksdraweropen}}" aria-controls="blocks-drawer" type="button" class="pull-xs-right m-l-1 btn btn-secondary" data-side="right" data-preference="drawer-open-blocks" data-action="toggle-drawer">{{#pix}}blocksdrawer, theme_boost{{/pix}}<span class="sr-only">{{#str}}expand, core{{/str}}</span></button>
+-        </div>
+-
+         <!-- user_menu -->
+         {{{ output.user_menu }}}
+ 
+diff --git a/theme/boost/templates/flat_navigation.mustache b/theme/boost/templates/flat_navigation.mustache
+index bfb41b0fdb1e1902d5365b50e258551fcbed6561..63ad3466aafa62d2a411c72f5190bdffdda9bb24 100644
+--- a/theme/boost/templates/flat_navigation.mustache
++++ b/theme/boost/templates/flat_navigation.mustache
+@@ -8,7 +8,7 @@
+     <div class="hidden-lg-up">
+     {{/get_smscreenonly}}
+     {{#action}}
+-    <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{action}}}"><span class="m-l-{{get_indent}}">
++    <a class="list-group-item list-group-item-action {{#isactive}}font-weight-bold{{/isactive}}" href="{{{action}}}"><span class="m-l-{{get_indent}}">
+         {{#is_section}}
+             {{#pix}}i/folder{{/pix}}
+         {{/is_section}}
+diff --git a/theme/boost/lang/en/theme_boost.php b/theme/boost/lang/en/theme_boost.php
+index 0750bfeb1a35090e418068f2e1a0b9539a876c3d..99dc7cd343dddba9c10473599e05f53c88c5620e 100644
+--- a/theme/boost/lang/en/theme_boost.php
++++ b/theme/boost/lang/en/theme_boost.php
+@@ -43,5 +43,4 @@ $string['rawscss'] = 'Raw SCSS';
+ $string['rawscss_desc'] = 'Use this field to provide SCSS code which will be injected at the end of the stylesheet.';
+ $string['rawscsspre'] = 'Raw initial SCSS';
+ $string['rawscsspre_desc'] = 'In this field you can provide initialising SCSS code, it will be injected before everything else. Most of the time you will use this setting to define variables.';
+-$string['region-side-post'] = 'Right';
+-$string['region-side-pre'] = 'Left';
++$string['region-side-pre'] = 'Right';
+diff --git a/theme/boost/scss/preset-default.scss b/theme/boost/scss/preset-default.scss
+index 6033382b834d54cc08e4815a8bd05c8ee626f154..d5a0aa24b80171b62db646e7fbc2dc3aef757c56 100644
+--- a/theme/boost/scss/preset-default.scss
++++ b/theme/boost/scss/preset-default.scss
+@@ -141,10 +141,6 @@ $breadcrumb-divider-rtl: "/" !default;
+     padding-left: 0;
+ }
+ 
+-#block-region-side-post {
+-    padding-right: 0;
+-}
+-
+ #page-footer {
+     color: #fff;
+     text-align: right;
+diff --git a/theme/boost/scss/moodle/blocks.scss b/theme/boost/scss/moodle/blocks.scss
+index da31b876d6745d4efe04e0ba727491ef21151dc0..21ffa00110e608f75da0bca270a161bdbf417d9f 100644
+--- a/theme/boost/scss/moodle/blocks.scss
++++ b/theme/boost/scss/moodle/blocks.scss
+@@ -13,10 +13,6 @@
+     margin-left: 0;
+ }
+ 
+-.block .card-title {
+-    word-break: break-all;
+-}
+-
+ .block .block-controls {
+     .dropdown-toggle {
+         /* So that the caret takes the colour of the icon. */
+diff --git a/theme/boost/amd/src/drawer.js b/theme/boost/amd/src/drawer.js
+index c6a078d2ff35f1ca7d41262b19748865d0cf28a1..ce208babb852ca882e5b1ee96eee61e8f0ae59b8 100644
+--- a/theme/boost/amd/src/drawer.js
++++ b/theme/boost/amd/src/drawer.js
+@@ -140,14 +140,15 @@ define(['jquery', 'core/custom_interaction_events', 'core/log'],
+      * @method registerEventListeners
+      */
+     Drawer.prototype.registerEventListeners = function() {
+-        var body = $(SELECTORS.BODY);
+-
+-        CustomEvents.define(body, [CustomEvents.events.activate]);
+ 
+-        body.on(CustomEvents.events.activate, SELECTORS.TOGGLE_ACTION, function(e, data) {
+-            this.toggleDrawer(data.originalEvent);
+-            data.originalEvent.preventDefault();
++        $(SELECTORS.TOGGLE_ACTION).each(function(index, element) {
++            CustomEvents.define($(element), [CustomEvents.events.activate]);
++            $(element).on(CustomEvents.events.activate, function(e, data) {
++                this.toggleDrawer(data.originalEvent);
++                data.originalEvent.preventDefault();
++            }.bind(this));
+         }.bind(this));
++
+     };
+ 
+     return {
+diff --git a/theme/boost/classes/output/core_renderer.php b/theme/boost/classes/output/core_renderer.php
+index 60703d4bc69f1f6c79696ddd39f8078118b5a550..3c017c412b141ca2803a8741675ae3042999f49d 100644
+--- a/theme/boost/classes/output/core_renderer.php
++++ b/theme/boost/classes/output/core_renderer.php
+@@ -610,7 +610,11 @@ class core_renderer extends \core_renderer {
+                 }
+                 if ($menuitem->action) {
+                     $text = $menuitem->text;
+-                    $link = new action_link($menuitem->action, $menuitem->text, null, null, $menuitem->icon);
++                    if ($menuitem->action instanceof action_link) {
++                        $link = $menuitem->action;
++                    } else {
++                        $link = new action_link($menuitem->action, $menuitem->text, null, null, $menuitem->icon);
++                    }
+                     if ($indent) {
+                         $link->add_class('m-l-1');
+                     }
+diff --git a/lib/navigationlib.php b/lib/navigationlib.php
+index e30b51b73c911dc2c832980fbb01483c6b7a10e1..7bf575d8fa49c3062eb571de3aba3a14c2cb9682 100644
+--- a/lib/navigationlib.php
++++ b/lib/navigationlib.php
+@@ -3589,9 +3589,6 @@ class flat_navigation_node extends navigation_node {
+     /** @var $showdivider bool Show a divider before this element */
+     private $showdivider = false;
+ 
+-    /** @var $smscreenonly bool Only show this menu item on xs and sm screen sizes */
+-    private $smscreenonly = false;
+-
+     /**
+      * A proxy constructor
+      *
+@@ -3653,21 +3650,6 @@ class flat_navigation_node extends navigation_node {
+         $this->indent = $val;
+     }
+ 
+-    /**
+-     * Getter for "smscreenonly"
+-     * @return boolean
+-     */
+-    public function get_smscreenonly() {
+-        return $this->smscreenonly;
+-    }
+-
+-    /**
+-     * Setter for "smscreenonly"
+-     * @param $val boolean
+-     */
+-    public function set_smscreenonly($val) {
+-        $this->smscreenonly = $val;
+-    }
+ }
+ 
+ /**
+@@ -3747,68 +3729,6 @@ class flat_navigation extends navigation_node_collection {
+             $flat->key = 'sitesettings';
+             $this->add($flat);
+         }
+-
+-        // Add the lang menu for small screens (it doesn't fit in the header).
+-        if (!empty($CFG->langmenu)) {
+-            if ($PAGE->course == SITEID || empty($PAGE->course->lang)) {
+-                $langs = get_string_manager()->get_list_of_translations();
+-                if (count($langs) >= 2) {
+-                    $first = true;
+-                    foreach ($langs as $lang => $name) {
+-                        $url = clone($PAGE->url);
+-                        $url->params(['lang' => $lang]);
+-                        $flat = new flat_navigation_node(navigation_node::create($name, $url), 0);
+-                        if ($first) {
+-                            $flat->set_showdivider(true);
+-                            $first = false;
+-                        }
+-                        $flat->set_smscreenonly(true);
+-                        $flat->key = $lang;
+-                        $this->add($flat);
+-                    }
+-                }
+-            }
+-        }
+-
+-        // Add the custom menu for small screens (it doesn't fit in the header).
+-        $customcount = 0;
+-        if (!empty($CFG->custommenuitems)) {
+-            $custommenus = custom_menu::convert_text_to_menu_nodes($CFG->custommenuitems, current_language());
+-            $first = true;
+-            foreach ($custommenus as $menu) {
+-                if (preg_match("/^#+$/", $menu->get_text())) {
+-                    $first = true;
+-                } else {
+-                    $url = $menu->get_url();
+-                    if ($url) {
+-                        $url = $url->out(false);
+-                    }
+-                    $flat = new flat_navigation_node(navigation_node::create($menu->get_text(), $url), 0);
+-                    if ($first) {
+-                        $flat->set_showdivider(true);
+-                        $first = false;
+-                    }
+-                    $flat->set_smscreenonly(true);
+-                    $flat->key = 'c-' . $customcount++;
+-                    $this->add($flat);
+-                }
+-                foreach ($menu->get_children() as $child) {
+-                    if (preg_match("/^#+$/", $child->get_text())) {
+-                        $first = true;
+-                    } else {
+-                        $url = $child->get_url();
+-                        if ($url) {
+-                            $url = $url->out(false);
+-                        }
+-                        $flat = new flat_navigation_node(navigation_node::create($child->get_text(), $url), 1);
+-                        $flat->set_smscreenonly(true);
+-                        $flat->key = 'c-' . $customcount++;
+-                        $this->add($flat);
+-                    }
+-                }
+-            }
+-
+-        }
+     }
+ 
+ }
+diff --git a/theme/boost/classes/output/core_renderer.php b/theme/boost/classes/output/core_renderer.php
+index 3c017c412b141ca2803a8741675ae3042999f49d..05a89b97eb9adf828737ff3e0d1cb5dda5996dd3 100644
+--- a/theme/boost/classes/output/core_renderer.php
++++ b/theme/boost/classes/output/core_renderer.php
+@@ -200,6 +200,38 @@ class core_renderer extends \core_renderer {
+         return $this->render_custom_menu($custommenu);
+     }
+ 
++    /**
++     * We want to show the custom menus as a list of links in the footer on small screens.
++     * Just return the menu object exported so we can render it differently.
++     */
++    public function custom_menu_flat() {
++        global $CFG;
++        $custommenuitems = '';
++
++        if (empty($custommenuitems) && !empty($CFG->custommenuitems)) {
++            $custommenuitems = $CFG->custommenuitems;
++        }
++        $custommenu = new custom_menu($custommenuitems, current_language());
++        $langs = get_string_manager()->get_list_of_translations();
++        $haslangmenu = $this->lang_menu() != '';
++
++        if ($haslangmenu) {
++            $strlang = get_string('language');
++            $currentlang = current_language();
++            if (isset($langs[$currentlang])) {
++                $currentlang = $langs[$currentlang];
++            } else {
++                $currentlang = $strlang;
++            }
++            $this->language = $custommenu->add($currentlang, new moodle_url('#'), $strlang, 10000);
++            foreach ($langs as $langtype => $langname) {
++                $this->language->add($langname, new moodle_url($this->page->url, array('lang' => $langtype)), $langname);
++            }
++        }
++
++        return $custommenu->export_for_template($this);
++    }
++
+     /*
+      * This renders the bootstrap top menu.
+      *
+diff --git a/theme/boost/scss/moodle/core.scss b/theme/boost/scss/moodle/core.scss
+index 337b00721dbc3581d96b2512bf5038d17aafbe71..5f508791ba18feb8aee92dec27d285b851e7ebde 100644
+--- a/theme/boost/scss/moodle/core.scss
++++ b/theme/boost/scss/moodle/core.scss
+@@ -2194,3 +2194,8 @@ ul {
+         }
+     }
+ }
++
++$footer-link-color: $brand-primary !default;
++#page-footer a {
++    color: $footer-link-color;
++}
+diff --git a/theme/boost/scss/preset-default.scss b/theme/boost/scss/preset-default.scss
+index d5a0aa24b80171b62db646e7fbc2dc3aef757c56..d25c2c787176da9252de95bfe72ea6fd960893aa 100644
+--- a/theme/boost/scss/preset-default.scss
++++ b/theme/boost/scss/preset-default.scss
+@@ -141,13 +141,6 @@ $breadcrumb-divider-rtl: "/" !default;
+     padding-left: 0;
+ }
+ 
+-#page-footer {
+-    color: #fff;
+-    text-align: right;
+-    background-color: #333;
+-    border-top: none;
+-}
+-
+ /**
+  * Dashboard styling.
+  */
+diff --git a/theme/boost/templates/columns2.mustache b/theme/boost/templates/columns2.mustache
+index 1fbe9339f965b7953d5028648aa07b107a49b0ba..5b225a8f125ddea3de126ad2e6c877fb9bf01e29 100644
+--- a/theme/boost/templates/columns2.mustache
++++ b/theme/boost/templates/columns2.mustache
+@@ -43,7 +43,7 @@
+     </div>
+     {{> theme_boost/nav-drawer }}
+ </div>
+-<footer id="page-footer" class="p-y-1">
++<footer id="page-footer" class="p-y-1 bg-inverse">
+     <div class="container">
+         <div id="course-footer">{{{ output.course_footer }}}</div>
+ 
+@@ -53,6 +53,11 @@
+ 
+         {{{ output.login_info }}}
+         {{{ output.home_link }}}
++        <nav class="nav navbar-nav hidden-lg-up">
++            {{# output.custom_menu_flat }}
++                {{> theme_boost/custom_menu_footer }}
++            {{/ output.custom_menu_flat }}
++        </nav>
+         {{{ output.standard_footer_html }}}
+         {{{ output.standard_end_of_body_html }}}
+     </div>
+diff --git a/theme/boost/templates/custom_menu_footer.mustache b/theme/boost/templates/custom_menu_footer.mustache
+new file mode 100644
+index 0000000000000000000000000000000000000000..6439207471a3c04715fa044007af462f9ba20af6
+--- /dev/null
++++ b/theme/boost/templates/custom_menu_footer.mustache
+@@ -0,0 +1,18 @@
++<ul class="list-unstyled">
++    {{#children}}
++        {{#divider}}
++            <li><hr></li>
++        {{/divider}}
++        {{^divider}}
++            {{#url}}
++                <li><a href="{{{url}}}" title="{{{title}}}">{{{text}}}</a></li>
++            {{/url}}
++            {{^url}}
++                <li>{{{text}}}</li>
++            {{/url}}
++        {{/divider}}
++        {{#haschildren}}
++            {{> theme_boost/custom_menu_footer }}
++        {{/haschildren}}
++    {{/children}}
++</ul>
+diff --git a/theme/boost/templates/header.mustache b/theme/boost/templates/header.mustache
+index d70d7622bba953fc4bdece2aec651e8dc8996ffc..da6500b668f0588dfbc920c67bf408b1eaffce0a 100644
+--- a/theme/boost/templates/header.mustache
++++ b/theme/boost/templates/header.mustache
+@@ -25,7 +25,11 @@
+         <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn pull-xs-left m-r-1 btn-secondary" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">&#9776;<span class="sr-only">{{#str}}expand, core{{/str}}</span></button>
+         </div>
+ 
+-        <a role="banner" href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}">
++        <a role="banner" href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
++            {{^ output.should_display_navbar_logo }}
++                hidden-sm-down
++            {{/ output.should_display_navbar_logo }}
++                ">
+             {{# output.should_display_navbar_logo }}
+                 <span class="logo hidden-xs-down">
+                     <img src="{{output.get_compact_logo_url}}" alt="{{sitename}}">
+diff --git a/theme/boost/scss/moodle/core.scss b/theme/boost/scss/moodle/core.scss
+index 5f508791ba18feb8aee92dec27d285b851e7ebde..dc7c7b6e6eb8c07b92098f75f896bfb5c35b7366 100644
+--- a/theme/boost/scss/moodle/core.scss
++++ b/theme/boost/scss/moodle/core.scss
+@@ -2199,3 +2199,10 @@ $footer-link-color: $brand-primary !default;
+ #page-footer a {
+     color: $footer-link-color;
+ }
++
++// Make links in a menu clickable anywhere in the row.
++.dropdown-item a {
++    display: block;
++    width: 100%;
++    color: $body-color;
++}
+diff --git a/admin/tool/lp/lib.php b/admin/tool/lp/lib.php
+index 62b6892b6fcca28f9c8473608743713ac6bc9062..7f1ba9cfc0e3c14155bc452c9843ed5a60b1e654 100644
+--- a/admin/tool/lp/lib.php
++++ b/admin/tool/lp/lib.php
+@@ -24,40 +24,6 @@
+ 
+ defined('MOODLE_INTERNAL') || die();
+ 
+-/**
+- * This function extends the course navigation
+- *
+- * @param navigation_node $navigation The navigation node to extend
+- * @param stdClass $course The course to object for the tool
+- * @param context $coursecontext The context of the course
+- */
+-function tool_lp_extend_navigation_course($navigation, $course, $coursecontext) {
+-    if (!get_config('core_competency', 'enabled')) {
+-        return;
+-    }
+-
+-    // Check access to the course and competencies page.
+-    $capabilities = array('moodle/competency:coursecompetencyview', 'moodle/competency:coursecompetencymanage');
+-    $context = context_course::instance($course->id);
+-    if (!has_any_capability($capabilities, $context) || !can_access_course($course)) {
+-        return;
+-    }
+-
+-    // Just a link to course competency.
+-    $title = get_string('competencies', 'core_competency');
+-    $path = new moodle_url("/admin/tool/lp/coursecompetencies.php", array('courseid' => $course->id));
+-    $settingsnode = navigation_node::create($title,
+-                                            $path,
+-                                            navigation_node::TYPE_SETTING,
+-                                            null,
+-                                            null,
+-                                            new pix_icon('i/competencies', ''));
+-    if (isset($settingsnode)) {
+-        $navigation->add_node($settingsnode);
+-    }
+-}
+-
+-
+ /**
+  * This function extends the user navigation.
+  *
+diff --git a/course/lib.php b/course/lib.php
+index 8d89b8dd8042ff5dc2bed7d2d1f31676879181ad..d8a922b522c5f9045f2c669c859011a4345907e1 100644
+--- a/course/lib.php
++++ b/course/lib.php
+@@ -3469,7 +3469,7 @@ function course_get_tagged_course_modules($tag, $exclusivemode = false, $fromcon
+  * This function also handles the frontpage course.
+  *
+  * @param  stdClass $context context object (it can be a course context or the system context for frontpage settings)
+- * @param  stdClass $course  the course where the settings are being rendered (only used when $context is set to frontpage)
++ * @param  stdClass $course  the course where the settings are being rendered
+  * @return stdClass          the navigation options in a course and their availability status
+  * @since  Moodle 3.2
+  */
+@@ -3512,6 +3512,7 @@ function course_get_user_navigation_options($context, $course = null) {
+                             has_capability('moodle/badges:viewbadges', $context);
+         // Add view grade report is permitted.
+         $grades = false;
++
+         if (has_capability('moodle/grade:viewall', $context)) {
+             $grades = true;
+         } else if (!empty($course->showgrades)) {
+@@ -3568,25 +3569,6 @@ function course_get_user_administration_options($course, $context) {
+         $options->publish = has_capability('moodle/course:publish', $context);
+         $options->reset = has_capability('moodle/course:reset', $context);
+         $options->roles = has_capability('moodle/role:switchroles', $context);
+-
+-        // Add view grade report is permitted.
+-        $grades = false;
+-        if (has_capability('moodle/grade:viewall', $context)) {
+-            $grades = true;
+-        } else if (!empty($course->showgrades)) {
+-            $reports = core_component::get_plugin_list('gradereport');
+-            if (is_array($reports) && count($reports) > 0) {  // Get all installed reports.
+-                arsort($reports);   // User is last, we want to test it first.
+-                foreach ($reports as $plugin => $plugindir) {
+-                    if (has_capability('gradereport/'.$plugin.':view', $context)) {
+-                        // Stop when the first visible plugin is found.
+-                        $grades = true;
+-                        break;
+-                    }
+-                }
+-            }
+-        }
+-        $options->grades = $grades;
+     } else {
+         // Set default options to false.
+         $listofoptions = array('tags', 'gradebook', 'outcomes', 'badges', 'import', 'publish', 'reset', 'roles', 'grades');
+diff --git a/lib/navigationlib.php b/lib/navigationlib.php
+index 7bf575d8fa49c3062eb571de3aba3a14c2cb9682..622ddfa57bc9ab17cbe6285b179dec559639765e 100644
+--- a/lib/navigationlib.php
++++ b/lib/navigationlib.php
+@@ -2387,7 +2387,7 @@ class global_navigation extends navigation_node {
+                     $usercoursenode = $userscoursesnode->add($usercourseshortname, new moodle_url('/user/view.php',
+                             array('id' => $user->id, 'course' => $usercourse->id)), self::TYPE_CONTAINER);
+ 
+-                    $gradeavailable = has_capability('moodle/grade:viewall', $usercoursecontext);
++                    $gradeavailable = has_capability('moodle/grade:view', $usercoursecontext);
+                     if (!$gradeavailable && !empty($usercourse->showgrades) && is_array($reports) && !empty($reports)) {
+                         foreach ($reports as $plugin => $plugindir) {
+                             if (has_capability('gradereport/'.$plugin.':view', $usercoursecontext)) {
+@@ -2647,7 +2647,7 @@ class global_navigation extends navigation_node {
+             return true;
+         }
+ 
+-        $navoptions = course_get_user_navigation_options($this->page->context);
++        $navoptions = course_get_user_navigation_options($this->page->context, $course);
+ 
+         //Participants
+         if ($navoptions->participants) {
+@@ -4158,11 +4158,6 @@ class settings_navigation extends navigation_node {
+             }
+         }
+ 
+-        if ($adminoptions->grades) {
+-            $url = new moodle_url('/grade/report/index.php', array('id'=>$course->id));
+-            $gradenode = $coursenode->add(get_string('grades'), $url, self::TYPE_SETTING, null, 'grades', new pix_icon('i/grades', ''));
+-        }
+-
+         // Check if we can view the gradebook's setup page.
+         if ($adminoptions->gradebook) {
+             $url = new moodle_url('/grade/edit/tree/index.php', array('id' => $course->id));
+diff --git a/theme/boost/classes/output/core_renderer.php b/theme/boost/classes/output/core_renderer.php
+index 05a89b97eb9adf828737ff3e0d1cb5dda5996dd3..a14ad7d4c909c818131e3e253889ddd410907974 100644
+--- a/theme/boost/classes/output/core_renderer.php
++++ b/theme/boost/classes/output/core_renderer.php
+@@ -554,23 +554,29 @@ class core_renderer extends \core_renderer {
+                 $settingsnode = $this->page->settingsnav->find('frontpage', navigation_node::TYPE_SETTING);
+                 if ($settingsnode) {
+                     // Build an action menu based on the visible nodes from this navigation tree.
+-                    $this->build_action_menu_from_navigation($menu, $settingsnode, false, true);
+-
+-                    $text = get_string('frontpagesettings');
+-                    $url = new moodle_url('/course/admin.php', array('courseid' => $this->page->course->id));
+-                    $link = new action_link($url, $text, null, null, new pix_icon('t/edit', $text));
+-                    $menu->add_secondary_action($link);
++                    $skipped = $this->build_action_menu_from_navigation($menu, $settingsnode, false, true);
++
++                    // We only add a list to the full settings menu if we didn't include every node in the short menu.
++                    if ($skipped) {
++                        $text = get_string('frontpagesettings');
++                        $url = new moodle_url('/course/admin.php', array('courseid' => $this->page->course->id));
++                        $link = new action_link($url, $text, null, null, new pix_icon('t/edit', $text));
++                        $menu->add_secondary_action($link);
++                    }
+                 }
+             } else if ($node->type == navigation_node::TYPE_COURSE) {
+                 $settingsnode = $this->page->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE);
+                 if ($settingsnode) {
+                     // Build an action menu based on the visible nodes from this navigation tree.
+-                    $this->build_action_menu_from_navigation($menu, $settingsnode, false, true);
+-
+-                    $text = get_string('courseadministration');
+-                    $url = new moodle_url('/course/admin.php', array('courseid' => $this->page->course->id));
+-                    $link = new action_link($url, $text, null, null, new pix_icon('t/edit', $text));
+-                    $menu->add_secondary_action($link);
++                    $skipped = $this->build_action_menu_from_navigation($menu, $settingsnode, false, true);
++
++                    // We only add a list to the full settings menu if we didn't include every node in the short menu.
++                    if ($skipped) {
++                        $text = get_string('courseadministration');
++                        $url = new moodle_url('/course/admin.php', array('courseid' => $this->page->course->id));
++                        $link = new action_link($url, $text, null, null, new pix_icon('t/edit', $text));
++                        $menu->add_secondary_action($link);
++                    }
+                 }
+             }
+         } else if ($context->contextlevel == CONTEXT_USER) {
+@@ -629,15 +635,18 @@ class core_renderer extends \core_renderer {
+      * @param navigation_node $node
+      * @param boolean $indent
+      * @param boolean $onlytopleafnodes
++     * @return boolean nodesskipped - True if nodes were skipped in building the menu
+      */
+     private function build_action_menu_from_navigation(action_menu $menu,
+                                                        navigation_node $node,
+                                                        $indent = false,
+                                                        $onlytopleafnodes = false) {
++        $skipped = false;
+         // Build an action menu based on the visible nodes from this navigation tree.
+         foreach ($node->children as $menuitem) {
+             if ($menuitem->display) {
+                 if ($onlytopleafnodes && $menuitem->children->count()) {
++                    $skipped = true;
+                     continue;
+                 }
+                 if ($menuitem->action) {
+@@ -652,14 +661,16 @@ class core_renderer extends \core_renderer {
+                     }
+                 } else {
+                     if ($onlytopleafnodes) {
++                        $skipped = true;
+                         continue;
+                     }
+                     $link = $menuitem->text;
+                 }
+                 $menu->add_secondary_action($link);
+-                $this->build_action_menu_from_navigation($menu, $menuitem, true);
++                $skipped = $skipped || $this->build_action_menu_from_navigation($menu, $menuitem, true);
+             }
+         }
++        return $skipped;
+     }
+ 
+ }
+diff --git a/lib/moodlelib.php b/lib/moodlelib.php
+index d0503f114957d15c0e1c33963cd838ede050d8a0..c1ffdd5f71b20014e78800ad63645f4e20211c0e 100644
+--- a/lib/moodlelib.php
++++ b/lib/moodlelib.php
+@@ -8885,36 +8885,36 @@ function get_performance_info() {
+     global $CFG, $PERF, $DB, $PAGE;
+ 
+     $info = array();
+-    $info['html'] = '';         // Holds userfriendly HTML representation.
+     $info['txt']  = me() . ' '; // Holds log-friendly representation.
+ 
+     if (!empty($CFG->themedesignermode)) {
+         // Attempt to avoid devs debugging peformance issues, when its caused by css building and so on.
+         $info['html'] = '<p><strong>Warning: Theme designer mode is enabled.</strong></p>';
+     }
++    $info['html'] .= '<ul class="list-unstyled m-l-1">';         // Holds userfriendly HTML representation.
+ 
+     $info['realtime'] = microtime_diff($PERF->starttime, microtime());
+ 
+-    $info['html'] .= '<span class="timeused">'.$info['realtime'].' secs</span> ';
++    $info['html'] .= '<li class="timeused">'.$info['realtime'].' secs</li> ';
+     $info['txt'] .= 'time: '.$info['realtime'].'s ';
+ 
+     if (function_exists('memory_get_usage')) {
+         $info['memory_total'] = memory_get_usage();
+         $info['memory_growth'] = memory_get_usage() - $PERF->startmemory;
+-        $info['html'] .= '<span class="memoryused">RAM: '.display_size($info['memory_total']).'</span> ';
++        $info['html'] .= '<li class="memoryused">RAM: '.display_size($info['memory_total']).'</li> ';
+         $info['txt']  .= 'memory_total: '.$info['memory_total'].'B (' . display_size($info['memory_total']).') memory_growth: '.
+             $info['memory_growth'].'B ('.display_size($info['memory_growth']).') ';
+     }
+ 
+     if (function_exists('memory_get_peak_usage')) {
+         $info['memory_peak'] = memory_get_peak_usage();
+-        $info['html'] .= '<span class="memoryused">RAM peak: '.display_size($info['memory_peak']).'</span> ';
++        $info['html'] .= '<li class="memoryused">RAM peak: '.display_size($info['memory_peak']).'</li> ';
+         $info['txt']  .= 'memory_peak: '.$info['memory_peak'].'B (' . display_size($info['memory_peak']).') ';
+     }
+ 
+     $inc = get_included_files();
+     $info['includecount'] = count($inc);
+-    $info['html'] .= '<span class="included">Included '.$info['includecount'].' files</span> ';
++    $info['html'] .= '<li class="included">Included '.$info['includecount'].' files</li> ';
+     $info['txt']  .= 'includecount: '.$info['includecount'].' ';
+ 
+     if (!empty($CFG->early_install_lang) or empty($PAGE)) {
+@@ -8927,7 +8927,7 @@ function get_performance_info() {
+         list($filterinfo, $nicenames) = $filtermanager->get_performance_summary();
+         $info = array_merge($filterinfo, $info);
+         foreach ($filterinfo as $key => $value) {
+-            $info['html'] .= "<span class='$key'>$nicenames[$key]: $value </span> ";
++            $info['html'] .= "<li class='$key'>$nicenames[$key]: $value </li> ";
+             $info['txt'] .= "$key: $value ";
+         }
+     }
+@@ -8937,23 +8937,23 @@ function get_performance_info() {
+         list($filterinfo, $nicenames) = $stringmanager->get_performance_summary();
+         $info = array_merge($filterinfo, $info);
+         foreach ($filterinfo as $key => $value) {
+-            $info['html'] .= "<span class='$key'>$nicenames[$key]: $value </span> ";
++            $info['html'] .= "<li class='$key'>$nicenames[$key]: $value </li> ";
+             $info['txt'] .= "$key: $value ";
+         }
+     }
+ 
+     if (!empty($PERF->logwrites)) {
+         $info['logwrites'] = $PERF->logwrites;
+-        $info['html'] .= '<span class="logwrites">Log DB writes '.$info['logwrites'].'</span> ';
++        $info['html'] .= '<li class="logwrites">Log DB writes '.$info['logwrites'].'</li> ';
+         $info['txt'] .= 'logwrites: '.$info['logwrites'].' ';
+     }
+ 
+     $info['dbqueries'] = $DB->perf_get_reads().'/'.($DB->perf_get_writes() - $PERF->logwrites);
+-    $info['html'] .= '<span class="dbqueries">DB reads/writes: '.$info['dbqueries'].'</span> ';
++    $info['html'] .= '<li class="dbqueries">DB reads/writes: '.$info['dbqueries'].'</li> ';
+     $info['txt'] .= 'db reads/writes: '.$info['dbqueries'].' ';
+ 
+     $info['dbtime'] = round($DB->perf_get_queries_time(), 5);
+-    $info['html'] .= '<span class="dbtime">DB queries time: '.$info['dbtime'].' secs</span> ';
++    $info['html'] .= '<li class="dbtime">DB queries time: '.$info['dbtime'].' secs</li> ';
+     $info['txt'] .= 'db queries time: ' . $info['dbtime'] . 's ';
+ 
+     if (function_exists('posix_times')) {
+@@ -8962,7 +8962,7 @@ function get_performance_info() {
+             foreach ($ptimes as $key => $val) {
+                 $info[$key] = $ptimes[$key] -  $PERF->startposixtimes[$key];
+             }
+-            $info['html'] .= "<span class=\"posixtimes\">ticks: $info[ticks] user: $info[utime] sys: $info[stime] cuser: $info[cutime] csys: $info[cstime]</span> ";
++            $info['html'] .= "<li class=\"posixtimes\">ticks: $info[ticks] user: $info[utime] sys: $info[stime] cuser: $info[cutime] csys: $info[cstime]</li> ";
+             $info['txt'] .= "ticks: $info[ticks] user: $info[utime] sys: $info[stime] cuser: $info[cutime] csys: $info[cstime] ";
+         }
+     }
+@@ -8982,7 +8982,7 @@ function get_performance_info() {
+     }
+     if (!empty($serverload)) {
+         $info['serverload'] = $serverload;
+-        $info['html'] .= '<span class="serverload">Load average: '.$info['serverload'].'</span> ';
++        $info['html'] .= '<li class="serverload">Load average: '.$info['serverload'].'</li> ';
+         $info['txt'] .= "serverload: {$info['serverload']} ";
+     }
+ 
+@@ -8994,8 +8994,8 @@ function get_performance_info() {
+     }
+ 
+     if ($stats = cache_helper::get_stats()) {
+-        $html = '<span class="cachesused">';
+-        $html .= '<span class="cache-stats-heading">Caches used (hits/misses/sets)</span>';
++        $html = '<ul class="cachesused list-unstyled m-l-1">';
++        $html .= '<li class="cache-stats-heading">Caches used (hits/misses/sets)</li>';
+         $text = 'Caches used (hits/misses/sets): ';
+         $hits = 0;
+         $misses = 0;
+@@ -9015,34 +9015,34 @@ function get_performance_info() {
+                     $mode = ' <span title="request cache">[r]</span>';
+                     break;
+             }
+-            $html .= '<span class="cache-definition-stats cache-mode-'.$modeclass.'">';
+-            $html .= '<span class="cache-definition-stats-heading">'.$definition.$mode.'</span>';
++            $html .= '<ul class="cache-definition-stats list-unstyled m-l-1 cache-mode-'.$modeclass.'">';
++            $html .= '<li class="cache-definition-stats-heading p-t-1">'.$definition.$mode.'</li>';
+             $text .= "$definition {";
+             foreach ($details['stores'] as $store => $data) {
+                 $hits += $data['hits'];
+                 $misses += $data['misses'];
+                 $sets += $data['sets'];
+                 if ($data['hits'] == 0 and $data['misses'] > 0) {
+-                    $cachestoreclass = 'nohits';
++                    $cachestoreclass = 'nohits text-danger';
+                 } else if ($data['hits'] < $data['misses']) {
+-                    $cachestoreclass = 'lowhits';
++                    $cachestoreclass = 'lowhits text-warning';
+                 } else {
+-                    $cachestoreclass = 'hihits';
++                    $cachestoreclass = 'hihits text-success';
+                 }
+                 $text .= "$store($data[hits]/$data[misses]/$data[sets]) ";
+-                $html .= "<span class=\"cache-store-stats $cachestoreclass\">$store: $data[hits] / $data[misses] / $data[sets]</span>";
++                $html .= "<li class=\"cache-store-stats $cachestoreclass\">$store: $data[hits] / $data[misses] / $data[sets]</li>";
+             }
+-            $html .= '</span>';
++            $html .= '</ul>';
+             $text .= '} ';
+         }
+-        $html .= "<span class='cache-total-stats'>Total: $hits / $misses / $sets</span>";
+-        $html .= '</span> ';
++        $html .= '</ul> ';
++        $html .= "<div class='cache-total-stats row'>Total: $hits / $misses / $sets</div>";
+         $info['cachesused'] = "$hits / $misses / $sets";
+         $info['html'] .= $html;
+         $info['txt'] .= $text.'. ';
+     } else {
+         $info['cachesused'] = '0 / 0 / 0';
+-        $info['html'] .= '<span class="cachesused">Caches used (hits/misses/sets): 0/0/0</span>';
++        $info['html'] .= '<div class="cachesused">Caches used (hits/misses/sets): 0/0/0</div>';
+         $info['txt'] .= 'Caches used (hits/misses/sets): 0/0/0 ';
+     }
+ 
+diff --git a/theme/boost/scss/moodle/debug.scss b/theme/boost/scss/moodle/debug.scss
+index 64f0d0d2ca1026c230a554b96687d1d7785ecb01..10406ff9dc3c3e34acca4e4a475eca524666c26b 100644
+--- a/theme/boost/scss/moodle/debug.scss
++++ b/theme/boost/scss/moodle/debug.scss
+@@ -38,75 +38,3 @@ body.behat-site {
+     font-weight: bold;
+ }
+ 
+-#page-footer .performanceinfo {
+-    margin: 0 20%;
+-}
+-
+-#page-footer .performanceinfo span {
+-    display: block;
+-}
+-
+-#page-footer .validators {
+-    margin-top: 40px;
+-    padding-top: 5px;
+-    border-top: 1px dotted gray;
+-}
+-
+-#page-footer .validators ul {
+-    margin: 0;
+-    padding: 0;
+-    list-style-type: none;
+-}
+-
+-#page-footer .validators ul li {
+-    display: inline;
+-    margin-right: 10px;
+-    margin-left: 10px;
+-}
+-
+-/** Cache stats styles **/
+-#page-footer .performanceinfo .cachesused {
+-    margin-top: 1em;
+-
+-    .cache-stats-heading,
+-    .cache-total-stats {
+-        font-weight: bold;
+-        font-size: 110%;
+-        margin-top: 0.3em;
+-    }
+-
+-    .cache-definition-stats {
+-        margin: .3em;
+-        display: inline-block;
+-        vertical-align: top;
+-        @extend .card;
+-
+-        .cache-definition-stats-heading span {
+-            display: inline-block;
+-            cursor: default;
+-        }
+-
+-        .cache-store-stats {
+-            padding: 0 1.3em;
+-
+-            &.nohits {
+-                background-color: $state-danger-bg;
+-            }
+-
+-            &.lowhits {
+-                background-color: $state-warning-bg;
+-            }
+-
+-            &.hihits {
+-                background-color: $state-success-bg;
+-            }
+-        }
+-    }
+-}
+-
+-#page-footer,
+-#page-footer .validators,
+-#page-footer .purgecaches,
+-#page-footer .performanceinfo {
+-    text-align: center;
+-}
+diff --git a/theme/boost/scss/moodle/modules.scss b/theme/boost/scss/moodle/modules.scss
+index 57fe38d447190df9ab4570b1aaf7af088561f7e8..6ea872200da3b75c86dd786b3a8c944f73c8d435 100644
+--- a/theme/boost/scss/moodle/modules.scss
++++ b/theme/boost/scss/moodle/modules.scss
+@@ -150,10 +150,6 @@ select {
+     margin: 0;
+ }
+ 
+-#page-footer {
+-    border-top: 2px solid $table-border-color;
+-}
+-
+ .maincalendar .calendarmonth td,
+ .maincalendar .calendarmonth th {
+     border: 1px dotted $table-border-color;
+diff --git a/theme/boost/scss/moodle/sticky-footer.scss b/theme/boost/scss/moodle/sticky-footer.scss
+index f09d3661d204ac07059a094d0425fe32a132af83..725ffb63671b5b3b8a67dabd4cb0a7858e8bc6f8 100644
+--- a/theme/boost/scss/moodle/sticky-footer.scss
++++ b/theme/boost/scss/moodle/sticky-footer.scss
+@@ -22,4 +22,5 @@ body {
+ 
+ #page-footer {
+     min-height: $footer-min-height;
+-}
+\ No newline at end of file
++    text-align: left;
++}
+diff --git a/theme/boost/templates/columns2.mustache b/theme/boost/templates/columns2.mustache
+index 5b225a8f125ddea3de126ad2e6c877fb9bf01e29..413431cb81bc89988f0db34c8294912714a03f40 100644
+--- a/theme/boost/templates/columns2.mustache
++++ b/theme/boost/templates/columns2.mustache
+@@ -55,7 +55,9 @@
+         {{{ output.home_link }}}
+         <nav class="nav navbar-nav hidden-lg-up">
+             {{# output.custom_menu_flat }}
+-                {{> theme_boost/custom_menu_footer }}
++                <ul class="list-unstyled p-t-1">
++                    {{> theme_boost/custom_menu_footer }}
++                </ul>
+             {{/ output.custom_menu_flat }}
+         </nav>
+         {{{ output.standard_footer_html }}}
+diff --git a/theme/boost/templates/custom_menu_footer.mustache b/theme/boost/templates/custom_menu_footer.mustache
+index 6439207471a3c04715fa044007af462f9ba20af6..e26a6d1544bf04334069c48f90e3d11d5102bf2b 100644
+--- a/theme/boost/templates/custom_menu_footer.mustache
++++ b/theme/boost/templates/custom_menu_footer.mustache
+@@ -1,8 +1,4 @@
+-<ul class="list-unstyled">
+     {{#children}}
+-        {{#divider}}
+-            <li><hr></li>
+-        {{/divider}}
+         {{^divider}}
+             {{#url}}
+                 <li><a href="{{{url}}}" title="{{{title}}}">{{{text}}}</a></li>
+@@ -12,7 +8,8 @@
+             {{/url}}
+         {{/divider}}
+         {{#haschildren}}
+-            {{> theme_boost/custom_menu_footer }}
++            <ul class="list-unstyled m-l-1">
++                {{> theme_boost/custom_menu_footer }}
++            </ul>
+         {{/haschildren}}
+     {{/children}}
+-</ul>
+diff --git a/theme/boost/templates/login.mustache b/theme/boost/templates/login.mustache
+index 980b0787cb6d3235dfdc8ce66d49f36450364753..289b6ae05e8cd4b0ad4cba28c2d215c73589cc06 100644
+--- a/theme/boost/templates/login.mustache
++++ b/theme/boost/templates/login.mustache
+@@ -25,7 +25,7 @@
+         </div>
+     </div>
+ </div>
+-<footer id="page-footer" class="p-y-1">
++<footer id="page-footer" class="p-y-1 bg-inverse">
+     <div class="container">
+         <div id="course-footer">{{{ output.course_footer }}}</div>
+ 
+diff --git a/theme/boost/templates/maintenance.mustache b/theme/boost/templates/maintenance.mustache
+index a760c4d5f62eb2cc188c42beffbd5f7f15851898..a3a56fe96a9e32ec70bb4445025ed4272d5b3099 100644
+--- a/theme/boost/templates/maintenance.mustache
++++ b/theme/boost/templates/maintenance.mustache
+@@ -34,7 +34,7 @@
+     </div>
+ </div>
+ 
+-<footer id="page-footer" class="p-y-1">
++<footer id="page-footer" class="p-y-1 bg-inverse">
+     <div class="container">
+         {{{ output.standard_footer_html }}}
+         {{{ output.standard_end_of_body_html }}}
+diff --git a/theme/bootstrapbase/less/moodle/debug.less b/theme/bootstrapbase/less/moodle/debug.less
+index 4c5df2051cbb28724b45a3e5e7c4527ac22b9e43..b3ef7e8179c8d88443a22a12520b2942a8c04445 100644
+--- a/theme/bootstrapbase/less/moodle/debug.less
++++ b/theme/bootstrapbase/less/moodle/debug.less
+@@ -91,6 +91,9 @@ body.behat-site {
+     }
+ }
+ 
++#page-footer .performanceinfo li {
++    list-style-type: none;
++}
+ 
+ #page-footer,
+ #page-footer .validators,
+diff --git a/theme/boost/scss/moodle/core.scss b/theme/boost/scss/moodle/core.scss
+index dc7c7b6e6eb8c07b92098f75f896bfb5c35b7366..ef54d261383c8ba06ab913cfc564989c1b2f4bf5 100644
+--- a/theme/boost/scss/moodle/core.scss
++++ b/theme/boost/scss/moodle/core.scss
+@@ -2206,3 +2206,7 @@ $footer-link-color: $brand-primary !default;
+     width: 100%;
+     color: $body-color;
+ }
++
++#region-main > .card {
++    overflow: auto;
++}
+diff --git a/theme/boost/scss/moodle/grade.scss b/theme/boost/scss/moodle/grade.scss
+index 0a7281760a162266a5747a740a9be55c90cc60a8..183c0656782fa34f4ea80b1aa3722507cc2680e1 100644
+--- a/theme/boost/scss/moodle/grade.scss
++++ b/theme/boost/scss/moodle/grade.scss
+@@ -26,6 +26,10 @@
+     }
+ }
+ 
++.path-grade-report #maincontent + .urlselect {
++    float: right;
++}
++
+ // Rubrics
+ #page-grade-grading-manage {
+     #activemethodselector {
+diff --git a/theme/boost/scss/moodle/debug.scss b/theme/boost/scss/moodle/debug.scss
+index 9d7ee0dfd19e70e2907927ec49cf9a624d4ca600..ddf59f9aaae84d9070e6d2c3263b948a44cd63c5 100644
+--- a/theme/boost/scss/moodle/debug.scss
++++ b/theme/boost/scss/moodle/debug.scss
+@@ -9,7 +9,7 @@ body.behat-site {
+ 
+     // We need more spacing in action menus so behat does not click on the wrong menu item.
+     .dropdown-item {
+-        margin-top: 4px ! important;
++        margin-top: 4px !important; /* stylelint-disable declaration-no-important */
+     }
+ }
+ 
+diff --git a/theme/boost/scss/moodle/drawer.scss b/theme/boost/scss/moodle/drawer.scss
+index 1c5eb3c3100000f9e2c7066e4d268f4b47153b46..c953a6f04f2986135494c37f65440dd4258353a9 100644
+--- a/theme/boost/scss/moodle/drawer.scss
++++ b/theme/boost/scss/moodle/drawer.scss
+@@ -7,8 +7,8 @@ $drawer-padding-y: 20px;
+ $drawer-offscreen-gutter: 20px;
+ 
+ :target {
+-  padding-top: ($fixed-header-y + 30px) ! important; /* negative fixed header height */
+-  margin-top: -$fixed-header-y ! important; /* negative fixed header height */
++    padding-top: ($fixed-header-y + 30px) !important; /* stylelint-disable declaration-no-important */
++    margin-top: -$fixed-header-y !important; /* negative fixed header height */
+ }
+ .pagelayout-embedded :target {
+     padding-top: initial;
+@@ -36,12 +36,12 @@ $drawer-bg: $gray-lighter !default;
+     z-index: $zindex-dropdown - 1;
+     background-color: $drawer-bg;
+     -webkit-transition: right 0.5s ease, left 0.5s ease;
+-       -moz-transition: right 0.5s ease, left 0.5s ease;
+-            transition: right 0.5s ease, left 0.5s ease;
++    -moz-transition: right 0.5s ease, left 0.5s ease;
++    transition: right 0.5s ease, left 0.5s ease;
+ }
+ #nav-drawer {
+     right: auto;
+-    left: 0px;
++    left: 0;
+ }
+ #page {
+     margin-top: $fixed-header-y;
+@@ -51,8 +51,8 @@ $drawer-bg: $gray-lighter !default;
+ }
+ body.drawer-ease {
+     -webkit-transition: margin-left 0.5s ease, margin-right 0.5s ease;
+-       -moz-transition: margin-left 0.5s ease, margin-right 0.5s ease;
+-            transition: margin-left 0.5s ease, margin-right 0.5s ease;
++    -moz-transition: margin-left 0.5s ease, margin-right 0.5s ease;
++    transition: margin-left 0.5s ease, margin-right 0.5s ease;
+ }
+ 
+ body.drawer-open-left {
+diff --git a/theme/boost/scss/moodle/icons.scss b/theme/boost/scss/moodle/icons.scss
+index 70887e8044eb9f6e7deaa70319113475f910de36..f2ba38f416ee649078833980eca4c62244d7e7bf 100644
+--- a/theme/boost/scss/moodle/icons.scss
++++ b/theme/boost/scss/moodle/icons.scss
+@@ -38,5 +38,5 @@ a:first-of-type > .icon {
+ }
+ 
+ [data-action=toggle-drawer] .icon {
+-    margin: 0px;
++    margin: 0;
+ }

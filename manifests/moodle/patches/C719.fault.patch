@@ -1,0 +1,68 @@
+diff --git a/public/mod/forum/rsslib.php b/public/mod/forum/rsslib.php
+index 58258b27d69c6e9bc7ee489b83bd21345128549a..5886eab5911854181a07efcbb94f8e6151422b8c 100644
+--- a/public/mod/forum/rsslib.php
++++ b/public/mod/forum/rsslib.php
+@@ -314,6 +314,8 @@ function forum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext=nul
+ function forum_rss_feed_contents($forum, $sql, $params, $context) {
+     global $CFG, $DB, $USER;
+ 
++    $status = true;
++
+     $recs = $DB->get_recordset_sql($sql, $params, 0, $forum->rssarticles);
+ 
+     //set a flag. Are we displaying discussions or posts?
+@@ -326,6 +328,7 @@ function forum_rss_feed_contents($forum, $sql, $params, $context) {
+         throw new \moodle_exception('invalidcoursemodule');
+     }
+ 
++    $formatoptions = new stdClass();
+     $items = array();
+     foreach ($recs as $rec) {
+             $item = new stdClass();
+@@ -374,6 +377,7 @@ function forum_rss_feed_contents($forum, $sql, $params, $context) {
+                 $item->author = fullname($rec);
+                 $message = file_rewrite_pluginfile_urls($rec->postmessage, 'pluginfile.php', $context->id,
+                         'mod_forum', 'post', $rec->postid);
++                $formatoptions->trusted = $rec->posttrust;
+             }
+ 
+             if ($isdiscussion) {
+@@ -382,10 +386,8 @@ function forum_rss_feed_contents($forum, $sql, $params, $context) {
+                 $item->link = $CFG->wwwroot."/mod/forum/discuss.php?d=".$rec->discussionid."&parent=".$rec->postid;
+             }
+ 
+-            $item->description = format_text($message, $rec->postformat, [
+-                'context' => $context,
+-                'trusted' => $rec->posttrust,
+-            ]);
++            $formatoptions->trusted = $rec->posttrust;
++            $item->description = format_text($message, $rec->postformat, $formatoptions, $forum->course);
+ 
+             //TODO: MDL-31129 implement post attachment handling
+             /*if (!$isdiscussion) {
+diff --git a/public/mod/glossary/rsslib.php b/public/mod/glossary/rsslib.php
+index fd4f577d678090f33dac5bb0bc8ad4d563460417..eaeec384590a2e583b3ae16cce1d1dac38f7fe48 100644
+--- a/public/mod/glossary/rsslib.php
++++ b/public/mod/glossary/rsslib.php
+@@ -81,6 +81,9 @@
+ 
+             $items = array();
+ 
++            $formatoptions = new stdClass();
++            $formatoptions->trusttext = true;
++
+             foreach ($recs as $rec) {
+                 $item = new stdClass();
+                 $item->title = $rec->entryconcept;
+@@ -94,10 +97,7 @@
+ 
+                 $definition = file_rewrite_pluginfile_urls($rec->entrydefinition, 'pluginfile.php',
+                     $modcontext->id, 'mod_glossary', 'entry', $rec->entryid);
+-                $item->description = format_text($definition, $rec->entryformat, [
+-                    'context' => $modcontext,
+-                    'trusted' => true,
+-                ]);
++                $item->description = format_text($definition, $rec->entryformat, $formatoptions, $glossary->course);
+                 $items[] = $item;
+             }
+ 

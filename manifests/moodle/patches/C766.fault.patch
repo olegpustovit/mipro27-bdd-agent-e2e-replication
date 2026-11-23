@@ -1,0 +1,45 @@
+diff --git a/public/lib/filelib.php b/public/lib/filelib.php
+index ce562e3d3f7ae982320eccf2022f8e9bbbc2ac9f..0fce1c9245bb06f994f6846817ae2c557c5dc348 100644
+--- a/public/lib/filelib.php
++++ b/public/lib/filelib.php
+@@ -2582,8 +2582,8 @@ function send_file($path, $filename, $lifetime = null , $filter=0, $pathisstring
+             header('Cache-Control: private, max-age=10, no-transform');
+             header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
+             header('Pragma: ');
+-        } else { // Normal http - prevent caching at all cost.
+-            header('Cache-Control: private, must-revalidate, pre-check=0, post-check=0, max-age=0, no-transform', 'no-store');
++        } else { //normal http - prevent caching at all cost
++            header('Cache-Control: private, must-revalidate, pre-check=0, post-check=0, max-age=0, no-transform');
+             header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
+             header('Pragma: no-cache');
+         }
+diff --git a/public/repository/filesystem/lib.php b/public/repository/filesystem/lib.php
+index ac0cf1ae8bd68883e6894332df53028dab6928ec..c0c62ccac1f81dd903bf1011089ebc39cdcffcdb 100644
+--- a/public/repository/filesystem/lib.php
++++ b/public/repository/filesystem/lib.php
+@@ -622,8 +622,6 @@ class repository_filesystem extends repository {
+                 $filename = $options['filename'];
+             }
+             $dontdie = ($options && isset($options['dontdie']));
+-            // If the file is linked to the original then we should not cache it.
+-            $lifetime = 0;
+             send_file($file, $filename, $lifetime , $filter, false, $forcedownload, '', $dontdie);
+         } else {
+             send_file_not_found();
+diff --git a/public/repository/user/lib.php b/public/repository/user/lib.php
+index 6b25e60cc20a802783b145105cfeca1fd46a3472..6ae186123afef7c0fb04efb1ff3804f956befd4a 100644
+--- a/public/repository/user/lib.php
++++ b/public/repository/user/lib.php
+@@ -167,12 +167,4 @@ class repository_user extends repository {
+     public function contains_private_data() {
+         return false;
+     }
+-
+-    #[\Override]
+-    public function send_file($storedfile, $lifetime=null , $filter=0, $forcedownload=false, ?array $options = null) {
+-        // If the file is linked to the original then we should not cache it.
+-        $lifetime = 0;
+-
+-        parent::send_file($storedfile, $lifetime, $filter, $forcedownload, $options);
+-    }
+ }

@@ -1,0 +1,39 @@
+diff --git a/public/message/output/popup/amd/src/notification_popover_controller.js b/public/message/output/popup/amd/src/notification_popover_controller.js
+index eed763b9e62918dd43f4adb68b6f660c67f830d9..b2db937049887d29cf36c539005a2b8d76f9c55e 100644
+--- a/public/message/output/popup/amd/src/notification_popover_controller.js
++++ b/public/message/output/popup/amd/src/notification_popover_controller.js
+@@ -40,7 +40,6 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/str', 'core/url',
+         EMPTY_MESSAGE: '[data-region="empty-message"]',
+         COUNT_CONTAINER: '[data-region="count-container"]',
+         NOTIFICATION_READ_FEEDBACK: '[data-region="notification-read-feedback"]',
+-        CLOSE_NOTIFICATION_POPOVER: '[data-action="close-notification-popover"]',
+     };
+ 
+     /**
+@@ -361,12 +360,6 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/str', 'core/url',
+             e.stopPropagation();
+         }.bind(this));
+ 
+-        this.root.on(CustomEvents.events.activate, SELECTORS.CLOSE_NOTIFICATION_POPOVER, function(e) {
+-            e.preventDefault();
+-            $(this.root).trigger(CustomEvents.events.escape);
+-            e.stopPropagation();
+-        }.bind(this));
+-
+         // Update the notification information when the menu is opened.
+         this.root.on(this.events().menuOpened, function() {
+             this.hideUnreadCount();
+diff --git a/public/message/output/popup/templates/notification_popover.mustache b/public/message/output/popup/templates/notification_popover.mustache
+index b54eaab7a2ae0687a934db81e117b696f49ef989..feea8e69b2ec1be041ac6294146f6212439e83e3 100644
+--- a/public/message/output/popup/templates/notification_popover.mustache
++++ b/public/message/output/popup/templates/notification_popover.mustache
+@@ -83,9 +83,6 @@
+                class="btn btn-sm btn-link m-0 py-0 icon-no-margin" >
+                 {{#pix}} i/settings, core {{/pix}}</a>
+         {{/ urls.preferences }}
+-        <button type="button" class="btn btn-sm btn-link m-0 py-0 icon-no-margin" aria-label="{{#str}}closebuttontitle{{/str}}" title="{{#str}}closebuttontitle{{/str}}" data-action="close-notification-popover">
+-            {{#pix}}i/window_close{{/pix}}
+-        </button>
+     {{/headeractions}}
+ 
+     {{$content}}

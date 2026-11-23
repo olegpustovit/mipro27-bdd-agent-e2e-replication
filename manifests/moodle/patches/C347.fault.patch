@@ -1,0 +1,29 @@
+diff --git a/public/lib/editor/tiny/amd/src/options.js b/public/lib/editor/tiny/amd/src/options.js
+index f6428040ffa6d9ea1c4710776e472f38b44e7e26..8a8d5a9626a407576fe088ae5deed5d131c4b498 100644
+--- a/public/lib/editor/tiny/amd/src/options.js
++++ b/public/lib/editor/tiny/amd/src/options.js
+@@ -42,7 +42,7 @@ export const register = (editor, options) => {
+         processor: 'object',
+         "default": {},
+     });
+-    setOption(filePickers, Object.assign({}, options.filepicker));
++    setOption(filePickers, options.filepicker);
+ 
+     registerOption(optionDraftItemId, {
+         processor: 'number',
+diff --git a/public/lib/editor/tiny/classes/editor.php b/public/lib/editor/tiny/classes/editor.php
+index 7e06fb0381722ee6d2a782e5dbfc6500d78a54c3..0b99aae97460ec6c516c1d73f7576906232c16e8 100644
+--- a/public/lib/editor/tiny/classes/editor.php
++++ b/public/lib/editor/tiny/classes/editor.php
+@@ -170,10 +170,7 @@ class editor extends \texteditor {
+             'context' => $context->id,
+ 
+             // File picker options.
+-            'filepicker' => (object) $fpoptions,
+-
+-            // Default draft item ID.
+-            'draftitemid' => 0,
++            'filepicker' => $fpoptions,
+ 
+             'currentLanguage' => current_language(),
+ 

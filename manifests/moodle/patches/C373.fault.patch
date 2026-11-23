@@ -1,0 +1,39 @@
+diff --git a/public/question/type/multianswer/renderer.php b/public/question/type/multianswer/renderer.php
+index ef9251149eb51457d5fdad5cc36d58318d67645e..4e284f9fd3d703519b0c7e945aed8d00d35a8536 100644
+--- a/public/question/type/multianswer/renderer.php
++++ b/public/question/type/multianswer/renderer.php
+@@ -617,7 +617,6 @@ class qtype_multianswer_multiresponse_vertical_renderer extends qtype_multianswe
+         $inputattributes = array(
+             'type' => 'checkbox',
+             'value' => 1,
+-            'class' => 'form-check-input',
+         );
+         if ($options->readonly) {
+             $inputattributes['disabled'] = 'disabled';
+@@ -650,7 +649,7 @@ class qtype_multianswer_multiresponse_vertical_renderer extends qtype_multianswe
+                 unset($inputattributes['checked']);
+             }
+ 
+-            $class = 'form-check text-wrap text-break';
++            $class = 'r' . ($value % 2);
+             if ($options->correctness && $isselected) {
+                 $thisfrac = ($ans->fraction > 0) ? $answerfraction : 0;
+                 $feedbackimg = $this->feedback_image($thisfrac);
+@@ -663,7 +662,7 @@ class qtype_multianswer_multiresponse_vertical_renderer extends qtype_multianswe
+             $result .= html_writer::empty_tag('input', $inputattributes);
+             $result .= html_writer::tag('label', $subq->format_text($ans->answer,
+                                                                     $ans->answerformat, $qa, 'question', 'answer', $ansid),
+-                                        ['for' => $inputattributes['id'], 'class' => 'form-check-label text-body']);
++                                        array('for' => $inputattributes['id']));
+             $result .= $feedbackimg;
+ 
+             if ($options->feedback && $isselected && trim($ans->feedback)) {
+@@ -743,7 +742,7 @@ class qtype_multianswer_multiresponse_horizontal_renderer
+     extends qtype_multianswer_multiresponse_vertical_renderer {
+ 
+     protected function choice_wrapper_start($class) {
+-        return html_writer::start_tag('td', ['class' => $class . ' form-check-inline']);
++        return html_writer::start_tag('td', array('class' => $class));
+     }
+ 
+     protected function choice_wrapper_end() {

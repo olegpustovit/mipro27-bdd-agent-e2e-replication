@@ -1,0 +1,21 @@
+diff --git a/public/mod/assign/override_form.php b/public/mod/assign/override_form.php
+index 27cf5127903efde6afb3273d2d46ddb4407c0951..7805915017444e54910cf3b509ac229b02831329 100644
+--- a/public/mod/assign/override_form.php
++++ b/public/mod/assign/override_form.php
+@@ -166,14 +166,8 @@ class assign_override_form extends moodleform {
+                     $groups = groups_get_activity_allowed_groups($cm);
+                     $groupids = array_keys($groups);
+                 }
+-                $users = get_enrolled_users(
+-                    context: $this->context,
+-                    withcapability: 'mod/assign:submit',
+-                    groupids: $groupids,
+-                    userfields: $userfields,
+-                    orderby: $sort,
+-                    onlyactive: true
+-                );
++                $users = get_enrolled_users($this->context, '',
++                        $groupids, $userfields, $sort);
+ 
+                 // Filter users based on any fixed restrictions (groups, profile).
+                 $info = new \core_availability\info_module($cm);

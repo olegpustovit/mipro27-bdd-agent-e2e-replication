@@ -1,0 +1,83 @@
+diff --git a/public/course/externallib.php b/public/course/externallib.php
+index 07f067a24faae7466bd4bb8f8c1bbf38c3fb41ed..20e7b48bae75a945a3b22ec3e242aa6ad3d1391b 100644
+--- a/public/course/externallib.php
++++ b/public/course/externallib.php
+@@ -902,26 +902,6 @@ class core_course_external extends external_api {
+         );
+     }
+ 
+-    /**
+-     * Return array of all editable course custom fields indexed by their shortname
+-     *
+-     * @param \context $context
+-     * @param int $courseid
+-     * @return \core_customfield\field_controller[]
+-     */
+-    public static function get_editable_customfields(\context $context, int $courseid = 0): array {
+-        $result = [];
+-
+-        $handler = \core_course\customfield\course_handler::create();
+-        $handler->set_parent_context($context);
+-
+-        foreach ($handler->get_editable_fields($courseid) as $field) {
+-            $result[$field->get('shortname')] = $field;
+-        }
+-
+-        return $result;
+-    }
+-
+     /**
+      * Returns description of method parameters
+      *
+@@ -1109,13 +1089,8 @@ class core_course_external extends external_api {
+ 
+             // Custom fields.
+             if (!empty($course['customfields'])) {
+-                $customfields = self::get_editable_customfields($context);
+                 foreach ($course['customfields'] as $field) {
+-                    if (array_key_exists($field['shortname'], $customfields)) {
+-                        // Ensure we're populating the element form fields correctly.
+-                        $controller = \core_customfield\data_controller::create(0, null, $customfields[$field['shortname']]);
+-                        $course[$controller->get_form_element_name()] = $field['value'];
+-                    }
++                    $course['customfield_'.$field['shortname']] = $field['value'];
+                 }
+             }
+ 
+@@ -1328,15 +1303,10 @@ class core_course_external extends external_api {
+                     }
+                 }
+ 
+-                // Custom fields.
++                // Prepare list of custom fields.
+                 if (isset($course['customfields'])) {
+-                    $customfields = self::get_editable_customfields($context, $course['id']);
+                     foreach ($course['customfields'] as $field) {
+-                        if (array_key_exists($field['shortname'], $customfields)) {
+-                            // Ensure we're populating the element form fields correctly.
+-                            $controller = \core_customfield\data_controller::create(0, null, $customfields[$field['shortname']]);
+-                            $course[$controller->get_form_element_name()] = $field['value'];
+-                        }
++                        $course['customfield_' . $field['shortname']] = $field['value'];
+                     }
+                 }
+ 
+diff --git a/public/customfield/field/textarea/classes/data_controller.php b/public/customfield/field/textarea/classes/data_controller.php
+index 9a51c4097db3a37b2e29e7264520edf07a975d74..ce511f936361e3525ac66c739605c199a799b333 100644
+--- a/public/customfield/field/textarea/classes/data_controller.php
++++ b/public/customfield/field/textarea/classes/data_controller.php
+@@ -90,14 +90,7 @@ class data_controller extends \core_customfield\data_controller {
+         if (!property_exists($datanew, $fieldname)) {
+             return;
+         }
+-
+-        // Normalise form data, for cases it's come from an external source.
+         $fromform = $datanew->$fieldname;
+-        if (!is_array($fromform)) {
+-            $fromform = ['text' => $fromform];
+-            $fromform['format'] = $this->get('id') ? $this->get('valueformat') :
+-                $this->get_field()->get_configdata_property('defaultvalueformat');
+-        }
+ 
+         if (!$this->get('id')) {
+             $this->data->set('value', '');

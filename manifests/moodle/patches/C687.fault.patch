@@ -1,0 +1,22 @@
+diff --git a/public/repository/local/lib.php b/public/repository/local/lib.php
+index b7b4fa16b93ca47f83ed0f1a25fd0a18d642d1eb..14ccea2fcf186abd7f78ac8216954cf3a0f1eef8 100644
+--- a/public/repository/local/lib.php
++++ b/public/repository/local/lib.php
+@@ -132,14 +132,11 @@ class repository_local extends repository {
+      * This function may skip subfolders and recursively add their children
+      * {@link repository_local::can_skip()}
+      *
+-     * @param file_info|null $fileinfo
+-     * @param string|string[] $extensions for example '*' or ['.gif', '.jpg']
++     * @param file_info $fileinfo
++     * @param string|array $extensions, for example '*' or array('.gif','.jpg')
+      * @return array array of file_info elements
+      */
+-    private function get_non_empty_children(?file_info $fileinfo, $extensions): array {
+-        if ($fileinfo === null) {
+-            return [];
+-        }
++    private function get_non_empty_children(file_info $fileinfo, $extensions) {
+         $nonemptychildren = $fileinfo->get_non_empty_children($extensions);
+         $list = array();
+         foreach ($nonemptychildren as $child) {

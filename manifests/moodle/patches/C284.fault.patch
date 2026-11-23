@@ -1,0 +1,26 @@
+diff --git a/public/question/classes/local/bank/random_question_loader.php b/public/question/classes/local/bank/random_question_loader.php
+index a3b34a47144a6acfcf0c3023db9f8e1d2717d443..1bec6feb440ae29b474823a52a6c8c79b37bd772 100644
+--- a/public/question/classes/local/bank/random_question_loader.php
++++ b/public/question/classes/local/bank/random_question_loader.php
+@@ -167,14 +167,15 @@ class random_question_loader {
+                   JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
+ 
+                  WHERE q.parent = :noparent
+-                   $qtypecondition
+-                   $filtercondition
++                   AND qv.status = :ready
+                    AND qv.version = (
+-                           SELECT MAX(version)
+-                             FROM {question_versions}
+-                            WHERE questionbankentryid = qbe.id
+-                              AND status = :ready
++                           SELECT MAX(v.version)
++                             FROM {question_versions} v
++                             JOIN {question_bank_entries} be ON be.id = v.questionbankentryid
++                            WHERE be.id = qbe.id
+                        )
++                   $qtypecondition
++                   $filtercondition
+ 
+               ORDER BY previous_attempts
+             ", array_merge(

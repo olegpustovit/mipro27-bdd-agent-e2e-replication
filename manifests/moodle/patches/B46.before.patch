@@ -1,0 +1,43 @@
+diff --git a/public/mod/quiz/classes/output/edit_renderer.php b/public/mod/quiz/classes/output/edit_renderer.php
+index 643abd89f478fcbf0b9d2d74839f27ca632b51f7..673cb4615ea01180d9661b4a42c378a096574eaf 100644
+--- a/public/mod/quiz/classes/output/edit_renderer.php
++++ b/public/mod/quiz/classes/output/edit_renderer.php
+@@ -714,7 +714,7 @@ class edit_renderer extends \plugin_renderer_base {
+         // Add a new section to the add_menu if possible. This is always added to the HTML
+         // then hidden with CSS when no needed, so that as things are re-ordered, etc. with
+         // Ajax it can be relevaled again when necessary.
+-        $params = ['cmid' => $structure->get_cmid(), 'addsectionatpage' => $page, 'sesskey' => sesskey()];
++        $params = ['cmid' => $structure->get_cmid(), 'addsectionatpage' => $page];
+ 
+         $actions['addasection'] = new \action_menu_link_secondary(
+             new \moodle_url($pageurl, $params),
+diff --git a/public/mod/quiz/edit.php b/public/mod/quiz/edit.php
+index bbef69ae9b2365845b7773e4318f1903b194015b..cea57929dc43eca2f27390de602177eef0fc1e7b 100644
+--- a/public/mod/quiz/edit.php
++++ b/public/mod/quiz/edit.php
+@@ -125,7 +125,7 @@ if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
+     redirect($afteractionurl);
+ }
+ 
+-if (($addsectionatpage = optional_param('addsectionatpage', false, PARAM_INT)) && confirm_sesskey()) {
++if ($addsectionatpage = optional_param('addsectionatpage', false, PARAM_INT)) {
+     // Add a section to the quiz.
+     $structure->check_can_be_edited();
+     $structure->add_section_heading($addsectionatpage);
+diff --git a/public/mod/quiz/tests/behat/behat_mod_quiz.php b/public/mod/quiz/tests/behat/behat_mod_quiz.php
+index 043dead8efc499d2e48a94415b6f2cf3e219d71d..297a95b3a47cc92525b73a0722d8741b9d31f569 100644
+--- a/public/mod/quiz/tests/behat/behat_mod_quiz.php
++++ b/public/mod/quiz/tests/behat/behat_mod_quiz.php
+@@ -726,11 +726,8 @@ class behat_mod_quiz extends behat_question_base {
+ 
+         $this->execute("behat_general::i_click_on", [$slotxpath . $deletexpath, "xpath_element"]);
+ 
+-        // Wait for the dialogue to exist before clicking on the 'Yes' button to avoid random failures.
+-        $this->execute('behat_general::wait_until_exists', [".modal-content", "css_element"]);
+-
+         $this->execute('behat_general::i_click_on_in_the',
+-            ["Yes", "button", "Confirm", "dialogue"]
++            ['Yes', "button", "Confirm", "dialogue"]
+         );
+     }
+ 

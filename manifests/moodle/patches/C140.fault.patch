@@ -1,0 +1,20 @@
+diff --git a/public/question/bank/managecategories/classes/helper.php b/public/question/bank/managecategories/classes/helper.php
+index 7b3853ffe0eaa665f76a1354aa7e11dae8de7c7c..676bddfe3b40065b886b9d337c31cb15a233427f 100644
+--- a/public/question/bank/managecategories/classes/helper.php
++++ b/public/question/bank/managecategories/classes/helper.php
+@@ -69,13 +69,14 @@ class helper {
+                   JOIN {question_versions} qv ON qv.questionid = q.id
+                   JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
+                  WHERE qbe.questioncategoryid = :categoryid
+-                   AND qv.status = :status
++                   AND (q.qtype = :qtype OR qv.status = :status)
+                    AND q.id > :lastid
+               ORDER BY q.id";
+ 
+         $lastid = 0;
+         $params = [
+             'categoryid' => $categoryid,
++            'qtype' => 'random',
+             'status' => question_version_status::QUESTION_STATUS_HIDDEN,
+             'lastid' => $lastid,
+         ];

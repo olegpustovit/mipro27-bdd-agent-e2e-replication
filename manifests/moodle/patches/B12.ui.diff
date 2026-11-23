@@ -1,0 +1,603 @@
+diff --git a/public/mod/data/classes/output/action_bar.php b/public/mod/data/classes/output/action_bar.php
+index a4a9beb58225e746345ee2a641afcfda2f37065e..1c878c01c2a53b8bae269876059927fa5f428be8 100644
+--- a/public/mod/data/classes/output/action_bar.php
++++ b/public/mod/data/classes/output/action_bar.php
+@@ -33,12 +33,12 @@ class action_bar {
+     /** @var int $id The database module id. */
+     private $id;
+ 
+-    /** @var int $cmid The database course module id. */
+-    private $cmid;
+-
+     /** @var moodle_url $currenturl The URL of the current page. */
+     private $currenturl;
+ 
++    /** @var \cm_info $cm the course module. */
++    private $cm;
++
+     /**
+      * The class constructor.
+      *
+@@ -48,7 +48,7 @@ class action_bar {
+     public function __construct(int $id, moodle_url $pageurl) {
+         $this->id = $id;
+         [$course, $cm] = get_course_and_cm_from_instance($this->id, 'data');
+-        $this->cmid = $cm->id;
++        $this->cm = $cm;
+         $this->currenturl = $pageurl;
+     }
+ 
+@@ -111,7 +111,7 @@ class action_bar {
+         $triggerclasses = ['btn'];
+         $triggerclasses[] = $isprimarybutton ? 'btn-primary' : 'btn-secondary';
+         $fieldselect->set_menu_trigger(get_string('newfield', 'mod_data'), join(' ', $triggerclasses));
+-        $fieldselectparams = ['id' => $this->cmid, 'mode' => 'new'];
++        $fieldselectparams = ['id' => $this->cm->id, 'mode' => 'new'];
+         foreach ($menufield as $fieldtype => $fieldname) {
+             $fieldselectparams['newtype'] = $fieldtype;
+             $fieldselect->add(new \action_menu_link(
+@@ -135,10 +135,9 @@ class action_bar {
+      */
+     public function get_view_action_bar(bool $hasentries, string $mode): string {
+         global $PAGE;
+-
+         $viewlistlink = new moodle_url('/mod/data/view.php', ['d' => $this->id]);
+         $viewsinglelink = new moodle_url('/mod/data/view.php', ['d' => $this->id, 'mode' => 'single']);
+-
++        $manager = manager::create_from_coursemodule($this->cm);
+         $menu = [
+             $viewlistlink->out(false) => get_string('listview', 'mod_data'),
+             $viewsinglelink->out(false) => get_string('singleview', 'mod_data'),
+@@ -152,8 +151,28 @@ class action_bar {
+ 
+         $urlselect = new url_select($menu, $activeurl->out(false), null, 'viewactionselect');
+         $urlselect->set_label(get_string('viewnavigation', 'mod_data'), ['class' => 'visually-hidden']);
++        $cm = $manager->get_coursemodule();
++        $instance = $manager->get_instance();
++        $currentgroup = groups_get_activity_group($cm);
++        $groupmode = groups_get_activity_groupmode($cm);
++        $context = $manager->get_context();
++        if (data_user_can_add_entry($instance, $currentgroup, $groupmode, $context)) {
++            $backtourl = new moodle_url($this->currenturl);
++            $backtourl->param('mode', $mode);
++            $addentrylink = new moodle_url(
++                '/mod/data/edit.php',
++                ['id' => $this->cm->id, 'backto' => $backtourl]
++            );
++            $addentrybutton = new \core\output\action_link(
++                $addentrylink,
++                get_string('add', 'mod_data'),
++                null,
++                ['class' => 'btn btn-primary mx-1', 'role' => 'button']
++            );
++        }
+         $renderer = $PAGE->get_renderer('mod_data');
+-        $viewactionbar = new view_action_bar($this->id, $urlselect, $hasentries, $mode);
++
++        $viewactionbar = new view_action_bar($this->id, $urlselect, $hasentries, $mode, $addentrybutton ?? null);
+ 
+         return $renderer->render_view_action_bar($viewactionbar);
+     }
+@@ -233,7 +252,7 @@ class action_bar {
+         global $PAGE;
+ 
+         $renderer = $PAGE->get_renderer('mod_data');
+-        $presetsactionbar = new presets_action_bar($this->cmid, $this->get_presets_actions_select(true));
++        $presetsactionbar = new presets_action_bar($this->cm->id, $this->get_presets_actions_select(true));
+ 
+         return $renderer->render_presets_action_bar($presetsactionbar);
+     }
+@@ -302,20 +321,20 @@ class action_bar {
+ 
+         if ($hasimport) {
+             // Import.
+-            $actionsselectparams = ['id' => $this->cmid];
++            $actionsselectparams = ['id' => $this->cm->id];
+             $actionsselect->add(new \action_menu_link(
+                 new moodle_url('/mod/data/preset.php', $actionsselectparams),
+                 null,
+                 get_string('importpreset', 'mod_data'),
+                 false,
+-                ['data-action' => 'importpresets', 'data-dataid' => $this->cmid]
++                ['data-action' => 'importpresets', 'data-dataid' => $this->cm->id]
+             ));
+         }
+ 
+         // If the database has no fields, export and save as preset options shouldn't be displayed.
+         if ($hasfields) {
+             // Export.
+-            $actionsselectparams = ['id' => $this->cmid, 'action' => 'export'];
++            $actionsselectparams = ['id' => $this->cm->id, 'action' => 'export'];
+             $actionsselect->add(new \action_menu_link(
+                 new moodle_url('/mod/data/preset.php', $actionsselectparams),
+                 null,
+diff --git a/public/mod/data/classes/output/view_action_bar.php b/public/mod/data/classes/output/view_action_bar.php
+index d54d9601f016b15623b756182b66dad315aa90dc..dbec4b378e2417a2c5407f09e62918d4753e7692 100644
+--- a/public/mod/data/classes/output/view_action_bar.php
++++ b/public/mod/data/classes/output/view_action_bar.php
+@@ -16,6 +16,7 @@
+ 
+ namespace mod_data\output;
+ 
++use core\output\action_link;
+ use data_portfolio_caller;
+ use mod_data\manager;
+ use moodle_url;
+@@ -44,6 +45,9 @@ class view_action_bar implements templatable, renderable {
+     /** @var bool $mode The current view mode (list, view...). */
+     private $mode;
+ 
++    /** @var action_link|null $addentrylink The add entry link */
++    private ?action_link $addentrylink = null;
++
+     /**
+      * The class constructor.
+      *
+@@ -51,12 +55,20 @@ class view_action_bar implements templatable, renderable {
+      * @param \url_select $urlselect The URL selector object.
+      * @param bool $hasentries Whether entries exist.
+      * @param string $mode The current view mode (list, view...).
++     * @param action_link|null $addentrylink The add entry link
+      */
+-    public function __construct(int $id, \url_select $urlselect, bool $hasentries, string $mode) {
++    public function __construct(
++        int $id,
++        \url_select $urlselect,
++        bool $hasentries,
++        string $mode,
++        ?action_link $addentrylink = null
++    ) {
+         $this->id = $id;
+         $this->urlselect = $urlselect;
+         $this->hasentries = $hasentries;
+         $this->mode = $mode;
++        $this->addentrylink = $addentrylink;
+     }
+ 
+     /**
+@@ -142,7 +154,9 @@ class view_action_bar implements templatable, renderable {
+         if ($actionsselect) {
+             $data['actionsselect'] = $actionsselect->export_for_template($output);
+         }
+-
++        if ($this->addentrylink) {
++            $data['addentrybutton'] = $this->addentrylink->export_for_template($output);
++        }
+         return $data;
+     }
+ }
+diff --git a/public/mod/data/classes/output/view_footer.php b/public/mod/data/classes/output/view_footer.php
+index 1c3a8305bbaf1c8be1bc8ea3b56f5f313ea7c5cc..ec09a89dc7f3bceb5e5d0d39c0b780cd1209cc12 100644
+--- a/public/mod/data/classes/output/view_footer.php
++++ b/public/mod/data/classes/output/view_footer.php
+@@ -16,8 +16,8 @@
+ 
+ namespace mod_data\output;
+ 
+-use action_link;
+-use core\output\sticky_footer;
++use core\output\renderable;
++use core\output\templatable;
+ use html_writer;
+ use mod_data\manager;
+ use mod_data\template;
+@@ -25,14 +25,13 @@ use moodle_url;
+ use renderer_base;
+ 
+ /**
+- * Renderable class for sticky footer in the view pages of the database activity.
++ * Renderable class for footer in the view pages of the database activity.
+  *
+  * @package    mod_data
+  * @copyright  2022 Ferran Recio <ferran@moodle.com>
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+-class view_footer extends sticky_footer {
+-
++class view_footer implements renderable, templatable {
+     /** @var int $totalcount the total records count. */
+     private $totalcount;
+ 
+@@ -84,30 +83,12 @@ class view_footer extends sticky_footer {
+      * @return array data context for a mustache template
+      */
+     public function export_for_template(renderer_base $output) {
+-        $this->set_content(
+-            $this->get_footer_output($output)
+-        );
+-        return parent::export_for_template($output);
+-    }
+-
+-    /**
+-     * Generate the pre-rendered footer content.
+-     *
+-     * @param \renderer_base $output The renderer to be used to render the action bar elements.
+-     * @return string the rendered content
+-     */
+-    public function get_footer_output(renderer_base $output): string {
+         $data = [];
+ 
+-        $cm = $this->manager->get_coursemodule();
+-        $instance = $this->manager->get_instance();
+-        $currentgroup = groups_get_activity_group($cm);
+-        $groupmode = groups_get_activity_groupmode($cm);
+         $context = $this->manager->get_context();
+         $canmanageentries = has_capability('mod/data:manageentries', $context);
+         $parser = $this->parser;
+ 
+-        // Sticky footer content.
+         $data['pagination'] = $output->paging_bar(
+             $this->totalcount,
+             $this->currentpage,
+@@ -138,19 +119,6 @@ class view_footer extends sticky_footer {
+                 'data-toggle' => 'action',
+             ]);
+         }
+-        if (data_user_can_add_entry($instance, $currentgroup, $groupmode, $context)) {
+-            $addentrylink = new moodle_url(
+-                '/mod/data/edit.php',
+-                ['id' => $cm->id, 'backto' => $this->baseurl]
+-            );
+-            $addentrybutton = new action_link(
+-                $addentrylink,
+-                get_string('add', 'mod_data'),
+-                null,
+-                ['class' => 'btn btn-primary mx-1', 'role' => 'button']
+-            );
+-            $data['addentrybutton'] = $addentrybutton->export_for_template($output);
+-        }
+-        return $output->render_from_template('mod_data/view_footer', $data);
++        return $data;
+     }
+ }
+diff --git a/public/mod/data/edit.php b/public/mod/data/edit.php
+index 2208bf4c75c43c559f4be9955bf2959314645c51..964756572360b4ea1f7a340e7a4e74796b7579cf 100644
+--- a/public/mod/data/edit.php
++++ b/public/mod/data/edit.php
+@@ -198,29 +198,35 @@ if (empty($redirectbackto)) {
+     $redirectbackto = new \moodle_url('/mod/data/view.php', ['id' => $cm->id]);
+ }
+ 
+-$actionbuttons = html_writer::link(
+-    $redirectbackto,
+-    get_string('cancel'),
+-    ['class' => 'btn btn-secondary mx-1', 'role' => 'button']
+-);
++$actionbuttons = '';
++if (
++    !$rid && (
++        (!$data->maxentries) ||
++        has_capability('mod/data:manageentries', $context) ||
++        (data_numentries($data) < ($data->maxentries - 1))
++    )
++) {
++    $actionbuttons .= html_writer::empty_tag('input', [
++        'type' => 'submit',
++        'name' => 'saveandadd',
++        'value' => get_string('saveandadd', 'data'),
++        'class' => 'btn btn-primary mx-1',
++    ]);
++}
+ $actionbuttons .= html_writer::empty_tag('input', [
+     'type' => 'submit',
+     'name' => 'saveandview',
+     'value' => get_string('save'),
+-    'class' => 'btn btn-primary mx-1'
++    'class' => 'btn btn-primary mx-1',
+ ]);
+ 
+-if (!$rid && ((!$data->maxentries) ||
+-    has_capability('mod/data:manageentries', $context) ||
+-    (data_numentries($data) < ($data->maxentries - 1)))) {
+-    $actionbuttons .= html_writer::empty_tag('input', [
+-        'type' => 'submit', 'name' => 'saveandadd',
+-        'value' => get_string('saveandadd', 'data'), 'class' => 'btn btn-primary mx-1'
+-    ]);
+-}
++$actionbuttons .= html_writer::link(
++    $redirectbackto,
++    get_string('cancel'),
++    ['class' => 'btn btn-secondary mx-1', 'role' => 'button']
++);
+ 
+-$stickyfooter = new core\output\sticky_footer($actionbuttons);
+-echo $OUTPUT->render($stickyfooter);
++echo html_writer::div($actionbuttons, 'mt-2');
+ 
+ echo $OUTPUT->box_end();
+ echo '</div></form>';
+diff --git a/public/mod/data/styles.css b/public/mod/data/styles.css
+index 0663582c4eb7acb30ca014fa38748829f827bde8..88a050d98c4ef7924fb0d473e013f7544b457b05 100644
+--- a/public/mod/data/styles.css
++++ b/public/mod/data/styles.css
+@@ -201,7 +201,3 @@
+     border-color: var(--bs-primary);
+     color: var(--bs-primary);
+ }
+-
+-#page-mod-data-preset .table {
+-    margin-bottom: 10rem;
+-}
+diff --git a/public/mod/data/templates/fields_footer.mustache b/public/mod/data/templates/fields_footer.mustache
+index aceffa5b6ab27f2e7814dfe04c0a7469936ae030..74f389db2a7d3ea2e002aa67bce71376b9992c11 100644
+--- a/public/mod/data/templates/fields_footer.mustache
++++ b/public/mod/data/templates/fields_footer.mustache
+@@ -14,7 +14,7 @@
+ {{!
+     @template mod_data/fields_footer
+ 
+-    The mod_data fields sticky footer content.
++    The mod_data fields footer content.
+ 
+     Example context (json):
+     {
+diff --git a/public/mod/data/templates/view_action_bar.mustache b/public/mod/data/templates/view_action_bar.mustache
+index e57e54f596f210590996c3bf3d84243ae8305e86..58a1cd018437033d8be8901b4bc7ea94b3a52c8c 100644
+--- a/public/mod/data/templates/view_action_bar.mustache
++++ b/public/mod/data/templates/view_action_bar.mustache
+@@ -22,6 +22,18 @@
+ 
+     Example context (json):
+     {
++      "addentrybutton": {
++            "disabled": false,
++            "url": "#",
++            "id": "test-id",
++            "classes": "btn btn-link",
++            "attributes": [
++                {
++                    "name": "title",
++                    "value": "Add entry"
++                }
++            ]
++        },
+         "urlselect": {
+             "id": "url_select_test",
+             "action": "https://example.com/post",
+@@ -81,28 +93,28 @@
+         }
+     }
+ }}
+-<div class="container-fluid tertiary-navigation d-flex">
+-    <div class="row ms-auto">
+-        <div class="col">
+-            {{#addentrybutton}}
+-                <div class="navitem mb-0">
+-                    {{>core/single_button}}
+-                </div>
+-            {{/addentrybutton}}
+-        </div>
++<div class="container-fluid tertiary-navigation px-0">
++    <div class="row justify-content-between">
+         <div class="col">
+-            {{#urlselect}}
+-                <div class="navitem mb-0">
+-                    {{>core/url_select}}
+-                </div>
+-            {{/urlselect}}
++            <div class="d-flex">
++                {{#urlselect}}
++                    <div class="navitem">
++                        {{>core/url_select}}
++                    </div>
++                {{/urlselect}}
++            </div>
+         </div>
+-        <div class="col">
++        <div class="col d-flex justify-content-end">
+             {{#actionsselect}}
+                 <div class='navitem mb-0 entriesactions'>
+                     {{>core/action_menu}}
+                 </div>
+             {{/actionsselect}}
++            {{#addentrybutton}}
++                <div class="navitem">
++                    {{>core/action_link}}
++                </div>
++            {{/addentrybutton}}
+         </div>
+     </div>
+ </div>
+diff --git a/public/mod/data/templates/view_footer.mustache b/public/mod/data/templates/view_footer.mustache
+index b850a88b07dce48b04c5ee7efad425a9d74b3fe0..95217a2ec69cbcf67b9c9290bef3c867d451aed6 100644
+--- a/public/mod/data/templates/view_footer.mustache
++++ b/public/mod/data/templates/view_footer.mustache
+@@ -14,26 +14,13 @@
+ {{!
+     @template mod_data/view_footer
+ 
+-    The mod_data sticky footer content.
++    The mod_data footer content.
+ 
+     Example context (json):
+     {
+         "selectall": "<button>Select all</button>",
+         "deleteselected": "<button>Cancel selection</button>",
+-        "pagination": "1, 2, 3...",
+-        "addentrybutton": {
+-            "disabled": false,
+-            "url": "#",
+-            "id": "test-id",
+-            "classes": "btn btn-link",
+-            "attributes": [
+-                {
+-                    "name": "title",
+-                    "value": "Add entry"
+-                }
+-            ],
+-            "text": "Add"
+-        }
++        "pagination": "1, 2, 3..."
+     }
+ }}
+ {{#selectall}}
+@@ -45,8 +32,3 @@
+ <div class="navitem submit mx-auto">
+     {{{pagination}}}
+ </div>
+-{{#addentrybutton}}
+-<div class="navitem">
+-    {{> core/action_link}}
+-</div>
+-{{/addentrybutton}}
+diff --git a/public/mod/data/view.php b/public/mod/data/view.php
+index 330c1b800c2e9d8ea9024b7a60919b31bfd3f1e6..ecac830c598f4b219d3e929a2a06460f378fd40e 100644
+--- a/public/mod/data/view.php
++++ b/public/mod/data/view.php
+@@ -521,7 +521,7 @@ if ($showactivity) {
+                 echo $OUTPUT->box_end();
+             }
+ 
+-            $stickyfooter = new mod_data\output\view_footer(
++            $viewfooter = new mod_data\output\view_footer(
+                 $manager,
+                 $totalcount,
+                 $page,
+@@ -529,7 +529,7 @@ if ($showactivity) {
+                 $baseurl,
+                 $parser
+             );
+-            echo $OUTPUT->render($stickyfooter);
++            echo $OUTPUT->render($viewfooter);
+ 
+             echo html_writer::end_tag('form');
+         }
+diff --git a/public/mod/data/lib.php b/public/mod/data/lib.php
+index 50aacbf78979bd0dbf18c60bfa783e51fadcbc05..85764133a6e946aabaaebe45c57ba59075a541eb 100644
+--- a/public/mod/data/lib.php
++++ b/public/mod/data/lib.php
+@@ -463,10 +463,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
+             'class' => 'btn btn-primary mx-1'
+         ]);
+         $actionbuttons .= html_writer::end_div();
+-
+-        $stickyfooter = new core\output\sticky_footer($actionbuttons);
+-        echo $OUTPUT->render($stickyfooter);
+-
++        echo $actionbuttons;
+         echo '</form>';
+ 
+         echo $OUTPUT->box_end();
+diff --git a/public/mod/data/renderer.php b/public/mod/data/renderer.php
+index ff7f6eb2f944664d7f67fdb126ac765999b72a58..491daecfd8b66b4988dcc965c46b694b2383382b 100644
+--- a/public/mod/data/renderer.php
++++ b/public/mod/data/renderer.php
+@@ -121,10 +121,7 @@ class mod_data_renderer extends plugin_renderer_base {
+             'value' => get_string('continue'),
+         ]);
+         $actionbuttons .= html_writer::end_div();
+-
+-        $stickyfooter = new core\output\sticky_footer($actionbuttons);
+-        $html .= $this->render($stickyfooter);
+-
++        $html .= $actionbuttons;
+         $html .= html_writer::end_tag('div');
+         $html .= html_writer::end_tag('form');
+         $html .= html_writer::end_tag('div');
+diff --git a/public/mod/data/templates/fields_footer.mustache b/public/mod/data/templates/fields_footer.mustache
+index 74f389db2a7d3ea2e002aa67bce71376b9992c11..993a8fc366f052212441cab6981002bde7e78d09 100644
+--- a/public/mod/data/templates/fields_footer.mustache
++++ b/public/mod/data/templates/fields_footer.mustache
+@@ -21,11 +21,6 @@
+         "pageurl": "http://yoursite/mod/data/field.php"
+     }
+ }}
+-{{< core/sticky_footer }}
+-    {{$ stickyclasses }} justify-content-start{{/ stickyclasses }}
+-    {{$ stickycontent }}
+-    <div class="ps-3">
+-        <a href="{{pageurl}}">{{#str}} viewtemplates, mod_data {{/str}}</a>
+-    </div>
+-    {{/ stickycontent }}
+-{{/ core/sticky_footer }}
++<div class="ps-3">
++    <a href="{{pageurl}}">{{#str}} viewtemplates, mod_data {{/str}}</a>
++</div>
+diff --git a/public/mod/data/templates/preset_preview.mustache b/public/mod/data/templates/preset_preview.mustache
+index 202e4e5a8c0301d7e7054d85c466fef700c3fc4b..4edad3c80e3fb07df8eb843394a3a4182e5f498d 100644
+--- a/public/mod/data/templates/preset_preview.mustache
++++ b/public/mod/data/templates/preset_preview.mustache
+@@ -31,18 +31,14 @@
+     {{{preview}}}
+     </div>
+ </div>
+-{{< core/sticky_footer }}
+-    {{$ stickycontent }}
+-    <form method="post" action="{{formactionurl}}">
+-        <input type="hidden" name="cmid" value="{{cmid}}">
+-        <input type="hidden" name="mode" value="usepreset">
+-        <input type="hidden" name="action" value="select">
+-        <input type="hidden" name="fullname" value="{{userid}}/{{shortname}}">
+-        <input type="submit" name="selectpreset" data-action="selectpreset" value="{{#str}}usepreset, mod_data{{/str}}" class="btn btn-primary"
+-               data-cmid="{{cmid}}" data-presetname="{{userid}}/{{shortname}}">
+-    </form>
+-    {{/ stickycontent }}
+-{{/ core/sticky_footer }}
++<form method="post" action="{{formactionurl}}">
++    <input type="hidden" name="cmid" value="{{cmid}}">
++    <input type="hidden" name="mode" value="usepreset">
++    <input type="hidden" name="action" value="select">
++    <input type="hidden" name="fullname" value="{{userid}}/{{shortname}}">
++    <input type="submit" name="selectpreset" data-action="selectpreset" value="{{#str}}usepreset, mod_data{{/str}}" class="btn btn-primary"
++           data-cmid="{{cmid}}" data-presetname="{{userid}}/{{shortname}}">
++</form>
+ 
+ {{#js}}
+     require(['mod_data/importmappingdialogue'], function(importPreset) {
+diff --git a/public/mod/data/templates/presets.mustache b/public/mod/data/templates/presets.mustache
+index 1aaa7fffab65929d0cbc129cb4c54a131c12b2e6..5a6fbdb07b642d956845be59f68576ab24d379bf 100644
+--- a/public/mod/data/templates/presets.mustache
++++ b/public/mod/data/templates/presets.mustache
+@@ -96,19 +96,14 @@
+             </tbody>
+         </table>
+     </fieldset>
+-
+-    {{< core/sticky_footer }}
+-        {{$ stickycontent }}
+-            <input
+-                type="submit"
+-                name="selectpreset"
+-                data-action="selectpreset"
+-                value="{{#str}}usepreset, mod_data{{/str}}"
+-                class="btn btn-secondary"
+-                disabled
+-            >
+-        {{/ stickycontent }}
+-    {{/ core/sticky_footer }}
++    <input
++            type="submit"
++            name="selectpreset"
++            data-action="selectpreset"
++            value="{{#str}}usepreset, mod_data{{/str}}"
++            class="btn btn-secondary"
++            disabled
++    >
+ </form>
+ 
+ {{#js}}
+diff --git a/public/mod/data/templates/template_editor.mustache b/public/mod/data/templates/template_editor.mustache
+index 38c2e21ffcfc5fa1780e3bba5883a93f77d2dd64..912addbfd76df381e587986eab8ac97939e12d20 100644
+--- a/public/mod/data/templates/template_editor.mustache
++++ b/public/mod/data/templates/template_editor.mustache
+@@ -110,15 +110,11 @@
+         </div>
+     </div>
+     {{/disableeditor}}
+-    {{< core/sticky_footer }}
+-        {{$ stickycontent }}
+-        <div>
+-            <input
+-                class="btn btn-primary mx-1"
++    <div>
++        <input
++                class="btn btn-primary mt-2"
+                 type="submit"
+                 value="{{#str}} save {{/str}}"
+-            />
+-        </div>
+-        {{/ stickycontent }}
+-    {{/ core/sticky_footer }}
++        />
++    </div>
+ </form>

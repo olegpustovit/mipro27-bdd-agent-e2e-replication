@@ -1,0 +1,45 @@
+diff --git a/public/lib/form/filemanager.js b/public/lib/form/filemanager.js
+index fdd7c09c9176805fbc777e4c489d8ad29207b264..4e3064ecd0684bb7fb6f52af97165bac8d9c0cd2 100644
+--- a/public/lib/form/filemanager.js
++++ b/public/lib/form/filemanager.js
+@@ -265,7 +265,6 @@ M.form_filemanager.init = function(Y, options) {
+          * @returns {void}
+          */
+         print_msg: function(msg, type, options, errorCode) {
+-            options = options || {};
+             var header = M.util.get_string('error', 'moodle');
+             if (type != 'error') {
+                 type = 'info'; // one of only two types excepted
+diff --git a/public/repository/lib.php b/public/repository/lib.php
+index 60ec0d301d871a4699032024a10a04ee59b19a6c..f8517e22b57e6d7e78d76d7be9f53be976335fa6 100644
+--- a/public/repository/lib.php
++++ b/public/repository/lib.php
+@@ -3287,26 +3287,16 @@ function repository_download_selected_files($context, string $component, string
+         $filepath = file_correct_filepath($filepath);
+ 
+         $storedfile = $fs->get_file($context->id, $component, $filearea, $itemid, $filepath, $filename);
+-        // Skip files or directories that do not exist, e.g. when the draft area is empty.
+-        if (!$storedfile) {
+-            continue;
+-        }
++        // If it is empty we are downloading a directory.
++        $archivefile = $storedfile->get_filename();
+         if (!$filename || $filename == '.' ) {
+             $foldername = explode('/', trim($filepath, '/'));
+             $folder = trim(array_pop($foldername), '/');
+             $archivefile = $folder ?? '/';
+-        } else {
+-            $archivefile = $storedfile->get_filename();
+         }
+ 
+         $filestoarchive[$archivefile] = $storedfile;
+     }
+-
+-    // If there are no files to archive (e.g. the draft area is empty), return false so the
+-    // caller can notify the user that there is nothing to download.
+-    if (empty($filestoarchive)) {
+-        return false;
+-    }
+     $zippedfile = get_string('files') . '.zip';
+     if ($zipper->archive_to_storage(
+             $filestoarchive,

@@ -1,0 +1,16 @@
+diff --git a/public/lib/tests/behat/behat_navigation.php b/public/lib/tests/behat/behat_navigation.php
+index 68120314c8a4ef1120a0b2a724d5e7aa8f7eaf96..599bf8d1923797f5a9dd05bec89bbf75e6c756ac 100644
+--- a/public/lib/tests/behat/behat_navigation.php
++++ b/public/lib/tests/behat/behat_navigation.php
+@@ -1395,9 +1395,10 @@ class behat_navigation extends behat_base {
+      * @Given /^I follow the breadcrumb "(?P<url_string>(?:[^"]|\\")*)"$/
+      */
+     public function go_to_breadcrumb_location(string $pagename): void {
++        $breadcrumblabel = get_string('breadcrumb', 'access');
+         $link = $this->getSession()->getPage()->find(
+                 'xpath',
+-                "//nav[@aria-label='Navigation bar']/ol/li[last()][contains(normalize-space(.), '" . $pagename . "')]"
++                "//nav[@aria-label='$breadcrumblabel']/ol/li[last()][contains(normalize-space(.), '$pagename')]"
+         );
+         if (!$link) {
+             $this->execute("behat_general::i_click_on_in_the", [$pagename, 'link', 'page', 'region']);

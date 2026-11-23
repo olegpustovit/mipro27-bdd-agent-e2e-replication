@@ -1,0 +1,129 @@
+diff --git a/public/mod/forum/classes/output/subscription_actionbar.php b/public/mod/forum/classes/output/subscription_actionbar.php
+index 5d2e9a5bfe14c9326da4f935b09e4804522cc68a..43e34dbfc4386db7762288c0d1da594fd1a3f204 100644
+--- a/public/mod/forum/classes/output/subscription_actionbar.php
++++ b/public/mod/forum/classes/output/subscription_actionbar.php
+@@ -117,11 +117,11 @@ class subscription_actionbar implements renderable, templatable {
+     }
+ 
+     /**
+-     * Get the options for the view and manage subscribers menu.
++     * Create view and manage subscribers select menu tertiary navigation item.
+      *
+-     * @return array|null The menu options (label indexed by URL) and the selected URL, or null if the menu is not shown.
++     * @return select_menu|null get select_menu object.
+      */
+-    private function get_view_manage_options(): ?array {
++    private function create_view_manage_menu(): ?select_menu {
+         // If forced subscription is used then no need to show the view.
+         if (\mod_forum\subscriptions::is_forcesubscribed($this->forum)) {
+             return null;
+@@ -134,36 +134,17 @@ class subscription_actionbar implements renderable, templatable {
+             $viewlink->out(false) => get_string('forum:viewsubscribers', 'forum'),
+             $managelink->out(false) => get_string('managesubscriptionson', 'forum'),
+         ];
+-        $selected = $this->edit === 0 ? $viewlink : $managelink;
+-
+-        return [$menu, $selected->out(false)];
+-    }
+-
+-    /**
+-     * Create view and manage subscribers select menu tertiary navigation item.
+-     *
+-     * @param array $menu The menu options, label indexed by URL.
+-     * @param string $selected The selected URL.
+-     * @return select_menu
+-     */
+-    private function create_view_manage_menu(array $menu, string $selected): select_menu {
+-        $selectmenu = new select_menu('selectviewandmanagesubscribers', $menu, $selected);
+-        $selectmenu->set_label(get_string('subscribers', 'forum'), ['class' => 'accesshide']);
+-        return $selectmenu;
+-    }
+ 
+-    /**
+-     * Create the legacy view and manage subscribers url_select menu.
+-     *
+-     * Only exported for backwards compatibility with template overrides that render
+-     * the 'viewandmanageselect' context variable using core/url_select.
+-     *
+-     * @param array $menu The menu options, label indexed by URL.
+-     * @param string $selected The selected URL.
+-     * @return url_select
+-     */
+-    private function create_legacy_view_manage_menu(array $menu, string $selected): url_select {
+-        $urlselect = new url_select($menu, $selected, null, 'selectviewandmanagesubscribers');
++        if ($this->edit === 0) {
++            $this->currenturl = $viewlink;
++        } else {
++            $this->currenturl = $managelink;
++        }
++        $urlselect = new select_menu(
++            'selectviewandmanagesubscribers',
++            $menu,
++            $this->currenturl->out(false),
++        );
+         $urlselect->set_label(get_string('subscribers', 'forum'), ['class' => 'accesshide']);
+         return $urlselect;
+     }
+@@ -177,19 +158,13 @@ class subscription_actionbar implements renderable, templatable {
+     public function export_for_template(renderer_base $output): array {
+         $data = [];
+         $subscribeoptionselect = $this->create_subscription_menu();
+-        $viewmanageoptions = $this->get_view_manage_options();
++        $viewmanageselect = $this->create_view_manage_menu();
+ 
+         if ($subscribeoptionselect) {
+-            $data['subscriptionoptions'] = $subscribeoptionselect->export_for_template($output);
++            $data ['subscriptionoptions'] = $subscribeoptionselect->export_for_template($output);
+         }
+-        if ($viewmanageoptions) {
+-            [$menu, $selected] = $viewmanageoptions;
+-            $data['viewandmanageselectmenu'] = $this->create_view_manage_menu($menu, $selected)
+-                ->export_for_template($output);
+-            // Deprecated since Moodle 5.3 in favour of 'viewandmanageselectmenu'.
+-            // @todo MDL-89964 Final deprecation on Moodle 7.0.
+-            $data['viewandmanageselect'] = $this->create_legacy_view_manage_menu($menu, $selected)
+-                ->export_for_template($output);
++        if ($viewmanageselect) {
++            $data['viewandmanageselect'] = $viewmanageselect->export_for_template($output);
+         }
+         return $data;
+     }
+diff --git a/public/mod/forum/templates/forum_subscription_action.mustache b/public/mod/forum/templates/forum_subscription_action.mustache
+index 2382c59e094ec4a722956f455c1877116d416d63..4d38c216f2cae4d5f43288e5be1a30d6c65cc503 100644
+--- a/public/mod/forum/templates/forum_subscription_action.mustache
++++ b/public/mod/forum/templates/forum_subscription_action.mustache
+@@ -23,11 +23,6 @@
+     * data-region
+     Context variables required for this template:
+     * see mod/forum/classes/output/subscription_actionbar.php
+-    * subscriptionoptions - core/url_select data for the subscription mode selector.
+-    * viewandmanageselectmenu - core/select_menu data for the view and manage subscribers selector.
+-    * viewandmanageselect - Deprecated since Moodle 5.3, use viewandmanageselectmenu instead.
+-      core/url_select data for the view and manage subscribers selector. Not used by this template.
+-      @todo: MDL-89964 Final deprecation on Moodle 7.0.
+     Example context (json):
+     {
+         "subscriptionoptions": {
+@@ -48,7 +43,7 @@
+                 }
+             ]
+         },
+-        "viewandmanageselectmenu": {
++        "viewandmanageselect": {
+             "name": "selectviewandmanagesubscribers",
+             "value": "/mod/forum/subscribers.php?id=3&edit=off",
+             "baseid": "select-menu56789",
+@@ -78,11 +73,11 @@
+ }}
+ <div class="container-fluid tertiary-navigation">
+     <div class="d-flex">
+-        {{#viewandmanageselectmenu}}
++        {{#viewandmanageselect}}
+             <div class="navitem">
+                 {{>core/tertiary_navigation_selector}}
+             </div>
+-        {{/viewandmanageselectmenu}}
++        {{/viewandmanageselect}}
+         {{#subscriptionoptions}}
+             <div class="navitem ms-sm-auto">
+                 {{>core/url_select}}

@@ -1,0 +1,55 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { once } from 'node:events';
+import http from 'node:http';
+import { createConsole, taxonomy } from './console.mjs';
+import { createCampaignStore, trialRows } from './lib/campaign-data.mjs';
+
+test('console routes, localhost access, blind review and append-only write boundary', async () => {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'console-server-'));
+  for(const sub of ['data','docs','ui'])fs.mkdirSync(path.join(dir,sub));
+  const sample=JSON.parse(fs.readFileSync(new URL('../data/human-sample.json',import.meta.url),'utf8'));
+  fs.writeFileSync(path.join(dir,'data/human-sample.json'),JSON.stringify(sample));
+  fs.writeFileSync(path.join(dir,'docs/paper-steps.json'),'[]');
+  fs.writeFileSync(path.join(dir,'ui/console.html'),'<!doctype html><title>Fixture console</title>');
+  const snapshot=()=>Object.fromEntries(fs.readdirSync(dir,{recursive:true}).filter(f=>fs.statSync(path.join(dir,f)).isFile()&&f!=='data/human-adjudication.jsonl').map(f=>[f,`${fs.statSync(path.join(dir,f)).mtimeMs}:${fs.readFileSync(path.join(dir,f)).toString('base64')}`]));
+  const before=snapshot(), env={}, logs=[];
+  const server=createConsole({env,store:createCampaignStore({liveDir:path.join(dir,'runs')}),repo:pathToFileURL(dir+'/'),log:x=>logs.push(x)});
+  server.listen(0,'127.0.0.1');await once(server,'listening'); const base=`http://127.0.0.1:${server.address().port}`;
+  const get=async url=>{const r=await fetch(base+url);assert.equal(r.status,200);return r.json();};
+  const s=sample[0], tracePath=`/api/campaigns/${s.campaign}/trace?trial=${encodeURIComponent(s.trialId)}`;
+  const classification=trialRows(s.campaign).find(x=>x.trialId===s.trialId).classification;
+  const payload={campaign:s.campaign,trialId:s.trialId,classification,confidence:'sure',note:'review'};
+  const post=(body,headers={})=>fetch(base+'/api/human',{method:'POST',headers:{'content-type':'application/json',...headers},body:JSON.stringify(body)});
+  try {
+    assert.equal((await fetch(base+'/')).status,200);assert.equal((await get('/api/campaigns')).length,4);
+    const overview=await get('/api/overview');assert.equal(overview.campaigns.reduce((n,c)=>n+c.finished,0),540);assert.equal(overview.human.total,sample.length);
+    assert.equal((await get(`/api/campaigns/${s.campaign}/rows`)).length,108);
+    assert.ok((await get(tracePath)).adjudication);
+    const blind=await get(tracePath+'&blind=1');assert.equal(blind.adjudication,undefined);assert.equal(blind.header.arm,undefined);assert.equal(blind.header.reportedStatus,undefined);assert.ok(taxonomy[blind.header.kind].includes(classification));assert.ok(blind.execution.reportedStatus);assert.ok(blind.checks.every(c=>c.assertion));
+    const unanswered=await get('/api/human/sample');assert.ok(unanswered.entries.every(x=>!x.done&&!x.adjudication));
+    assert.equal((await fetch(base+`/api/campaigns/${s.campaign}/trace?trial=missing`)).status,404);
+    assert.equal((await fetch(base+'/api/campaigns/unknown/rows')).status,404);
+    assert.equal(await new Promise((resolve,reject)=>{http.get(base+'/api/campaigns',{headers:{host:'untrusted.example'}},res=>{res.resume();resolve(res.statusCode);}).on('error',reject);}),403);
+    const owner={};
+    assert.equal((await post({...payload,trialId:'missing'},owner)).status,400);
+    assert.equal((await post({...payload,classification:'made-up'},owner)).status,400);
+    assert.equal((await post({...payload,note:'x'.repeat(1001)},owner)).status,400);
+    assert.equal((await post(payload,{...owner,origin:'https://evil.example'})).status,403);
+    const checkpointAnswers = { [blind.checks[0].id]: 'met' };
+    assert.equal((await post({...payload,checkpointAnswers:{unknown:'met'}})).status,400);
+    assert.equal((await post({...payload,checkpointAnswers:{[blind.checks[0].id]:'bogus'}})).status,400);
+    const response=await post({...payload,checkpointAnswers},{'tailscale-user-login':'ignored-external-header'});assert.equal(response.status,200);const saved=await response.json();assert.equal(saved.agree,true);assert.equal(saved.answer.rater,'local-owner');assert.deepEqual(saved.answer.checkpointAnswers,checkpointAnswers);
+    assert.deepEqual((await get(tracePath+'&blind=1')).answer.checkpointAnswers,checkpointAnswers);
+    const file=path.join(dir,'data/human-adjudication.jsonl');assert.equal(fs.readFileSync(file,'utf8').trim().split('\n').length,1);
+    assert.equal((await get('/api/human/sample')).entries.filter(x=>x.done).length,1);
+    const first=fs.readFileSync(file,'utf8');assert.equal((await post({...payload,note:'correction'})).status,200);assert.ok(fs.readFileSync(file,'utf8').startsWith(first));
+    assert.ok((await get(tracePath+'&blind=1')).adjudication);
+    assert.deepEqual(snapshot(),before);assert.equal(server.address().address,'127.0.0.1');assert.ok(logs.length>10);
+    assert.throws(()=>createConsole({env:{CONSOLE_HOST:'0.0.0.0'}}),/127.0.0.1/);
+  } finally {server.closeAllConnections();await new Promise(resolve=>server.close(resolve));fs.rmSync(dir,{recursive:true,force:true});}
+});

@@ -1,0 +1,33 @@
+diff --git a/public/lib/editor/tiny/amd/src/editor.js b/public/lib/editor/tiny/amd/src/editor.js
+index 3f59087a3cf28d97461c179e1df930d3f0abe92b..39ee36a31cf2af434c30bab05e35f85b33de341b 100644
+--- a/public/lib/editor/tiny/amd/src/editor.js
++++ b/public/lib/editor/tiny/amd/src/editor.js
+@@ -136,7 +136,7 @@ export const getInstanceForElementId = elementId => getInstanceForElement(docume
+ export const getInstanceForElement = element => {
+     const instance = instanceMap.get(element);
+     if (instance && instance.removed) {
+-        instanceMap.delete(element);
++        instanceMap.remove(element);
+         return undefined;
+     }
+     return instance;
+@@ -148,17 +148,11 @@ export const getInstanceForElement = element => {
+  * @param {object} config The configuration required to setup the editor
+  * @param {string} config.elementId The HTML Node ID
+  * @param {Object} config.options The editor plugin configuration
++ * @return {Promise<TinyMCE>} The TinyMCE instance
+  */
+ export const setupForElementId = ({elementId, options}) => {
+     const target = document.getElementById(elementId);
+-    // We will need to wrap the setupForTarget and editor.remove() calls in a setTimeout.
+-    // Because other events callbacks will still try to run on the removed instance.
+-    // This will cause an error on Firefox.
+-    // We need to make TinyMCE to remove itself outside the event loop.
+-    // @see https://github.com/tinymce/tinymce/issues/3129 for more details.
+-    setTimeout(() => {
+-        return setupForTarget(target, options);
+-    }, 1);
++    return setupForTarget(target, options);
+ };
+ 
+ /**

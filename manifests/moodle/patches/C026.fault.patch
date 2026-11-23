@@ -1,0 +1,40 @@
+diff --git a/public/lib/form/editor.php b/public/lib/form/editor.php
+index 6b4b40b5357132f3c5640e24319730e86637f3e6..9a90860a7f2263ab5e96e7bf09d8ee3a22d58104 100644
+--- a/public/lib/form/editor.php
++++ b/public/lib/form/editor.php
+@@ -375,7 +375,6 @@ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatab
+             $link_options->env = 'editor';
+             $link_options->itemid = $draftitemid;
+ 
+-            // Subtitles, for multimedia.
+             $args->accepted_types = array('.vtt');
+             $subtitle_options = initialise_filepicker($args);
+             $subtitle_options->context = $ctx;
+diff --git a/public/mod/data/field/textarea/field.class.php b/public/mod/data/field/textarea/field.class.php
+index 6f7ee67cf98413e4721c3c1d4d2080769e8cf826..fd7238ffd08c82c3441c3d68d446c77b169e7ae8 100644
+--- a/public/mod/data/field/textarea/field.class.php
++++ b/public/mod/data/field/textarea/field.class.php
+@@ -203,15 +203,6 @@ class data_field_textarea extends data_field_base {
+             $link_options->env = 'editor';
+             $link_options->itemid = $draftitemid;
+ 
+-            // Subtitles, for multimedia.
+-            $args->accepted_types = ['.vtt'];
+-            $subtitleoptions = initialise_filepicker($args);
+-            $subtitleoptions->context = $this->context;
+-            $subtitleoptions->client_id = uniqid();
+-            $subtitleoptions->maxbytes  = $options['maxbytes'];
+-            $subtitleoptions->env = 'editor';
+-            $subtitleoptions->itemid = $draftitemid;
+-
+             // H5P plugin.
+             $args->accepted_types = ['h5p'];
+             $h5poptions = initialise_filepicker($args);
+@@ -224,7 +215,6 @@ class data_field_textarea extends data_field_base {
+             $fpoptions['image'] = $image_options;
+             $fpoptions['media'] = $media_options;
+             $fpoptions['link'] = $link_options;
+-            $fpoptions['subtitle'] = $subtitleoptions;
+             $fpoptions['h5p'] = $h5poptions;
+         }
+ 

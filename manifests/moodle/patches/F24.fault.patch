@@ -1,0 +1,71 @@
+diff --git a/public/mod/assign/feedback/comments/locallib.php b/public/mod/assign/feedback/comments/locallib.php
+index a8e1b6ee7ddf70c01f5c82a04c3baf3f0b5b789c..1cd15eece43dfda892d3d39178642d758dbbe698 100644
+--- a/public/mod/assign/feedback/comments/locallib.php
++++ b/public/mod/assign/feedback/comments/locallib.php
+@@ -71,29 +71,19 @@ class assign_feedback_comments extends assign_feedback_plugin {
+     }
+ 
+     /**
+-     * Get all current feedback comments for a grade.
++     * Get all the feedback comments for a grade, including all marker ones.
+      *
+      * Marker feedback is sorted first, followed by overall/grade feedback.
+-     * Marker feedback is only included where the marker is still allocated to the submission.
+      *
+      * @param int $gradeid Assign grade ID.
+      * @return array Array of assignfeedback_comments records.
+      */
+     public function get_all_feedback_comments(int $gradeid): array {
+         global $DB;
+-        $sql = "SELECT c.*
+-                  FROM {assignfeedback_comments} c
+-                 WHERE c.grade = :gradeid
+-                   AND (c.mark IS NULL OR EXISTS (
+-                           SELECT 1
+-                             FROM {assign_mark} m
+-                             JOIN {assign_grades} g ON g.id = m.gradeid
+-                             JOIN {assign_allocated_marker} am ON am.assignment = m.assignment
+-                                  AND am.student = g.userid AND am.marker = m.marker
+-                            WHERE m.id = c.mark
+-                              AND (am.optional = 0 OR am.enabled = 1)
+-                       ))
+-              ORDER BY CASE WHEN c.mark IS NULL THEN 1 ELSE 0 END, c.mark ASC";
++        $sql = "SELECT *
++                  FROM {assignfeedback_comments}
++                 WHERE grade = :gradeid
++              ORDER BY CASE WHEN mark IS NULL THEN 1 ELSE 0 END, mark ASC";
+         return $DB->get_records_sql($sql, ['gradeid' => $gradeid]);
+     }
+ 
+diff --git a/public/mod/assign/feedback/file/locallib.php b/public/mod/assign/feedback/file/locallib.php
+index 05cce315818126d9000a2457a56bce44728e1f18..3f9e0d8eb5e3badb95ed1ac72b5cb5c7c0f3b88a 100644
+--- a/public/mod/assign/feedback/file/locallib.php
++++ b/public/mod/assign/feedback/file/locallib.php
+@@ -61,26 +61,13 @@ class assign_feedback_file extends assign_feedback_plugin {
+ 
+     /**
+      * Get all file feedback information from the database, including marking feedback.
+-     * Marker feedback is only included where the marker is still allocated to the submission.
+      *
+      * @param int $gradeid The Grade ID.
+      * @return ?array Array of assignfeedback_file records, or null if none found.
+      */
+     public function get_all_file_feedback(int $gradeid): ?array {
+         global $DB;
+-        $sql = "SELECT f.*
+-                  FROM {assignfeedback_file} f
+-                 WHERE f.grade = :gradeid
+-                   AND (f.mark IS NULL OR EXISTS (
+-                           SELECT 1
+-                             FROM {assign_mark} m
+-                             JOIN {assign_grades} g ON g.id = m.gradeid
+-                             JOIN {assign_allocated_marker} am ON am.assignment = m.assignment
+-                                  AND am.student = g.userid AND am.marker = m.marker
+-                            WHERE m.id = f.mark
+-                              AND (am.optional = 0 OR am.enabled = 1)
+-                       ))";
+-        return $DB->get_records_sql($sql, ['gradeid' => $gradeid]) ?? null;
++        return $DB->get_records('assignfeedback_file', ['grade' => $gradeid]) ?? null;
+     }
+ 
+     /**

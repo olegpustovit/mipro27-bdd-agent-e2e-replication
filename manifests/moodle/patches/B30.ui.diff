@@ -1,0 +1,371 @@
+diff --git a/lib/form/templates/element-template.mustache b/lib/form/templates/element-template.mustache
+index bbf538dbe9af49c8dbba08d869a81856022bdb84..d9528fabd0e5bef91dd438b582b5557029f55ce8 100644
+--- a/lib/form/templates/element-template.mustache
++++ b/lib/form/templates/element-template.mustache
+@@ -49,7 +49,7 @@
+             {{#advanced}}<abbr class="initialism text-info" title="{{#str}}advanced{{/str}}">!</abbr>{{/advanced}}
+             {{{helpbutton}}}
+         </span>
+-        {{$ label }}
++        {{# label}}{{$ label }}
+             {{^element.staticlabel}}
+                 <label class="col-form-label d-inline {{#element.hiddenlabel}}sr-only{{/element.hiddenlabel}}" for="{{element.id}}">
+                     {{{label}}}
+@@ -60,7 +60,7 @@
+                     {{{label}}}
+                 </span>
+             {{/element.staticlabel}}
+-        {{/ label }}
++        {{/ label }}{{/ label}}
+     </div>
+     <div class="col-md-9 form-inline felement" data-fieldtype="{{element.type}}">
+         {{$ element }}
+diff --git a/lib/form/templates/element-checkbox-inline.mustache b/lib/form/templates/element-checkbox-inline.mustache
+index 994ebc5a786c7f4838a1d04285eaf3688e1fe1a7..fb90de4750b040bd8caea9993c2d03812e342cc5 100644
+--- a/lib/form/templates/element-checkbox-inline.mustache
++++ b/lib/form/templates/element-checkbox-inline.mustache
+@@ -13,7 +13,6 @@
+         value="1"
+     {{/element.value}}
+     {{#element.checked}}checked{{/element.checked}}
+-    size="{{element.size}}"
+     {{#error}}
+         autofocus aria-describedby="{{element.iderror}}"
+     {{/error}}
+diff --git a/lib/form/templates/element-advcheckbox-inline.mustache b/lib/form/templates/element-advcheckbox-inline.mustache
+index 0584acc05d63abca527310abf3f3adfa313029db..a47a25cc7dc812b355730f5ec4ab3d9effba015f 100644
+--- a/lib/form/templates/element-advcheckbox-inline.mustache
++++ b/lib/form/templates/element-advcheckbox-inline.mustache
+@@ -13,7 +13,6 @@
+         value="{{element.selectedvalue}}"
+     {{/element.selectedvalue}}
+     {{#element.checked}}checked{{/element.checked}}
+-    size="{{element.size}}"
+     {{#error}}
+         autofocus aria-describedby="{{element.iderror}}"
+     {{/error}}
+diff --git a/lib/form/templates/element-password-inline.mustache b/lib/form/templates/element-password-inline.mustache
+index 59da069256edb1d58f189d6f46dfb46c4282cbf0..f832dec7df970323e7ca0f5477b37af03b811218 100644
+--- a/lib/form/templates/element-password-inline.mustache
++++ b/lib/form/templates/element-password-inline.mustache
+@@ -41,7 +41,7 @@
+                 name="{{element.name}}"
+                 id="{{element.id}}"
+                 value="{{element.value}}"
+-                size="{{element.size}}"
++                {{#element.size}}size="{{element.size}}"{{/element.size}}
+                 {{#error}}
+                     autofocus aria-describedby="{{element.iderror}}"
+                 {{/error}} {{{element.attributes}}}>
+diff --git a/lib/form/templates/element-password.mustache b/lib/form/templates/element-password.mustache
+index d6e80f8c2ab25f87c53e4fc1756e781acb2c4de8..9a7758d108157034c1eb086acb8804cd5ae8bfb2 100644
+--- a/lib/form/templates/element-password.mustache
++++ b/lib/form/templates/element-password.mustache
+@@ -41,7 +41,7 @@
+                 name="{{element.name}}"
+                 id="{{element.id}}"
+                 value="{{element.value}}"
+-                size="{{element.size}}"
++                {{#element.size}}size="{{element.size}}"{{/element.size}}
+                 {{#error}}
+                     autofocus aria-describedby="{{element.iderror}}"
+                 {{/error}} {{{element.attributes}}}>
+diff --git a/lib/form/templates/element-text-inline.mustache b/lib/form/templates/element-text-inline.mustache
+index b6bb3e91481024b366fec4f48b0113740fc97d49..81f7a5a6d5c0ee35f98dc625707e17c617385d7e 100644
+--- a/lib/form/templates/element-text-inline.mustache
++++ b/lib/form/templates/element-text-inline.mustache
+@@ -8,7 +8,7 @@
+             readonly {{#element.hardfrozen}}disabled{{/element.hardfrozen}}
+     {{/element.frozen}}
+             value="{{element.value}}"
+-            size="{{element.size}}"
++            {{#element.size}}size="{{element.size}}"{{/element.size}}
+             {{#error}}
+                 autofocus aria-describedby="{{element.iderror}}"
+             {{/error}}
+diff --git a/lib/form/templates/element-text.mustache b/lib/form/templates/element-text.mustache
+index 087201a6085ceb4c349210be4a547843be163cd7..7e972a336f3807bc0d62d2c586f81a76fda0d731 100644
+--- a/lib/form/templates/element-text.mustache
++++ b/lib/form/templates/element-text.mustache
+@@ -8,7 +8,7 @@
+         {{/element.frozen}}
+                 id="{{element.id}}"
+                 value="{{element.value}}"
+-                size="{{element.size}}"
++                {{#element.size}}size="{{element.size}}"{{/element.size}}
+                 {{#error}}
+                     autofocus aria-describedby="{{element.iderror}}"
+                 {{/error}}
+diff --git a/lib/form/templates/element-url.mustache b/lib/form/templates/element-url.mustache
+index 5529d4a24ba22964b4f95e1e4aa7a9385442e377..e161c8f8c2ff1501332dafa9b0bc1f1009d03c5c 100644
+--- a/lib/form/templates/element-url.mustache
++++ b/lib/form/templates/element-url.mustache
+@@ -8,7 +8,7 @@
+                 name="{{element.name}}"
+                 id="{{element.id}}"
+                 value="{{element.value}}"
+-                size="{{element.size}}"
++                {{#element.size}}size="{{element.size}}"{{/element.size}}
+                 {{#error}}
+                     autofocus aria-describedby="{{element.iderror}}"
+                 {{/error}}
+diff --git a/lib/form/templates/element-filemanager.mustache b/lib/form/templates/element-filemanager.mustache
+index 6f02ca05f26815521566d32a72298f7edae8f8cf..f2607ebb8a67aff93e8a31a9cabc623a4455a238 100644
+--- a/lib/form/templates/element-filemanager.mustache
++++ b/lib/form/templates/element-filemanager.mustache
+@@ -1,5 +1,26 @@
+ {{< core_form/element-template }}
++    {{$label}}
++        {{^element.hiddenlabel}}
++            <p id="{{element.id}}_label" class="col-form-label d-inline" aria-hidden="true">
++                {{{label}}}
++            </p>
++        {{/element.hiddenlabel}}
++    {{/label}}
+     {{$element}}
+-        {{{element.html}}}
++        <fieldset class="w-100 m-0 p-0 border-0" id="{{element.id}}_fieldset">
++            <legend class="sr-only">{{label}}</legend>
++            {{{element.html}}}
++        </fieldset>
+     {{/element}}
+ {{/ core_form/element-template }}
++{{#js}}
++(function() {
++    var label = document.getElementById('{{element.id}}_label');
++    if (label) {
++        label.style.cursor = 'default';
++        label.addEventListener('click', function() {
++            document.querySelectorAll('#{{element.id}}_fieldset div.fp-toolbar a')[0].focus();
++        });
++    }
++})();
++{{/js}}
+diff --git a/lib/templates/filemanager_fileselect.mustache b/lib/templates/filemanager_fileselect.mustache
+index 83d9306e5c35189d7e3a246b7a9299b735656195..cbff550701e3d1679195ba44c5bcd2e4bf328d04 100644
+--- a/lib/templates/filemanager_fileselect.mustache
++++ b/lib/templates/filemanager_fileselect.mustache
+@@ -60,13 +60,13 @@
+                     </div>
+                 </div>
+                 <div class="fp-original form-group row mx-0">
+-                    <label class="form-control-label col-4 px-0">{{#str}}original, repository{{/str}}</label>
++                    <div class="form-control-label col-4 px-0">{{#str}}original, repository{{/str}}</div>
+                     <div class="col-8 form-inline">
+                         <span class="fp-originloading">{{#pix}}i/loading_small{{/pix}} {{#str}}loading, repository{{/str}}</span><span class="fp-value"></span>
+                     </div>
+                 </div>
+                 <div class="fp-reflist form-group row mx-0">
+-                    <label class="form-control-label col-4 px-0">{{#str}}referenceslist, repository{{/str}}</label>
++                    <div class="form-control-label col-4 px-0">{{#str}}referenceslist, repository{{/str}}</div>
+                     <div class="col-8 form-inline">
+                         <p class="fp-refcount"></p>
+                         <span class="fp-reflistloading">{{#pix}}i/loading_small{{/pix}} {{#str}}loading, repository{{/str}}</span>
+diff --git a/message/templates/message_drawer_view_settings_body_content.mustache b/message/templates/message_drawer_view_settings_body_content.mustache
+index f359f3494116b91c4a7b556c9f1f40405b2c1f39..4acd27d4bba3e08e1edf5160a4de2c3195e5143d 100644
+--- a/message/templates/message_drawer_view_settings_body_content.mustache
++++ b/message/templates/message_drawer_view_settings_body_content.mustache
+@@ -39,20 +39,23 @@
+     <h3 class="h6 font-weight-bold">{{#str}} privacy, message {{/str}}</h3>
+     <p>{{#str}} privacy_desc, message {{/str}}</p>
+     <div data-preference="blocknoncontacts" class="mb-3">
+-        {{#privacy}}
+-            <div class="custom-control custom-radio mb-2">
+-                <input
+-                    type="radio"
+-                    name="message_blocknoncontacts"
+-                    class="custom-control-input"
+-                    id="block-noncontacts-{{uniqid}}-{{value}}"
+-                    value="{{value}}"
+-                >
+-                <label class="custom-control-label ml-2" for="block-noncontacts-{{uniqid}}-{{value}}">
+-                    {{text}}
+-                </label>
+-            </div>
+-        {{/privacy}}
++        <fieldset>
++            <legend class="sr-only">{{#str}} contactableprivacy, message {{/str}}</legend>
++            {{#privacy}}
++                <div class="custom-control custom-radio mb-2">
++                    <input
++                        type="radio"
++                        name="message_blocknoncontacts"
++                        class="custom-control-input"
++                        id="block-noncontacts-{{uniqid}}-{{value}}"
++                        value="{{value}}"
++                    >
++                    <label class="custom-control-label ml-2" for="block-noncontacts-{{uniqid}}-{{value}}">
++                        {{text}}
++                    </label>
++                </div>
++            {{/privacy}}
++        </fieldset>
+     </div>
+ 
+     <div class="hidden" data-region="notification-preference-container">
+diff --git a/message/templates/message_index.mustache b/message/templates/message_index.mustache
+index 65c44fc62886cd0e06d2d6d3b99859f776c14b2a..f47b39c594617b660beedc2cc197e39b5bb612d6 100644
+--- a/message/templates/message_index.mustache
++++ b/message/templates/message_index.mustache
+@@ -15,7 +15,7 @@
+     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ }}
+ {{!
+-    @template core_message/message_drawer
++    @template core_message/message_index
+ 
+     This template will render the message drawer.
+ 
+diff --git a/admin/templates/setting.mustache b/admin/templates/setting.mustache
+index a3a3a227f26bdb1fefa1db1a1f05a295645957e9..498aa2c3c1ce2cbe59ab775293add69e84c583e9 100644
+--- a/admin/templates/setting.mustache
++++ b/admin/templates/setting.mustache
+@@ -49,15 +49,28 @@
+ }}
+ <div class="form-item row" id="{{id}}">
+     <div class="form-label col-sm-3 text-sm-right">
+-        <label {{#labelfor}}for="{{labelfor}}"{{/labelfor}}>
+-            {{{title}}}
+-            {{#override}}
+-                <div class="alert alert-info">{{override}}</div>
+-            {{/override}}
+-            {{#warning}}
+-                <div class="alert alert-warning">{{warning}}</div>
+-            {{/warning}}
+-        </label>
++        {{#customcontrol}}
++            <p {{#labelfor}}id="{{labelfor}}_label"{{/labelfor}}>
++                {{{title}}}
++                {{#override}}
++                    <div class="alert alert-info">{{override}}</div>
++                {{/override}}
++                {{#warning}}
++                    <div class="alert alert-warning">{{warning}}</div>
++                {{/warning}}
++            </p>
++        {{/customcontrol}}
++        {{^customcontrol}}
++            <label {{#labelfor}}for="{{labelfor}}"{{/labelfor}}>
++                {{{title}}}
++                {{#override}}
++                    <div class="alert alert-info">{{override}}</div>
++                {{/override}}
++                {{#warning}}
++                    <div class="alert alert-warning">{{warning}}</div>
++                {{/warning}}
++            </label>
++        {{/customcontrol}}
+         <span class="form-shortname d-block small text-muted">{{{name}}}</span>
+     </div>
+     <div class="form-setting col-sm-9">
+@@ -72,3 +85,16 @@
+         {{#dependenton}}<div class="form-dependenton mb-4 text-muted">{{{.}}}</div>{{/dependenton}}
+     </div>
+ </div>
++{{#customcontrol}}
++    {{#js}}
++        require(['jquery'], function($) {
++            $('#{{id}}_label').css('cursor', 'default');
++            $('#{{id}}_label').click(function() {
++                $('#{{id}}')
++                    .find('button, a, input:not([type="hidden"]), select, textarea, [tabindex]')
++                    .filter(':not([disabled]):not([tabindex="0"]):not([tabindex="-1"])')
++                    .first().focus();
++            });
++        });
++    {{/js}}
++{{/customcontrol}}
+diff --git a/lib/adminlib.php b/lib/adminlib.php
+index 1541db2f81a4db7d5ed52a58853417c3523b3894..fd87ec4b1dbba0efc93f2c7a98350f7510db9055 100644
+--- a/lib/adminlib.php
++++ b/lib/adminlib.php
+@@ -1686,6 +1686,8 @@ abstract class admin_setting {
+     private $forceltr = null;
+     /** @var array list of other settings that may cause this setting to be hidden */
+     private $dependenton = [];
++    /** @var bool Whether this setting uses a custom form control */
++    protected $customcontrol = false;
+ 
+     /**
+      * Constructor
+@@ -2081,6 +2083,16 @@ abstract class admin_setting {
+     public function get_dependent_on() {
+         return $this->dependenton;
+     }
++
++    /**
++     * Whether this setting uses a custom form control.
++     * This function is especially useful to decide if we should render a label element for this setting or not.
++     *
++     * @return bool
++     */
++    public function has_custom_form_control(): bool {
++        return $this->customcontrol;
++    }
+ }
+ 
+ /**
+@@ -8925,6 +8937,7 @@ function format_admin_setting($setting, $title='', $form='', $description='', $l
+     $context->description = highlight($query, markdown_to_html($description));
+     $context->element = $form;
+     $context->forceltr = $setting->get_force_ltr();
++    $context->customcontrol = $setting->has_custom_form_control();
+ 
+     return $OUTPUT->render_from_template('core_admin/setting', $context);
+ }
+@@ -10384,6 +10397,7 @@ class admin_setting_configstoredfile extends admin_setting {
+         $this->filearea = $filearea;
+         $this->itemid   = $itemid;
+         $this->options  = (array)$options;
++        $this->customcontrol = true;
+     }
+ 
+     /**
+diff --git a/lib/form/templates/element-group.mustache b/lib/form/templates/element-group.mustache
+index 4664a09029257dba46974e17b72d320397a4af94..e9a5c058149fc48c24e7052ef9212b373a7f1e2b 100644
+--- a/lib/form/templates/element-group.mustache
++++ b/lib/form/templates/element-group.mustache
+@@ -22,7 +22,10 @@
+ require(['jquery'], function($) {
+     $('#{{element.id}}_label').css('cursor', 'default');
+     $('#{{element.id}}_label').click(function() {
+-        $('#{{element.id}}').find('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])').filter(':enabled').first().focus();
++        $('#{{element.id}}')
++            .find('button, a, input:not([type="hidden"]), select, textarea, [tabindex]')
++            .filter(':not([disabled]):not([tabindex="0"]):not([tabindex="-1"])')
++            .first().focus();
+     });
+ });
+ {{/js}}
+diff --git a/lib/form/templates/element-filepicker.mustache b/lib/form/templates/element-filepicker.mustache
+index 6f02ca05f26815521566d32a72298f7edae8f8cf..579cf20e7078585efe2452d00728ba6234ece496 100644
+--- a/lib/form/templates/element-filepicker.mustache
++++ b/lib/form/templates/element-filepicker.mustache
+@@ -1,5 +1,26 @@
+ {{< core_form/element-template }}
++    {{$label}}
++        {{^element.hiddenlabel}}
++            <p id="{{element.id}}_label" class="col-form-label d-inline" aria-hidden="true">
++                {{{label}}}
++            </p>
++        {{/element.hiddenlabel}}
++    {{/label}}
+     {{$element}}
+-        {{{element.html}}}
++        <fieldset class="w-100 m-0 p-0 border-0" id="{{element.id}}_fieldset">
++            <legend class="sr-only">{{label}}</legend>
++            {{{element.html}}}
++        </fieldset>
+     {{/element}}
+ {{/ core_form/element-template }}
++{{#js}}
++(function() {
++    var label = document.getElementById('{{element.id}}_label');
++    if (label) {
++        label.style.cursor = 'default';
++        label.addEventListener('click', function() {
++            document.querySelectorAll('#{{element.id}}_fieldset .fp-btn-choose')[0].focus();
++        });
++    }
++})();
++{{/js}}

@@ -1,0 +1,48 @@
+diff --git a/public/repository/contentbank/classes/browser/contentbank_browser.php b/public/repository/contentbank/classes/browser/contentbank_browser.php
+index 4441acc729b896ffe33d9a5ed57e411be249ec59..c8bb979328db04517f39b5d01bb25698601054ad 100644
+--- a/public/repository/contentbank/classes/browser/contentbank_browser.php
++++ b/public/repository/contentbank/classes/browser/contentbank_browser.php
+@@ -136,7 +136,7 @@ abstract class contentbank_browser {
+         return array_reduce($children, function ($list, $child) {
+             $browser = \repository_contentbank\helper::get_contentbank_browser($child);
+             if ($browser->can_access_content()) {
+-                $name = $child->get_context_name(false, false, false);
++                $name = $child->get_context_name(false);
+                 $path = base64_encode(json_encode(['contextid' => $child->id]));
+                 $list[] = \repository_contentbank\helper::create_context_folder_node($name, $path);
+             }
+diff --git a/public/repository/contentbank/classes/helper.php b/public/repository/contentbank/classes/helper.php
+index 79b548e43600ab47bd099590d5f53aa6350871cc..bb0309146d0343bb1e26907f138d0c0dbdae47b1 100644
+--- a/public/repository/contentbank/classes/helper.php
++++ b/public/repository/contentbank/classes/helper.php
+@@ -129,7 +129,7 @@ class helper {
+     public static function create_navigation_node(\context $context): array {
+         return [
+             'path' => base64_encode(json_encode(['contextid' => $context->id])),
+-            'name' => $context->get_context_name(false, false, false),
++            'name' => $context->get_context_name(false)
+         ];
+     }
+ }
+diff --git a/public/repository/local/lib.php b/public/repository/local/lib.php
+index b7b4fa16b93ca47f83ed0f1a25fd0a18d642d1eb..6a3ec3c62ea005c2fbdb4ffab6e72753e87b297a 100644
+--- a/public/repository/local/lib.php
++++ b/public/repository/local/lib.php
+@@ -210,7 +210,7 @@ class repository_local extends repository {
+         global $OUTPUT;
+         $encodedpath = base64_encode(json_encode($fileinfo->get_params()));
+         $node = array(
+-            'title' => html_entity_decode($fileinfo->get_visible_name()),
++            'title' => $fileinfo->get_visible_name(),
+             'datemodified' => $fileinfo->get_timemodified(),
+             'datecreated' => $fileinfo->get_timecreated()
+         );
+@@ -251,7 +251,7 @@ class repository_local extends repository {
+         $encodedpath = base64_encode(json_encode($fileinfo->get_params()));
+         return array(
+             'path' => $encodedpath,
+-            'name' => html_entity_decode($fileinfo->get_visible_name()),
++            'name' => $fileinfo->get_visible_name()
+         );
+     }
+ 

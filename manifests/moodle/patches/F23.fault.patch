@@ -1,0 +1,117 @@
+diff --git a/public/mod/assign/feedback/comments/locallib.php b/public/mod/assign/feedback/comments/locallib.php
+index a8e1b6ee7ddf70c01f5c82a04c3baf3f0b5b789c..4d6235508f935d3b94ca3ef3613f52e4f2b44a43 100644
+--- a/public/mod/assign/feedback/comments/locallib.php
++++ b/public/mod/assign/feedback/comments/locallib.php
+@@ -636,17 +636,6 @@ class assign_feedback_comments extends assign_feedback_plugin {
+         // Find all the comments for this grade object and render them one by one.
+         $data = ['comments' => []];
+         $comments = $this->get_all_feedback_comments($grade->id);
+-        $hidemarkers = $this->assignment->is_hidden_grader()
+-            && !has_capability('mod/assign:showhiddengrader', $this->assignment->get_context());
+-
+-        // When hiding markers, label each comment with the marker's position, matching the grading table's marker columns.
+-        $markerpositions = [];
+-        if ($hidemarkers) {
+-            foreach ($this->assignment->get_marker_allocations($grade->userid, false) as $position => $allocation) {
+-                $markerpositions[$allocation->marker] = $position;
+-            }
+-        }
+-
+         foreach ($comments as $comment) {
+             $value = $this->view_text($grade, $showviewlink, $comment->mark);
+             if ($value !== '') {
+@@ -654,14 +643,8 @@ class assign_feedback_comments extends assign_feedback_plugin {
+                     $context = get_string('overallcomment', 'assignfeedback_comments');
+                 } else {
+                     $mark = $DB->get_record('assign_mark', ['id' => $comment->mark], 'marker');
+-
+-                    // If hidegrader is enabled, do not display the markers' names.
+-                    if ($hidemarkers) {
+-                        $context = get_string('markercomment1', 'assignfeedback_comments', $markerpositions[$mark->marker]);
+-                    } else {
+-                        $marker = $DB->get_record('user', ['id' => $mark->marker]);
+-                        $context = get_string('markercomment', 'assignfeedback_comments', fullname($marker));
+-                    }
++                    $marker = $DB->get_record('user', ['id' => $mark->marker]);
++                    $context = get_string('markercomment', 'assignfeedback_comments', fullname($marker));
+                 }
+                 $data['comments'][] = [
+                     'context' => $context,
+diff --git a/public/mod/assign/feedback/editpdf/locallib.php b/public/mod/assign/feedback/editpdf/locallib.php
+index 1d1495550e29e2c9d9c285287c71ac9ee8c4a9f7..54e22add72b06262ce85282006b378b3253c21b3 100644
+--- a/public/mod/assign/feedback/editpdf/locallib.php
++++ b/public/mod/assign/feedback/editpdf/locallib.php
+@@ -439,17 +439,6 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
+ 
+             // Then the marker feedback.
+             $marks = $this->assignment->get_mark_records($grade->id, $grade->userid);
+-
+-            // When hiding markers, label their feedback with the marker's position, matching the grading table's marker columns.
+-            $hidemarkers = $this->assignment->is_hidden_grader()
+-                && !has_capability('mod/assign:showhiddengrader', $this->assignment->get_context());
+-            $markerpositions = [];
+-            if ($hidemarkers) {
+-                foreach ($this->assignment->get_marker_allocations($grade->userid, false) as $position => $allocation) {
+-                    $markerpositions[$allocation->marker] = $position;
+-                }
+-            }
+-
+             foreach ($marks as $mark) {
+                 if (page_editor::has_annotations_or_comments($grade->id, false, $mark->id)) {
+                     $markdata = [];
+@@ -468,14 +457,8 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
+                     $renderer = $PAGE->get_renderer('assignfeedback_editpdf');
+                     $widget = $this->get_widget($grade->userid, $grade, true, $USER->id, $mark->id);
+                     $markdata['widget'] = $renderer->render($widget);
+-                    if ($hidemarkers) {
+-                        $position = $markerpositions[$mark->marker];
+-                        $markdata['markerlabel'] = get_string('markernumberfeedback', 'assignfeedback_editpdf', $position);
+-                    } else {
+-                        $markeruser = $DB->get_record('user', ['id' => $mark->marker]);
+-                        $markdata['markerlabel'] = get_string('markerfeedback', 'assignfeedback_editpdf', fullname($markeruser));
+-                    }
+-
++                    $markeruser = $DB->get_record('user', ['id' => $mark->marker]);
++                    $markdata['markerlabel'] = get_string('markerfeedback', 'assignfeedback_editpdf', fullname($markeruser));
+                     $data['marks'][] = $markdata;
+                 }
+             }
+diff --git a/public/mod/assign/feedback/file/locallib.php b/public/mod/assign/feedback/file/locallib.php
+index 05cce315818126d9000a2457a56bce44728e1f18..62680bd799cfee73db0bc1a55acd42f23ab15eba 100644
+--- a/public/mod/assign/feedback/file/locallib.php
++++ b/public/mod/assign/feedback/file/locallib.php
+@@ -368,17 +368,6 @@ class assign_feedback_file extends assign_feedback_plugin {
+ 
+         $filefeedbackitems = $this->get_all_file_feedback($grade->id);
+         $data = ['filefeedback' => []];
+-
+-        // When hiding markers, label their attachments with the marker's position, matching the grading table's marker columns.
+-        $hidemarkers = $this->assignment->is_hidden_grader()
+-            && !has_capability('mod/assign:showhiddengrader', $this->assignment->get_context());
+-        $markerpositions = [];
+-        if ($hidemarkers) {
+-            foreach ($this->assignment->get_marker_allocations($grade->userid, false) as $position => $allocation) {
+-                $markerpositions[$allocation->marker] = $position;
+-            }
+-        }
+-
+         foreach ($filefeedbackitems as $filefeedbackitem) {
+             $feedback = [];
+             if (is_null($filefeedbackitem->mark)) {
+@@ -386,14 +375,8 @@ class assign_feedback_file extends assign_feedback_plugin {
+                 $overall = true;
+             } else {
+                 $mark = $DB->get_record('assign_mark', ['id' => $filefeedbackitem->mark], 'marker');
+-
+-                if ($hidemarkers) {
+-                    $feedback['context'] = get_string('markernumberfile', 'assignfeedback_file', $markerpositions[$mark->marker]);
+-                } else {
+-                    $marker = $DB->get_record('user', ['id' => $mark->marker]);
+-                    $feedback['context'] = get_string('markerfile', 'assignfeedback_file', fullname($marker));
+-                }
+-
++                $marker = $DB->get_record('user', ['id' => $mark->marker]);
++                $feedback['context'] = get_string('markerfile', 'assignfeedback_file', fullname($marker));
+                 $overall = false;
+             }
+ 

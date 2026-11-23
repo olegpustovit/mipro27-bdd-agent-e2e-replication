@@ -1,0 +1,55 @@
+diff --git a/public/completion/classes/external.php b/public/completion/classes/external.php
+index e3a7d0a8f43aff0e836e9120ba8f439a3d44d930..0a726eb7cde6272a359cb97a0e83276c747aba03 100644
+--- a/public/completion/classes/external.php
++++ b/public/completion/classes/external.php
+@@ -369,9 +369,7 @@ class core_completion_external extends external_api {
+                                 VALUE_DEFAULT,
+                                 []
+                             ),
+-                            'isoverallcomplete' => new external_value(PARAM_BOOL,
+-                                'Whether the overall completion state of this course module should be marked as complete or not.',
+-                                VALUE_OPTIONAL),
++
+                         ], 'Activity'
+                     ), 'List of activities status'
+                 ),
+diff --git a/public/completion/classes/external/completion_info_exporter.php b/public/completion/classes/external/completion_info_exporter.php
+index 3dfc045d1a4033691b30e46fb9fc7413f2ef257b..54df98cd6ab60f753634c83ba58d4baf3d9fa548 100644
+--- a/public/completion/classes/external/completion_info_exporter.php
++++ b/public/completion/classes/external/completion_info_exporter.php
+@@ -83,9 +83,9 @@ class completion_info_exporter extends \core\external\exporter {
+             'hascompletion'    => $cmcompletion->has_completion(),
+             'isautomatic'      => $cmcompletion->is_automatic(),
+             'istrackeduser'    => $cmcompletion->is_tracked_user(),
++            'overallstatus'    => $cmcompletion->get_overall_completion(),
+             'uservisible'      => $this->cminfo->uservisible,
+             'details'          => $details,
+-            'isoverallcomplete' => $cmcompletion->is_overall_complete(),
+         ];
+     }
+ 
+@@ -148,11 +148,6 @@ class completion_info_exporter extends \core\external\exporter {
+                     ]
+                 ]
+             ],
+-            'isoverallcomplete' => [
+-                'type' => PARAM_BOOL,
+-                'description' => 'Whether the overall completion state of this course module should be marked as complete or not.',
+-                'optional' => true,
+-            ],
+         ];
+     }
+ }
+diff --git a/public/completion/upgrade.txt b/public/completion/upgrade.txt
+index 2810c539e8a93b9f07f078a24fa4d02cf6c3c6b8..f7c7937fd6133e978dbebe27ce4072779a2bc824 100644
+--- a/public/completion/upgrade.txt
++++ b/public/completion/upgrade.txt
+@@ -15,8 +15,6 @@ information provided here is intended especially for developers.
+ * The following previously deprecated methods have been removed and can no longer be used:
+   - `completion_info::display_help_icon`
+   - `completion_info::print_help_icon`
+-* The \core_completion\completion_info_exporter class has been updated to return a new field "isverallcomplete" to return the result of the
+-  new cm_completion_details::is_overall_complete() method.
+ 
+ === 4.3 ===
+ * A trait class, core_completion/form/form_trait has been added to reuse code for adding and validation completion settings to any

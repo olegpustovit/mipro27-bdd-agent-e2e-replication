@@ -1,0 +1,373 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Experiment console</title><style>
+:root{
+  --bg:#f7f6f2;--card:#ffffff;--ink:#1d1d1b;--mute:#6b6a64;--line:#e3e1d9;
+  --red:#c8372d;--red-bg:#fbe9e7;--amber:#b7791f;--amber-bg:#fdf3e1;
+  --green:#2f7d4f;--green-bg:#e6f4ec;--blue:#2b5fb4;--blue-bg:#e8eefa;--grey-bg:#efede7;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#161614;--card:#201f1c;--ink:#ecebe6;--mute:#a3a198;--line:#34332e;
+  --red:#ff7b6e;--red-bg:#3a1f1c;--amber:#f0b45a;--amber-bg:#3a2e1a;
+  --green:#6fcf97;--green-bg:#1b3125;--blue:#8fb2ff;--blue-bg:#1c2640;--grey-bg:#2a2925;}}
+:root[data-theme="dark"]{
+  --bg:#161614;--card:#201f1c;--ink:#ecebe6;--mute:#a3a198;--line:#34332e;
+  --red:#ff7b6e;--red-bg:#3a1f1c;--amber:#f0b45a;--amber-bg:#3a2e1a;
+  --green:#6fcf97;--green-bg:#1b3125;--blue:#8fb2ff;--blue-bg:#1c2640;--grey-bg:#2a2925;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:920px;margin:0 auto;padding:28px 16px 64px}
+h1{font-size:28px;line-height:1.2;margin:0 0 6px}
+h2{font-size:21px;margin:44px 0 12px}
+.sub{color:var(--mute);margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:12px 0}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.tile{border-radius:14px;padding:16px 18px;border:1px solid var(--line);background:var(--card)}
+.tile .n{font-size:34px;font-weight:700;line-height:1.1}
+.tile .l{color:var(--mute);font-size:14px}
+.red{color:var(--red)}.green{color:var(--green)}.amber{color:var(--amber)}.blue{color:var(--blue)}
+.bg-red{background:var(--red-bg);border-color:transparent}.bg-green{background:var(--green-bg);border-color:transparent}
+.bg-amber{background:var(--amber-bg);border-color:transparent}.bg-blue{background:var(--blue-bg);border-color:transparent}
+.verdict{font-size:19px;padding:18px 20px;border-radius:14px;background:var(--red-bg);border-left:6px solid var(--red)}
+.verdict b{color:var(--red)}
+/* road */
+.road{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.stop{flex:1 1 100px;min-width:100px;border-radius:10px;padding:10px 10px;font-size:13.5px;line-height:1.3;border:1px solid var(--line);background:var(--grey-bg);position:relative}
+.stop .k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute);display:block;margin-bottom:3px}
+.stop.done{background:var(--green-bg);border-color:transparent}
+.stop.block{background:var(--red-bg);border:2px solid var(--red)}
+.stop.here{outline:3px dashed var(--blue);outline-offset:2px}
+.stop.ghost{background:var(--amber-bg);border:2px dashed var(--amber)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--mute);margin-top:6px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.two{grid-template-columns:1fr}}
+ul.clean{margin:6px 0 0;padding-left:20px}ul.clean li{margin:4px 0}
+.issue{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start}
+.issue .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;font-weight:700}
+.issue h3{margin:0 0 4px;font-size:17px}
+.issue p{margin:0;color:var(--ink)}
+.issue .fix{margin-top:8px;font-size:14.5px;color:var(--mute)}
+.issue .fix b{color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:600;font-size:13px}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:10px;border-radius:5px;background:var(--grey-bg);overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;background:var(--green)}
+.bar i.r{background:var(--red)}
+.tl{position:relative;margin:8px 0 0 10px;padding-left:22px;border-left:3px solid var(--line)}
+.tl .d{position:relative;margin:0 0 16px}
+.tl .d:before{content:"";position:absolute;left:-31px;top:4px;width:15px;height:15px;border-radius:50%;background:var(--card);border:3px solid var(--blue)}
+.tl .d.crit:before{border-color:var(--red);background:var(--red)}
+.tl .d.end:before{border-color:var(--green);background:var(--green)}
+.tl .date{font-weight:700;font-size:14px;color:var(--blue)}
+.tl .d.crit .date{color:var(--red)}.tl .d.end .date{color:var(--green)}
+.tl .what{font-weight:600}
+.tl .how{color:var(--mute);font-size:14.5px}
+.owner{border-left:6px solid var(--amber);background:var(--amber-bg);border-radius:12px;padding:14px 18px;margin:10px 0}
+.owner h3{margin:0 0 6px;font-size:16px}
+.small{font-size:13.5px;color:var(--mute)}
+code{font-size:13px;background:var(--grey-bg);padding:1px 5px;border-radius:5px;word-break:break-all}
+blockquote{margin:8px 0;padding:10px 14px;border-left:4px solid var(--line);color:var(--mute);font-size:14.5px;background:var(--card);border-radius:0 10px 10px 0}
+
+/* console prototype */
+:root{--purple:#7a4fb5;--purple-bg:#f1eafb;--con:#111418;--con2:#1a1f26;--con-line:#2a313b;--con-ink:#e6e9ee;--con-mute:#8b95a3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--purple:#c3a4f2;--purple-bg:#2d2340}}
+:root[data-theme="dark"]{--purple:#c3a4f2;--purple-bg:#2d2340}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600;line-height:1.5;white-space:nowrap}
+.pill.ok{background:var(--green-bg);color:var(--green)}.pill.det{background:var(--blue-bg);color:var(--blue)}
+.pill.bad{background:var(--red-bg);color:var(--red)}.pill.warn{background:var(--amber-bg);color:var(--amber)}
+.pill.odd{background:var(--purple-bg);color:var(--purple)}.pill.none,.pill.mute,.pill.inv{background:var(--grey-bg);color:var(--mute)}
+.con{background:var(--con);color:var(--con-ink);border-radius:14px;overflow:hidden;border:1px solid var(--con-line);margin:14px 0;font-size:14px}
+.con code{background:#232a33;color:#cfd6df}
+.con-bar{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--con2);border-bottom:1px solid var(--con-line)}
+.dots i{display:inline-block;width:10px;height:10px;border-radius:50%;background:#3a424d;margin-right:5px}
+.con-url{font-size:12.5px;color:var(--con-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.con-tabs{display:flex;gap:2px;padding:8px 10px 0;background:var(--con2);overflow-x:auto}
+.con-tabs button{background:none;border:0;color:var(--con-mute);padding:8px 14px;font:inherit;font-weight:600;border-radius:8px 8px 0 0;cursor:pointer}
+.con-tabs button[aria-selected=true]{background:var(--con);color:var(--con-ink)}
+.con-pane{padding:16px}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.ring-card{display:flex;gap:12px;align-items:center;background:var(--con2);border:1px solid var(--con-line);border-radius:12px;padding:12px}
+.ring{position:relative;width:72px;height:72px;flex:none}.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:16px}
+.r-bg{fill:none;stroke:#2a313b;stroke-width:8}.r-fg{fill:none;stroke:#5fbf86;stroke-width:8;stroke-linecap:round}
+#ringPaper .r-fg{stroke:#e2a64b}#ringDays .r-fg{stroke:#ff7b6e}
+.rc-t{font-weight:700}.rc-s{color:var(--con-mute);font-size:13px}
+.next-box{margin:12px 0;padding:12px 14px;border-radius:12px;background:#16263d;border:1px solid #284a78}
+.nb-k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8fb2ff}.nb-t{font-size:17px;font-weight:700;margin:2px 0}.nb-s{color:var(--con-mute);font-size:13px}
+.camp{padding:9px 0;border-top:1px solid var(--con-line)}.camp-t{font-weight:600;margin-bottom:5px}.camp-n{display:flex;flex-wrap:wrap;gap:6px}
+.con .pill.ok{background:#1b3125;color:#6fcf97}.con .pill.det{background:#1c2640;color:#8fb2ff}.con .pill.bad{background:#3a1f1c;color:#ff7b6e}
+.con .pill.warn{background:#3a2e1a;color:#f0b45a}.con .pill.odd{background:#2d2340;color:#c3a4f2}.con .pill.mute,.con .pill.none,.con .pill.inv{background:#262c34;color:#9aa4b2}
+.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:10px}
+.filters select{background:var(--con2);color:var(--con-ink);border:1px solid var(--con-line);border-radius:8px;padding:5px 8px;font:inherit;max-width:100%}
+.hint,.muted{color:var(--con-mute)}.small2{font-size:12.5px}
+.hm-wrap{overflow-x:auto}.hm{border-collapse:separate;border-spacing:3px;font-size:12px;width:auto}
+.hm th{color:var(--con-mute);font-weight:500;padding:2px 4px;border:0;white-space:nowrap;text-align:left}.hm thead th{font-size:11px;text-align:center}.hm th.fh{color:#ff9d93}
+.hm td{padding:0;border:0}
+.cell{display:block;width:30px;height:22px;border-radius:5px;border:0;cursor:pointer;padding:0}
+i.cell{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:5px;cursor:default}
+.cell.ok{background:#3f9a66}.cell.det{background:#4d7fd6}.cell.bad{background:#e0574b}.cell.warn{background:#d39a3c}.cell.odd{background:#9a72d6}.cell.none{background:#4a525d}.cell.inv{background:repeating-linear-gradient(45deg,#4a525d 0 3px,#2a313b 3px 6px)}.cell.mute{background:#2a313b}
+.cell.sel{outline:2px solid #fff;outline-offset:1px}
+.legend2{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0;font-size:12.5px;color:var(--con-mute)}
+.detail{background:var(--con2);border:1px solid var(--con-line);border-radius:12px;padding:12px;min-height:60px}
+.d-h{margin-bottom:6px}.d-g{display:flex;flex-wrap:wrap;gap:14px;color:var(--con-mute);font-size:13px}.d-e{margin:8px 0;font-style:italic}
+.btn{background:#2a313b;color:var(--con-ink);border:1px solid #3a434e;border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}
+.btn.pri{background:#2b5fb4;border-color:#2b5fb4}.btn.ghost{background:transparent}.btn[disabled]{opacity:.45;cursor:not-allowed}
+.trace-head{background:var(--con2);border:1px solid var(--con-line);border-radius:12px;padding:10px 12px;margin-bottom:10px;display:grid;gap:4px}
+.trace-cols{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px}
+@media (max-width:700px){.trace-cols{grid-template-columns:1fr}}
+.steps{margin:0;padding:0 0 0 22px;max-height:420px;overflow:auto;font-size:13px}
+.st{margin:0 0 8px;padding:6px 8px;border-left:3px solid #3a434e;background:var(--con2);border-radius:0 8px 8px 0;word-break:break-word}
+.st.err{border-left-color:#e0574b}.tn{font-weight:700;color:#8fb2ff;margin-right:6px}
+.rs{color:var(--con-mute);margin-top:3px;font-size:12px}
+.side{background:var(--con2);border:1px solid var(--con-line);border-radius:12px;padding:10px 12px}
+.side-k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--con-mute);margin-bottom:6px}
+.checks{list-style:none;margin:0;padding:0;font-size:13px}.checks li{margin:4px 0}
+.tg{color:#6fcf97}.tr{color:#ff7b6e}
+.tasks{font-size:13.5px}.tasks th,.tasks td{border-bottom:1px solid var(--con-line);color:var(--con-ink)}.tasks th{color:var(--con-mute)}
+.log{margin-top:10px;font-size:13px;display:grid;gap:6px}.log div{background:var(--con2);border:1px solid var(--con-line);border-radius:8px;padding:7px 10px}
+
+main{max-width:1100px}h1{font-size:26px}.con{min-width:0}.con-pane{min-width:0}.con-bar{overflow:hidden}.con-url{overflow-wrap:anywhere}button:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #8fb2ff;outline-offset:3px}button:hover:not(:disabled){filter:brightness(1.16)}::selection{background:#284a78;color:#fff}button,select,textarea{caret-color:#8fb2ff}pre,code{white-space:pre-wrap;overflow-wrap:anywhere}.con code{background:transparent;color:inherit}.rs{color:#b5bfcd}pre{margin:4px 0;font:12px/1.5 ui-monospace,monospace}.steps{max-height:65vh}.trace-cols>*{min-width:0}.side h3{font-size:14px;margin:0 0 8px}.sample-list{display:grid;grid-auto-rows:minmax(64px,auto);align-content:start;gap:5px;max-height:420px;overflow:auto;padding:3px}.sample-list button{text-align:left;font-weight:400}.sample-list button[aria-current=true]{outline:2px solid #8fb2ff;outline-offset:0}.human-grid{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px}.human-grid>*{min-width:0}.review-form{display:grid;gap:10px;margin-top:14px}.review-form select,.review-form textarea{display:block;width:100%;background:#1a1f26;color:#e6e9ee;border:1px solid #566273;border-radius:6px;padding:10px;font:inherit}.review-form textarea{min-height:90px;resize:vertical}.review-form button{justify-self:start}.error{padding:12px;background:#3a1f1c;color:#ffb6ae;border-radius:8px;margin:10px 0}.progress{font-variant-numeric:tabular-nums}.paper-steps{padding-left:20px}.paper-steps li{margin:7px 0}.st{border-left-width:1px}button.cell{width:38px;height:32px}.hm-wrap{max-width:100%;overscroll-behavior-x:contain}.hm-wrap:focus-visible{outline:2px solid #8fb2ff}.con-tabs button{min-height:44px}.btn{min-height:40px}.blind-title{font-size:17px;margin:0 0 12px}.tab-note{margin:0 0 12px;color:#b5bfcd}.muted{color:#a6b2c2}.sample-list .muted{font-size:12px}.proof-answer{padding-top:12px;border-top:1px solid #3a434e}.count{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}.filters label{max-width:100%}#traceSelect{max-width:100%}@media(max-width:700px){main{padding:16px 10px}.con-pane{padding:12px}.human-grid{grid-template-columns:1fr}.sample-list{max-height:180px}.trace-cols{grid-template-columns:1fr}.ov-grid{grid-template-columns:1fr}.steps{max-height:55vh}.con-tabs button{padding:8px 10px}h1{font-size:23px}}
+#reviewTitle{font-size:24px;margin:0 0 4px;scroll-margin-top:16px}.review-stage{padding:15px 0;border-top:1px solid #3a434e}.review-stage h3{margin:0 0 8px;font-size:17px}.review-stage p{margin:6px 0 10px;max-width:70ch}.review-stage details{margin-top:8px}.review-stage summary{cursor:pointer;color:#b6ccf5}.review-stage h4{font-size:14px;margin:7px 0 4px}.review-checkpoints{margin:6px 0 12px;padding-left:22px;max-width:70ch}.review-checkpoints li{padding:2px 0}.sample-list{grid-auto-rows:max-content}.sample-list button{min-height:58px}.review-options{display:grid;gap:5px;border:0;padding:0;min-width:0}.checkpoint-options{margin:14px 0;max-width:70ch}.checkpoint-options legend{font-weight:600}.checkpoint-options p{margin:0 0 2px}.review-options label{display:flex;align-items:baseline;gap:10px;padding:7px 9px;border:1px solid #3a434e;border-radius:6px;cursor:pointer}.review-options label:has(:checked){border-color:#8fb2ff;background:#25344b}.review-choice-group{display:grid;gap:5px}.review-choice-group h4{margin:7px 0 2px}#goToGrade{margin-top:10px}.review-options small{display:block;color:#b5bfcd}.review-options input{accent-color:#8fb2ff;flex:none}.review-form textarea{min-height:55px}.review-comparison{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:12px}.review-comparison h4{margin:0 0 5px}@media(max-width:700px){.review-comparison{grid-template-columns:1fr}.review-comparison>div{border-bottom:1px solid #3a434e;padding-bottom:6px}}</style></head><body><main><h1>Experiment console</h1><p class="sub">Recorded trials and human review · MIPRO exploratory study</p>
+<div class="con" id="con"><div class="con-bar"><span class="con-url">Recorded tests · only your grades are saved</span><button class="btn ghost" id="refresh">Refresh</button></div>
+<div class="con-tabs" role="tablist" aria-label="Console views">
+<button id="tab-overview" role="tab" data-tab="overview" aria-controls="overview" aria-selected="true">Overview</button><button id="tab-trials" role="tab" data-tab="trials" aria-controls="trials" aria-selected="false" tabindex="-1">Trials</button><button id="tab-trace" role="tab" data-tab="trace" aria-controls="trace" aria-selected="false" tabindex="-1">Trace</button><button id="tab-human" role="tab" data-tab="human" aria-controls="human" aria-selected="false" tabindex="-1">Human Review</button>
+</div><div id="error" class="error" role="alert" hidden></div>
+<section id="overview" class="con-pane" role="tabpanel" aria-labelledby="tab-overview"><p>Loading campaign records…</p></section>
+<section id="trials" class="con-pane" role="tabpanel" aria-labelledby="tab-trials" hidden><div class="filters"><label>Run <select id="campaign"></select></label><label>Arm <select id="arm"><option value="runtime">Agent</option><option value="maintained">Step definitions</option></select></label><span class="muted" id="armHint"></span></div><div class="hm-wrap" tabindex="0" aria-label="Scrollable trial heat map"><table id="heat" class="hm"></table></div><div class="legend2" id="legend"></div><div class="detail" id="detail">Choose a trial to see its reviewer verdict and evidence.</div></section>
+<section id="trace" class="con-pane" role="tabpanel" aria-labelledby="tab-trace" hidden><div class="filters"><label>Trace <select id="traceSelect"></select></label></div><div id="traceBody">Choose a recorded trial.</div></section>
+<section id="human" class="con-pane" role="tabpanel" aria-labelledby="tab-human" hidden><p class="tab-note">These tests use synthetic data from a demo banking app. Review one run at a time, then compare your saved grade with the AI reviewers’ decisions.</p><p class="progress" id="humanProgress">Loading fixed sample…</p><div class="human-grid"><div class="sample-list" id="sampleList" aria-label="Fixed review sample"></div><div id="humanBody">Choose a sample entry to begin.</div></div></section>
+</div></main>
+<script>
+const $=id=>document.getElementById(id), esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CL={true_pass:['ok','correct pass'],supported_detection:['det','bug caught'],false_alarm:['bad','false alarm'],action_failure:['warn','could not do steps'],unsupported_healthy_pass:['odd','pass, not shown'],no_opportunity:['none','bug not reached'],invalid:['inv','infrastructure invalid'],unresolved:['none','unresolved'],wrong_reason:['bad','failure for another reason'],unsupported_pass:['odd','pass after fault trigger']};
+let campaigns=[],rows=[],sample=[],selectedHuman=null,traceRequest=0,humanRequest=0,saving=false;
+const pill=c=>`<span class="pill ${CL[c]?.[0]||'mute'}">${esc(CL[c]?.[1]||c||'not reviewed')}</span>`;
+const notice=e=>{$('error').hidden=false;$('error').textContent=e.message+' Use Refresh to try loading again.';};
+async function api(url,options){const response=await fetch(url,options);const data=await response.json();if(!response.ok)throw new Error(data.error||`Request failed (${response.status})`);return data;}
+function show(tab){document.querySelectorAll('[data-tab]').forEach(b=>{b.setAttribute('aria-selected',b.dataset.tab===tab);b.tabIndex=b.dataset.tab===tab?0:-1;});document.querySelectorAll('[role=tabpanel]').forEach(p=>p.hidden=p.id!==tab);}
+document.querySelectorAll('[data-tab]').forEach(b=>{b.onclick=()=>{show(b.dataset.tab);if(b.dataset.tab==='human')openPendingReview();};b.onkeydown=e=>{const tabs=[...document.querySelectorAll('[data-tab]')];let index=tabs.indexOf(b);if(e.key==='ArrowRight')index=(index+1)%tabs.length;else if(e.key==='ArrowLeft')index=(index+tabs.length-1)%tabs.length;else if(e.key==='Home')index=0;else if(e.key==='End')index=tabs.length-1;else return;e.preventDefault();show(tabs[index].dataset.tab);if(tabs[index].dataset.tab==='human')openPendingReview();tabs[index].focus();};});
+function renderOverview(data){const finished=data.campaigns.reduce((n,c)=>n+c.finished,0),planned=data.campaigns.reduce((n,c)=>n+(c.planned||0),0),paper=data.paperSteps,done=paper.filter(t=>t.s==='done').length;const next=paper.find(t=>t.s!=='done');$('overview').innerHTML=`<div class="ov-grid"><div class="ring-card"><div><div class="count">${finished}</div><div class="rc-t">Recorded executions</div><div class="rc-s">${data.campaigns.filter(c=>c.complete).length}/${data.campaigns.length} campaigns complete</div></div></div><div class="ring-card"><div><div class="count">${data.human.done}/${data.human.total}</div><div class="rc-t">Human check</div><div class="rc-s">Fixed stratified sample</div></div></div><div class="ring-card"><div><div class="count">${done}/${paper.length}</div><div class="rc-t">Paper planning snapshot</div><div class="rc-s">See Foundry for current state</div></div></div></div><div class="next-box"><div class="nb-t">${esc(next?.t||'Check the current plan in Foundry')}</div><div class="nb-s">${esc(data.paperSource)}</div></div>`+data.campaigns.map(c=>{const all=rows.filter(r=>r.campaign===c.id&&r.arm==='runtime'),count=cl=>all.filter(r=>r.classification===cl).length;return `<div class="camp"><div class="camp-t">Run ${esc(c.label)}${c.live?' · live':''} · ${c.finished} recorded</div><div class="camp-n"><span class="pill det">${count('supported_detection')}/${all.filter(r=>r.kind==='fault').length} supported detections</span><span class="pill ok">${count('true_pass')}/${all.filter(r=>r.kind==='healthy').length} correct passes</span><span class="pill bad">${count('false_alarm')} false alarms</span><span class="pill warn">${count('action_failure')} action failures</span></div>${c.maintenance.map(m=>`<p class="small2 muted">${esc(m.from)} → ${esc(m.revision)}: ${m.initialBroken.length}/${m.initialCases.length} initially broken · ${m.edits} accepted edits · ${m.suites} validation suites</p>`).join('')}</div>`;}).join('')+`<p class="muted small2">Frozen journals report ${planned} nominal planned executions across both arms; B–D filtered to the agent arm only. The count above is recorded executions, not that unfiltered denominator.</p><h3>Paper steps</h3><p class="muted small2">Planning snapshot from the proposal, not live workflow status. Full paper deadline recorded there: 30 Nov 2026.</p><ol class="paper-steps">${paper.map(t=>`<li>${esc(t.t)} <span class="muted">· ${esc(t.s)} · ${esc(t.d)}</span></li>`).join('')}</ol>`;}
+function heat(){let arm=$('arm').value;const id=$('campaign').value;if(!rows.some(r=>r.campaign===id&&r.arm===arm)){arm='runtime';$('arm').value=arm;$('armHint').textContent='Step definitions were run in A; B–D reran only the agent.';}else $('armHint').textContent='';const subset=rows.filter(r=>r.campaign===id&&r.arm===arm),stages=[...new Set(subset.map(r=>r.stage))],cases=[...new Set(subset.map(r=>r.caseId))];$('heat').innerHTML='<thead><tr><th scope="col">Scenario</th>'+stages.map(s=>`<th scope="col" class="${s.startsWith('fault')?'fh':''}">${esc(s)}</th>`).join('')+'</tr></thead><tbody>'+cases.map(cs=>`<tr><th scope="row">${esc(cs)}</th>${stages.map(stage=>{const r=subset.find(r=>r.caseId===cs&&r.stage===stage);return r?`<td><button class="cell ${CL[r.classification]?.[0]||'mute'}" data-trial="${esc(r.trialId)}" aria-label="${esc(cs+' '+stage+': '+(CL[r.classification]?.[1]||'not reviewed'))}"></button></td>`:'<td>—</td>';}).join('')}</tr>`).join('')+'</tbody>';$('heat').querySelectorAll('button').forEach(b=>b.onclick=()=>{const r=subset.find(r=>r.trialId===b.dataset.trial);$('heat').querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');$('detail').innerHTML=`<div class="d-h"><b>${esc(r.trialId)}</b> ${pill(r.classification)}</div><div class="d-g">Reported ${esc(r.reportedStatus)} · ${(r.elapsedMs/1000).toFixed(1)} s · ${r.tokens.toLocaleString()} tokens · confidence ${esc(r.confidence||'not reviewed')}</div><p>${esc(r.evidence||'No reviewer evidence recorded yet.')}</p><button class="btn" id="openTrace">Open full trace</button>`;$('openTrace').onclick=()=>{$('traceSelect').value=JSON.stringify([id,r.trialId]);show('trace');loadTrace();};});}
+$('campaign').onchange=heat;$('arm').onchange=heat;
+function evidence(trace){return `<div class="trace-cols"><ol class="steps">${trace.steps.length?trace.steps.map(s=>`<li class="st${s.isError?' err':''}"><span class="tn">${esc(s.name)}</span><pre>${esc(JSON.stringify(s.arguments,null,2))}</pre><details><summary>${s.isError?'Tool error':'Tool result'}</summary><pre class="rs">${esc(s.text??'No result recorded')}</pre></details></li>`).join(''):trace.baselineFailures.length?trace.baselineFailures.map(s=>`<li class="st err"><pre>${esc(typeof s==='string'?s:JSON.stringify(s,null,2))}</pre></li>`).join(''):'<li class="muted">No tool ledger or step failures recorded.</li>'}</ol><div class="side"><h3>Observer checks</h3><p class="small2 muted">Hidden from the execution agent.</p><ul class="checks">${trace.checks.map(c=>`<li><span class="${c.ok?'tg':'tr'}">${esc(checkpointLabel(c))}</span> · ${esc(c.assertion||c.predicate)}<details><summary>Recorded check evidence</summary><pre>${esc(JSON.stringify(c,null,2))}</pre></details></li>`).join('')||'<li>No checks recorded.</li>'}</ul></div></div>`;}
+function judgment(a){return a?`${pill(a.classification)}<p>${esc(a.evidence)}</p><p class="muted small2">Confidence: ${esc(a.confidence)}</p>`:'<p class="muted">No LLM verdict recorded yet.</p>';}
+async function loadTrace(){const request=++traceRequest;const [id,trial]=JSON.parse($('traceSelect').value);$('traceBody').textContent='Loading full trace…';try{const t=await api(`/api/campaigns/${encodeURIComponent(id)}/trace?trial=${encodeURIComponent(trial)}`);if(request!==traceRequest)return;$('traceBody').innerHTML=`<div class="trace-head"><b>${esc(t.header.trialId)}</b><div>Reported ${esc(t.header.reportedStatus)} · ${(t.header.elapsedMs/1000).toFixed(1)} s</div><details><summary>Execution report</summary><pre>${esc(t.header.rawResponse||t.header.failedAssertion||'No report recorded.')}</pre></details></div>${evidence(t)}<h3>LLM reviewer verdict</h3><h4>First automated grade</h4>${judgment(t.adjudication)}<h4>Second automated grade</h4>${judgment(t.secondAdjudication)}`;}catch(e){if(request===traceRequest){$('traceBody').textContent='Trace could not be loaded.';notice(e);}}}
+$('traceSelect').onchange=loadTrace;
+function renderSample(){const done=sample.filter(x=>x.done).length;$('humanProgress').textContent=`${done} of ${sample.length} done`;$('sampleList').innerHTML=sample.map((s,i)=>`<button class="btn ghost" data-index="${i}" aria-current="${selectedHuman===i}">${i+1}. ${esc(plainCase(s.trialId.split('/')[1]))}<br><span class="muted">${s.done?'Answered':'To review'} · sample ${i+1}</span></button>`).join('');$('sampleList').querySelectorAll('button').forEach(b=>{b.disabled=saving;b.onclick=()=>loadHuman(+b.dataset.index,true);});}
+const faultIntent = {
+  'auth-login': 'Valid credentials are replaced with an invalid password on submit.',
+  'auth-logout': 'The sign-out action leaves the session active.',
+  'profile-name': 'Saving a new first name keeps the old name.',
+  'profile-email': 'Email validation accepts a malformed address.',
+  'bank-create': 'The save action stores a different bank name.',
+  'bank-delete': 'The deletion action leaves the account unchanged.',
+  'transfer-pay': 'The recorded payment exceeds the requested amount by one dollar.',
+  'transfer-request': 'Submitting a request creates a payment instead.',
+  'social-like': 'The Like button does not register a like.',
+  'social-comment': 'Submitting the comment stores different text.',
+  'feed-personal': 'The personal tab opens the contacts feed.',
+  'feed-friends': 'The contacts tab opens the personal feed.',
+};
+function reviewContext(t) {
+  const {scenario, contract, revision, fault} = t.context;
+  const lines = scenario.split('\n').map(line => {
+    const text = esc(line);
+    return /^\s*(Then|And)\b/.test(line) ? `<mark>${text}</mark>` : text;
+  }).join('\n');
+  return `<section aria-label="Scenario context"><h4>Gherkin scenario</h4><pre>${lines}</pre>
+    <p>${esc(revision)}</p><p><strong>Action and checks:</strong> ${esc(contract)}</p>
+    ${fault ? `<h4>Seeded fault</h4><p>${esc(faultIntent[t.header.caseId])}</p><pre>${esc(fault.file)}\n- ${esc(fault.before)}\n+ ${esc(fault.after)}</pre>
+    <p>Count a catch when the trace shows the expected check failing after the qualifying action and the test reports that violation.</p>` : '<p>This run used the healthy build.</p>'}<p class="small2 muted">Tool results include retained snapshots. Some results link to snapshot files the campaign did not retain.</p></section>`;
+}
+const reviewChoices = {
+  true_pass: ['Correct pass', 'The test reported a pass and the recording shows the expected behavior.'],
+  false_alarm: ['False alarm', 'The test reported a bug, but the recording shows the app behaved as expected.'],
+  action_failure: ['The test got stuck before finishing', 'Choose this if the test tried a required action and could not complete it, even if earlier checks passed.'],
+  unsupported_healthy_pass: ['Pass without enough evidence', 'The test reported a pass, but the recording does not establish the required behavior.'],
+  unsupported_pass: ['Passed after reaching the seeded fault', 'The test performed the action that triggers the fault and still reported a pass.'],
+  supported_detection: ['Caught the seeded fault', 'The test reached the target, saw the specified failure, and reported it.'],
+  wrong_reason: ['Reported the wrong failure', 'The test reported a product failure, but its stated reason was different from the seeded fault.'],
+  no_opportunity: ['Ended without exercising the seeded fault', 'The test skipped or finished before the target action, with no clear failed attempt that explains why.'],
+  unresolved: ['I can’t tell what happened', 'Choose this if the recording cannot establish even why the test stopped.'],
+  invalid: ['Run unusable because setup or infrastructure failed', 'For example, the browser never started or the test fixture was broken. An isolated click error can still leave a usable run.'],
+};
+const reviewGroups = [
+  ['The test reported a result', ['true_pass', 'false_alarm', 'unsupported_healthy_pass', 'supported_detection', 'wrong_reason', 'unsupported_pass']],
+  ['The behavior was not established', ['action_failure', 'no_opportunity', 'unresolved', 'invalid']],
+];
+function gradeOptions(t) {
+  return reviewGroups.map(([title, choices]) => `<div class="review-choice-group" role="group" aria-label="${esc(title)}">
+    <h4>${esc(title)}</h4>
+    ${choices.filter(key => t.taxonomy.includes(key)).map(key =>
+      `<label><input type="radio" name="classification" value="${esc(key)}" required${t.answer?.classification === key ? ' checked' : ''}><span><strong>${esc(reviewChoices[key][0])}</strong><small>${esc(reviewChoices[key][1])}</small></span></label>`).join('')}
+  </div>`).join('');
+}
+const plainCase = id => ({
+  'auth-login':'Sign in', 'auth-logout':'Sign out', 'profile-name':'Change a profile name',
+  'profile-email':'Reject an invalid email', 'bank-create':'Add a bank account',
+  'bank-delete':'Delete a bank account', 'transfer-pay':'Make a payment',
+  'transfer-request':'Request a payment', 'social-like':'Like a transaction',
+  'social-comment':'Add a transaction comment', 'feed-personal':'Open the personal feed',
+  'feed-friends':'Open the contacts feed',
+})[id] || id;
+const reviewSteps = {
+  'auth-login': ['Open the sign-in page and look for its heading.', 'Sign in with the demo account. The home page should identify the account and show the home or public feed.'],
+  'auth-logout': ['Sign in with the demo account and confirm the home page identifies it.', 'Sign out. The sign-in page should be visible and its address should match.', 'Refresh. The sign-in page and address should remain.'],
+  'profile-name': ['Sign in and open the profile settings.', 'Change the first name to Study. Both the field and the displayed full name should reflect it.', 'Refresh. The first-name field should still say Study.'],
+  'profile-email': ['Sign in and open profile settings.', 'Enter an invalid email. An email error should appear and Save should be disabled.', 'Refresh. The previous email should still be saved.'],
+  'bank-create': ['Sign in and add the demo bank named Study Credit Union with the supplied account details.', 'Check that exactly one listing for Study Credit Union appears.', 'Refresh. The bank should still be listed exactly once.'],
+  'bank-delete': ['Sign in and delete the named demo bank account.', 'Check that its listing is marked deleted.', 'Refresh. The listing should still be marked deleted.'],
+  'transfer-pay': ['Sign in and send Kristian Bradtke a $12 payment with the note “Study payment.”', 'Look for the confirmation heading.', 'Open the personal feed and refresh. Check for one matching entry showing $12.00, Kristian, and paid.'],
+  'transfer-request': ['Sign in and request $12 from Kristian Bradtke with the note “Study request.”', 'Look for the confirmation heading.', 'Open the personal feed and refresh. Check for one matching entry showing $12.00, Kristian, and requested.'],
+  'social-like': ['Sign in and open the designated demo transaction. Confirm its detail page shows a numeric like count.', 'Like the transaction. The count should increase by one and the Like button should be disabled.', 'Refresh. The increased count and disabled Like button should remain.'],
+  'social-comment': ['Sign in and open the designated demo transaction. Confirm its detail heading is visible.', 'Post “Study comment.” It should appear in the comments.', 'Refresh. The same comment should appear exactly once.'],
+  'feed-personal': ['Sign in and choose your own transactions using the visible feed controls.', 'Check that the address is /personal, the heading says Personal, and at least one transaction is visible.'],
+  'feed-friends': ['Sign in and choose your contacts’ transactions using the visible feed controls.', 'Check that the address is /contacts, the heading says Contacts, and at least one transaction is visible.'],
+};
+function scenarioSteps(caseId, contract) {
+  const steps = reviewSteps[caseId];
+  return steps ? `<ol class="review-checkpoints">${steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol>`
+    : `<p>${esc(contract)}</p>`;
+}
+function checkpointLabel(check) {
+  if (check.status === 'witnessed') return 'Expected state seen';
+  if (check.status === 'missing-or-wrong-action') return 'Check not reached';
+  if (check.status === 'unwitnessed') return 'Expected state not recorded';
+  if (check.status === 'mapping-unknown') return 'Could not match action to check';
+  return check.ok ? 'Expected state seen' : 'No confirmed result';
+}
+const checkpointChoices = {
+  met: 'Yes, the check passed',
+  unmet: 'No, the check failed',
+  'not-reached': 'The test never got to this check',
+  uncertain: 'I can’t tell from the recording',
+};
+function checkpoints(checks, answers = {}) {
+  if (!checks.length) return '<p>No independent checkpoints were recorded for this run.</p>';
+  return `<h4>Review each expected result</h4>
+    <p>Mark any checks you can assess. Choose “failed” only if the test reached the right state or performed the required action and the expected result was wrong. You can leave these answers blank and still grade the run.</p>
+    ${checks.map((check, index) => `<fieldset class="review-options checkpoint-options">
+      <legend>${index + 1}. ${check.after === 'reload' ? 'After refreshing: ' : ''}${esc(check.assertion || check.predicate)}</legend>
+      <p class="muted">Observer: ${esc(checkpointLabel(check))}</p>
+      ${Object.entries(checkpointChoices).map(([key, label]) => `<label><input form="reviewForm" type="radio" name="check-${index}" value="${key}"${answers[check.id] === key ? ' checked' : ''}>${esc(label)}</label>`).join('')}
+    </fieldset>`).join('')}`;
+}
+function runReport(execution) {
+  let report;
+  try { report = JSON.parse(execution.rawResponse); } catch {}
+  const reason = typeof report?.reason === 'string' ? report.reason : execution.failedAssertion;
+  const outcomes = { passed: 'Reported a pass', failed: 'Reported a failure', unresolved: 'Could not finish or decide' };
+  return `<p><strong>Test’s own report:</strong> ${esc(outcomes[execution.reportedStatus] || execution.reportedStatus || 'No outcome recorded')}</p>
+    <p>${esc(reason || execution.rawResponse || 'No explanation was recorded.')}</p>`;
+}
+function comparison(t) {
+  return `<h3>4. Compare your grade with the AI reviewers</h3>
+    <div class="review-comparison"><div><h4>Your grade</h4><p><strong>${esc(reviewChoices[t.answer.classification]?.[0] || t.answer.classification)}</strong></p>
+    ${t.answer.note ? `<p>${esc(t.answer.note)}</p>` : ''}</div>
+    ${[t.adjudication, t.secondAdjudication].map((grade, index) => `<div><h4>AI reviewer ${index+1}</h4>
+      ${grade ? `<p><strong>${esc(reviewChoices[grade.classification]?.[0] || grade.classification)}</strong></p><p>${esc(grade.evidence)}</p>` : judgment(grade)}${grade ? `<p class="small2 muted">${grade.classification === t.answer.classification ? 'Same grade as yours' : 'Different grade from yours'}</p>` : ''}</div>`).join('')}</div>
+    <button class="btn pri" id="nextReview" type="button">Next ungraded run</button>`;
+}
+function showComparison(result) {
+  const panel = $('comparison');
+  panel.hidden = false;
+  panel.innerHTML = comparison(result);
+  const next = sample.findIndex((entry, index) => index > selectedHuman && !entry.done);
+  const fallback = sample.findIndex(entry => !entry.done);
+  $('nextReview').hidden = fallback < 0;
+  $('nextReview').onclick = () => loadHuman(next < 0 ? fallback : next, true);
+}
+async function loadHuman(index, focus = false) {
+  if (saving || !sample[index]) return;
+  selectedHuman = index;
+  const request = ++humanRequest, entry = sample[index], body = $('humanBody');
+  renderSample();
+  body.textContent = 'Loading review evidence…';
+  try {
+    const t = await api(`/api/campaigns/${encodeURIComponent(entry.campaign)}/trace?trial=${encodeURIComponent(entry.trialId)}&blind=1`);
+    if (request !== humanRequest) return;
+    const faulty = t.header.kind === 'fault';
+    body.innerHTML = `<h2 id="reviewTitle" tabindex="-1">${esc(plainCase(t.header.caseId))}</h2>
+      <p class="muted">Run ${index+1} of ${sample.length} · ${faulty ? 'Build with a seeded fault' : 'Healthy build'} · ${esc(t.header.revision)}</p>
+      <section class="review-stage"><h3>1. Understand the check</h3>
+        <p>Study-authored scenario for the Cypress Real-World App demo. The scenario names and IDs belong to the study.</p>
+        ${scenarioSteps(t.header.caseId, t.context.contract)}
+        ${faulty ? `<p><strong>Fault introduced:</strong> ${esc(faultIntent[t.header.caseId])}</p>
+          <p>To count as caught, the test must reach the affected behavior, observe the failure and report it.</p>`
+          : '<p>This build should behave as expected. Look for evidence that the test completed the required check.</p>'}
+        <details><summary>Original test script and fixture details</summary>${reviewContext(t)}</details>
+      </section>
+      <section class="review-stage"><h3>2. See what the test did</h3>
+        ${runReport(t.execution)}
+        ${checkpoints(t.checks, t.answer?.checkpointAnswers)}
+        ${t.steps.some(step => step.isError && /Ref .*not found in the current page snapshot/i.test(step.text || '')) ? '<p><strong>Browser tool issue:</strong> A click used a reference from an older page snapshot. Check whether the run recovered before deciding what it established.</p>' : ''}
+        <details><summary>Inspect the recorded actions and observer checks</summary>${evidence(t)}</details>
+        <details><summary>Read the original execution report</summary><pre>${esc(t.execution.rawResponse || t.execution.failedAssertion || 'No report recorded.')}</pre></details>
+        <button type="button" class="btn" id="goToGrade">Go to grade choices</button>
+      </section>
+      <section class="review-stage" id="gradeRun" tabindex="-1"><h3>3. Grade this run</h3>
+        <p>Choose one answer for the whole run. A successful setup step does not mean the test completed its main check.</p>
+        <form class="review-form" id="reviewForm">
+          <fieldset class="review-options"><legend class="small2 muted">What happened?</legend>
+          ${gradeOptions(t)}
+          </fieldset>
+          <label>How sure are you?<select name="confidence" required><option value="">Choose confidence</option><option value="sure">Sure</option><option value="unsure">Unsure</option></select></label>
+          <label>Note (optional)<textarea name="note" maxlength="1000">${esc(t.answer?.note)}</textarea></label>
+          <button class="btn pri" type="submit">${t.answer ? 'Save revised grade' : 'Save grade and reveal AI decisions'}</button>
+          <p id="saveStatus" role="status"></p>
+        </form>
+      </section>
+      <section id="comparison" class="review-stage" hidden tabindex="-1"></section>`;
+    $('goToGrade').onclick = () => { $('gradeRun').focus({preventScroll:true}); $('gradeRun').scrollIntoView({block:'start'}); };
+    if (t.answer) {
+      $('reviewForm').elements.confidence.value = t.answer.confidence || '';
+      showComparison(t);
+    }
+    if (focus) {
+      $('reviewTitle').focus({preventScroll:true});
+      $('reviewTitle').scrollIntoView({block:'start'});
+    }
+    $('reviewForm').onsubmit = async event => {
+      event.preventDefault();
+      if (saving) return;
+      const form = event.currentTarget, button = form.querySelector('button');
+      const fields = new FormData(form);
+      const checkpointAnswers = Object.fromEntries(t.checks.flatMap((check, i) => {
+        const choice = fields.get(`check-${i}`);
+        return choice ? [[check.id, choice]] : [];
+      }));
+      const {classification, confidence, note} = Object.fromEntries(fields);
+      saving = true;
+      renderSample();
+      button.disabled = true;
+      $('saveStatus').textContent = 'Saving grade…';
+      try {
+        const result = await api('/api/human', {method:'POST', headers:{'content-type':'application/json'},
+          body:JSON.stringify({campaign:entry.campaign, trialId:entry.trialId, classification, confidence, note, checkpointAnswers})});
+        sample[index] = {...entry, done:true, answer:result.answer};
+        showComparison(result);
+        $('saveStatus').textContent = 'Grade saved.';
+        button.textContent = 'Save revised grade';
+        $('comparison').focus();
+      } catch (error) {
+        $('saveStatus').textContent = error.message + ' Your grade is still selected. Try saving again.';
+      } finally {
+        saving = false;
+        button.disabled = false;
+        renderSample();
+      }
+    };
+  } catch (error) {
+    if (request !== humanRequest) return;
+    body.textContent = 'Review evidence could not be loaded. Select this run again to retry.';
+    notice(error);
+  }
+}
+function openPendingReview() {
+  if (!sample.length || selectedHuman !== null) return;
+  const pending = sample.findIndex(entry => !entry.done);
+  loadHuman(pending < 0 ? 0 : pending);
+}
+async function refresh(){if(saving)return;$('refresh').disabled=true;$('error').hidden=true;try{const [c,h]=await Promise.all([api('/api/campaigns'),api('/api/human/sample')]);const loaded=await Promise.all(c.map(async campaign=>(await api(`/api/campaigns/${encodeURIComponent(campaign.id)}/rows`)).map(r=>({...r,campaign:campaign.id,label:campaign.label}))));campaigns=c;rows=loaded.flat();sample=h.entries;const old=$('campaign').value;$('campaign').innerHTML=c.map(x=>`<option value="${esc(x.id)}">${esc(x.label)}${x.live?' · live':''}</option>`).join('');if(c.some(x=>x.id===old))$('campaign').value=old;else $('campaign').value=c.find(x=>x.label==='B')?.id||c[0]?.id||'';$('traceSelect').innerHTML=rows.map(r=>`<option value="${esc(JSON.stringify([r.campaign,r.trialId]))}">${esc(r.label+' · '+r.trialId)}</option>`).join('');$('legend').innerHTML=Object.values(CL).map(([cls,label])=>`<span><i class="cell ${cls}"></i>${esc(label)}</span>`).join('');heat();renderSample();if(!$('human').hidden)openPendingReview();renderOverview(await api('/api/overview'));}catch(e){notice(e);}finally{$('refresh').disabled=false;}}
+$('refresh').onclick=refresh;if(location.hash==='#human')show('human');refresh();
+</script></body></html>

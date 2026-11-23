@@ -1,0 +1,26 @@
+diff --git a/public/admin/tool/dataprivacy/classes/output/data_requests_table.php b/public/admin/tool/dataprivacy/classes/output/data_requests_table.php
+index d3dce96401f42e28985e9000f7b01f5211b8e4f5..8f11d10195f81d10b06ad8d04eb663503e57957c 100644
+--- a/public/admin/tool/dataprivacy/classes/output/data_requests_table.php
++++ b/public/admin/tool/dataprivacy/classes/output/data_requests_table.php
+@@ -304,7 +304,7 @@ class data_requests_table extends table_sql {
+         $actionsmenu = new action_menu($actions);
+         $actionsmenu->set_menu_trigger(get_string('actions'));
+         $actionsmenu->set_owner_selector('request-actions-' . $requestid);
+-        $actionsmenu->set_boundary('window');
++        $actionsmenu->set_constraint('[data-region=data-requests-table] > .no-overflow');
+ 
+         return $OUTPUT->render($actionsmenu);
+     }
+diff --git a/public/lib/tests/behat/behat_action_menu.php b/public/lib/tests/behat/behat_action_menu.php
+index 2005d322c0b2991a4eba7f2cb77e98859c520348..4966c9bcf324df93cd5aa69678aa2404542b2dcb 100644
+--- a/public/lib/tests/behat/behat_action_menu.php
++++ b/public/lib/tests/behat/behat_action_menu.php
+@@ -52,7 +52,7 @@ class behat_action_menu extends behat_base {
+         // Gets the node based on the requested selector type and locator.
+         $node = $this->get_node_in_container(
+             "css_element",
+-            "[role=button][aria-haspopup=true],button[aria-haspopup=true],[role=menuitem][aria-haspopup=true]",
++            "[role=button][aria-haspopup=true],[role=menuitem][aria-haspopup=true]",
+             $selectortype,
+             $element
+         );

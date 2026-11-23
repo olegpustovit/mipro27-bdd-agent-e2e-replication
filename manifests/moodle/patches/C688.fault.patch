@@ -1,0 +1,49 @@
+diff --git a/public/mod/forum/amd/src/local/grades/grader.js b/public/mod/forum/amd/src/local/grades/grader.js
+index b24c8728f057c4ae8492d1f046105f3ca9ac5c04..0a020c048eb1f99dea073f1f30d1bdf84ac41909 100644
+--- a/public/mod/forum/amd/src/local/grades/grader.js
++++ b/public/mod/forum/amd/src/local/grades/grader.js
+@@ -29,7 +29,7 @@ import {add as addToast} from 'core/toast';
+ import {addNotification} from 'core/notification';
+ import {getString} from 'core/str';
+ import {failedUpdate} from 'core_grades/grades/grader/gradingpanel/normalise';
+-import {addIconToContainerWithPromise} from 'core/loadingicon';
++import {addIconToContainerWithPromise, getIcon as getSpinner} from 'core/loadingicon';
+ import {debounce} from 'core/utils';
+ import {fillInitialValues} from 'core_grades/grades/grader/gradingpanel/comparison';
+ import Modal from 'core/modal_cancel';
+@@ -489,26 +489,27 @@ export const view = async(getGradeForUser, userid, moduleName, {
+     focusOnClose = null,
+ } = {}) => {
+ 
+-    const userGrade = await getGradeForUser(userid);
+-
+     const [
++        userGrade,
+         modal,
+-        gradeTemplateData
+     ] = await Promise.all([
++        getGradeForUser(userid),
+         Modal.create({
+             title: moduleName,
+             large: true,
+             removeOnClose: true,
+             returnElement: focusOnClose,
+             show: true,
+-            body: Templates.render('mod_forum/local/grades/view_grade', userGrade),
++            body: getSpinner(),
+         }),
+-        renderGradeTemplate(userGrade)
+     ]);
+ 
+-    const bodyPromise = await modal.getBodyPromise();
+-    const gradeReplace = bodyPromise[0].querySelector('[data-region="grade-template"]');
+-    Templates.replaceNodeContents(gradeReplace, gradeTemplateData.html, gradeTemplateData.js);
++    modal.setBodyContent(Templates.renderForPromise('mod_forum/local/grades/view_grade', userGrade));
++
++    // Note: We do not use await here because it messes with the Modal transitions.
++    const [{html, js}] = await Promise.all([modal.getBodyPromise(), renderGradeTemplate(userGrade)]);
++    const gradeReplace = modal.getRoot()[0].querySelector('[data-region="grade-template"]');
++    Templates.replaceNodeContents(gradeReplace, html, js);
+ };
+ 
+ const renderGradeTemplate = (userGrade) => Templates.renderForPromise(userGrade.templatename, userGrade.grade);

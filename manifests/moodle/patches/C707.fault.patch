@@ -1,0 +1,100 @@
+diff --git a/public/lib/filestorage/zip_packer.php b/public/lib/filestorage/zip_packer.php
+index 4a29bff04af81ee64060470968de0202e4365e95..f31e34cb6659c34793b92626072f9d69708686d1 100644
+--- a/public/lib/filestorage/zip_packer.php
++++ b/public/lib/filestorage/zip_packer.php
+@@ -451,6 +451,17 @@ class zip_packer extends file_packer {
+             $done = 0;
+         }
+ 
++        // Get user remaining space.
++        $areamaxbytes = FILE_AREA_MAX_BYTES_UNLIMITED;
++        $context = context::instance_by_id($contextid);
++        if (!has_capability('moodle/user:ignoreuserquota', $context)) {
++            // Get current used space for this user (private files only).
++            $fileareainfo = file_get_file_area_info($contextid, 'user', 'private');
++            $usedspace = $fileareainfo['filesize_without_references'];
++            $areamaxbytes = (int) $CFG->userquota - $usedspace;
++        }
++        $totalsizebytes = 0;
++
+         foreach ($ziparch as $info) {
+             // Notify progress.
+             if ($progress) {
+@@ -461,6 +472,8 @@ class zip_packer extends file_packer {
+             $size = $info->size;
+             $name = $info->pathname;
+ 
++            $realfilesize = 0;
++
+             if ($name === '' or array_key_exists($name, $processed)) {
+                 //probably filename collisions caused by filename cleaning/conversion
+                 continue;
+@@ -487,15 +500,18 @@ class zip_packer extends file_packer {
+                     continue;
+                 }
+                 $content = '';
+-                $realfilesize = 0;
+                 while (!feof($fz)) {
+                     $content .= fread($fz, 262143);
+                     $realfilesize = strlen($content); // Current file size.
+-
+-                    // More was read than was expected, which indicates a malformed/malicious archive.
+-                    // Break and let the error handling below take care of the file clean up.
+-                    if ($realfilesize > $size) {
+-                        break;
++                    $totalsizebytes = strlen($content);
++                    if ($realfilesize > $size ||
++                            ($areamaxbytes != FILE_AREA_MAX_BYTES_UNLIMITED && $totalsizebytes > $areamaxbytes)) {
++                        $processed[0] = 'cannotunzipquotaexceeded';
++                        // Close and unset the stream and the content.
++                        fclose($fz);
++                        unset($content);
++                        // Cancel all processes.
++                        break(2);
+                     }
+                 }
+                 fclose($fz);
+@@ -541,16 +557,20 @@ class zip_packer extends file_packer {
+                     $processed[$name] = 'Can not read file from zip archive'; // TODO: localise
+                     continue;
+                 }
+-                $realfilesize = 0;
+                 while (!feof($fz)) {
+                     $content = fread($fz, 262143);
+                     $numofbytes = fwrite($fp, $content);
+                     $realfilesize += $numofbytes; // Current file size.
+-
+-                    // More was read than was expected, which indicates a malformed/malicious archive.
+-                    // Break and let the error handling below take care of the file clean up.
+-                    if ($realfilesize > $size) {
+-                        break;
++                    $totalsizebytes += $numofbytes;
++                    if ($realfilesize > $size ||
++                            ($areamaxbytes != FILE_AREA_MAX_BYTES_UNLIMITED && $totalsizebytes > $areamaxbytes)) {
++                        $processed[0] = 'cannotunzipquotaexceeded';
++                        // Close and remove the tmpfile.
++                        fclose($fz);
++                        fclose($fp);
++                        unlink($tmpfile);
++                        // Cancel all processes.
++                        break(2);
+                     }
+                 }
+                 fclose($fz);
+diff --git a/public/repository/draftfiles_ajax.php b/public/repository/draftfiles_ajax.php
+index 65c4fea95634b18880349f1cb3c4e079762e8216..cc1a0aa496be9c18d80a4f045ad93c3e351a9006 100644
+--- a/public/repository/draftfiles_ajax.php
++++ b/public/repository/draftfiles_ajax.php
+@@ -237,7 +237,11 @@ switch ($action) {
+                 return $result !== true;
+             });
+             if (count($failed) > 0) {
+-                $return->error = get_string('cannotunzipextractfileerror',  'repository');
++                if ($failed[0] == "cannotunzipquotaexceeded") {
++                    $return->error = get_string($failed[0],  'repository');
++                } else {
++                    $return->error = get_string('cannotunzipextractfileerror',  'repository');
++                }
+                 die(json_encode($return));
+             }
+ 

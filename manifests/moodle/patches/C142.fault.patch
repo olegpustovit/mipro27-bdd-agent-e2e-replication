@@ -1,0 +1,18 @@
+diff --git a/public/mod/lesson/locallib.php b/public/mod/lesson/locallib.php
+index 8cf6268496cf3fbe41299845b2057720b7495675..3a6dd3b5613aa5d19800c29b49cb4ac688b30ab2 100644
+--- a/public/mod/lesson/locallib.php
++++ b/public/mod/lesson/locallib.php
+@@ -2979,12 +2979,11 @@ class lesson extends lesson_base {
+             $attempt = end($allattempts);
+             $attemptpage = $this->load_page($attempt->pageid);
+             $jumpto = $DB->get_field('lesson_answers', 'jumpto', array('id' => $attempt->answerid));
+-            $maxattempts = $this->properties->maxattempts;
+             // Convert the jumpto to a proper page id.
+             if ($jumpto == 0) {
+                 // Check if a question has been incorrectly answered AND no more attempts at it are left.
+                 $nattempts = $this->get_attempts($attempt->retry, false, $attempt->pageid, $USER->id);
+-                if (count($nattempts) >= $maxattempts && $maxattempts > 0) { // If maxattempts is 0, unlimited attempts are allowed.
++                if (count($nattempts) >= $this->properties->maxattempts) {
+                     $lastpageseen = $this->get_next_page($attemptpage->nextpageid);
+                 } else {
+                     $lastpageseen = $attempt->pageid;

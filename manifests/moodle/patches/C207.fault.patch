@@ -1,0 +1,31 @@
+diff --git a/public/mod/quiz/classes/local/reports/attempts_report_table.php b/public/mod/quiz/classes/local/reports/attempts_report_table.php
+index 1847c47edfcd8db9a804a9064651eb037eb051ff..fd2ce765cae60e64e3fb8a9736025f05028a6dbd 100644
+--- a/public/mod/quiz/classes/local/reports/attempts_report_table.php
++++ b/public/mod/quiz/classes/local/reports/attempts_report_table.php
+@@ -529,16 +529,20 @@ abstract class attempts_report_table extends \table_sql {
+             $fields .= "\n(CASE WHEN $this->qmsubselect THEN 1 ELSE 0 END) AS gradedattempt,";
+         }
+ 
+-        // Request idnumber, institution and department through the fields API rather than
+-        // hard-coding them, so they are not selected twice when also configured as identity fields.
+-        $userfieldsapi = \core_user\fields::for_identity($this->context)->with_name()->with_userpic()
+-                ->including('idnumber', 'institution', 'department');
+-        $userfields = $userfieldsapi->get_sql('u', true, '', 'userid', false);
++        $userfieldsapi = \core_user\fields::for_identity($this->context)->with_name()
++                ->excluding('id', 'picture', 'imagealt', 'email');
++        $userfields = $userfieldsapi->get_sql('u', true, '', '', false);
+ 
+         $fields .= '
+                 quiza.uniqueid AS usageid,
+                 quiza.id AS attempt,
+-                ' . $userfields->selects . ',
++                u.id AS userid,
++                u.idnumber,
++                u.picture,
++                u.imagealt,
++                u.institution,
++                u.department,
++                u.email,' . $userfields->selects . ',
+                 quiza.state,
+                 quiza.sumgrades,
+                 quiza.timefinish,

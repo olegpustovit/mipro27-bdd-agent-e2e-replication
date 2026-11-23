@@ -1,0 +1,69 @@
+diff --git a/public/question/classes/local/bank/view.php b/public/question/classes/local/bank/view.php
+index 3d38497acabe71988e3dd2b7757a5119d8270faf..957b1ebd3fc1a46c78b937be69761d878aab9039 100644
+--- a/public/question/classes/local/bank/view.php
++++ b/public/question/classes/local/bank/view.php
+@@ -1280,14 +1280,6 @@ class view {
+         }
+         if ($rowclasses) {
+             $attributes['class'] = $rowclasses;
+-            // Add firstrow class to highlighted row if it does not already have it.
+-            if (str_contains($attributes['class'], 'highlight') && !str_contains($attributes['class'], 'firstrow')) {
+-                $attributes['class'] .= ' firstrow';
+-                // If question_text is not visible, add class onlyhighlightrow.
+-                if (!isset($this->extrarows['question_text_row']) || !($this->extrarows['question_text_row']->isvisible)) {
+-                    $attributes['class'] .= ' onlyhighlightrow';
+-                }
+-            }
+         }
+         echo \html_writer::start_tag('tr', $attributes);
+         foreach ($this->visiblecolumns as $column) {
+@@ -1295,10 +1287,6 @@ class view {
+         }
+         echo \html_writer::end_tag('tr');
+         foreach ($this->extrarows as $row) {
+-            if (str_contains($attributes['class'], 'highlight')) {
+-                // Add extrarow class to highlighted row.
+-                $rowclasses .= ' extrarow' . ' ' . $this->extrarows[0];
+-            }
+             $row->display($question, $rowclasses);
+         }
+     }
+diff --git a/public/theme/boost/scss/moodle/question.scss b/public/theme/boost/scss/moodle/question.scss
+index 32ee5423d95968ae91e7e0966b571e8a6ac74d3b..68d629c63b5d6464216866e5582a23ba46fefbbe 100644
+--- a/public/theme/boost/scss/moodle/question.scss
++++ b/public/theme/boost/scss/moodle/question.scss
+@@ -164,25 +164,8 @@ table.question-bank-table {
+         background-color: $table-striped-bg;
+     }
+ 
+-
+-    &.generaltable > tbody > tr.highlight.firstrow td {
+-        border-top: map-get($border-widths, 3) solid $info;
+-    }
+-
+-    & > tbody > tr.highlight.firstrow {
+-        border-right: map-get($border-widths, 2) solid $info;
+-        border-left: map-get($border-widths, 2) solid $info;
+-    }
+-
+-    &.generaltable > tbody > tr.highlight.extrarow td,
+-    &.generaltable > tbody > tr.highlight.firstrow.onlyhighlightrow td {
+-        border-bottom: map-get($border-widths, 2) solid $info;
+-    }
+-
+-    & > tbody > tr.highlight.extrarow {
+-        border-top: 0;
+-        border-right: map-get($border-widths, 2) solid $info;
+-        border-left: map-get($border-widths, 2) solid $info;
++    & > tbody > tr.highlight {
++        border: $border-width solid $info;
+     }
+ 
+     .checkbox input[type="checkbox"] {
+@@ -763,4 +746,4 @@ body.path-question-type .mform fieldset.hidden {
+ .qbank_managecategories-newchild.qbank_managecategories-droptarget {
+     border-color: $link-color;
+     color: $link-color;
+-}
++}
+\ No newline at end of file

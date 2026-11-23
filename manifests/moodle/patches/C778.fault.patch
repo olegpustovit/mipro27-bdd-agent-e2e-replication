@@ -1,0 +1,120 @@
+diff --git a/public/lib/form/templates/element-advcheckbox.mustache b/public/lib/form/templates/element-advcheckbox.mustache
+index ce1ee5bd3f702d1398f076f6a6d2c9650124b244..5c875c7ca80f72b6447f5c6f6e9c92c7d13ac429 100644
+--- a/public/lib/form/templates/element-advcheckbox.mustache
++++ b/public/lib/form/templates/element-advcheckbox.mustache
+@@ -50,8 +50,8 @@
+             {{/text}}
+             <div class="ms-2 d-inline-flex align-items-center align-self-start">
+                 {{#required}}
+-                    <div class="text-danger" title="{{#str}}required{{/str}}" aria-hidden="true">
+-                        {{#pix}}req, core{{/pix}}
++                    <div class="text-danger" title="{{#str}}required{{/str}}">
++                    {{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}
+                     </div>
+                 {{/required}}
+                 {{{helpbutton}}}
+diff --git a/public/lib/form/templates/element-checkbox.mustache b/public/lib/form/templates/element-checkbox.mustache
+index 44435a048a90cee2193a1fa2b8bbc22df6768291..1b4cbaecaeb47f557ae6f0493bc5e694e24147f1 100644
+--- a/public/lib/form/templates/element-checkbox.mustache
++++ b/public/lib/form/templates/element-checkbox.mustache
+@@ -50,8 +50,8 @@
+             {{/text}}
+             <div class="ms-2 d-inline-flex align-items-center align-self-start">
+                 {{#required}}
+-                    <div class="text-danger" title="{{#str}}required{{/str}}" aria-hidden="true">
+-                        {{#pix}}req, core{{/pix}}
++                    <div class="text-danger" title="{{#str}}required{{/str}}">
++                    {{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}
+                     </div>
+                 {{/required}}
+                 {{{helpbutton}}}
+diff --git a/public/lib/form/templates/element-radio.mustache b/public/lib/form/templates/element-radio.mustache
+index 86e0d5280adfa6ec060b097bdc621f603528c2c4..bb9db253d838deaab7c127472cd316b86d8dea8d 100644
+--- a/public/lib/form/templates/element-radio.mustache
++++ b/public/lib/form/templates/element-radio.mustache
+@@ -41,8 +41,8 @@
+                 </label>
+                 <div class="ms-2 d-flex align-items-center align-self-start">
+                     {{#required}}
+-                        <div class="text-danger" title="{{#str}}required{{/str}}" aria-hidden="true">
+-                            {{#pix}}req, core{{/pix}}
++                        <div class="text-danger" title="{{#str}}required{{/str}}">
++                        {{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}
+                         </div>
+                     {{/required}}
+                     {{{helpbutton}}}
+diff --git a/public/lib/form/templates/element-template.mustache b/public/lib/form/templates/element-template.mustache
+index c457b0132d7d0823f0a91f5697a2ed9fe0fa6ac7..48ce6eea4797fbe198c7a5fc243803a18b8d49dc 100644
+--- a/public/lib/form/templates/element-template.mustache
++++ b/public/lib/form/templates/element-template.mustache
+@@ -58,8 +58,8 @@
+         {{/ label }}{{/ label}}
+         <div class="form-label-addon d-flex align-items-center align-self-start">
+             {{#required}}
+-                <div class="text-danger" title="{{#str}}required{{/str}}" aria-hidden="true">
+-                    {{#pix}}req, core{{/pix}}
++                <div class="text-danger" title="{{#str}}required{{/str}}">
++                {{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}
+                 </div>
+             {{/required}}
+             {{{helpbutton}}}
+diff --git a/public/lib/formslib.php b/public/lib/formslib.php
+index e90f488c7173cd689af19c9f7ef1a941d07235ab..5e57a31866ea6aee22b369f71a4d3c93e1fd0444 100644
+--- a/public/lib/formslib.php
++++ b/public/lib/formslib.php
+@@ -1768,17 +1768,7 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
+         }
+         $this->_reqHTML = '<span class="req">' . $OUTPUT->pix_icon('req', get_string('requiredelement', 'form')) . '</span>';
+         $this->_advancedHTML = '<span class="adv"></span>';
+-        $this->setRequiredNote(
+-            get_string(
+-                identifier: 'somefieldsrequired',
+-                component: 'form',
+-                a: $OUTPUT->pix_icon(
+-                    pix: 'req',
+-                    alt: get_string('requiredelement', 'form'),
+-                    attributes: ['aria-hidden' => 'true'],
+-                ),
+-            ),
+-        );
++        $this->setRequiredNote(get_string('somefieldsrequired', 'form', $OUTPUT->pix_icon('req', get_string('requiredelement', 'form'))));
+     }
+ 
+     /**
+@@ -3186,7 +3176,7 @@ class MoodleQuickForm_Renderer extends HTML_QuickForm_Renderer_Tableless{
+ 
+     /** @var string Required Note template string */
+     var $_requiredNoteTemplate =
+-        "\n\t\t<div class=\"fdescription required\" aria-hidden=\"true\">{requiredNote}</div>";
++        "\n\t\t<div class=\"fdescription required\">{requiredNote}</div>";
+ 
+     /**
+      * Collapsible buttons string template.
+diff --git a/public/lib/templates/pix_icon_fontawesome.mustache b/public/lib/templates/pix_icon_fontawesome.mustache
+index 48ef8466edea178a2bafb62ff784a042e8d22018..50876e3ae2fbbfdb0009028d9969b97ed2679540 100644
+--- a/public/lib/templates/pix_icon_fontawesome.mustache
++++ b/public/lib/templates/pix_icon_fontawesome.mustache
+@@ -31,7 +31,6 @@
+     * pix
+     * title
+     * extraclasses
+-    * aria-hidden - whether the icon is hidden from assistive technologies
+ 
+     Example context (json):
+     {
+@@ -39,13 +38,12 @@
+         "title": "Meh",
+         "alt": "Meh Meh",
+         "extraclasses": "fa-spin",
+-        "unmappedIcon": false,
+-        "aria-hidden": false
++        "unmappedIcon": false
+     }
+ 
+ }}
+ {{^unmappedIcon}}
+-<i class="icon {{key}} fa-fw {{extraclasses}}"{{#aria-hidden}} aria-hidden="true"{{/aria-hidden}} {{#title}} title="{{title}}"{{/title}}{{^aria-hidden}}{{#alt}} role="img" aria-label="{{alt}}"{{/alt}}{{/aria-hidden}}></i>
++<i class="icon {{key}} fa-fw {{extraclasses}}" {{#aria-hidden}}aria-hidden="true"{{/aria-hidden}} {{#title}}title="{{title}}"{{/title}} {{#alt}}role="img" aria-label="{{alt}}"{{/alt}}></i>
+ {{/unmappedIcon}}
+ {{#unmappedIcon}}
+ {{! We cannot include the pix_icon template directly here because we don't have all the mustache helpers loaded. }}

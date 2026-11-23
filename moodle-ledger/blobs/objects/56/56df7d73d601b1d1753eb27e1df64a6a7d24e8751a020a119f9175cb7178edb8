@@ -1,0 +1,36 @@
+diff --git a/public/message/tests/behat/behat_message.php b/public/message/tests/behat/behat_message.php
+index d8517d7943cd235cbb24b9a99b625a52044241bc..6c398f34545c1b0bd78c8ca15d05ace755767d48 100644
+--- a/public/message/tests/behat/behat_message.php
++++ b/public/message/tests/behat/behat_message.php
+@@ -195,21 +195,19 @@ XPATH
+      * @param string $string the search string.
+      */
+     public function i_search_for_string_in_messaging($string) {
+-        $messagedrawer = $this->find('css', '[data-region="message-drawer"]');
+-        $this->execute('behat_general::i_click_on_in_the', [
+-            get_string('search', 'core'), 'field',
+-            $messagedrawer, 'NodeElement'
++        $this->execute('behat_general::i_click_on', [
++            "//input[@data-region='input' and @data-action='search']",
++            'xpath_element',
+         ]);
+ 
+-        $this->execute('behat_forms::i_set_the_field_with_xpath_to', [
+-            "//*[@data-region='message-drawer']//input[@data-region='search-input']",
+-            $this->escape($string)
+-        ]);
++        $this->execute('behat_forms::i_set_the_field_with_xpath_to',
++            [
++                "//input[@data-region='input' and @data-action='search']",
++                $this->escape($string)
++            ]
++        );
+ 
+-        $this->execute('behat_general::i_click_on_in_the', [
+-            '[data-action="search"]', 'css_element',
+-            $messagedrawer, 'NodeElement'
+-        ]);
++        $this->execute('behat_general::i_click_on', ['[data-action="search"]', 'css_element']);
+ 
+         $this->execute('behat_general::wait_until_the_page_is_ready');
+     }

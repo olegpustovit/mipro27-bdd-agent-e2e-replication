@@ -1,0 +1,66 @@
+diff --git a/public/lib/filestorage/stored_file.php b/public/lib/filestorage/stored_file.php
+index b281c7a9adc911ce3cb81390aa4cdac4f80df81f..e78e68af60e4f8165eeae232be325f09f27b06f2 100644
+--- a/public/lib/filestorage/stored_file.php
++++ b/public/lib/filestorage/stored_file.php
+@@ -856,7 +856,7 @@ class stored_file {
+     /**
+      * Returns the source of the file, usually it is a url.
+      *
+-     * @return string|null
++     * @return string
+      */
+     public function get_source() {
+         return $this->file_record->source;
+diff --git a/public/repository/draftfiles_ajax.php b/public/repository/draftfiles_ajax.php
+index 65c4fea95634b18880349f1cb3c4e079762e8216..d305853d1ec1eeebc6ab58c56a17b4246bf3d8e2 100644
+--- a/public/repository/draftfiles_ajax.php
++++ b/public/repository/draftfiles_ajax.php
+@@ -296,7 +296,7 @@ switch ($action) {
+         if (!$file) {
+             echo json_encode(false);
+         } else {
+-            $source = unserialize_object((string) $file->get_source());
++            $source = unserialize_object($file->get_source());
+             $return = array('filename' => $filename, 'filepath' => $filepath, 'references' => array());
+             $browser = get_file_browser();
+             if (isset($source->original)) {
+diff --git a/public/repository/lib.php b/public/repository/lib.php
+index 60ec0d301d871a4699032024a10a04ee59b19a6c..c735bbe8ea20f454f6b931728e76a36308af7cb0 100644
+--- a/public/repository/lib.php
++++ b/public/repository/lib.php
+@@ -2503,7 +2503,7 @@ abstract class repository implements cacheable_object {
+         if ($file = $fs->get_file($user_context->id, 'user', 'draft', $itemid, $filepath, $filename)) {
+             if ($tempfile = $fs->get_file($user_context->id, 'user', 'draft', $itemid, $newfilepath, $newfilename)) {
+                 // Remember original file source field.
+-                $source = unserialize_object((string) $file->get_source());
++                $source = unserialize_object($file->get_source());
+                 // Remember the original sortorder.
+                 $sortorder = $file->get_sortorder();
+                 if ($tempfile->is_external_file()) {
+@@ -2518,7 +2518,7 @@ abstract class repository implements cacheable_object {
+                 $newfile = $fs->create_file_from_storedfile(array('filepath'=>$filepath, 'filename'=>$filename), $tempfile);
+                 // Preserve original file location (stored in source field) for handling references
+                 if (isset($source->original)) {
+-                    $newfilesource = unserialize_object((string) $newfile->get_source());
++                    $newfilesource = unserialize_object($newfile->get_source());
+                     $newfilesource->original = $source->original;
+                     $newfile->set_source(serialize($newfilesource));
+                 }
+@@ -2572,7 +2572,7 @@ abstract class repository implements cacheable_object {
+                 }
+ 
+                 // Unset original so the references are not shown any more.
+-                $filesource = unserialize_object((string) $file->get_source());
++                $filesource = unserialize_object($file->get_source());
+                 if (isset($filesource->original)) {
+                     unset($filesource->original);
+                     $file->set_source(serialize($filesource));
+@@ -2622,7 +2622,7 @@ abstract class repository implements cacheable_object {
+                     $path = preg_replace("|^$xfilepath|", $updatedata['filepath'], $f->get_filepath());
+ 
+                     // Unset original so the references are not shown any more.
+-                    $filesource = unserialize_object((string) $f->get_source());
++                    $filesource = unserialize_object($f->get_source());
+                     if (isset($filesource->original)) {
+                         unset($filesource->original);
+                         $f->set_source(serialize($filesource));

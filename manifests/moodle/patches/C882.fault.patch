@@ -1,0 +1,112 @@
+diff --git a/public/message/classes/output/preferences/notification_list.php b/public/message/classes/output/preferences/notification_list.php
+index 787383d1ac45b2b1e4afc5b60d4fb58d6fae2d32..bfba030bb198064a09f83d9a758bea5c6d77faf4 100644
+--- a/public/message/classes/output/preferences/notification_list.php
++++ b/public/message/classes/output/preferences/notification_list.php
+@@ -126,9 +126,9 @@ class notification_list implements templatable, renderable {
+ 
+         $readyprocessors = [];
+         // Make the unconfigured processors appear last in the array.
+-        uasort($processors, function ($a, $b) use ($user) {
+-            $aconf = $a->object->is_user_configured($user);
+-            $bconf = $b->object->is_user_configured($user);
++        uasort($processors, function($a, $b) {
++            $aconf = $a->object->is_user_configured();
++            $bconf = $b->object->is_user_configured();
+ 
+             if ($aconf == $bconf) {
+                 return 0;
+@@ -149,7 +149,7 @@ class notification_list implements templatable, renderable {
+                 'name' => $processor->name,
+                 'hassettings' => !empty($processor->object->config_form($preferences)),
+                 'contextid' => $usercontext->id,
+-                'userconfigured' => $processor->object->is_user_configured($user),
++                'userconfigured' => $processor->object->is_user_configured(),
+             ];
+ 
+             $readyprocessors[] = $processor;
+diff --git a/public/message/classes/output/preferences/notification_list_component.php b/public/message/classes/output/preferences/notification_list_component.php
+index ef07f5060b4612cb95d0fca674a72ff2157c4f35..18f8424ceea680c6a5187d99c2c30dd37e0bcb85 100644
+--- a/public/message/classes/output/preferences/notification_list_component.php
++++ b/public/message/classes/output/preferences/notification_list_component.php
+@@ -154,7 +154,7 @@ class notification_list_component implements templatable, renderable {
+             ];
+ 
+             foreach ($processors as $processor) {
+-                $notificationprocessor = new notification_list_processor($processor, $provider, $preferences, $this->user);
++                $notificationprocessor = new notification_list_processor($processor, $provider, $preferences);
+                 $notificationcontext['processors'][] = $notificationprocessor->export_for_template($output);
+             }
+ 
+diff --git a/public/message/classes/output/preferences/notification_list_processor.php b/public/message/classes/output/preferences/notification_list_processor.php
+index a5976cee9a935d7fef100fc7280453d2657d4c3b..6454e126b5a2cb8a1c0fed720c35160a1aedf0d1 100644
+--- a/public/message/classes/output/preferences/notification_list_processor.php
++++ b/public/message/classes/output/preferences/notification_list_processor.php
+@@ -55,24 +55,17 @@ class notification_list_processor implements templatable, renderable {
+      */
+     protected $preferences;
+ 
+-    /**
+-     * @var \stdClass The user these preferences belong to.
+-     */
+-    protected $user;
+-
+     /**
+      * Constructor.
+      *
+      * @param \stdClass $processor
+      * @param \stdClass $provider
+      * @param \stdClass $preferences
+-     * @param \stdClass $user The user these preferences belong to.
+      */
+-    public function __construct($processor, $provider, $preferences, $user) {
++    public function __construct($processor, $provider, $preferences) {
+         $this->processor = $processor;
+         $this->provider = $provider;
+         $this->preferences = $preferences;
+-        $this->user = $user;
+     }
+ 
+     /**
+@@ -134,7 +127,7 @@ class notification_list_processor implements templatable, renderable {
+             'displayname' => $processorname,
+             'name' => $processor->name,
+             'locked' => false,
+-            'userconfigured' => $processor->object->is_user_configured($this->user),
++            'userconfigured' => $processor->object->is_user_configured(),
+             'enabled' => false,
+             'enabledlabel' => get_string('sendingviaenabled', 'message', $labelparams),
+         ];
+diff --git a/public/message/externallib.php b/public/message/externallib.php
+index 7fa8676bf76bb206f8a56dda4a95cf0898cc7cb7..749ee889fccf4dd07342d243867f40b60e4f03a0 100644
+--- a/public/message/externallib.php
++++ b/public/message/externallib.php
+@@ -3196,10 +3196,10 @@ class core_message_external extends external_api {
+         $user = self::validate_preferences_permissions($params['userid']);
+ 
+         // Filter out enabled, available system_configured and user_configured processors only.
+-        $readyprocessors = array_filter(get_message_processors(), function ($processor) use ($user) {
++        $readyprocessors = array_filter(get_message_processors(), function($processor) {
+             return $processor->enabled &&
+                 $processor->configured &&
+-                $processor->object->is_user_configured($user) &&
++                $processor->object->is_user_configured() &&
+                 // Filter out processors that don't have and message preferences to configure.
+                 $processor->object->has_message_preferences();
+         });
+diff --git a/public/message/renderer.php b/public/message/renderer.php
+index 0392b7081b2b1f98a3da8361b95f4536a2e85faf..94b881a0555f13e59ae80f14c64c0990ad477ef8 100644
+--- a/public/message/renderer.php
++++ b/public/message/renderer.php
+@@ -260,10 +260,10 @@ class core_message_renderer extends plugin_renderer_base {
+         global $CFG;
+ 
+         // Filter out enabled, available system_configured and user_configured processors only.
+-        $readyprocessors = array_filter(get_message_processors(), function ($processor) use ($user) {
++        $readyprocessors = array_filter(get_message_processors(), function($processor) {
+             return $processor->enabled &&
+                 $processor->configured &&
+-                $processor->object->is_user_configured($user) &&
++                $processor->object->is_user_configured() &&
+                 // Filter out processors that don't have and message preferences to configure.
+                 $processor->object->has_message_preferences();
+         });

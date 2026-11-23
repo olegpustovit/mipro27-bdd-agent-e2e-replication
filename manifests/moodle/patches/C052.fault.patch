@@ -1,0 +1,38 @@
+diff --git a/public/mod/quiz/classes/quiz_attempt.php b/public/mod/quiz/classes/quiz_attempt.php
+index 9ce3e75fc12e75514f256494efd739cbdaf54eb2..de41bd911ab59f8c13dbdb7ecd3f400f4577b4b0 100644
+--- a/public/mod/quiz/classes/quiz_attempt.php
++++ b/public/mod/quiz/classes/quiz_attempt.php
+@@ -2514,15 +2514,6 @@ class quiz_attempt {
+         $versioninformation = qbank_helper::get_version_information_for_questions_in_attempt(
+             $this->attempt, $this->get_context());
+ 
+-        // Retrieve all slots (questions) in the quiz attempt.
+-        $slots = $this->get_slots();
+-
+-        // Check if all slots have corresponding version information.
+-        foreach ($slots as $slot) {
+-            if (!isset($versioninformation[$slot])) {
+-                $this->handle_missing_question_attempt();
+-            }
+-        }
+         $anychanges = false;
+         foreach ($versioninformation as $slotinformation) {
+             if ($slotinformation->currentquestionid == $slotinformation->newquestionid) {
+@@ -2554,17 +2545,4 @@ class quiz_attempt {
+             }
+         }
+     }
+-
+-    /**
+-     * Handle the case where a question in an attempt has been deleted.
+-     */
+-    private function handle_missing_question_attempt(): void {
+-        quiz_delete_attempt($this->attempt, $this->get_quiz());
+-        $continuelink = new moodle_url('/mod/quiz/view.php', ['id' => $this->get_cmid()]);
+-        if (has_capability('mod/quiz:preview', context_module::instance($this->get_cmid()))) {
+-            throw new moodle_exception('attempterrorcontentchange', 'quiz', $continuelink);
+-        } else {
+-            throw new moodle_exception('attempterrorcontentchangeforuser', 'quiz', $continuelink);
+-        }
+-    }
+ }

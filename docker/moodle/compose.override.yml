@@ -1,0 +1,22 @@
+# Study override layered on moodle-docker's own compose files (see adapters/moodle/adapter.mjs).
+# Pins images by digest, keeps Behat data in named volumes (snapshot/restore),
+# mounts the step-log Behat extension, and tunes Postgres for throwaway data.
+services:
+  webserver:
+    image: ${STUDY_IMG_WEB}
+    volumes:
+      - behatdata:/var/www/behatdata
+      - ${STUDY_BEHAT_EXT}:/opt/study-behat:ro
+      - ${STUDY_TOOLS}:/opt/study-tools:ro
+  db:
+    image: ${STUDY_IMG_DB}
+    shm_size: 512m
+    command: >-
+      postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+      -c max_connections=100 -c shared_buffers=256MB
+  selenium:
+    image: ${STUDY_IMG_SELENIUM}
+    shm_size: 2g
+volumes:
+  behatdata:
+  behatseed:

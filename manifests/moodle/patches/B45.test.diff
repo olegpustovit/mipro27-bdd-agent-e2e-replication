@@ -1,0 +1,13 @@
+diff --git a/public/lib/tests/behat/behat_navigation.php b/public/lib/tests/behat/behat_navigation.php
+index c70b1a0e90260aa1f5b798e471a25d116f1bedb8..0570157a0983b7a3a9ad81d242998623043eca00 100644
+--- a/public/lib/tests/behat/behat_navigation.php
++++ b/public/lib/tests/behat/behat_navigation.php
+@@ -527,7 +527,7 @@ class behat_navigation extends behat_base {
+             } else if (has_capability('moodle/user:editownprofile', $systemcontext)) {
+                 $userauthplugin = false;
+                 if (!empty($user->auth)) {
+-                    $userauthplugin = get_auth_plugin($user->auth);
++                    $userauthplugin = \core\di::get(\core\authentication::class)->get_plugin($user->auth);
+                 }
+                 if ($userauthplugin && $userauthplugin->can_edit_profile()) {
+                     $url = $userauthplugin->edit_profile_url();

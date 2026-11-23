@@ -1,0 +1,28 @@
+diff --git a/public/mod/assign/lib.php b/public/mod/assign/lib.php
+index 7efebdbca56c5634e9d2fb0b765886f6735f12d6..de9b139be20d98820cdaeba112319fc77ff20362 100644
+--- a/public/mod/assign/lib.php
++++ b/public/mod/assign/lib.php
+@@ -1388,7 +1388,6 @@ function assign_pluginfile($course,
+                 $forcedownload,
+                 array $options=array()) {
+     global $CFG;
+-    require_once("{$CFG->dirroot}/mod/assign/locallib.php");
+ 
+     if ($context->contextlevel != CONTEXT_MODULE) {
+         return false;
+@@ -1399,13 +1398,13 @@ function assign_pluginfile($course,
+         return false;
+     }
+ 
++    require_once($CFG->dirroot . '/mod/assign/locallib.php');
+     $assign = new assign($context, $cm, $course);
+ 
+     if ($filearea !== ASSIGN_INTROATTACHMENT_FILEAREA && $filearea !== ASSIGN_ACTIVITYATTACHMENT_FILEAREA) {
+         return false;
+     }
+-
+-    if ($filearea === ASSIGN_ACTIVITYATTACHMENT_FILEAREA && !$assign->show_intro()) {
++    if (!$assign->show_intro()) {
+         return false;
+     }
+ 

@@ -1,0 +1,66 @@
+{
+ "plan": "moodle-cand-w3e",
+ "models": [],
+ "drivers": [],
+ "prompts": {},
+ "pinPatterns": [
+  "adapters/moodle/adapter.mjs",
+  "adapters/moodle/behat-runner.mjs",
+  "adapters/moodle/gherkin.mjs",
+  "adapters/moodle/manifest.mjs",
+  "adapters/moodle/states.mjs",
+  "adapters/moodle/shell.mjs",
+  "adapters/moodle/lock.mjs",
+  "adapters/moodle/config.mjs",
+  "docker/moodle/versions.json",
+  "docker/moodle/behat/*",
+  "manifests/moodle.yaml",
+  "manifests/moodle/patches/*",
+  "scripts/moodle/common.mjs",
+  "scripts/moodle/v1-plan.mjs",
+  "scripts/moodle/v1-run.mjs",
+  "scripts/ledger/*.mjs",
+  "study/moodle/moodle-cand-w3e-spec.json"
+ ],
+ "tasks": [
+  {
+   "key": "v1:moodle-cand-w3e/w1",
+   "cmd": [
+    "node",
+    "scripts/moodle/v1-run.mjs",
+    "--worker",
+    "w1",
+    "--workers",
+    "w1,w2,w3",
+    "--spec",
+    "study/moodle/moodle-cand-w3e-spec.json"
+   ]
+  },
+  {
+   "key": "v1:moodle-cand-w3e/w2",
+   "cmd": [
+    "node",
+    "scripts/moodle/v1-run.mjs",
+    "--worker",
+    "w2",
+    "--workers",
+    "w1,w2,w3",
+    "--spec",
+    "study/moodle/moodle-cand-w3e-spec.json"
+   ]
+  },
+  {
+   "key": "v1:moodle-cand-w3e/w3",
+   "cmd": [
+    "node",
+    "scripts/moodle/v1-run.mjs",
+    "--worker",
+    "w3",
+    "--workers",
+    "w1,w2,w3",
+    "--spec",
+    "study/moodle/moodle-cand-w3e-spec.json"
+   ]
+  }
+ ]
+}

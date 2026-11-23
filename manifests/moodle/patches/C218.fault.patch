@@ -1,0 +1,238 @@
+diff --git a/public/completion/classes/external.php b/public/completion/classes/external.php
+index e3a7d0a8f43aff0e836e9120ba8f439a3d44d930..10e28140bedab44aee0d4c4edc8c4912d5a4ac13 100644
+--- a/public/completion/classes/external.php
++++ b/public/completion/classes/external.php
+@@ -157,17 +157,6 @@ class core_completion_external extends external_api {
+         $context = context_module::instance($cmid);
+         self::validate_context($context);
+ 
+-        // Callers may only request complete or incomplete; the stored substate is derived below.
+-        if (!in_array($newstate, [COMPLETION_INCOMPLETE, COMPLETION_COMPLETE])) {
+-            throw new moodle_exception(
+-                'err_system',
+-                'completion',
+-                '',
+-                null,
+-                "Unexpected manual completion state for cm {$cmid}: $newstate"
+-            );
+-        }
+-
+         list($course, $cm) = get_course_and_cm_from_cmid($cmid);
+ 
+         // Set up completion object and check it is enabled.
+@@ -176,15 +165,6 @@ class core_completion_external extends external_api {
+             throw new moodle_exception('completionnotenabled', 'completion');
+         }
+ 
+-        // Upgrade to the pass substate if the student already has a passing grade; a failing
+-        // grade must not downgrade the override, so it is left as plain complete.
+-        if ($newstate == COMPLETION_COMPLETE && $cm->completiongradeitemnumber !== null) {
+-            $gradestate = $completion->get_grade_completion($cm, $userid);
+-            if ($gradestate == COMPLETION_COMPLETE_PASS) {
+-                $newstate = $gradestate;
+-            }
+-        }
+-
+         // Update completion state and get the new state back.
+         $completion->update_state($cm, $newstate, $userid, true);
+         $completiondata = $completion->get_data($cm, false, $userid);
+diff --git a/public/lib/completionlib.php b/public/lib/completionlib.php
+index 9f849b1e9d379fbdee42313749d25a89d34c8331..c6985516e4edba296fb076ce1c7b1002b5ac926b 100644
+--- a/public/lib/completionlib.php
++++ b/public/lib/completionlib.php
+@@ -568,10 +568,7 @@ class completion_info {
+      *   COMPLETION_UNKNOWN significantly improves performance because it will abandon
+      *   processing early if the user's completion state already matches the expected
+      *   result. For manual events, COMPLETION_COMPLETE or COMPLETION_INCOMPLETE
+-     *   must be used; these directly set the specified state. When overriding,
+-     *   COMPLETION_COMPLETE_PASS may also be used to directly set that state. Once overridden to
+-     *   COMPLETE or COMPLETE_PASS, later non-override calls (e.g. a grade changing) may still move
+-     *   the state between those two, but will never move it back to INCOMPLETE or COMPLETE_FAIL.
++     *   must be used; these directly set the specified state.
+      * @param int $userid User ID to be updated. Default 0 = current user
+      * @param bool $override Whether manually overriding the existing completion state.
+      * @param bool $isbulkupdate If bulk grade update is happening.
+@@ -632,47 +629,20 @@ class completion_info {
+             return;
+         }
+ 
+-        // For auto tracking, once the status has been overridden to at least COMPLETE, hold it
+-        // there: automatic triggers (e.g. a grade changing) must never undo the override itself -
+-        // never drop back to INCOMPLETE, and never store a FAIL substate (matching
+-        // override_activity_completion_status()'s own "upgrade only, never downgrade" rule).
+-        // They may still refine the PASS/FAIL substate on top of the override, checked against the
+-        // grade condition alone so this agrees with what the override itself would compute,
+-        // regardless of unrelated conditions (e.g. view).
+-        // Overridden to INCOMPLETE is unaffected and continues to be re-evaluated normally below -
+-        // per the original override design (MDL-37361), only a COMPLETE-or-better override holds.
+-        $existingoverrideby = $current->overrideby;
+-        $keepoverrideby = false;
+-        if (
+-            $cm->completion == COMPLETION_TRACKING_AUTOMATIC &&
+-            !is_null($existingoverrideby) &&
+-            in_array($current->completionstate, [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS]) &&
+-            !$override
+-        ) {
+-            $newstate = COMPLETION_COMPLETE;
+-            if (!is_null($cm->completiongradeitemnumber)) {
+-                if ($cm instanceof stdClass) {
+-                    // Modname hopefully is provided in $cm but just in case it isn't, let's grab it.
+-                    if (!isset($cm->modname)) {
+-                        $cm->modname = $DB->get_field('modules', 'name', ['id' => $cm->module]);
+-                    }
+-                    // Some functions call this method and pass $cm as an object with ID only.
+-                    if (!isset($cm->course)) {
+-                        $cm->course = $this->course_id;
+-                    }
+-                }
+-                $gradecminfo = cm_info::create($cm, $userid);
+-                if ($this->get_grade_completion($gradecminfo, $userid) == COMPLETION_COMPLETE_PASS) {
+-                    $newstate = COMPLETION_COMPLETE_PASS;
+-                }
+-            }
+-            $keepoverrideby = true;
++        // For auto tracking, if the status is overridden to 'COMPLETION_COMPLETE', then disallow further changes,
++        // unless processing another override.
++        // Basically, we want those activities which have been overridden to COMPLETE to hold state, and those which have been
++        // overridden to INCOMPLETE to still be processed by normal completion triggers.
++        if ($cm->completion == COMPLETION_TRACKING_AUTOMATIC && !is_null($current->overrideby)
++            && $current->completionstate == COMPLETION_COMPLETE && !$override) {
++            return;
++        }
+ 
+-        } else if ($cm->completion == COMPLETION_TRACKING_MANUAL || $override) {
++        // For manual tracking, or if overriding the completion state, we set the state directly.
++        if ($cm->completion == COMPLETION_TRACKING_MANUAL || $override) {
+             switch($possibleresult) {
+                 case COMPLETION_COMPLETE:
+                 case COMPLETION_INCOMPLETE:
+-                case COMPLETION_COMPLETE_PASS:
+                     $newstate = $possibleresult;
+                     break;
+                 default:
+@@ -687,7 +657,7 @@ class completion_info {
+         if ($newstate != $current->completionstate) {
+             $current->completionstate = $newstate;
+             $current->timemodified    = time();
+-            $current->overrideby      = $override ? $USER->id : ($keepoverrideby ? $existingoverrideby : null);
++            $current->overrideby      = $override ? $USER->id : null;
+             $this->internal_set_data($cm, $current, $isbulkupdate);
+ 
+             // Dispatch the hook for course content update.
+diff --git a/public/pix/i/completion-auto-pass-override.svg b/public/pix/i/completion-auto-pass-override.svg
+deleted file mode 100644
+index d7fe1805bda1e82265720ceaa902848e2dfc96c5..0000000000000000000000000000000000000000
+--- a/public/pix/i/completion-auto-pass-override.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" preserveAspectRatio="xMinYMid meet" width="16" height="16"><path d="M10,0V2H6V0Zm1,2h1a2,2,0,0,1,1.1.3,1.75,1.75,0,0,1,1.2-.4,2,2,0,0,1,1.4.6l.3.3V2a2,2,0,0,0-2-2H11Zm3,8h2V6.4l-2,2Zm0,1v1a2,2,0,0,1-2,2H11v2h3a2,2,0,0,0,2-2V11Zm-4,5V14H6v2ZM5,14H4a2,2,0,0,1-2-2V11H0v3a2,2,0,0,0,2,2H5ZM0,10H2V6H0ZM2,5V4A2,2,0,0,1,4,2H5V0H2A2,2,0,0,0,0,2V5Z" fill="#ff2727"/><path d="M15.7,3.9,15,3.2a1,1,0,0,0-1.4,0l-6,6L5.4,7A1.2,1.2,0,0,0,4,7l-.7.7a1,1,0,0,0,0,1.4l3.6,3.6a1,1,0,0,0,1.4,0l7.4-7.4A1,1,0,0,0,15.7,3.9Z" fill="#79a128"/></svg>
+diff --git a/public/report/progress/amd/src/completion_override.js b/public/report/progress/amd/src/completion_override.js
+index 89526bb1590292fecd712f4c4e4bf966d6d6cf2a..1bdae81ad3ef93b9a2dc945fe6eb2818a8e2f362 100644
+--- a/public/report/progress/amd/src/completion_override.js
++++ b/public/report/progress/amd/src/completion_override.js
+@@ -37,27 +37,6 @@ define(['jquery', 'core/ajax', 'core/str', 'core/modal_save_cancel', 'core/modal
+          */
+         var triggerElement;
+ 
+-        /**
+-         * Helper function to get the completion string suffix based on the completion state.
+-         * Shared by the icon key and the tooltip lang string key, which both use the same suffix.
+-         * No 'fail-override' case: an override can never produce COMPLETION_COMPLETE_FAIL, so this
+-         * only ever needs to handle the states override_activity_completion_status() can return.
+-         * @method getStateSuffix
+-         * @param {number} state The current completion state.
+-         * @return {string} the 'y'/'n'/'pass' suffix, with the override variant appended.
+-         * @private
+-         */
+-        var getStateSuffix = function(state) {
+-            switch (state) {
+-                case 2: // COMPLETION_COMPLETE_PASS.
+-                    return 'pass-override';
+-                case 1: // COMPLETION_COMPLETE.
+-                    return 'y-override';
+-                default: // COMPLETION_INCOMPLETE.
+-                    return 'n-override';
+-            }
+-        };
+-
+         /**
+          * Helper function to get the pix icon key based on the completion state.
+          * @method getIconDescriptorFromState
+@@ -67,7 +46,7 @@ define(['jquery', 'core/ajax', 'core/str', 'core/modal_save_cancel', 'core/modal
+          * @private
+          */
+         var getIconKeyFromState = function(state, tracking) {
+-            return 'i/completion-' + tracking + '-' + getStateSuffix(state);
++            return state > 0 ? 'i/completion-' + tracking + '-y-override' : 'i/completion-' + tracking + '-n-override';
+         };
+ 
+         /**
+@@ -89,10 +68,10 @@ define(['jquery', 'core/ajax', 'core/str', 'core/modal_save_cancel', 'core/modal
+                     args: override
+                 }])[0];
+             }).then(function(results) {
+-                var state = results.state;
++                var completionState = (results.state > 0) ? 1 : 0;
+ 
+                 // Now, build the new title string, get the new icon, and update the DOM.
+-                var tooltipKey = 'completion-' + getStateSuffix(state);
++                var tooltipKey = completionState ? 'completion-y-override' : 'completion-n-override';
+                 Str.get_string(tooltipKey, 'completion', userFullName).then(function(stateString) {
+                     var params = {
+                         state: stateString,
+@@ -103,9 +82,9 @@ define(['jquery', 'core/ajax', 'core/str', 'core/modal_save_cancel', 'core/modal
+                     return Str.get_string('progress-title', 'completion', params);
+                 }).then(function(titleString) {
+                     var completionTracking = triggerElement.attr('data-completiontracking');
+-                    return Templates.renderPix(getIconKeyFromState(state, completionTracking), 'core', titleString);
++                    return Templates.renderPix(getIconKeyFromState(completionState, completionTracking), 'core', titleString);
+                 }).then(function(html) {
+-                    var oppositeState = state > 0 ? 0 : 1;
++                    var oppositeState = completionState > 0 ? 0 : 1;
+                     triggerElement.find('.loading-icon').remove();
+                     triggerElement.data('changecompl', override.userid + '-' + override.cmid + '-' + oppositeState);
+                     triggerElement.attr('data-changecompl', override.userid + '-' + override.cmid + '-' + oppositeState);
+diff --git a/public/report/progress/index.php b/public/report/progress/index.php
+index 2d1f2a1f608019bd5864ad766044537db0ad5585..adf014b18a3e7e19c19b6068f13bacc5f39c0c7b 100644
+--- a/public/report/progress/index.php
++++ b/public/report/progress/index.php
+@@ -227,11 +227,9 @@ if ($dataformat !== '' && $grandtotal && count($activities) > 0) {
+                     $completiontype = 'y' . ($overrideby ? '-override' : '');
+                     break;
+                 case COMPLETION_COMPLETE_PASS:
+-                    $completiontype = 'pass' . ($overrideby ? '-override' : '');
++                    $completiontype = 'pass';
+                     break;
+                 case COMPLETION_COMPLETE_FAIL:
+-                    // No '-override' variant: an override can never produce this state (see
+-                    // update_state()'s override switch), only automatic tracking can.
+                     $completiontype = 'fail';
+                     break;
+             }
+@@ -461,11 +459,9 @@ foreach($progress as $user) {
+                 $completiontype = 'y'.($overrideby ? '-override' : '');
+                 break;
+             case COMPLETION_COMPLETE_PASS :
+-                $completiontype = 'pass' . ($overrideby ? '-override' : '');
++                $completiontype = 'pass';
+                 break;
+             case COMPLETION_COMPLETE_FAIL :
+-                // No '-override' variant: an override can never produce this state (see
+-                // update_state()'s override switch), only automatic tracking can.
+                 $completiontype = 'fail';
+                 break;
+         }
+@@ -488,11 +484,9 @@ foreach($progress as $user) {
+         $celltext = $OUTPUT->pix_icon('i/' . $completionicon, s($fulldescribe));
+         if (
+             has_capability('moodle/course:overridecompletion', $context) &&
+-            ($overrideby || ($state != COMPLETION_COMPLETE_PASS && $state != COMPLETION_COMPLETE_FAIL))
++            $state != COMPLETION_COMPLETE_PASS && $state != COMPLETION_COMPLETE_FAIL
+         ) {
+-            // An overridden pass/fail state must stay revertable, same as any other override; only an
+-            // automatically-computed pass/fail state is left alone.
+-            $newstate = ($state == COMPLETION_INCOMPLETE) ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
++            $newstate = ($state == COMPLETION_COMPLETE) ? COMPLETION_INCOMPLETE : COMPLETION_COMPLETE;
+             $changecompl = $user->id . '-' . $activity->id . '-' . $newstate;
+             $url = new moodle_url($PAGE->url, ['sesskey' => sesskey()]);
+             $celltext = html_writer::link($url, $celltext, ['class' => 'changecompl', 'data-changecompl' => $changecompl,

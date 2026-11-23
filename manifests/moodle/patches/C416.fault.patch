@@ -1,0 +1,64 @@
+diff --git a/public/mod/assign/feedback/editpdf/styles.css b/public/mod/assign/feedback/editpdf/styles.css
+index 9411e823aba52bb49f1c8b616fa8d01a38cf7612..95eb850b8082fbe5ffa42b0d74840b487ccd3e7d 100644
+--- a/public/mod/assign/feedback/editpdf/styles.css
++++ b/public/mod/assign/feedback/editpdf/styles.css
+@@ -298,6 +298,10 @@ ul.assignfeedback_editpdf_menu {
+     border-radius: 4px;
+ }
+ 
++.assignfeedback_editpdf_menu li img {
++    height: auto;
++}
++
+ .assignfeedback_editpdf_menu li button {
+     margin: 0;
+     background: none;
+@@ -315,7 +319,7 @@ ul.assignfeedback_editpdf_menu {
+ }
+ 
+ .assignfeedback_editpdf_widget .commentdrawable img {
+-    margin: 0 5px;
++    padding: 1px;
+ }
+ 
+ .assignfeedback_editpdf_widget .commentdrawable a {
+@@ -323,8 +327,11 @@ ul.assignfeedback_editpdf_menu {
+     position: relative;
+     left: -17px;
+     top: 2px;
+-    height: 16px;
+-    width: 16px;
++    height: 14px;
++    background-color: white;
++    border-left: 1px solid #ccc;
++    border-bottom: 1px solid #ccc;
++    line-height: 14px;
+ }
+ 
+ .assignfeedback_editpdf_widget .commentdrawable textarea {
+diff --git a/public/mod/assign/feedback/editpdf/yui/src/editor/js/comment.js b/public/mod/assign/feedback/editpdf/yui/src/editor/js/comment.js
+index ce4e4b429aa18d3ef45d8bbc85b5a1d5e5aa0059..e50ec23c196023e5bdac0a49ae4be220f727bb14 100644
+--- a/public/mod/assign/feedback/editpdf/yui/src/editor/js/comment.js
++++ b/public/mod/assign/feedback/editpdf/yui/src/editor/js/comment.js
+@@ -175,7 +175,7 @@ var COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
+                 'preserveAspectRatio="xMinYMin meet">' +
+                 '<path d="M11 0H1C.4 0 0 .4 0 1v6c0 .6.4 1 1 1h1v4l4-4h5c.6 0 1-.4 1-1V1c0-.6-.4-1-1-1z" ' +
+                 'fill="currentColor" opacity="0.9" stroke="rgb(153, 153, 153)" stroke-width="0.5"/></svg>');
+-        menu = Y.Node.create('<a href="#"><img class="icon" src="' + M.util.image_url('t/contextmenu', 'core') + '"/></a>');
++        menu = Y.Node.create('<a href="#"><img src="' + M.util.image_url('t/contextmenu', 'core') + '"/></a>');
+ 
+         this.menulink = menu;
+         container.append(label);
+diff --git a/public/mod/assign/feedback/editpdf/yui/src/editor/js/commentmenu.js b/public/mod/assign/feedback/editpdf/yui/src/editor/js/commentmenu.js
+index 72fb95c93a08108f132a1cc0da1e6be4c4cb679e..1f823d1c4a7a901ba937395c370d820d34f2bfa4 100644
+--- a/public/mod/assign/feedback/editpdf/yui/src/editor/js/commentmenu.js
++++ b/public/mod/assign/feedback/editpdf/yui/src/editor/js/commentmenu.js
+@@ -95,7 +95,7 @@ Y.extend(COMMENTMENU, M.assignfeedback_editpdf.dropdown, {
+             var listitem = Y.Node.create('<li class="quicklist_comment"></li>'),
+                 linkitem = Y.Node.create('<a href="#" tabindex="-1">' + quickcomment.rawtext + '</a>'),
+                 deletelinkitem = Y.Node.create('<a href="#" tabindex="-1" class="delete_quicklist_comment">' +
+-                                               '<img class="icon" src="' + M.util.image_url('t/delete', 'core') + '" ' +
++                                               '<img src="' + M.util.image_url('t/delete', 'core') + '" ' +
+                                                'alt="' + M.util.get_string('deletecomment', 'assignfeedback_editpdf') + '"/>' +
+                                                '</a>');
+             linkitem.setAttribute('title', quickcomment.rawtext);

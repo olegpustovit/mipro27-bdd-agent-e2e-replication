@@ -1,0 +1,85 @@
+diff --git a/public/lib/amd/src/showhidesettings.js b/public/lib/amd/src/showhidesettings.js
+index 835d1c7304e970bb482f37ca1973b35b6b2a3f5a..f2d26269398a3c67ce1087dc30cb7a2cad79d435 100644
+--- a/public/lib/amd/src/showhidesettings.js
++++ b/public/lib/amd/src/showhidesettings.js
+@@ -71,24 +71,7 @@ define(['jquery'], function($) {
+     }
+ 
+     /**
+-     * Are the selected values of a multi-select a subset of (i.e. 'in') the list of values provided?
+-     * @param {jQuery} $el
+-     * @param {array} values
+-     * @returns {boolean}
+-     */
+-    function multiSelectIn($el, values) {
+-        let selected = $el.val() || [];
+-        if (selected.length == 0) {
+-            selected.push('');
+-        }
+-
+-        // Lock/hide if the selected values are a subset of the values.
+-        let isSubset = selected.every(element => values.includes(element));
+-        return isSubset;
+-    }
+-
+-    /**
+-     * Are the selected values of a multi-select an exact match (i.e. 'eq') to the list of values provided?
++     * Does the multi-select exactly match the list of values provided?
+      * @param {jQuery} $el
+      * @param {array} values
+      * @returns {boolean}
+@@ -210,8 +193,8 @@ define(['jquery'], function($) {
+                     return;
+                 }
+                 if (isMultiSelect($el)) {
+-                    // For multiselect, we check to see if the selected values are a subset of the list of values provided.
+-                    hide = multiSelectIn($el, values);
++                    // For multiselect, we check to see if the list of values provided matches the list selected.
++                    hide = multiSelectMatches($el, values);
+                     return;
+                 }
+                 // All other element types - check to see if the value is in the list.
+@@ -348,4 +331,4 @@ define(['jquery'], function($) {
+             hideDependencyInfo();
+         }
+     };
+-});
++});
+\ No newline at end of file
+diff --git a/public/lib/form/form.js b/public/lib/form/form.js
+index f46340f8fc5ebd7b559ca568789d30f574dbe774..f5b0ac3a812a2025256f58519f1ec819b5ccac0b 100644
+--- a/public/lib/form/form.js
++++ b/public/lib/form/form.js
+@@ -585,16 +585,23 @@ if (typeof M.form.dependencyManager === 'undefined') {
+                             selected[selected.length] = this.get('value');
+                         }
+                     });
+-
+-                    // Needed to support subset resolution for empty selects, where 'no selection' is represented by ''.
+-                    if (selected.length == 0) {
+-                        selected.push('');
++                    if (values.length === 1 && values[0] === '') {
++                        // Values array contains a single empty entry -> value was empty.
++                        lock = selected.length === 0;
++                        return;
++                    }
++                    if (selected.length !== values.length) {
++                        lock = false;
++                        return;
++                    }
++                    lock = true;
++                    for (const i in selected) {
++                        v = selected[i];
++                        if (values.indexOf(v) === -1) {
++                            lock = false;
++                            return;
++                        }
+                     }
+-
+-                    // Lock/hide if the selected values are a subset of the values.
+-                    let isSubset = selected.every(element => values.includes(element));
+-                    lock = isSubset;
+-                    return;
+                 } else {
+                     value = this.get('value');
+                     lock = lock || (values.indexOf(value) > -1);

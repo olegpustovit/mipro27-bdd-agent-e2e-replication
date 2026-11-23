@@ -1,0 +1,37 @@
+diff --git a/public/question/type/multichoice/backup/moodle2/restore_qtype_multichoice_plugin.class.php b/public/question/type/multichoice/backup/moodle2/restore_qtype_multichoice_plugin.class.php
+index 71120c4fec0aad226369df73a4921a66984e529b..7ef6ab68ec75600e6c450184fa44666654b5c424 100644
+--- a/public/question/type/multichoice/backup/moodle2/restore_qtype_multichoice_plugin.class.php
++++ b/public/question/type/multichoice/backup/moodle2/restore_qtype_multichoice_plugin.class.php
+@@ -160,19 +160,4 @@ class restore_qtype_multichoice_plugin extends restore_qtype_plugin {
+ 
+         return $contents;
+     }
+-
+-    #[\Override]
+-    public static function convert_backup_to_questiondata(array $backupdata): \stdClass {
+-        global $CFG;
+-        require_once($CFG->dirroot . '/question/type/multichoice/questiontype.php');
+-        $questiondata = parent::convert_backup_to_questiondata($backupdata);
+-        if (count(get_object_vars($questiondata->options)) <= 1) {
+-            // Historically, old versions of multichoice subquestions had their options record deleted.
+-            // As qtype_multichoice::get_question_options() sets default options in this case, we need
+-            // to do the same here. See MDL-85721.
+-            $defaultoptions = (new qtype_multichoice())->create_default_options($questiondata);
+-            $questiondata->options = (object) array_merge((array) $questiondata->options, (array) $defaultoptions);
+-        }
+-        return $questiondata;
+-    }
+ }
+diff --git a/public/question/type/multichoice/questiontype.php b/public/question/type/multichoice/questiontype.php
+index 59627b2d73acdca32a9f49e35f04236b615be5f8..b1d1b4ff0cfb7e32fc8a2da944a806b1a425c760 100644
+--- a/public/question/type/multichoice/questiontype.php
++++ b/public/question/type/multichoice/questiontype.php
+@@ -88,7 +88,7 @@ class qtype_multichoice extends question_type {
+      * @param object $question The queston we are working with.
+      * @return object The options object.
+      */
+-    public function create_default_options($question) {
++    protected function create_default_options($question) {
+         // Create a default question options record.
+         $options = new stdClass();
+         $options->questionid = $question->id;

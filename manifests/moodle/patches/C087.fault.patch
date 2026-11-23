@@ -1,0 +1,22 @@
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/usedfiles.js b/public/lib/editor/tiny/plugins/media/amd/src/usedfiles.js
+index 050fcca22f35036694529c95bf11bdeaa5228e6c..0d23f6a72ccd0e9595af150be81981b3391de687 100644
+--- a/public/lib/editor/tiny/plugins/media/amd/src/usedfiles.js
++++ b/public/lib/editor/tiny/plugins/media/amd/src/usedfiles.js
+@@ -44,14 +44,11 @@ class UsedFileManager {
+         }
+         const content = editor.getContent();
+         const baseUrl = `${Config.wwwroot}/draftfile.php/${this.userContext}/user/draft/${this.itemId}/`;
++        const pattern = new RegExp("[\"']" + baseUrl.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + "(?<filename>.+?)[\\?\"']", 'gm');
+ 
+-        // Match any draft file contained within quotes, whitespace, or between html elements.
+-        const pattern = new RegExp(
+-            "[\"'\\s>]" + baseUrl.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + "(?<filename>.+?)[\\?\"'\\s<]",
+-            'gm'
+-        );
++        const usedFiles = [...content.matchAll(pattern)].map((match) => decodeURIComponent(match.groups.filename));
+ 
+-        return [...content.matchAll(pattern)].map((match) => decodeURIComponent(match.groups.filename));
++        return usedFiles;
+     }
+ 
+     // Return an array of unused files.

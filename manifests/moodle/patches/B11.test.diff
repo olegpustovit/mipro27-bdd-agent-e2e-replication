@@ -1,0 +1,231 @@
+diff --git a/public/blocks/myoverview/tests/behat/block_myoverview_customfield.feature b/public/blocks/myoverview/tests/behat/block_myoverview_customfield.feature
+index 6e199691d226a19611d9853faaa20f1a98911666..3a4afb4cd4981dc7e987e99d819a6bac97f56daf 100644
+--- a/public/blocks/myoverview/tests/behat/block_myoverview_customfield.feature
++++ b/public/blocks/myoverview/tests/behat/block_myoverview_customfield.feature
+@@ -181,13 +181,14 @@ Feature: The my overview block allows users to group courses by custom fields
+     And I set the field "Custom field" to "1"
+     Then the "Field to use" select box should not contain "Hidden field"
+ 
++  @core_customfield
+   Scenario: Hidden fields not displayed in the filter
+     Given the following config values are set as admin:
+       | displaygroupingcustomfield | 1          | block_myoverview |
+       | customfiltergrouping       | textfield2 | block_myoverview |
+     And I log in as "admin"
+     And I navigate to "Courses > Default settings > Course custom fields" in site administration
+-    And I click on "Edit" "link" in the "Text field 2" "table_row"
++    And I press "Edit custom field: Text field 2"
+     And I set the field "Visible to" to "Nobody"
+     And I press "Save changes"
+     And I log out
+diff --git a/public/customfield/field/checkbox/tests/behat/field.feature b/public/customfield/field/checkbox/tests/behat/field.feature
+index 3db7eadd39703cae78f043b4bc02fe5aa9364a08..f34b607f9f3362ef3555b94689d110327c02c48f 100644
+--- a/public/customfield/field/checkbox/tests/behat/field.feature
++++ b/public/customfield/field/checkbox/tests/behat/field.feature
+@@ -1,4 +1,4 @@
+-@customfield @customfield_checkbox @javascript
++@core_customfield @customfield_checkbox @javascript
+ Feature: Managers can manage course custom fields checkbox
+   In order to have additional data on the course
+   As a manager
+@@ -28,7 +28,7 @@ Feature: Managers can manage course custom fields checkbox
+       | Name       | Test field |
+       | Short name | testfield  |
+     And I click on "Save changes" "button" in the "Adding a new Checkbox" "dialogue"
+-    And I click on "Edit" "link" in the "Test field" "table_row"
++    And I press "Edit custom field: Test field"
+     And I set the following fields to these values:
+       | Name | Edited field |
+     And I click on "Save changes" "button" in the "Updating Test field" "dialogue"
+@@ -42,7 +42,7 @@ Feature: Managers can manage course custom fields checkbox
+       | Name       | Test field |
+       | Short name | testfield  |
+     And I click on "Save changes" "button" in the "Adding a new Checkbox" "dialogue"
+-    And I click on "Delete" "link" in the "Test field" "table_row"
++    And I press "Delete custom field: Test field"
+     And I click on "Yes" "button" in the "Confirm" "dialogue"
+     Then I should not see "Test field"
+     And I log out
+diff --git a/public/customfield/field/date/tests/behat/field.feature b/public/customfield/field/date/tests/behat/field.feature
+index 52589b1cc3a6ef242486e591128d977f5b97b206..81852b295394d9b5f53b70df507f29ad03e0b861 100644
+--- a/public/customfield/field/date/tests/behat/field.feature
++++ b/public/customfield/field/date/tests/behat/field.feature
+@@ -1,4 +1,4 @@
+-@customfield @customfield_date @javascript
++@core_customfield @customfield_date @javascript
+ Feature: Managers can manage course custom fields date
+   In order to have additional data on the course
+   As a manager
+diff --git a/public/customfield/field/number/tests/behat/field.feature b/public/customfield/field/number/tests/behat/field.feature
+index 1b67baab061d4e9bd22a5a41f479313ac8fce757..110751eb4ade6adf4e6326a7fc9aa10566ad83de 100644
+--- a/public/customfield/field/number/tests/behat/field.feature
++++ b/public/customfield/field/number/tests/behat/field.feature
+@@ -1,4 +1,4 @@
+-@customfield @customfield_number @javascript
++@core_customfield @customfield_number @javascript
+ Feature: Managers can manage course custom fields number
+   In order to have additional data on the course
+   As a manager
+@@ -36,7 +36,7 @@ Feature: Managers can manage course custom fields number
+       | Short name | numberfield  |
+     And I click on "Save changes" "button" in the "Adding a new Number" "dialogue"
+     Then I should see "Number field"
+-    And I click on "Edit" "link" in the "Number field" "table_row"
++    And I press "Edit custom field: Number field"
+     And I set the following fields to these values:
+       | Name | Edited number field |
+     And I click on "Save changes" "button" in the "Updating Number field" "dialogue"
+@@ -50,7 +50,7 @@ Feature: Managers can manage course custom fields number
+       | Name       | Number field |
+       | Short name | numberfield  |
+     And I click on "Save changes" "button" in the "Adding a new Number" "dialogue"
+-    And I click on "Delete" "link" in the "Number field" "table_row"
++    And I press "Delete custom field: Number field"
+     And I click on "Yes" "button" in the "Confirm" "dialogue"
+     And I wait until the page is ready
+     And I wait until "Number field" "text" does not exist
+@@ -186,7 +186,7 @@ Feature: Managers can manage course custom fields number
+ 
+     And I log in as "admin"
+     And I navigate to "Courses > Default settings > Course custom fields" in site administration
+-    And I click on "Edit" "link" in the "Number field" "table_row"
++    And I press "Edit custom field: Number field"
+     And I set the following fields to these values:
+       | Display when zero   |      |
+     And I click on "Save changes" "button" in the "Updating Number field" "dialogue"
+diff --git a/public/customfield/field/select/tests/behat/field.feature b/public/customfield/field/select/tests/behat/field.feature
+index 3332cc8df3011406baa052f56b52c09c5f3d54cb..e47c6f862e9d40034c68fe4c9b2931148e7ef73d 100644
+--- a/public/customfield/field/select/tests/behat/field.feature
++++ b/public/customfield/field/select/tests/behat/field.feature
+@@ -1,4 +1,4 @@
+-@customfield @customfield_select @javascript
++@core_customfield @customfield_select @javascript
+ Feature: Managers can manage course custom fields select
+   In order to have additional data on the course
+   As a manager
+@@ -38,7 +38,7 @@ Feature: Managers can manage course custom fields select
+     b
+     """
+     And I click on "Save changes" "button" in the "Adding a new Dropdown menu" "dialogue"
+-    And I click on "Edit" "link" in the "Test field" "table_row"
++    And I press "Edit custom field: Test field"
+     And I set the following fields to these values:
+       | Name | Edited field |
+     And I click on "Save changes" "button" in the "Updating Test field" "dialogue"
+@@ -58,7 +58,7 @@ Feature: Managers can manage course custom fields select
+     b
+     """
+     And I click on "Save changes" "button" in the "Adding a new Dropdown menu" "dialogue"
+-    And I click on "Delete" "link" in the "Test field" "table_row"
++    And I press "Delete custom field: Test field"
+     And I click on "Yes" "button" in the "Confirm" "dialogue"
+     Then I should not see "Test field"
+     And I log out
+diff --git a/public/customfield/field/text/tests/behat/field.feature b/public/customfield/field/text/tests/behat/field.feature
+index 4dc4e77abf34a5fbf2e01c715f539ea06f8a8c06..925c1170ab55a81d3293f5f5da7ecf0abe11ed94 100644
+--- a/public/customfield/field/text/tests/behat/field.feature
++++ b/public/customfield/field/text/tests/behat/field.feature
+@@ -1,4 +1,4 @@
+-@customfield @customfield_text @javascript
++@core_customfield @customfield_text @javascript
+ Feature: Managers can manage course custom fields text
+   In order to have additional data on the course
+   As a manager
+@@ -28,7 +28,7 @@ Feature: Managers can manage course custom fields text
+       | Name       | Test field |
+       | Short name | testfield  |
+     And I click on "Save changes" "button" in the "Adding a new Short text" "dialogue"
+-    And I click on "Edit" "link" in the "Test field" "table_row"
++    And I press "Edit custom field: Test field"
+     And I set the following fields to these values:
+       | Name | Edited field |
+     And I click on "Save changes" "button" in the "Updating Test field" "dialogue"
+@@ -44,7 +44,7 @@ Feature: Managers can manage course custom fields text
+       | Name       | Test field |
+       | Short name | testfield  |
+     And I click on "Save changes" "button" in the "Adding a new Short text" "dialogue"
+-    And I click on "Delete" "link" in the "Test field" "table_row"
++    And I press "Delete custom field: Test field"
+     And I click on "Yes" "button" in the "Confirm" "dialogue"
+     And I wait until the page is ready
+     And I wait until "Test field" "text" does not exist
+diff --git a/public/customfield/field/textarea/tests/behat/default_value.feature b/public/customfield/field/textarea/tests/behat/default_value.feature
+index a217f9319856ab311da8ad5ac3cb5206907462f2..87afde4fef7dd84ebd11eadcca8e1dffa4b8e6ff 100644
+--- a/public/customfield/field/textarea/tests/behat/default_value.feature
++++ b/public/customfield/field/textarea/tests/behat/default_value.feature
+@@ -1,4 +1,4 @@
+-@customfield @customfield_textarea @javascript @editor_tiny
++@core_customfield @customfield_textarea @javascript @editor_tiny
+ Feature: Default value for the textarea custom field can contain images
+   In order to see images on custom fields
+   As a manager
+diff --git a/public/customfield/field/textarea/tests/behat/field.feature b/public/customfield/field/textarea/tests/behat/field.feature
+index 4929fed95fe82891e44e0b204570fb218d6454d3..a518ccc858aba2a231be2358a2d07dd563155aab 100644
+--- a/public/customfield/field/textarea/tests/behat/field.feature
++++ b/public/customfield/field/textarea/tests/behat/field.feature
+@@ -1,4 +1,4 @@
+-@customfield @customfield_textarea @javascript
++@core_customfield @customfield_textarea @javascript
+ Feature: Managers can manage course custom fields textarea
+   In order to have additional data on the course
+   As a manager
+@@ -28,7 +28,7 @@ Feature: Managers can manage course custom fields textarea
+       | Name       | Test field |
+       | Short name | testfield  |
+     And I click on "Save changes" "button" in the "Adding a new Text area" "dialogue"
+-    And I click on "Edit" "link" in the "Test field" "table_row"
++    And I press "Edit custom field: Test field"
+     And I set the following fields to these values:
+       | Name | Edited field |
+     And I click on "Save changes" "button" in the "Updating Test field" "dialogue"
+@@ -43,7 +43,7 @@ Feature: Managers can manage course custom fields textarea
+       | Name       | Test field |
+       | Short name | testfield  |
+     And I click on "Save changes" "button" in the "Adding a new Text area" "dialogue"
+-    And I click on "Delete" "link" in the "Test field" "table_row"
++    And I press "Delete custom field: Test field"
+     And I click on "Yes" "button" in the "Confirm" "dialogue"
+     Then I should not see "Test field"
+     And I log out
+diff --git a/public/question/bank/columnsortorder/tests/behat/admin_settings.feature b/public/question/bank/columnsortorder/tests/behat/admin_settings.feature
+index c2cc26143697737fc9f2f5f2e8fc53c5d5a21a6b..4303dd15ab1eff0de20e8b53f7dfe47211972d77 100644
+--- a/public/question/bank/columnsortorder/tests/behat/admin_settings.feature
++++ b/public/question/bank/columnsortorder/tests/behat/admin_settings.feature
+@@ -115,6 +115,7 @@ Feature: Set default question bank column order and size
+     And "Question" "table_row" should appear before "Comments" "table_row"
+     And the field "Width of 'Question' in pixels" matches value ""
+ 
++  @core_customfield
+   Scenario: Deleting a custom field which is removed from the Column sort order
+     Given the following "custom field categories" exist:
+       | name              | component          | area     | itemid |
+@@ -132,7 +133,7 @@ Feature: Set default question bank column order and size
+ 
+     # Delete a question custom field.
+     And I navigate to "Plugins > Question bank plugins > Question custom fields" in site administration
+-    And I click on "Delete" "link" in the "Field 1" "table_row"
++    And I press "Delete custom field: Field 1"
+     And I click on "Yes" "button" in the "Confirm" "dialogue"
+     And I navigate to "Plugins > Question bank plugins > Column sort order" in site administration
+     Then I should see "Column sort order"
+diff --git a/public/question/bank/columnsortorder/tests/behat/question_bank.feature b/public/question/bank/columnsortorder/tests/behat/question_bank.feature
+index 065b186193cc41e6d5ae97fcc24e12b6d6bd846f..b793bd6882a758bbe3099b0282b44fe4d6b62a2e 100644
+--- a/public/question/bank/columnsortorder/tests/behat/question_bank.feature
++++ b/public/question/bank/columnsortorder/tests/behat/question_bank.feature
+@@ -139,6 +139,7 @@ Feature: Set question bank column order and size
+     And "Create a new question" "button" should exist
+     # Really, we are just checking the question bank displayed without errors.
+ 
++  @core_customfield
+   Scenario: Deleting a custom field which a user had removed from his preferences
+     Given the following "custom field categories" exist:
+       | name              | component          | area     | itemid |
+@@ -156,7 +157,7 @@ Feature: Set question bank column order and size
+     # Delete a question custom field.
+     And I log in as "admin"
+     And I navigate to "Plugins > Question bank plugins > Question custom fields" in site administration
+-    And I click on "Delete" "link" in the "Field 1" "table_row"
++    And I press "Delete custom field: Field 1"
+     And I click on "Yes" "button" in the "Confirm" "dialogue"
+     And I am on the "Test quiz Q001" "mod_quiz > question bank" page logged in as "teacher1"
+     And I apply question bank filter "Category" with value "Question category 1"

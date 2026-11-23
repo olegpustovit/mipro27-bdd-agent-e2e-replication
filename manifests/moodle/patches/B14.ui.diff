@@ -1,0 +1,32 @@
+diff --git a/public/course/format/classes/output/section_renderer.php b/public/course/format/classes/output/section_renderer.php
+index 93ba5aeb6efb9e5f4f58daaf8e148735441b8a00..ad81a99f97b0dfb43a4969b7504210927f394634 100644
+--- a/public/course/format/classes/output/section_renderer.php
++++ b/public/course/format/classes/output/section_renderer.php
+@@ -268,6 +268,7 @@ abstract class section_renderer extends core_course_renderer {
+             [
+                 'content' => $this->render($activitychooserbutton),
+                 'extraclasses' => 'always-visible my-3',
++                'dataregion' => 'always-visible-add-content',
+             ]
+         );
+     }
+diff --git a/public/course/format/templates/local/content/divider.mustache b/public/course/format/templates/local/content/divider.mustache
+index eff1346c70f73fdb04995e319dca8c92d8049683..5e64bfb487f6a26204aaaeb06d8eb070bf84155a 100644
+--- a/public/course/format/templates/local/content/divider.mustache
++++ b/public/course/format/templates/local/content/divider.mustache
+@@ -22,11 +22,14 @@
+     Example context (json):
+     {
+         "extraclasses": "mt-3",
++        "dataregion": "add-content-divider",
+         "content": "<button class=\"btn btn-primary\">Add section</button>"
+     }
+ }}
+ 
+-<div class="divider bulk-hidden d-flex justify-content-center align-items-center {{$extraclasses}}{{extraclasses}}{{/extraclasses}}">
++<div class="divider bulk-hidden d-flex justify-content-center align-items-center {{$extraclasses}}{{extraclasses}}{{/extraclasses}}"
++    {{#dataregion}}data-region="{{.}}"{{/dataregion}}
++>
+     <hr>
+     <div class="divider-content px-3">
+         {{$content}}{{{content}}}{{/content}}

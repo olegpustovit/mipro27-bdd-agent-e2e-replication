@@ -1,0 +1,35 @@
+diff --git a/public/mod/quiz/classes/task/update_overdue_attempts.php b/public/mod/quiz/classes/task/update_overdue_attempts.php
+index 8b10e374699a96651cdd50c21ad273184e6a36dc..9db788c15dd2219e8563518a7d96874f2b1cf019 100644
+--- a/public/mod/quiz/classes/task/update_overdue_attempts.php
++++ b/public/mod/quiz/classes/task/update_overdue_attempts.php
+@@ -80,16 +80,8 @@ class update_overdue_attempts extends \core\task\scheduled_task {
+ 
+         $count = 0;
+         $quizcount = 0;
+-        foreach ($attemptstoprocess as $attemptinfo) {
++        foreach ($attemptstoprocess as $attempt) {
+             try {
+-                $attempt = $DB->get_record('quiz_attempts', ['id' => $attemptinfo->id], '*', IGNORE_MISSING);
+-
+-                if (!$attempt) {
+-                    continue;
+-                }
+-
+-                $attempt->usertimeclose = $attemptinfo->usertimeclose;
+-                $attempt->usertimelimit = $attemptinfo->usertimelimit;
+ 
+                 // If we have moved on to a different quiz, fetch the new data.
+                 if (!$quiz || $attempt->quiz != $quiz->id) {
+@@ -143,10 +135,9 @@ class update_overdue_attempts extends \core\task\scheduled_task {
+         $quizausersql = quiz_get_attempt_usertime_sql(
+                 "iquiza.state IN ('inprogress', 'overdue') AND iquiza.timecheckstate <= :iprocessto");
+ 
+-        // This query returns the attempt id and the relevant user time information.
++        // This query should have all the quiz_attempts columns.
+         return $DB->get_recordset_sql("
+-         SELECT quiza.id,
+-                quiza.quiz,
++         SELECT quiza.*,
+                 quizauser.usertimeclose,
+                 quizauser.usertimelimit
+ 

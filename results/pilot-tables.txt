@@ -1,0 +1,55 @@
+Pilot headline tables (Cypress Real-World App; exploratory-owner-directed; Evidence gate STOP; no gate pass).
+Every table is given twice: all 12 scenarios, and excluding the 2 social scenarios (social-like, social-comment), whose target transaction ID is hidden and only reachable through a test hook.
+Each outcome class is its own count over the same denominator (fault runs or healthy runs). Classes are LLM-reviewer (judge1) classifications. Repeated executions of one app are not independent systems.
+
+== Campaign A (campaign-20261101-04d8551) arm=agent (runtime) scope=all ==
+fault runs N=48: supported_detection 43/48; wrong_reason 0/48; unsupported_pass 0/48; no_opportunity 0/48; action_failure 5/48; unresolved 0/48; invalid 0/48
+healthy runs N=60: true_pass 38/60; unsupported_healthy_pass 1/60; false_alarm 13/60; action_failure 8/60; unresolved 0/60; invalid 0/60
+
+== Campaign A (campaign-20261101-04d8551) arm=agent (runtime) scope=excluding-social ==
+fault runs N=40: supported_detection 40/40; wrong_reason 0/40; unsupported_pass 0/40; no_opportunity 0/40; action_failure 0/40; unresolved 0/40; invalid 0/40
+healthy runs N=50: true_pass 35/50; unsupported_healthy_pass 1/50; false_alarm 13/50; action_failure 1/50; unresolved 0/50; invalid 0/50
+
+== Campaign A (campaign-20261101-04d8551) arm=step definitions (maintained) scope=all ==
+fault runs N=48: supported_detection 48/48; wrong_reason 0/48; unsupported_pass 0/48; no_opportunity 0/48; action_failure 0/48; unresolved 0/48; invalid 0/48
+healthy runs N=60: true_pass 51/60; unsupported_healthy_pass 0/60; false_alarm 0/60; action_failure 7/60; unresolved 0/60; invalid 2/60
+
+== Campaign A (campaign-20261101-04d8551) arm=step definitions (maintained) scope=excluding-social ==
+fault runs N=40: supported_detection 40/40; wrong_reason 0/40; unsupported_pass 0/40; no_opportunity 0/40; action_failure 0/40; unresolved 0/40; invalid 0/40
+healthy runs N=50: true_pass 43/50; unsupported_healthy_pass 0/50; false_alarm 0/50; action_failure 6/50; unresolved 0/50; invalid 1/50
+
+== Campaign B (campaign-b-20261101-02f4758) arm=agent (runtime) scope=all ==
+fault runs N=48: supported_detection 40/48; wrong_reason 0/48; unsupported_pass 0/48; no_opportunity 0/48; action_failure 8/48; unresolved 0/48; invalid 0/48
+healthy runs N=60: true_pass 50/60; unsupported_healthy_pass 0/60; false_alarm 0/60; action_failure 10/60; unresolved 0/60; invalid 0/60
+
+== Campaign B (campaign-b-20261101-02f4758) arm=agent (runtime) scope=excluding-social ==
+fault runs N=40: supported_detection 40/40; wrong_reason 0/40; unsupported_pass 0/40; no_opportunity 0/40; action_failure 0/40; unresolved 0/40; invalid 0/40
+healthy runs N=50: true_pass 49/50; unsupported_healthy_pass 0/50; false_alarm 0/50; action_failure 1/50; unresolved 0/50; invalid 0/50
+
+== Campaign C (campaign-c-20261101-f7857ea) arm=agent (runtime) scope=all ==
+fault runs N=48: supported_detection 40/48; wrong_reason 0/48; unsupported_pass 0/48; no_opportunity 0/48; action_failure 8/48; unresolved 0/48; invalid 0/48
+healthy runs N=60: true_pass 50/60; unsupported_healthy_pass 3/60; false_alarm 0/60; action_failure 7/60; unresolved 0/60; invalid 0/60
+
+== Campaign C (campaign-c-20261101-f7857ea) arm=agent (runtime) scope=excluding-social ==
+fault runs N=40: supported_detection 40/40; wrong_reason 0/40; unsupported_pass 0/40; no_opportunity 0/40; action_failure 0/40; unresolved 0/40; invalid 0/40
+healthy runs N=50: true_pass 50/50; unsupported_healthy_pass 0/50; false_alarm 0/50; action_failure 0/50; unresolved 0/50; invalid 0/50
+
+== Campaign D (campaign-d-20261101-2b2589f) arm=agent (runtime) scope=all ==
+fault runs N=48: supported_detection 43/48; wrong_reason 0/48; unsupported_pass 0/48; no_opportunity 4/48; action_failure 1/48; unresolved 0/48; invalid 0/48
+healthy runs N=60: true_pass 49/60; unsupported_healthy_pass 0/60; false_alarm 4/60; action_failure 7/60; unresolved 0/60; invalid 0/60
+
+== Campaign D (campaign-d-20261101-2b2589f) arm=agent (runtime) scope=excluding-social ==
+fault runs N=40: supported_detection 39/40; wrong_reason 0/40; unsupported_pass 0/40; no_opportunity 0/40; action_failure 1/40; unresolved 0/40; invalid 0/40
+healthy runs N=50: true_pass 44/50; unsupported_healthy_pass 0/50; false_alarm 4/50; action_failure 2/50; unresolved 0/50; invalid 0/50
+
+== Step-definition breakage and repair, from raw records (campaign A) ==
+UI v0->v1: step definitions broke 12/12 (auth-login, auth-logout, profile-name, profile-email, bank-create, bank-delete, transfer-pay, transfer-request, social-like, social-comment, feed-personal, feed-friends)
+  accepted edits: journal 2/10; event stream 2/10 (maintenance-frozen says 2); agent ledger: 2 baseline_repair calls of which 0 errored
+  validation suites: journal 3/12; event stream validation-begin 3/12; agent ledger lists 2 baseline_validate calls (ledger is 1 short of the journal/event count; journal and event stream agree, so they are the record)
+  self-report conflict: agent final message claims 3 edits and 3 suites; CONFLICTS with the record (2 edits, 3 suites). The record is authoritative.
+  healthy step-definition passes right after repair (stage healthy-v1-1): 5/12 true_pass; reported pass 5/12
+UI v1->v2: step definitions broke 8/12 (auth-logout, profile-name, profile-email, bank-create, bank-delete, transfer-pay, transfer-request, social-like)
+  accepted edits: journal 5/10; event stream 5/10 (maintenance-frozen says 5); agent ledger: 7 baseline_repair calls of which 2 errored
+  validation suites: journal 6/12; event stream validation-begin 6/12; agent ledger lists 5 baseline_validate calls (ledger is 1 short of the journal/event count; journal and event stream agree, so they are the record)
+  self-report conflict: final message gives no counts
+  healthy step-definition passes right after repair (stage healthy-v2-1): 12/12 true_pass; reported pass 12/12

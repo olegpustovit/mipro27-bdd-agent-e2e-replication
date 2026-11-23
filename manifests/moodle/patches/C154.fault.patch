@@ -1,0 +1,27 @@
+diff --git a/public/question/type/ordering/questiontype.php b/public/question/type/ordering/questiontype.php
+index c5b5e26e9dbbc255d141baafd9ff5129d4ffecf6..36272ada1f733e7a5a0fe08036c96772001d684e 100644
+--- a/public/question/type/ordering/questiontype.php
++++ b/public/question/type/ordering/questiontype.php
+@@ -724,22 +724,4 @@ class qtype_ordering extends question_type {
+     public function get_numberingstyle(stdClass $questiondata): string {
+         return $questiondata->options->numberingstyle;
+     }
+-
+-    #[\Override]
+-    public function move_files($questionid, $oldcontextid, $newcontextid): void {
+-        parent::move_files($questionid, $oldcontextid, $newcontextid);
+-
+-        $this->move_files_in_answers($questionid, $oldcontextid, $newcontextid, true);
+-        $this->move_files_in_combined_feedback($questionid, $oldcontextid, $newcontextid);
+-        $this->move_files_in_hints($questionid, $oldcontextid, $newcontextid);
+-    }
+-
+-    #[\Override]
+-    public function delete_files($questionid, $contextid): void {
+-        parent::delete_files($questionid, $contextid);
+-
+-        $this->delete_files_in_answers($questionid, $contextid, true);
+-        $this->delete_files_in_combined_feedback($questionid, $contextid);
+-        $this->delete_files_in_hints($questionid, $contextid);
+-    }
+ }

@@ -1,0 +1,152 @@
+diff --git a/public/mod/quiz/classes/output/edit_renderer.php b/public/mod/quiz/classes/output/edit_renderer.php
+index 643abd89f478fcbf0b9d2d74839f27ca632b51f7..8448d14176891122a4ac36f3a56d3298086fc126 100644
+--- a/public/mod/quiz/classes/output/edit_renderer.php
++++ b/public/mod/quiz/classes/output/edit_renderer.php
+@@ -897,15 +897,9 @@ class edit_renderer extends \plugin_renderer_base {
+      * @return string The markup for the move action.
+      */
+     public function question_move_icon(structure $structure, $slot) {
+-        $slotnumber = $structure->get_displayed_number_for_slot($slot);
+-        return html_writer::link(
+-            new \moodle_url('#'),
+-            $this->pix_icon('i/dragdrop', '', 'moodle', ['class' => 'iconsmall']),
+-            [
+-                'class' => 'editing_move',
+-                'data-action' => 'move',
+-                'aria-label' => get_string('movequestionnumber', 'quiz', $slotnumber),
+-            ]
++        return html_writer::link(new \moodle_url('#'),
++            $this->pix_icon('i/dragdrop', get_string('move'), 'moodle', ['class' => 'iconsmall', 'title' => '']),
++            ['class' => 'editing_move', 'data-action' => 'move']
+         );
+     }
+ 
+@@ -997,14 +991,13 @@ class edit_renderer extends \plugin_renderer_base {
+         $url = new \moodle_url('repaginate.php', ['quizid' => $structure->get_quizid(),
+                 'slot' => $slot, 'repag' => $insertpagebreak ? 2 : 1, 'sesskey' => sesskey()]);
+ 
+-        $slotname = $structure->get_displayed_number_for_slot($slot);
+         if ($insertpagebreak) {
+-            $title = get_string('addpagebreakafter', 'quiz', $slotname);
+-            $image = $this->image_icon('e/insert_page_break', '');
++            $title = get_string('addpagebreak', 'quiz');
++            $image = $this->image_icon('e/insert_page_break', $title);
+             $action = 'addpagebreak';
+         } else {
+-            $title = get_string('removepagebreakafter', 'quiz', $slotname);
+-            $image = $this->image_icon('e/remove_page_break', '');
++            $title = get_string('removepagebreak', 'quiz');
++            $image = $this->image_icon('e/remove_page_break', $title);
+             $action = 'removepagebreak';
+         }
+ 
+@@ -1024,7 +1017,6 @@ class edit_renderer extends \plugin_renderer_base {
+                     'class' => 'page_split_join cm-edit-action btn btn-sm icon-no-margin',
+                     'disabled' => $disabled,
+                     'data-action' => $action,
+-                    'role' => 'button',
+                 ]
+             ),
+             'page_split_join_wrapper'
+@@ -1341,7 +1333,7 @@ class edit_renderer extends \plugin_renderer_base {
+         ], 'moodle');
+ 
+         $this->page->requires->strings_for_js([
+-                'addpagebreakafter',
++                'addpagebreak',
+                 'cannotremoveallsectionslots',
+                 'cannotremoveslots',
+                 'confirmremovesectionheading',
+@@ -1352,7 +1344,7 @@ class edit_renderer extends \plugin_renderer_base {
+                 'sectionheadingedit',
+                 'sectionheadingremove',
+                 'sectionnoname',
+-                'removepagebreakafter',
++                'removepagebreak',
+                 'questiondependencyadd',
+                 'questiondependencyfree',
+                 'questiondependencyremove',
+diff --git a/public/mod/quiz/lang/en/quiz.php b/public/mod/quiz/lang/en/quiz.php
+index da8d5aa0954ae0321768ca2fe452e38f413aef4d..68ff62507ee7bf40661ef5f2a4ffb157de3cca9b 100644
+--- a/public/mod/quiz/lang/en/quiz.php
++++ b/public/mod/quiz/lang/en/quiz.php
+@@ -45,6 +45,7 @@ $string['addnewpagesafterselected'] = 'Add new pages after selected questions';
+ $string['addnewquestionsqbank'] = 'Add questions to the category {$a->catname}: {$a->link}';
+ $string['addnewuseroverride'] = 'Add user override';
+ $string['addpagebreakafter'] = 'Add page break after question {$a}';
++$string['addpagebreak'] = 'Add page break';
+ $string['addpagehere'] = 'Add page here';
+ $string['addquestion'] = 'Add question';
+ $string['addquestionfrombankatend'] = 'Add from the question bank at the end';
+@@ -589,7 +590,6 @@ $string['modulename_link'] = 'mod/quiz/view';
+ $string['modulename_summary'] = 'Create a variety of assessments, from simple multiple-choice tests to complex exams with detailed feedback.';
+ $string['modulename_tip'] = 'Create your questions in the question bank first to reuse them easily in multiple quizzes.';
+ $string['modulenameplural'] = 'Quizzes';
+-$string['movequestionnumber'] = 'Move question: {$a}';
+ $string['moveselectedonpage'] = 'Move selected questions to page: {$a}';
+ $string['multichoice'] = 'Multiple choice';
+ $string['multipleanswers'] = 'Choose at least one answer.';
+@@ -921,6 +921,7 @@ $string['removeallquizattempts'] = 'All quiz attempts';
+ $string['removealluseroverrides'] = 'All user overrides';
+ $string['removeemptypage'] = 'Remove empty page';
+ $string['removepagebreakafter'] = 'Remove page break after question {$a}';
++$string['removepagebreak'] = 'Remove page break';
+ $string['removeselected'] = 'Remove selected';
+ $string['rename'] = 'Rename';
+ $string['renderingserverconnectfailed'] = 'The server {$a} failed to process an RQP request. Check that the URL is correct.';
+diff --git a/public/mod/quiz/tests/behat/behat_mod_quiz.php b/public/mod/quiz/tests/behat/behat_mod_quiz.php
+index 043dead8efc499d2e48a94415b6f2cf3e219d71d..c3e8cdbf183fb496618db63011054036e31d5874 100644
+--- a/public/mod/quiz/tests/behat/behat_mod_quiz.php
++++ b/public/mod/quiz/tests/behat/behat_mod_quiz.php
+@@ -574,7 +574,7 @@ class behat_mod_quiz extends behat_question_base {
+      */
+     protected function get_xpath_page_break_icon_after_question($addorremoves, $questionname) {
+         return "//li[contains(@class, 'slot') and contains(., '" . $this->escape($questionname) .
+-                "')]//a[contains(@class, 'page_split_join') and contains(@aria-label, '$addorremoves page break')]";
++                "')]//a[contains(@class, 'page_split_join') and @title = '" . $addorremoves . " page break']";
+     }
+ 
+     /**
+diff --git a/public/mod/quiz/yui/src/dragdrop/js/resource.js b/public/mod/quiz/yui/src/dragdrop/js/resource.js
+index 8665cc951614560b43b5657597647534ee42104b..8f6ae76a26ac84c00b72a169fd53ef260fad95c1 100644
+--- a/public/mod/quiz/yui/src/dragdrop/js/resource.js
++++ b/public/mod/quiz/yui/src/dragdrop/js/resource.js
+@@ -83,9 +83,8 @@ Y.extend(DRAGRESOURCE, M.core.dragdrop, {
+             // Replace move icons
+             var move = resourcesnode.one('a.' + CSS.EDITINGMOVE);
+             if (move) {
+-                var slotName = move.getAttribute('aria-label');
+                 var dragHandleClass = 'btn px-1 icon-no-margin ' + CSS.EDITINGMOVE;
+-                var resourcedraghandle = this.get_drag_handle(slotName, dragHandleClass, CSS.ICONCLASS);
++                var resourcedraghandle = this.get_drag_handle(M.util.get_string('move', 'moodle'), dragHandleClass, CSS.ICONCLASS);
+                 move.replace(resourcedraghandle);
+             }
+         }, this);
+diff --git a/public/mod/quiz/yui/src/util/js/slot.js b/public/mod/quiz/yui/src/util/js/slot.js
+index 3a077046da1f6257282727f96c2433c82b0d6d8e..6abfa73780d76798cd153be7a3bb16d5e1b0e219 100644
+--- a/public/mod/quiz/yui/src/util/js/slot.js
++++ b/public/mod/quiz/yui/src/util/js/slot.js
+@@ -333,21 +333,17 @@ Y.Moodle.mod_quiz.util.slot = {
+             // Get the correct title.
+             var action = '';
+             var iconname = '';
+-            var actionStr = '';
+-            var slotNumber = this.getNumber(slot);
+             if (Y.Moodle.mod_quiz.util.page.isPage(nextitem)) {
+                 action = 'removepagebreak';
+-                actionStr = 'removepagebreakafter';
+                 iconname = 'e/remove_page_break';
+             } else {
+                 action = 'addpagebreak';
+-                actionStr = 'addpagebreakafter';
+                 iconname = 'e/insert_page_break';
+             }
+ 
+             // Update the link and image titles
+-            pagebreaklink.set('title', M.util.get_string(actionStr, 'quiz', slotNumber));
+-            pagebreaklink.set('aria-label', M.util.get_string(actionStr, 'quiz', slotNumber));
++            pagebreaklink.set('title', M.util.get_string(action, 'quiz'));
++            pagebreaklink.set('aria-label', M.util.get_string(action, 'quiz'));
+             pagebreaklink.setData('action', action);
+             // Update the image title.
+             var icon = pagebreaklink.one(this.SELECTORS.ICON);

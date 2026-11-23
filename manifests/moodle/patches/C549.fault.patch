@@ -1,0 +1,41 @@
+diff --git a/public/question/classes/local/bank/question_bank_helper.php b/public/question/classes/local/bank/question_bank_helper.php
+index b82a55cc2ec7bcaf34d6de4ecf19793eace178de..9bee112b3345fde8d3bfd2ce0166f2c9840a9b83 100644
+--- a/public/question/classes/local/bank/question_bank_helper.php
++++ b/public/question/classes/local/bank/question_bank_helper.php
+@@ -66,17 +66,10 @@ class question_bank_helper {
+     protected const RECENTLY_VIEWED = 'recently_viewed_open_banks';
+ 
+     /**
+-     * Category delimiter used by the SQL to group concatenate question category data i.e.
+-     * category_id<->category_name<->context_id.
++     * Category delimiter used by the SQL to group concatenate question category data.
+      */
+     private const CATEGORY_DELIMITER = '<->';
+ 
+-    /**
+-     * Category separator used by the SQL for group concatenation of those category triplets
+-     * from above.
+-     */
+-    private const CATEGORY_SEPARATOR = '<,>';
+-
+     /**
+      * Maximum length for the question bank name database field.
+      */
+@@ -249,7 +242,7 @@ class question_bank_helper {
+                 "'" . self::CATEGORY_DELIMITER . "'",
+                 'qc.contextid'
+             );
+-            $groupconcat = $DB->sql_group_concat($concat, self::CATEGORY_SEPARATOR);
++            $groupconcat = $DB->sql_group_concat($concat, ',');
+             $select = "SELECT cm.id, cm.course, {$groupconcat} AS cats";
+             $catsql = ' JOIN {question_categories} qc ON qc.contextid = c.id AND qc.parent <> 0';
+         } else {
+@@ -461,7 +454,7 @@ class question_bank_helper {
+     ): formatted_bank {
+ 
+         $cminfo = cm_info::create($cm);
+-        $concatedcats = !empty($cm->cats) ? explode(self::CATEGORY_SEPARATOR, $cm->cats) : [];
++        $concatedcats = !empty($cm->cats) ? explode(',', $cm->cats) : [];
+         $categories = array_map(static function($concatedcategory) use ($cminfo, $currentbankid) {
+             $values = explode(self::CATEGORY_DELIMITER, $concatedcategory);
+             $cat = new stdClass();

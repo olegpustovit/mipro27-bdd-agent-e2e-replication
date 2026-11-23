@@ -1,0 +1,54 @@
+diff --git a/public/message/amd/src/message_drawer.js b/public/message/amd/src/message_drawer.js
+index 44752c88341181c291addd26d909d3c89a58bc5d..e0ce177e00643484d44cd5fcdfd7f0a33ae1dcd2 100644
+--- a/public/message/amd/src/message_drawer.js
++++ b/public/message/amd/src/message_drawer.js
+@@ -586,7 +586,6 @@ function(
+                 $('#' + button).focus();
+             }
+             PubSub.publish(Events.TOGGLE_VISIBILITY, button);
+-            PubSub.publish(Events.HIDE, {});
+         });
+ 
+         PubSub.subscribe(Events.CREATE_CONVERSATION_WITH_USER, function(args) {
+diff --git a/public/message/amd/src/message_user_button.js b/public/message/amd/src/message_user_button.js
+index b46b8f68a86e0de13c92db245dc535da0a32d60e..a2302fea8c58acb3938bab4663219257c07c7a0f 100644
+--- a/public/message/amd/src/message_user_button.js
++++ b/public/message/amd/src/message_user_button.js
+@@ -20,15 +20,8 @@
+  * @copyright  2019 Mark Nelson <markn@moodle.com>
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+-define([
+-        'jquery',
+-        'core/custom_interaction_events',
+-        'core_message/message_drawer_helper',
+-        'core/templates',
+-        'core/pubsub',
+-        'core_message/message_drawer_events'
+-    ],
+-    function($, CustomEvents, MessageDrawerHelper, Templates, PubSub, MessageDrawerEvents) {
++define(['jquery', 'core/custom_interaction_events', 'core_message/message_drawer_helper', 'core/templates'],
++    function($, CustomEvents, MessageDrawerHelper, Templates) {
+ 
+ 
+         var SELECTORS = {
+@@ -100,17 +93,12 @@ define([
+                     } else {
+                         MessageDrawerHelper.createConversationWithUser(args);
+                     }
+-                    element.addClass('active');
+                 }
+-                element.focus();
++                $(e.target).focus();
++                $(e.target).toggleClass('active');
+                 e.preventDefault();
+                 data.originalEvent.preventDefault();
+             });
+-
+-            // Remove the active class when the drawer is hidden.
+-            PubSub.subscribe(MessageDrawerEvents.HIDE, function() {
+-                element.removeClass('active');
+-            });
+         };
+ 
+         return /** @alias module:core_message/message_user_button */ {

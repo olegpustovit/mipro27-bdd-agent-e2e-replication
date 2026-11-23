@@ -1,0 +1,13 @@
+diff --git a/public/admin/roles/classes/capability_table_with_risks.php b/public/admin/roles/classes/capability_table_with_risks.php
+index 9ff7da475a5089039bde3bdf9cdf46559aaf7320..cc3dee9e5db26c86556226ee09d367020c02d08f 100644
+--- a/public/admin/roles/classes/capability_table_with_risks.php
++++ b/public/admin/roles/classes/capability_table_with_risks.php
+@@ -120,7 +120,7 @@ abstract class core_role_capability_table_with_risks extends core_role_capabilit
+     public function save_changes() {
+         // Set the permissions.
+         foreach ($this->changed as $changedcap) {
+-            assign_capability($changedcap, $this->permissions[$changedcap],
++            assign_capability($changedcap, $this->permissions[$changedcap] == CAP_PREVENT ? CAP_PROHIBIT : $this->permissions[$changedcap],
+                 $this->roleid, $this->context->id, true);
+         }
+     }

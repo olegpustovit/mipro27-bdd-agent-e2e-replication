@@ -1,0 +1,63 @@
+diff --git a/public/course/format/classes/output/section_renderer.php b/public/course/format/classes/output/section_renderer.php
+index ad81a99f97b0dfb43a4969b7504210927f394634..93ba5aeb6efb9e5f4f58daaf8e148735441b8a00 100644
+--- a/public/course/format/classes/output/section_renderer.php
++++ b/public/course/format/classes/output/section_renderer.php
+@@ -268,7 +268,6 @@ abstract class section_renderer extends core_course_renderer {
+             [
+                 'content' => $this->render($activitychooserbutton),
+                 'extraclasses' => 'always-visible my-3',
+-                'dataregion' => 'always-visible-add-content',
+             ]
+         );
+     }
+diff --git a/public/course/format/templates/local/content/divider.mustache b/public/course/format/templates/local/content/divider.mustache
+index 5e64bfb487f6a26204aaaeb06d8eb070bf84155a..eff1346c70f73fdb04995e319dca8c92d8049683 100644
+--- a/public/course/format/templates/local/content/divider.mustache
++++ b/public/course/format/templates/local/content/divider.mustache
+@@ -22,14 +22,11 @@
+     Example context (json):
+     {
+         "extraclasses": "mt-3",
+-        "dataregion": "add-content-divider",
+         "content": "<button class=\"btn btn-primary\">Add section</button>"
+     }
+ }}
+ 
+-<div class="divider bulk-hidden d-flex justify-content-center align-items-center {{$extraclasses}}{{extraclasses}}{{/extraclasses}}"
+-    {{#dataregion}}data-region="{{.}}"{{/dataregion}}
+->
++<div class="divider bulk-hidden d-flex justify-content-center align-items-center {{$extraclasses}}{{extraclasses}}{{/extraclasses}}">
+     <hr>
+     <div class="divider-content px-3">
+         {{$content}}{{{content}}}{{/content}}
+diff --git a/public/course/tests/behat/behat_course.php b/public/course/tests/behat/behat_course.php
+index ecc314b240396b3c35e152a705dddffeab9eba40..8e3a66cbd236db2cf0040b4550d72d4c2347f223 100644
+--- a/public/course/tests/behat/behat_course.php
++++ b/public/course/tests/behat/behat_course.php
+@@ -2182,21 +2182,11 @@ class behat_course extends behat_base {
+      * @Given /^I open the activity chooser$/
+      */
+     public function i_open_the_activity_chooser() {
+-        // Only the always visible divider is clickable, the ones between activities are shown on hover only.
+-        $region = '[data-region="always-visible-add-content"]';
+-        $page = $this->getSession()->getPage();
+-
+-        // The dropdown is only rendered when there are extra action links (for example, subsections).
+-        if ($page->find('css', "{$region} button[data-action=\"open-addingcontent\"]")) {
+-            $this->execute('behat_general::i_click_on', [
+-                "{$region} button[data-action=\"open-addingcontent\"]",
+-                'css_element',
+-            ]);
+-            $chooserselector = "{$region} .dropdown-menu.show button[data-action=\"open-chooser\"]";
+-        } else {
+-            $chooserselector = "{$region} button[data-action=\"open-chooser\"]";
+-        }
+-        $this->execute('behat_general::i_click_on', [$chooserselector, 'css_element']);
++        // Open the "Activity or resource and Subsection" dropdown first.
++        $this->execute('behat_general::i_click_on',
++                ['//button[@data-action="open-addingcontent"]', 'xpath_element']);
++        $this->execute('behat_general::i_click_on',
++            ['//button[@data-action="open-chooser"]', 'xpath_element']);
+ 
+         $node = $this->get_selected_node('xpath_element', '//div[@data-region="modules"]');
+         $this->ensure_node_is_visible($node);

@@ -1,0 +1,46 @@
+diff --git a/public/message/output/airnotifier/message_output_airnotifier.php b/public/message/output/airnotifier/message_output_airnotifier.php
+index 2785b06985615d597436e0f0d0649d027ae36feb..75569d0c240253d82ecdf6ef055e48e17ff889b6 100644
+--- a/public/message/output/airnotifier/message_output_airnotifier.php
++++ b/public/message/output/airnotifier/message_output_airnotifier.php
+@@ -132,26 +132,23 @@ class message_output_airnotifier extends message_output {
+             $curl->setopt(array('CURLOPT_TIMEOUT' => 2, 'CURLOPT_CONNECTTIMEOUT' => 2));
+             $curl->setHeader($header);
+ 
+-            // Clone the data to avoid modifying the original.
+-            $deviceextra = clone $extra;
+-
+-            $deviceextra->encrypted = $encryptnotifications;
+-            $deviceextra = $this->encrypt_payload($deviceextra, $devicetoken);
++            $extra->encrypted = $encryptnotifications;
++            $extra = $this->encrypt_payload($extra, $devicetoken);
+ 
+             // We use Firebase to deliver all Push Notifications, and for all device types.
+             // Firebase has a 4KB payload limit.
+             // https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
+             // If the message is over that limit we remove unneeded fields and replace the title with a simple message.
+-            if (\core_text::strlen(json_encode($deviceextra), '8bit') > 4000) {
+-                $deviceextra->smallmessage = get_string('view_notification', 'message_airnotifier');
++            if (\core_text::strlen(json_encode($extra), '8bit') > 4000) {
++                $extra->smallmessage = get_string('view_notification', 'message_airnotifier');
+             }
+ 
+             $params = array(
+                 'device'    => $devicetoken->platform,
+                 'token'     => $devicetoken->pushid,
+-                'extra'     => $deviceextra
++                'extra'     => $extra
+             );
+-            if ($deviceextra->encrypted) {
++            if ($extra->encrypted) {
+                 // Setting alert to null makes air notifier send the notification as a data payload,
+                 // this forces Android phones to call the app onMessageReceived function to decrypt the notification.
+                 // Otherwise notifications are created by the Android system and will not be decrypted.
+@@ -190,6 +187,8 @@ class message_output_airnotifier extends message_output {
+             return $payload;
+         }
+ 
++        // Clone the data to avoid modifying the original.
++        $payload = clone $payload;
+         $publickey = sodium_base642bin($devicetoken->publickey, SODIUM_BASE64_VARIANT_ORIGINAL);
+         $fields = [
+             'userfromfullname',

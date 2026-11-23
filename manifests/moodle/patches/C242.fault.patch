@@ -1,0 +1,111 @@
+diff --git a/public/lib/editor/tiny/plugins/autosave/classes/external/reset_autosave_session.php b/public/lib/editor/tiny/plugins/autosave/classes/external/reset_autosave_session.php
+index cc5a989c02bf53453862668bd77dcc3b6e009f6b..bcf7e4ff4cc50b97f35f2e657aba11b60cdb1ce7 100644
+--- a/public/lib/editor/tiny/plugins/autosave/classes/external/reset_autosave_session.php
++++ b/public/lib/editor/tiny/plugins/autosave/classes/external/reset_autosave_session.php
+@@ -62,6 +62,7 @@ class reset_autosave_session extends external_api {
+         string $pageinstance,
+         string $elementid
+     ): array {
++        global $DB, $USER;
+ 
+         [
+             'contextid' => $contextid,
+@@ -76,11 +77,8 @@ class reset_autosave_session extends external_api {
+ 
+         ]);
+ 
+-        // May have been called by a non-logged in user.
+-        if (isloggedin() && !isguestuser()) {
+-            $manager = new \tiny_autosave\autosave_manager($contextid, $pagehash, $pageinstance, $elementid);
+-            $manager->remove_autosave_record();
+-        }
++        $manager = new \tiny_autosave\autosave_manager($contextid, $pagehash, $pageinstance, $elementid);
++        $manager->remove_autosave_record();
+ 
+         return [];
+     }
+diff --git a/public/lib/editor/tiny/plugins/autosave/classes/external/resume_autosave_session.php b/public/lib/editor/tiny/plugins/autosave/classes/external/resume_autosave_session.php
+index b916cafce734dee830d860d2d129ee80cf5bb0ca..e3a6cccb1f050ad282a16f53f8bb8030d0ccb482 100644
+--- a/public/lib/editor/tiny/plugins/autosave/classes/external/resume_autosave_session.php
++++ b/public/lib/editor/tiny/plugins/autosave/classes/external/resume_autosave_session.php
+@@ -71,6 +71,7 @@ class resume_autosave_session extends external_api {
+         string $elementid,
+         ?int $draftid
+     ): array {
++        global $DB, $USER;
+ 
+         [
+             'contextid' => $contextid,
+@@ -86,15 +87,10 @@ class resume_autosave_session extends external_api {
+             'draftid' => $draftid,
+         ]);
+ 
+-        $drafttext = '';
+-
+-        // May have been called by a non-logged in user.
+-        if (isloggedin() && !isguestuser()) {
+-            $manager = new \tiny_autosave\autosave_manager($contextid, $pagehash, $pageinstance, $elementid);
+-            $drafttext = $manager->resume_autosave_session($draftid)->drafttext;
+-        }
++        $manager = new \tiny_autosave\autosave_manager($contextid, $pagehash, $pageinstance, $elementid);
++        $sessiondata = $manager->resume_autosave_session($draftid);
+         return [
+-            'drafttext' => $drafttext,
++            'drafttext' => $sessiondata->drafttext,
+         ];
+     }
+ 
+diff --git a/public/lib/editor/tiny/plugins/autosave/classes/external/update_autosave_session_content.php b/public/lib/editor/tiny/plugins/autosave/classes/external/update_autosave_session_content.php
+index 434834bd2cb6a929cb0d49792ab3e752b0e1c36a..cc27117f62ee8ed0051f81ab802ebc7481711aa3 100644
+--- a/public/lib/editor/tiny/plugins/autosave/classes/external/update_autosave_session_content.php
++++ b/public/lib/editor/tiny/plugins/autosave/classes/external/update_autosave_session_content.php
+@@ -65,6 +65,7 @@ class update_autosave_session_content extends external_api {
+         string $elementid,
+         string $drafttext
+     ): array {
++        global $DB, $USER;
+ 
+         [
+             'contextid' => $contextid,
+@@ -80,11 +81,8 @@ class update_autosave_session_content extends external_api {
+             'drafttext' => $drafttext,
+         ]);
+ 
+-        // May have been called by a non-logged in user.
+-        if (isloggedin() && !isguestuser()) {
+-            $manager = new \tiny_autosave\autosave_manager($contextid, $pagehash, $pageinstance, $elementid);
+-            $manager->update_autosave_record($drafttext);
+-        }
++        $manager = new \tiny_autosave\autosave_manager($contextid, $pagehash, $pageinstance, $elementid);
++        $manager->update_autosave_record($drafttext);
+ 
+         return [];
+     }
+diff --git a/public/lib/editor/tiny/plugins/autosave/db/services.php b/public/lib/editor/tiny/plugins/autosave/db/services.php
+index 44316e8f5079cd0381e5d5027968b7a4548079f2..8f62857f83ed82066203f75f631943697c8e3192 100644
+--- a/public/lib/editor/tiny/plugins/autosave/db/services.php
++++ b/public/lib/editor/tiny/plugins/autosave/db/services.php
+@@ -30,7 +30,6 @@ $functions = [
+         'methodname' => 'execute',
+         'description' => 'Resume an autosave session',
+         'type' => 'write',
+-        'loginrequired' => false,
+         'ajax' => true,
+     ),
+     'tiny_autosave_reset_session' => array(
+@@ -38,7 +37,6 @@ $functions = [
+         'methodname' => 'execute',
+         'description' => 'Reset an autosave session',
+         'type' => 'write',
+-        'loginrequired' => false,
+         'ajax' => true,
+     ),
+     'tiny_autosave_update_session' => array(
+@@ -46,7 +44,6 @@ $functions = [
+         'methodname' => 'execute',
+         'description' => 'Update an autosave session',
+         'type' => 'write',
+-        'loginrequired' => false,
+         'ajax' => true,
+     ),
+ ];

@@ -1,0 +1,15 @@
+diff --git a/public/mod/forum/locallib.php b/public/mod/forum/locallib.php
+index d68fd65e4af6b9687bc5a64502fef4e03b0535be..205236830a64fe301403b8712778faf87fabb05c 100644
+--- a/public/mod/forum/locallib.php
++++ b/public/mod/forum/locallib.php
+@@ -309,9 +309,8 @@ class forum_portfolio_caller extends portfolio_module_caller_base {
+         $viewfullnames = true;
+         // format the post body
+         $options = portfolio_format_text_options();
+-        $options->context = $this->modcontext;
+         $format = $this->get('exporter')->get('format');
+-        $formattedtext = format_text($post->message, $post->messageformat, $options);
++        $formattedtext = format_text($post->message, $post->messageformat, $options, $this->get('course')->id);
+         $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id, 'mod_forum', 'post', $post->id, $format);
+ 
+         $output = '<table border="0" cellpadding="3" cellspacing="0" class="forumpost">';

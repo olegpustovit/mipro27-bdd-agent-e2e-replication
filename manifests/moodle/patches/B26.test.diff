@@ -1,0 +1,15 @@
+diff --git a/group/tests/behat/behat_groups.php b/group/tests/behat/behat_groups.php
+index 86be91b6e9bc963256a4305d2a405b8e1a28a4ea..a39c068430043059544827457ba618cfcc7597b6 100644
+--- a/group/tests/behat/behat_groups.php
++++ b/group/tests/behat/behat_groups.php
+@@ -77,8 +77,8 @@ class behat_groups extends behat_base {
+ 
+         foreach ($groups as $groupname) {
+             // Find the table after the H3 containing the grouping name, then look for the group name in the first column.
+-            $xpath = "//h3[normalize-space(.) = '{$grouping}']/following-sibling::table//tr//".
+-                "td[contains(concat(' ', normalize-space(@class), ' '), ' c0 ')][normalize-space(.) = '{$groupname}' ]";
++            $xpath = "//h3[normalize-space(.) = '{$grouping}']/following-sibling::div[contains(@class, 'table-responsive')]" .
++                "/table//tr//td[contains(concat(' ', normalize-space(@class), ' '), ' c0 ')][normalize-space(.) = '{$groupname}' ]";
+ 
+             $this->execute('behat_general::should_exist', array($xpath, 'xpath_element'));
+         }

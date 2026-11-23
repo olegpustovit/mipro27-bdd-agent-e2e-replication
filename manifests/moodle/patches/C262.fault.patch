@@ -1,0 +1,72 @@
+diff --git a/public/blocks/myoverview/amd/src/view.js b/public/blocks/myoverview/amd/src/view.js
+index 2c02c7c0f3def967bf14d38ee4b1287b8679a8b4..941b8951b4590e4b879927724f07a8e87a9983d6 100644
+--- a/public/blocks/myoverview/amd/src/view.js
++++ b/public/blocks/myoverview/amd/src/view.js
+@@ -63,16 +63,6 @@ let lastLimit = 0;
+ 
+ let namespace = null;
+ 
+-/**
+- * Whether the summary display has been loaded.
+- *
+- * If true, this means that courses have been loaded with the summary text.
+- * Otherwise, switching to the summary display mode will require course data to be fetched with the summary text.
+- *
+- * @type {boolean}
+- */
+-let summaryDisplayLoaded = false;
+-
+ /**
+  * Get filter values from DOM.
+  *
+@@ -117,7 +107,6 @@ const getMyCourses = (filters, limit) => {
+     };
+     if (filters.display === 'summary') {
+         params.requiredfields = Repository.SUMMARY_REQUIRED_FIELDS;
+-        summaryDisplayLoaded = true;
+     } else {
+         params.requiredfields = Repository.CARDLIST_REQUIRED_FIELDS;
+     }
+@@ -144,10 +133,8 @@ const getSearchMyCourses = (filters, limit, searchValue) => {
+     };
+     if (filters.display === 'summary') {
+         params.requiredfields = Repository.SUMMARY_REQUIRED_FIELDS;
+-        summaryDisplayLoaded = true;
+     } else {
+         params.requiredfields = Repository.CARDLIST_REQUIRED_FIELDS;
+-        summaryDisplayLoaded = false;
+     }
+     return Repository.getEnrolledCoursesByTimeline(params);
+ };
+@@ -865,25 +852,12 @@ export const init = root => {
+  */
+ export const reset = root => {
+     if (loadedPages.length > 0) {
+-        const filters = getFilterValues(root);
+-        // If the display mode is changed to 'summary' but the summary display has not been loaded yet,
+-        // we need to re-fetch the courses to include the course summary text.
+-        if (filters.display === 'summary' && !summaryDisplayLoaded) {
+-            const page = document.querySelector(SELECTORS.region.selectBlock);
+-            const input = page.querySelector(SELECTORS.region.searchInput);
+-            if (input.value !== '') {
+-                initializePagedContent(root, searchFunctionalityCurry(), input.value.trim());
+-            } else {
+-                initializePagedContent(root, standardFunctionalityCurry());
+-            }
+-        } else {
+-            loadedPages.forEach((courseList, index) => {
+-                let pagedContentPage = getPagedContentContainer(root, index);
+-                renderCourses(root, courseList).then((html, js) => {
+-                    return Templates.replaceNodeContents(pagedContentPage, html, js);
+-                }).catch(Notification.exception);
+-            });
+-        }
++        loadedPages.forEach((courseList, index) => {
++            let pagedContentPage = getPagedContentContainer(root, index);
++            renderCourses(root, courseList).then((html, js) => {
++                return Templates.replaceNodeContents(pagedContentPage, html, js);
++            }).catch(Notification.exception);
++        });
+     } else {
+         init(root);
+     }

@@ -1,0 +1,62 @@
+diff --git a/public/availability/classes/info.php b/public/availability/classes/info.php
+index 8fa2ea0d7315fc507b358a1e557064618a37e4da..a573374bfeaaa141fc91cb93d8ea50d27bed2aff 100644
+--- a/public/availability/classes/info.php
++++ b/public/availability/classes/info.php
+@@ -208,7 +208,15 @@ abstract class info {
+             $this->modinfo = null;
+             return true;
+         } else {
+-            $information = $tree->get_result_information($this, $result);
++            // If the item is marked as 'not visible' then we don't change the available
++            // flag (visible/available are treated distinctly), but we remove any
++            // availability info. If the item is hidden with the eye icon, it doesn't
++            // make sense to show 'Available from <date>' or similar, because even
++            // when that date arrives it will still not be available unless somebody
++            // toggles the eye icon.
++            if ($this->visible) {
++                $information = $tree->get_result_information($this, $result);
++            }
+ 
+             $this->modinfo = null;
+             return false;
+diff --git a/public/course/classes/cm_info.php b/public/course/classes/cm_info.php
+index cb30c1eae80d24439f09261cfb7d30ce5e897bfb..de8ab6c35a0f98ba3962734e9841bd48720f71a0 100644
+--- a/public/course/classes/cm_info.php
++++ b/public/course/classes/cm_info.php
+@@ -1652,7 +1652,7 @@ class cm_info implements IteratorAggregate {
+             ($this->visibleoncoursepage || has_any_capability($capabilities, $this->get_context(), $userid));
+         // Activity that is not available, not hidden from course page and has availability
+         // info is actually visible on the course page (with availability info and without a link).
+-        if ($this->visibleoncoursepage && $this->visible && $this->availableinfo) {
++        if (!$this->uservisible && $this->visibleoncoursepage && $this->availableinfo) {
+             $this->uservisibleoncoursepage = true;
+         }
+     }
+diff --git a/public/course/format/classes/base.php b/public/course/format/classes/base.php
+index 18f4787123a6c110fd34838235e9b81ca6f9b2be..ee7d739e53cf08c92632d4e55a809970dc8cbe2f 100644
+--- a/public/course/format/classes/base.php
++++ b/public/course/format/classes/base.php
+@@ -1773,8 +1773,8 @@ abstract class base {
+         // but there is some available info text which explains the reason & should display,
+         // OR it is hidden but the course has a setting to display hidden sections as unavailable.
+         return $section->uservisible ||
+-            ($section->visible || !$hidesections)
+-            && ($section->available || !empty($section->availableinfo));
++            ($section->visible && !$section->available && !empty($section->availableinfo)) ||
++            (!$section->visible && !$hidesections);
+     }
+ 
+     /**
+diff --git a/public/grade/report/user/classes/report/user.php b/public/grade/report/user/classes/report/user.php
+index 925e050b3d19096ce9eb650c1a187c6e97032b33..230df3dae87c66c052ca660e32a2a2c4a1d003d2 100644
+--- a/public/grade/report/user/classes/report/user.php
++++ b/public/grade/report/user/classes/report/user.php
+@@ -545,7 +545,7 @@ class user extends grade_report {
+                     if (!$cm->uservisible) {
+                         // If there is 'availableinfo' text then it is only greyed
+                         // out and not entirely hidden.
+-                        if (!$cm->visible || !$cm->availableinfo) {
++                        if (!$cm->availableinfo) {
+                             $hide = true;
+                         }
+                     }

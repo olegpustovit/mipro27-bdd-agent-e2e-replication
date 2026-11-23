@@ -1,0 +1,36 @@
+diff --git a/public/user/classes/hook/before_user_deleted.php b/public/user/classes/hook/before_user_deleted.php
+index 1b4413e61ea6576f3256a1e230752a5b699cd099..4dc1115a2548260f3b3964869d47727f5690f976 100644
+--- a/public/user/classes/hook/before_user_deleted.php
++++ b/public/user/classes/hook/before_user_deleted.php
+@@ -29,9 +29,12 @@ use Psr\EventDispatcher\StoppableEventInterface;
+ #[\core\attribute\label('Allows plugins or features to perform actions before a user is deleted.')]
+ #[\core\attribute\tags('user')]
+ class before_user_deleted implements
+-    StoppableEventInterface
+-{
+-    use \core\hook\stoppable_trait;
++    StoppableEventInterface {
++
++    /**
++     * @var bool Whether the propagation of this event has been stopped.
++     */
++    protected bool $stopped = false;
+ 
+     /**
+      * Constructor for the hook.
+@@ -43,4 +46,15 @@ class before_user_deleted implements
+         public readonly stdClass $user,
+     ) {
+     }
++
++    public function isPropagationStopped(): bool {
++        return $this->stopped;
++    }
++
++    /**
++     * Stop the propagation of this event.
++     */
++    public function stop(): void {
++        $this->stopped = true;
++    }
+ }

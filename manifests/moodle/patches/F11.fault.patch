@@ -1,0 +1,122 @@
+diff --git a/public/question/amd/src/bank_switcher.js b/public/question/amd/src/bank_switcher.js
+index 0d9edd220081df7e37b736f80ca292476c7dc291..de16b31022b8b5aee8b4e43cd6a247d1ad9cc172 100644
+--- a/public/question/amd/src/bank_switcher.js
++++ b/public/question/amd/src/bank_switcher.js
+@@ -84,7 +84,6 @@ export default class BankSwitcher {
+         };
+         if (activityCmId) {
+             params.currentmodule = activityCmId;
+-            params.includeprivate = true;
+         }
+         const banksResponse = await Fetch.performGet('question', 'banks', {params});
+         const {banks} = await banksResponse.json();
+diff --git a/public/question/classes/local/bank/formatted_bank.php b/public/question/classes/local/bank/formatted_bank.php
+index 7a625fe8a0ef195dce7d2a871718c798ccf6f019..566cd523f1ed781a4e926587c21cbc850fc5d34c 100644
+--- a/public/question/classes/local/bank/formatted_bank.php
++++ b/public/question/classes/local/bank/formatted_bank.php
+@@ -29,6 +29,11 @@ use JsonSerializable;
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ class formatted_bank implements JsonSerializable {
++    /**
++     * @var bool True if the bank is the module currently being viewed.
++     */
++    public bool $current;
++
+     /**
+      * Constructor
+      *
+@@ -37,7 +42,6 @@ class formatted_bank implements JsonSerializable {
+      * @param array $questioncategories Array of categories belonging to the bank.
+      * @param bool $shared True if the bank contains shared questions, false if it contains private questions.
+      * @param bool $recent True if the bank was recently viewed by the user.
+-     * @param bool $current True if the bank is the module currently being viewed.
+      */
+     public function __construct(
+         /** @var cm_info $cminfo Course module info. */
+@@ -50,8 +54,6 @@ class formatted_bank implements JsonSerializable {
+         public bool $shared,
+         /** @var bool True if the bank was recently viewed by the user. */
+         public bool $recent,
+-        /** @var bool True if the bank is the module currently being viewed. */
+-        public bool $current = false,
+     ) {
+     }
+ 
+@@ -82,7 +84,6 @@ class formatted_bank implements JsonSerializable {
+             'questioncategories' => $this->questioncategories,
+             'shared' => $this->shared,
+             'recent' => $this->recent,
+-            'current' => $this->current,
+         ];
+     }
+ 
+diff --git a/public/question/classes/local/bank/question_bank_helper.php b/public/question/classes/local/bank/question_bank_helper.php
+index b82a55cc2ec7bcaf34d6de4ecf19793eace178de..32e84538bf285298d2fa062f37fe3bff7da989e6 100644
+--- a/public/question/classes/local/bank/question_bank_helper.php
++++ b/public/question/classes/local/bank/question_bank_helper.php
+@@ -479,7 +479,6 @@ class question_bank_helper {
+             $categories,
+             $isshared,
+             $isrecent,
+-            $cminfo->id == $currentbankid,
+         );
+     }
+ 
+@@ -755,8 +754,6 @@ class question_bank_helper {
+      * @param module|null $modulecontext If set, use this instead of $coursecontext when applying text filters on bank names.
+      * @param bool $includeshared Include banks with shared questions.
+      * @param bool $includerecent Include banks recently viewed by the user.
+-     * @param bool $includeprivate Include banks with private questions. If $modulecontext is set, only the current module's bank
+-     *     will be included.
+      * @return formatted_bank[]
+      */
+     public static function get_banks_for_course(
+@@ -764,7 +761,6 @@ class question_bank_helper {
+         ?module $modulecontext = null,
+         bool $includeshared = true,
+         bool $includerecent = false,
+-        bool $includeprivate = false,
+     ): array {
+         global $USER;
+         if ($modulecontext) {
+@@ -790,19 +786,6 @@ class question_bank_helper {
+             );
+             $banks = array_merge($banks, $recentbanks);
+         }
+-        if ($includeprivate) {
+-            $privatebanks = self::get_activity_instances_with_private_questions(
+-                incourseids: [$coursecontext->instanceid],
+-                havingcap: $capabilities,
+-                currentbankid: $modulecontext ? $modulecontext->instanceid : 0,
+-                filtercontext: $context,
+-            );
+-            if ($modulecontext) {
+-                // We're in a module context, don't include private banks from other modules.
+-                $privatebanks = array_filter($privatebanks, fn($bank) => $bank->current);
+-            }
+-            $banks = array_merge($banks, $privatebanks);
+-        }
+         return $banks;
+     }
+ }
+diff --git a/public/question/classes/route/api/bank.php b/public/question/classes/route/api/bank.php
+index 02675bd7e6b392ad7b2a848fcbaf636d3f2c1317..13253d24614c9ca83ff2aa9f3a384dabcbe1de02 100644
+--- a/public/question/classes/route/api/bank.php
++++ b/public/question/classes/route/api/bank.php
+@@ -143,7 +143,6 @@ class bank {
+             new query_coursemodule('currentmodule'),
+             new query_parameter(name: 'includeshared', type: param::BOOL, default: true),
+             new query_parameter(name: 'includerecent', type: param::BOOL, default: false),
+-            new query_parameter(name: 'includeprivate', type: param::BOOL, default: false),
+         ],
+         responses: [
+             new response(
+@@ -178,7 +177,6 @@ class bank {
+             $currentmodulecontext,
+             $params['includeshared'],
+             $params['includerecent'],
+-            $params['includeprivate'],
+         );
+         return new payload_response(
+             request: $request,

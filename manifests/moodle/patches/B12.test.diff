@@ -1,0 +1,187 @@
+diff --git a/public/mod/data/tests/behat/actionsmenu_replacement.feature b/public/mod/data/tests/behat/actionsmenu_replacement.feature
+index ac21c986a4b2d5347c118ca81882bbd64c3323e2..64505851254f18aca5b5b44fbded7e03c43bc037 100644
+--- a/public/mod/data/tests/behat/actionsmenu_replacement.feature
++++ b/public/mod/data/tests/behat/actionsmenu_replacement.feature
+@@ -42,11 +42,11 @@ Feature: Users can add the ##actionsmenu## replacement to the database templates
+       | Header         | <table>                                              |
+       | Repeated entry | <tr><td>[[field1]]</td><td>##actionsmenu##</td><tr>  |
+       | Footer         | </table>                                             |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     And I set the field "Templates tertiary navigation" to "Single view template"
+     And I set the following fields to these values:
+       | Single view template | <table><tr><td>[[field1]]</td><td>[[field2]]</td><td>##actionsmenu##</td><tr></table> |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+ 
+   @javascript
+   Scenario: The ##actionsmenu## replacement displays the expected actions with default settings depending on the user permissions
+diff --git a/public/mod/data/tests/behat/advanced_search.feature b/public/mod/data/tests/behat/advanced_search.feature
+index 04806268df45b0b66afb998a22744f15de8224fb..25592b678b4accbd42dd56a7585015b0127678b5 100644
+--- a/public/mod/data/tests/behat/advanced_search.feature
++++ b/public/mod/data/tests/behat/advanced_search.feature
+@@ -45,7 +45,7 @@ Feature: Database entries can be searched using an advanced search form.
+     And I set the field "Templates tertiary navigation" to "Advanced search template"
+     And I set the following fields to these values:
+       | Advanced search template | The test is on [[My Field#name]], [[My Field#description]], and the input [[My Field]] |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     And I navigate to "Database" in current page administration
+     And I should see "First content"
+     And I should see "Second content"
+@@ -63,7 +63,7 @@ Feature: Database entries can be searched using an advanced search form.
+     And I set the field "Templates tertiary navigation" to "Advanced search template"
+     And I set the following fields to these values:
+       | Advanced search template | Main search [[My Field]], Other fields ##otherfields## |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     And I navigate to "Database" in current page administration
+     And I should see "First content"
+     And I should see "Second content"
+diff --git a/public/mod/data/tests/behat/default_templates.feature b/public/mod/data/tests/behat/default_templates.feature
+index 6a9983c71ab263394e0dae6ec3a8615fc4b4708a..eb36d5efc32cc08cd5727d030790e7738f4a60b1 100644
+--- a/public/mod/data/tests/behat/default_templates.feature
++++ b/public/mod/data/tests/behat/default_templates.feature
+@@ -133,7 +133,7 @@ Feature: Users can use mod_data without editing the templates
+       | Header         | New header!                  |
+       | Repeated entry | This is the template content |
+       | Footer         | New footer!                  |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     And I navigate to "Database" in current page administration
+     And I should see "New header!"
+     And I should see "This is the template content"
+diff --git a/public/mod/data/tests/behat/edit_entries.feature b/public/mod/data/tests/behat/edit_entries.feature
+index 67848b5e75ba0a98fe9baf2c762e99bb7f1bc5d7..f29955df42931fb81c53ca9648dd86659088935d 100644
+--- a/public/mod/data/tests/behat/edit_entries.feature
++++ b/public/mod/data/tests/behat/edit_entries.feature
+@@ -37,7 +37,7 @@ Feature: Edit existing database entries
+     And I wait until the page is ready
+     And I set the field "headline" to "New headline"
+     And I set the field "description" to "New text"
+-    When I click on "Save" "button" in the "sticky-footer" "region"
++    When I click on "Save" "button"
+     Then I should not see "Headline 1" in the "region-main" "region"
+     And I should not see "Original text" in the "region-main" "region"
+     And I should see "New headline" in the "region-main" "region"
+@@ -54,17 +54,17 @@ Feature: Edit existing database entries
+     # Trigger autosave.
+     And I press tab
+     And I wait "1" seconds
+-    And I click on "Cancel" "button" in the "sticky-footer" "region"
++    And I click on "Cancel" "button"
+     # Edit the second DB entry headline only.
+     And I select "Single view" from the "jump" singleselect
+-    And I click on "2" "link" in the "sticky-footer" "region"
++    And I click on "2" "link"
+     And I click on ".defaulttemplate-single-body .action-menu" "css_element"
+     And I click on "Edit" "link" in the ".defaulttemplate-single-body .dropdown-menu" "css_element"
+     And I wait until the page is ready
+     And I set the field "headline" to "New headline"
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     And I select "Single view" from the "jump" singleselect
+-    And I click on "2" "link" in the "sticky-footer" "region"
++    And I click on "2" "link"
+     # Only the new heading is updated and the description field autosave did not carry over from the first entry.
+     And I should see "New headline" in the "region-main" "region"
+     And I should not see "Unsaved changes" in the "region-main" "region"
+diff --git a/public/mod/data/tests/behat/edit_templates.feature b/public/mod/data/tests/behat/edit_templates.feature
+index f128d530162e280c8f3efccc89f1b7576c80d11b..87dd8f7354a938e0e84cd33ff51d2c11e3342223 100644
+--- a/public/mod/data/tests/behat/edit_templates.feature
++++ b/public/mod/data/tests/behat/edit_templates.feature
+@@ -34,7 +34,7 @@ Feature: Users can edit the database templates
+       | Header         | New header!                |
+       | Repeated entry | [[field1]] and [[field2]]! |
+       | Footer         | New footer!                |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     When I navigate to "Database" in current page administration
+     Then I should see "New header!"
+     And I should see "Student entry 1 and Some content 1!"
+@@ -45,7 +45,7 @@ Feature: Users can edit the database templates
+     Given I set the field "Templates tertiary navigation" to "Single view template"
+     And I set the following fields to these values:
+       | Single view template | [[field1]] and [[field2]] details! |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     When I navigate to "Database" in current page administration
+     And I set the field "View mode tertiary navigation" to "Single view"
+     Then I should see "Student entry 1 and Some content 1 details!"
+@@ -55,7 +55,7 @@ Feature: Users can edit the database templates
+     Given I set the field "Templates tertiary navigation" to "Add entry template"
+     And I set the following fields to these values:
+       | Add entry template | [[field1]] [[field2]] Form extra! |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     When I navigate to "Database" in current page administration
+     And I click on "Add entry" "button"
+     Then I should see "Form extra!"
+@@ -65,7 +65,7 @@ Feature: Users can edit the database templates
+     Given I set the field "Templates tertiary navigation" to "Advanced search template"
+     And I set the following fields to these values:
+       | Advanced search template | New advanced search template! |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     When I navigate to "Database" in current page administration
+     And I click on "Advanced search" "checkbox"
+     Then I should see "New advanced search template!"
+@@ -75,7 +75,7 @@ Feature: Users can edit the database templates
+     Given I click on "Enable code editor" "checkbox"
+     And I set the following fields to these values:
+       | Repeated entry | <span class="d-none">Nope</span>Yep! |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     When I navigate to "Database" in current page administration
+     Then I should not see "Nope"
+     And I should see "Yep!"
+@@ -85,11 +85,11 @@ Feature: Users can edit the database templates
+     Given I click on "Enable code editor" "checkbox"
+     And I set the following fields to these values:
+       | Repeated entry | <span class="hideme">Nope</span>Yep! |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     And I set the field "Templates tertiary navigation" to "Custom CSS"
+     And I set the following fields to these values:
+       | Custom CSS | .hideme {display: none;} |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     When I navigate to "Database" in current page administration
+     Then I should not see "Nope"
+     And I should see "Yep!"
+@@ -99,11 +99,11 @@ Feature: Users can edit the database templates
+     Given I click on "Enable code editor" "checkbox"
+     And I set the following fields to these values:
+       | Repeated entry | <span id="hideme">Nope</span>Yep! |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     And I set the field "Templates tertiary navigation" to "Custom JavaScript"
+     And I set the following fields to these values:
+       | Custom JavaScript | window.onload = () => document.querySelector('#hideme').style.display = 'none'; |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     When I navigate to "Database" in current page administration
+     Then I should not see "Nope"
+     And I should see "Yep!"
+@@ -114,7 +114,7 @@ Feature: Users can edit the database templates
+       | Header         | New header!                  |
+       | Repeated entry | This is the template content |
+       | Footer         | New footer!                  |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     And I navigate to "Database" in current page administration
+     And I should see "New header!"
+     And I should see "This is the template content"
+diff --git a/public/mod/data/tests/behat/view_entries.feature b/public/mod/data/tests/behat/view_entries.feature
+index 4ee31d8399636b97b104610119786711df4bdd1f..b16bf7c272e947d07d17f11211260cd88a562951 100644
+--- a/public/mod/data/tests/behat/view_entries.feature
++++ b/public/mod/data/tests/behat/view_entries.feature
+@@ -149,7 +149,7 @@ Feature: Users can view and search database entries
+     And I set the field "Templates tertiary navigation" to "List view template"
+     And I set the following fields to these values:
+       | Repeated entry | ##delcheck##[[Test field name]]! |
+-    And I click on "Save" "button" in the "sticky-footer" "region"
++    And I click on "Save" "button"
+     When I navigate to "Database" in current page administration
+     When I click on "Select all" "button"
+     And I click on "Delete selected" "button"

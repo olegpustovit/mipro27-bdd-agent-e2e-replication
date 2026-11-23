@@ -1,0 +1,82 @@
+diff --git a/public/lib/filelib.php b/public/lib/filelib.php
+index ce562e3d3f7ae982320eccf2022f8e9bbbc2ac9f..5bae0485245f03edd5ad0c44db1b76e2ff631b55 100644
+--- a/public/lib/filelib.php
++++ b/public/lib/filelib.php
+@@ -3344,33 +3344,6 @@ class curl {
+         }
+     }
+ 
+-    /**
+-     * Remove options previously set with setopt.
+-     *
+-     * @param array $options List of options to remove.
+-     */
+-    public function removeopt(
+-        array $options = [],
+-    ): void {
+-        foreach ($options as $name) {
+-            if (!is_string($name)) {
+-                throw new coding_exception('Curl options should be defined using strings, not constant values.');
+-            }
+-            if (!str_contains(strtoupper($name), 'CURLOPT_')) {
+-                // Only prefix with CURLOPT_ if the option doesn't contain CURLINFO_,
+-                // which is a valid prefix for at least one option CURLINFO_HEADER_OUT.
+-                if (!str_contains(strtoupper($name), 'CURLINFO_')) {
+-                    $name = strtoupper('CURLOPT_' . $name);
+-                }
+-            } else {
+-                $name = strtoupper($name);
+-            }
+-            if (isset($this->options[$name])) {
+-                unset($this->options[$name]);
+-            }
+-        }
+-    }
+-
+     /**
+      * Reset http method
+      */
+@@ -4161,9 +4134,10 @@ class curl {
+      * @param string $url
+      * @param array $params
+      * @param array $options
++     * @param bool $includeuserpwd Whether to include CURLOPT_USERPWD if not already set
+      * @return ?string
+      */
+-    public function put($url, $params = [], $options = []) {
++    public function put($url, $params = [], $options = [], $includeuserpwd = true) {
+         $file = '';
+         $fp = false;
+         if (isset($params['file'])) {
+@@ -4177,13 +4151,9 @@ class curl {
+             } else {
+                 return null;
+             }
+-            if (!isset($options['CURLOPT_USERPWD']) && !isset($this->options['CURLOPT_USERPWD'])) {
++            if (!isset($this->options['CURLOPT_USERPWD']) && $includeuserpwd) {
+                 $this->setopt(array('CURLOPT_USERPWD' => 'anonymous: noreply@moodle.org'));
+             }
+-            if (isset($options['CURLOPT_USERPWD']) && $options['CURLOPT_USERPWD'] === false) {
+-                $this->removeopt(['CURLOPT_USERPWD']);
+-                unset($options['CURLOPT_USERPWD']);
+-            }
+         } else {
+             $options['CURLOPT_CUSTOMREQUEST'] = 'PUT';
+             $options['CURLOPT_POSTFIELDS'] = $params;
+diff --git a/public/repository/onedrive/lib.php b/public/repository/onedrive/lib.php
+index 7b990ff04fc206a91ff1dab83b75ea730c7533f4..305c3d2c124c0f65c3e2ea7eae5f547ffd61e7e0 100644
+--- a/public/repository/onedrive/lib.php
++++ b/public/repository/onedrive/lib.php
+@@ -814,11 +814,7 @@ class repository_onedrive extends repository {
+             $size = filesize($filepath);
+             $curlinstance->setHeader('Content-Range: bytes 0-' . ($size - 1) . '/' . $size);
+             // Microsoft does not allow authorization headers for PUT, so we do not include them here.
+-            $response = $curlinstance->put(
+-                $created->uploadUrl,
+-                $options,
+-                ['CURLOPT_USERPWD' => false], // We need to make sure no auth headers are sent.
+-            );
++            $response = $curlinstance->put($created->uploadUrl, $options, [], false); // False = do not include auth header.
+             if ($curlinstance->errno == 0) {
+                 $response = json_decode($response);
+             }

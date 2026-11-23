@@ -1,0 +1,32 @@
+diff --git a/public/mod/assign/classes/output/renderer.php b/public/mod/assign/classes/output/renderer.php
+index a2f9593546ca9c2e4e8df82c8bab640e61816ec0..587f5e2e40b809283b8abb9b4ec9457233a38a3a 100644
+--- a/public/mod/assign/classes/output/renderer.php
++++ b/public/mod/assign/classes/output/renderer.php
+@@ -252,18 +252,15 @@ class renderer extends \plugin_renderer_base {
+         $this->page->set_heading($this->page->course->fullname);
+ 
+         $description = $header->preface;
+-        $introcontent = '';
+-        if ($header->showintro) {
+-            $introcontent .= format_module_intro('assign', $header->assign, $header->coursemoduleid);
+-        }
+-        if ($header->activity) {
+-            $introcontent .= $this->format_activity_text($header->assign, $header->coursemoduleid);
+-        }
+-        $introcontent .= $header->postfix ?? '';
+-
+-        if (trim($introcontent) !== '') {
+-            $description .= $this->output->box_start('generalbox boxaligncenter');
+-            $description .= $introcontent;
++        if ($header->showintro || $header->activity) {
++            $description = $this->output->box_start('generalbox boxaligncenter');
++            if ($header->showintro) {
++                $description .= format_module_intro('assign', $header->assign, $header->coursemoduleid);
++            }
++            if ($header->activity) {
++                $description .= $this->format_activity_text($header->assign, $header->coursemoduleid);
++            }
++            $description .= $header->postfix;
+             $description .= $this->output->box_end();
+         }
+ 

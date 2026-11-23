@@ -1,0 +1,26 @@
+diff --git a/public/enrol/manual/externallib.php b/public/enrol/manual/externallib.php
+index ce69b58a790f964f7b2c21cad4b8cd86b2cd9bd7..a4adb6726785629ff65bc1537130273539b878e5 100644
+--- a/public/enrol/manual/externallib.php
++++ b/public/enrol/manual/externallib.php
+@@ -114,9 +114,9 @@ class enrol_manual_external extends external_api {
+               }
+             }
+             if (empty($instance)) {
+-                $errorparams = new stdClass();
+-                $errorparams->courseid = $enrolment['courseid'];
+-                throw new moodle_exception('wsnoinstance', 'enrol_manual', '', $errorparams);
++              $errorparams = new stdClass();
++              $errorparams->courseid = $enrolment['courseid'];
++              throw new moodle_exception('wsnoinstance', 'enrol_manual', $errorparams);
+             }
+ 
+             // Check that the plugin accept enrolment (it should always the case, it's hard coded in the plugin).
+@@ -197,7 +197,7 @@ class enrol_manual_external extends external_api {
+             require_capability('enrol/manual:unenrol', $context);
+             $instance = $DB->get_record('enrol', array('courseid' => $enrolment['courseid'], 'enrol' => 'manual'));
+             if (!$instance) {
+-                throw new moodle_exception('wsnoinstance', 'enrol_manual', '', $enrolment);
++                throw new moodle_exception('wsnoinstance', 'enrol_manual', $enrolment);
+             }
+             $user = core_user::get_user($enrolment['userid'], strictness: MUST_EXIST);
+             core_user::require_active_user($user);

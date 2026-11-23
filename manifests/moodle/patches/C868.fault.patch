@@ -1,0 +1,21 @@
+diff --git a/public/admin/tool/lp/classes/output/template_cohorts_table.php b/public/admin/tool/lp/classes/output/template_cohorts_table.php
+index bb1623286c38bad8db44ed8321778da34a3629bb..b5cdc18b3a978f57c9659f1456c59a10a3bbd7f8 100644
+--- a/public/admin/tool/lp/classes/output/template_cohorts_table.php
++++ b/public/admin/tool/lp/classes/output/template_cohorts_table.php
+@@ -177,16 +177,6 @@ class template_cohorts_table extends table_sql {
+         $this->pagesize($pagesize, $total);
+         $this->rawdata = $DB->get_records_sql($sql, $params, $this->get_page_start(), $this->get_page_size());
+ 
+-        // Filter the 'name' column.
+-        if (!empty($this->rawdata)) {
+-            foreach ($this->rawdata as $key => $record) {
+-                if (is_object($record) && property_exists($record, 'name')) {
+-                    $record->name = format_string($record->name, options: ['context' => $this->context]);
+-                    $this->rawdata[$key] = $record;
+-                }
+-            }
+-        }
+-
+         // Set initial bars.
+         if ($useinitialsbar) {
+             $this->initialbars($total > $pagesize);

@@ -1,0 +1,52 @@
+diff --git a/public/lib/editor/tiny/plugins/link/amd/src/link.js b/public/lib/editor/tiny/plugins/link/amd/src/link.js
+index 94a0f1e01c95f24867934317fa79addb6a1df39f..433818d54fd73d5520dea8c3913cf7de62d9e801 100644
+--- a/public/lib/editor/tiny/plugins/link/amd/src/link.js
++++ b/public/lib/editor/tiny/plugins/link/amd/src/link.js
+@@ -86,8 +86,6 @@ export const unSetLink = (editor) => {
+ const setLinkOnSelection = async(currentForm, editor, url) => {
+     const urlText = currentForm.querySelector(Selectors.elements.urlText);
+     const target = currentForm.querySelector(Selectors.elements.openInNewWindow);
+-    const selectedNode = editor.selection.getNode();
+-    const isImage = selectedNode && selectedNode.nodeName.toLowerCase() === 'img';
+     let textToDisplay = urlText.value.replace(/(<([^>]+)>)/gi, "").trim();
+ 
+     if (textToDisplay === '') {
+@@ -98,9 +96,9 @@ const setLinkOnSelection = async(currentForm, editor, url) => {
+         url: url,
+         newwindow: target.checked,
+     };
+-    if (urlText.getAttribute('data-link-on-element') || isImage) {
++    if (urlText.getAttribute('data-link-on-element')) {
+         context.title = textToDisplay;
+-        context.name = selectedNode.outerHTML;
++        context.name = editor.selection.getNode().outerHTML;
+     } else {
+         context.name = textToDisplay;
+     }
+diff --git a/public/lib/editor/tiny/plugins/link/amd/src/ui.js b/public/lib/editor/tiny/plugins/link/amd/src/ui.js
+index b75fdc2a34013a696e360fffe0ad049e44474010..7e463ecfcfa567a98193c8fde89decf9aec930e6 100644
+--- a/public/lib/editor/tiny/plugins/link/amd/src/ui.js
++++ b/public/lib/editor/tiny/plugins/link/amd/src/ui.js
+@@ -115,7 +115,7 @@ const getTemplateContext = (editor) => {
+         elementid: editor.id,
+         showfilepicker: getPermissions(editor).filepicker &&
+             (typeof getFilePicker(editor, 'link') !== 'undefined'),
+-        isupdating: !!data.url,
++        isupdating: Object.keys(data).length > 0,
+     }, data);
+ };
+ 
+diff --git a/public/lib/editor/tiny/plugins/link/templates/modal.mustache b/public/lib/editor/tiny/plugins/link/templates/modal.mustache
+index 16e448c54dc14e9b74ccfeee1ec703210926b3e8..f1880fd68ef7872e6311f93fb049defaa877f49e 100644
+--- a/public/lib/editor/tiny/plugins/link/templates/modal.mustache
++++ b/public/lib/editor/tiny/plugins/link/templates/modal.mustache
+@@ -34,8 +34,7 @@
+         "showfilepicker": true,
+         "urltext": "Abc",
+         "url": "https://moodle.org/",
+-        "newwindow": false,
+-        "isupdating": true
++        "newwindow": false
+     }
+ }}
+ {{< core/modal }}

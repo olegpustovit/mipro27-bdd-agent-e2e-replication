@@ -1,0 +1,203 @@
+diff --git a/mod/quiz/classes/output/edit_renderer.php b/mod/quiz/classes/output/edit_renderer.php
+index f46d8cae8e86867b8e20308071c696e4ae7798c6..8d808c1a01d5b411351713df507464d7707e91ab 100644
+--- a/mod/quiz/classes/output/edit_renderer.php
++++ b/mod/quiz/classes/output/edit_renderer.php
+@@ -393,24 +393,32 @@ class edit_renderer extends \plugin_renderer_base {
+             $sectionstyle = ' only-has-one-slot';
+         }
+ 
++        if ($section->heading) {
++            $sectionheadingtext = format_string($section->heading);
++            $sectionheading = html_writer::span($sectionheadingtext, 'instancesection');
++        } else {
++            // Use a sr-only default section heading, so we don't end up with an empty section heading.
++            $sectionheadingtext = get_string('sectionnoname', 'quiz');
++            $sectionheading = html_writer::span($sectionheadingtext, 'instancesection sr-only');
++        }
++
+         $output .= html_writer::start_tag('li', array('id' => 'section-'.$section->id,
+             'class' => 'section main clearfix'.$sectionstyle, 'role' => 'region',
+-            'aria-label' => $section->heading));
++            'aria-label' => $sectionheadingtext));
+ 
+         $output .= html_writer::start_div('content');
+ 
+         $output .= html_writer::start_div('section-heading');
+ 
+-        $headingtext = $this->heading(html_writer::span(
+-                html_writer::span($section->heading, 'instancesection'), 'sectioninstance'), 3);
++        $headingtext = $this->heading(html_writer::span($sectionheading, 'sectioninstance'), 3);
+ 
+         if (!$structure->can_be_edited()) {
+             $editsectionheadingicon = '';
+         } else {
+             $editsectionheadingicon = html_writer::link(new \moodle_url('#'),
+-                $this->pix_icon('t/editstring', get_string('sectionheadingedit', 'quiz', $section->heading),
++                $this->pix_icon('t/editstring', get_string('sectionheadingedit', 'quiz', $sectionheadingtext),
+                         'moodle', array('class' => 'editicon visibleifjs')),
+-                        array('class' => 'editing_section', 'data-action' => 'edit_section_title'));
++                        array('class' => 'editing_section', 'data-action' => 'edit_section_title', 'role' => 'button'));
+         }
+         $output .= html_writer::div($headingtext . $editsectionheadingicon, 'instancesectioncontainer');
+ 
+@@ -481,7 +489,7 @@ class edit_renderer extends \plugin_renderer_base {
+      * @return string HTML to output.
+      */
+     public function section_remove_icon($section) {
+-        $title = get_string('sectionheadingremove', 'quiz', $section->heading);
++        $title = get_string('sectionheadingremove', 'quiz', format_string($section->heading));
+         $url = new \moodle_url('/mod/quiz/edit.php',
+                 array('sesskey' => sesskey(), 'removesection' => '1', 'sectionid' => $section->id));
+         $image = $this->pix_icon('t/delete', $title);
+@@ -1239,6 +1247,7 @@ class edit_renderer extends \plugin_renderer_base {
+                 'numquestionsx',
+                 'sectionheadingedit',
+                 'sectionheadingremove',
++                'sectionnoname',
+                 'removepagebreak',
+                 'questiondependencyadd',
+                 'questiondependencyfree',
+diff --git a/mod/quiz/yui/src/toolboxes/js/section.js b/mod/quiz/yui/src/toolboxes/js/section.js
+index fc6c7d1ada78de43436913a837b08751f56c100a..2a22d1c173ab465936e1c9b26522f75c5275cebb 100644
+--- a/mod/quiz/yui/src/toolboxes/js/section.js
++++ b/mod/quiz/yui/src/toolboxes/js/section.js
+@@ -211,7 +211,18 @@ Y.extend(SECTIONTOOLBOX, TOOLBOX, {
+         var spinner = M.util.add_spinner(Y, activity.one(SELECTOR.INSTANCESECTIONAREA));
+         this.edit_section_title_clear(activity);
+         if (newtext !== null && newtext !== oldtext) {
+-            activity.one(SELECTOR.INSTANCESECTION).setContent(newtext);
++            var instancesection = activity.one(SELECTOR.INSTANCESECTION);
++            var instancesectiontext = newtext;
++            if (newtext.trim() === '') {
++                // Add a sr-only default section heading text to make sure we don't end up with an empty section heading.
++                instancesectiontext = M.util.get_string('sectionnoname', 'quiz');
++                instancesection.addClass('sr-only');
++            } else {
++                // Show the section heading when a non-empty value is set.
++                instancesection.removeClass('sr-only');
++            }
++            instancesection.setContent(instancesectiontext);
++
+             var data = {
+                 'class':      'section',
+                 'field':      'updatesectiontitle',
+@@ -220,7 +231,21 @@ Y.extend(SECTIONTOOLBOX, TOOLBOX, {
+             };
+             this.send_request(data, spinner, function(response) {
+                 if (response) {
+-                    activity.one(SELECTOR.INSTANCESECTION).setContent(response.instancesection);
++                    // Set the content of the section heading if for some reason the response is different from the new text.
++                    // e.g. filters were applied, the update failed, etc.
++                    if (newtext !== response.instancesection) {
++                        if (response.instancesection.trim() === '') {
++                            // Add a sr-only default section heading text.
++                            instancesectiontext = M.util.get_string('sectionnoname', 'quiz');
++                            instancesection.addClass('sr-only');
++                        } else {
++                            instancesectiontext = response.instancesection;
++                            // Show the section heading when a non-empty value is set.
++                            instancesection.removeClass('sr-only');
++                        }
++                        instancesection.setContent(instancesectiontext);
++                    }
++
+                     activity.one(SELECTOR.EDITSECTIONICON).set('title',
+                             M.util.get_string('sectionheadingedit', 'quiz', response.instancesection));
+                     activity.one(SELECTOR.EDITSECTIONICON).set('alt',
+diff --git a/mod/quiz/templates/question_slot.mustache b/mod/quiz/templates/question_slot.mustache
+index 142675ecf16900ce261545df6959926f36d6564b..c34a146b8353b4d65d37699ba48146c2e6a0e8ff 100644
+--- a/mod/quiz/templates/question_slot.mustache
++++ b/mod/quiz/templates/question_slot.mustache
+@@ -36,7 +36,7 @@
+     </div>
+     <span class="actions">
+         {{#versionselection}}
+-            <label for="version-{{slotid}}"> </label>
++            <label for="version-{{slotid}}" class="sr-only">{{#str}}question_version, question{{/str}}</label>
+             <select id="version-{{slotid}}" name="version" class="form-control mr-2 h-auto version-selection"
+             data-action="mod_quiz-select_slot" data-slot-id="{{slotid}}">
+                 {{#versionoption}}
+diff --git a/mod/quiz/classes/output/edit_renderer.php b/mod/quiz/classes/output/edit_renderer.php
+index 8d808c1a01d5b411351713df507464d7707e91ab..eb0adfa74432def524f4f66e8c38d0e09936266f 100644
+--- a/mod/quiz/classes/output/edit_renderer.php
++++ b/mod/quiz/classes/output/edit_renderer.php
+@@ -791,12 +791,15 @@ class edit_renderer extends \plugin_renderer_base {
+      * @return string HTML to output.
+      */
+     public function get_checkbox_render(structure $structure, int $slot) : string {
++        $questionslot = $structure->get_displayed_number_for_slot($slot);
+         $checkbox = new \core\output\checkbox_toggleall($this->togglegroup, false,
+             [
+-                'id' => 'selectquestion-' . $structure->get_displayed_number_for_slot($slot),
++                'id' => 'selectquestion-' . $questionslot,
+                 'name' => 'selectquestion[]',
+-                'value' => $structure->get_displayed_number_for_slot($slot),
++                'value' => $questionslot,
+                 'classes' => 'select-multiple-checkbox',
++                'label' => get_string('selectquestionslot', 'quiz', $questionslot),
++                'labelclasses' => 'sr-only',
+             ]);
+ 
+         return $this->render($checkbox);
+diff --git a/mod/quiz/lang/en/quiz.php b/mod/quiz/lang/en/quiz.php
+index 4363064f3f9123aa42cbe25fbb0e362dec64eca2..c2757f32e9b4c70dec7999f714b42c835d9d6384 100644
+--- a/mod/quiz/lang/en/quiz.php
++++ b/mod/quiz/lang/en/quiz.php
+@@ -933,6 +933,7 @@ $string['selectedattempts'] = 'Selected attempts...';
+ $string['selectmultipleitems'] = 'Select multiple items';
+ $string['selectmultipletoolbar'] = 'Select multiple toolbar';
+ $string['selectnone'] = 'Deselect all';
++$string['selectquestionslot'] = 'Select question {$a}';
+ $string['selectquestiontype'] = '-- Select question type --';
+ $string['serveradded'] = 'Server added';
+ $string['serveridentifier'] = 'Identifier';
+diff --git a/mod/quiz/classes/output/edit_renderer.php b/mod/quiz/classes/output/edit_renderer.php
+index eb0adfa74432def524f4f66e8c38d0e09936266f..46e5e1ea8f4208bc91f34ab3c1979695f8e9d572 100644
+--- a/mod/quiz/classes/output/edit_renderer.php
++++ b/mod/quiz/classes/output/edit_renderer.php
+@@ -366,7 +366,7 @@ class edit_renderer extends \plugin_renderer_base {
+         if ($structure->get_section_count() == 1) {
+             $class .= ' only-one-section';
+         }
+-        return html_writer::start_tag('ul', array('class' => $class));
++        return html_writer::start_tag('ul', array('class' => $class, 'role' => 'presentation'));
+     }
+ 
+     /**
+@@ -403,8 +403,7 @@ class edit_renderer extends \plugin_renderer_base {
+         }
+ 
+         $output .= html_writer::start_tag('li', array('id' => 'section-'.$section->id,
+-            'class' => 'section main clearfix'.$sectionstyle, 'role' => 'region',
+-            'aria-label' => $sectionheadingtext));
++            'class' => 'section main clearfix'.$sectionstyle, 'role' => 'presentation'));
+ 
+         $output .= html_writer::start_div('content');
+ 
+diff --git a/mod/quiz/classes/output/edit_renderer.php b/mod/quiz/classes/output/edit_renderer.php
+index 46e5e1ea8f4208bc91f34ab3c1979695f8e9d572..e30a992ca9c6b2d9574ce586dc18693efeaeb45f 100644
+--- a/mod/quiz/classes/output/edit_renderer.php
++++ b/mod/quiz/classes/output/edit_renderer.php
+@@ -403,7 +403,8 @@ class edit_renderer extends \plugin_renderer_base {
+         }
+ 
+         $output .= html_writer::start_tag('li', array('id' => 'section-'.$section->id,
+-            'class' => 'section main clearfix'.$sectionstyle, 'role' => 'presentation'));
++            'class' => 'section main clearfix'.$sectionstyle, 'role' => 'presentation',
++            'data-sectionname' => $sectionheadingtext));
+ 
+         $output .= html_writer::start_div('content');
+ 
+diff --git a/mod/quiz/yui/src/toolboxes/js/section.js b/mod/quiz/yui/src/toolboxes/js/section.js
+index 2a22d1c173ab465936e1c9b26522f75c5275cebb..d8a1d358e3322c891b33b968a76a03982785c6b0 100644
+--- a/mod/quiz/yui/src/toolboxes/js/section.js
++++ b/mod/quiz/yui/src/toolboxes/js/section.js
+@@ -113,7 +113,7 @@ Y.extend(SECTIONTOOLBOX, TOOLBOX, {
+ 
+         // Create the confirmation dialogue.
+         var confirm = new M.core.confirm({
+-            question: M.util.get_string('confirmremovesectionheading', 'quiz', activity.get('aria-label')),
++            question: M.util.get_string('confirmremovesectionheading', 'quiz', activity.getData('sectionname')),
+             modal: true
+         });
+ 

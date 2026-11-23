@@ -1,0 +1,22 @@
+diff --git a/public/blocks/myoverview/amd/src/view.js b/public/blocks/myoverview/amd/src/view.js
+index 2c02c7c0f3def967bf14d38ee4b1287b8679a8b4..a6e7dfc0e14862c9463228311aecc95a13b50d71 100644
+--- a/public/blocks/myoverview/amd/src/view.js
++++ b/public/blocks/myoverview/amd/src/view.js
+@@ -698,6 +698,7 @@ const initializePagedContent = (root, promiseFunction, inputValue = null) => {
+     const pagingLimit = parseInt(root.find(SELECTORS.courseView.region).attr('data-paging'), 10);
+     let itemsPerPage = itemsPerPageFunc(pagingLimit, root);
+ 
++    const filters = getFilterValues(root);
+     const config = {...{}, ...DEFAULT_PAGED_CONTENT_CONFIG};
+     config.eventNamespace = namespace;
+ 
+@@ -732,9 +733,6 @@ const initializePagedContent = (root, promiseFunction, inputValue = null) => {
+                     }
+                 }
+ 
+-                // Get the current applied filters.
+-                const filters = getFilterValues(root);
+-
+                 // Call the curried function that'll handle the course promise and any manipulation of it.
+                 promiseFunction(filters, currentPage, pageData, actions, root, promises, limit, inputValue);
+             });

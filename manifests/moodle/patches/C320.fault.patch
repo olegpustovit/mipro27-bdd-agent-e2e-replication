@@ -1,0 +1,35 @@
+diff --git a/public/user/classes/hook/before_user_deleted.php b/public/user/classes/hook/before_user_deleted.php
+index 1b4413e61ea6576f3256a1e230752a5b699cd099..c4a019e0ee882b9bb1f8265b07d0af94bb8a9728 100644
+--- a/public/user/classes/hook/before_user_deleted.php
++++ b/public/user/classes/hook/before_user_deleted.php
+@@ -39,7 +39,6 @@ class before_user_deleted implements
+      * @param stdClass $user The user instance
+      */
+     public function __construct(
+-        /** @var stdClass The user instance */
+         public readonly stdClass $user,
+     ) {
+     }
+diff --git a/public/user/classes/hook/extend_bulk_user_actions.php b/public/user/classes/hook/extend_bulk_user_actions.php
+index bb48789a74dc5398fd2b6e2f5effb318134b6567..0dad128334ae1f829ae784cc0740fa2eb39b6c14 100644
+--- a/public/user/classes/hook/extend_bulk_user_actions.php
++++ b/public/user/classes/hook/extend_bulk_user_actions.php
+@@ -27,7 +27,8 @@ use core\hook\deprecated_callback_replacement;
+  * @copyright  2024 Marina Glancy
+  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+-class extend_bulk_user_actions implements deprecated_callback_replacement, described_hook {
++class extend_bulk_user_actions implements described_hook, deprecated_callback_replacement {
++
+     /**
+      * Describes the hook purpose.
+      *
+@@ -55,7 +56,7 @@ class extend_bulk_user_actions implements deprecated_callback_replacement, descr
+         return ['bulk_user_actions'];
+     }
+ 
+-    /** @var array Stores all added user actions */
++    /** @var array $actions Stores all added user actions */
+     private $actions = [];
+ 
+     /**

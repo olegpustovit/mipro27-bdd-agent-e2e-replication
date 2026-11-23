@@ -1,0 +1,402 @@
+diff --git a/blocks/section_links/lang/en/block_section_links.php b/blocks/section_links/lang/en/block_section_links.php
+index 950a0bbe08dcf3f86990f50eed09198ed092a39d..adb679bac4b659f1b26cd4a22662f903d3c4574c 100644
+--- a/blocks/section_links/lang/en/block_section_links.php
++++ b/blocks/section_links/lang/en/block_section_links.php
+@@ -26,7 +26,7 @@ $string['incby1'] = 'Increase by';
+ $string['incby1_help'] = 'This is the value the section is incremented each time a section link is displayed starting at 1.';
+ $string['incby2'] = 'Alternative increase by';
+ $string['incby2_help'] = 'This is the value the section is incremented each time a section link is displayed starting at 1.';
+-$string['jumptocurrenttopic'] = 'Jump to current topic';
++$string['jumptocurrenttopic'] = 'Jump to highlighted section';
+ $string['jumptocurrentweek'] = 'Jump to current week';
+ $string['numsections1'] = 'Number of sections';
+ $string['numsections1_help'] = 'Once the number of sections in the course reaches this number then the increment by value is used.';
+@@ -36,6 +36,4 @@ $string['pluginname'] = 'Section links';
+ $string['section_links:addinstance'] = 'Add a new section links block';
+ $string['showsectionname'] = 'Display section name';
+ $string['showsectionname_help'] = 'Display section name in addition to section number';
+-$string['topics'] = 'Topics';
+-$string['weeks'] = 'Weeks';
+ $string['privacy:metadata'] = 'The Section links block only shows data stored in other locations.';
+diff --git a/course/editsection_form.php b/course/editsection_form.php
+index 61bc516a9d6b4a27f282fb6d6f268c484935d8da..4575dc1e9604f62c20e256e2ca14285bdb1939e7 100644
+--- a/course/editsection_form.php
++++ b/course/editsection_form.php
+@@ -34,8 +34,7 @@ class editsection_form extends moodleform {
+ 
+         /// Prepare course and the editor
+ 
+-        $mform->addElement('editor', 'summary_editor', get_string('summary'), null, $this->_customdata['editoroptions']);
+-        $mform->addHelpButton('summary_editor', 'summary');
++        $mform->addElement('editor', 'summary_editor', get_string('description'), null, $this->_customdata['editoroptions']);
+         $mform->setType('summary_editor', PARAM_RAW);
+ 
+         $mform->addElement('hidden', 'id');
+diff --git a/course/format/classes/output/local/content/addsection.php b/course/format/classes/output/local/content/addsection.php
+index 6309a3b5e437dfb2969289f0fcb4e039f7ad3f2f..6acfb554a90791c46dabb9a6a39f40a926fc8c66 100644
+--- a/course/format/classes/output/local/content/addsection.php
++++ b/course/format/classes/output/local/content/addsection.php
+@@ -145,11 +145,7 @@ class addsection implements named_templatable, renderable {
+         $course = $format->get_course();
+         $data = new stdClass();
+ 
+-        if (get_string_manager()->string_exists('addsections', 'format_' . $course->format)) {
+-            $addstring = get_string('addsections', 'format_' . $course->format);
+-        } else {
+-            $addstring = get_string('addsections');
+-        }
++        $addstring = $format->get_format_string('addsection');
+ 
+         $params = ['courseid' => $course->id, 'insertsection' => 0, 'sesskey' => sesskey()];
+ 
+diff --git a/course/format/singleactivity/lang/en/format_singleactivity.php b/course/format/singleactivity/lang/en/format_singleactivity.php
+index 8a219503d5573c33777ca499fb6bf34bc9dee15e..5ccb3e2182f8cde2c290678d5e558a72a19d9990 100644
+--- a/course/format/singleactivity/lang/en/format_singleactivity.php
++++ b/course/format/singleactivity/lang/en/format_singleactivity.php
+@@ -29,7 +29,7 @@ $string['defactivitytypedesc'] = 'Specify the activity type that will be selecte
+ $string['erroractivitytype'] = 'Type of activity is not set up in Course settings';
+ $string['orphaned'] = 'Orphaned';
+ $string['orphanedwarning'] = 'These activities are unreachable by users!';
+-$string['pluginname'] = 'Single activity format';
++$string['pluginname'] = 'Single activity';
+ $string['sectionname'] = '';
+ $string['warningchangeformat'] = 'When changing the existing course format to "Single activity" make sure that you removed all extra activities from the course including "Announcements". Note that sections structure may be modified.';
+ $string['privacy:metadata'] = 'The Single activity format plugin does not store any personal data.';
+diff --git a/course/format/social/format.php b/course/format/social/format.php
+index 44cf6ca12ab4a789b0c75b865ef7d4072d2d8c84..4fd8a4c4bc694365fdde01ab3a6464a378500559 100644
+--- a/course/format/social/format.php
++++ b/course/format/social/format.php
+@@ -47,16 +47,16 @@ if (trim($forum->intro) != '') {
+     $introcontent = format_module_intro('forum', $forum, $coursemodule->id);
+ 
+     if ($PAGE->user_is_editing() && has_capability('moodle/course:update', $modcontext)) {
+-        $streditsummary  = get_string('editsummary');
++        $stredit  = get_string('edit');
+         $introcontent .= html_writer::start_div('editinglink');
+         $introcontent .= html_writer::link(
+             new moodle_url('/course/modedit.php', [
+                 'update' => $coursemodule->id,
+                 'sesskey' => sesskey(),
+             ]),
+-            $OUTPUT->pix_icon('t/edit', $streditsummary),
++            $OUTPUT->pix_icon('t/edit', $stredit),
+             [
+-                'title' => $streditsummary,
++                'title' => $stredit,
+             ]
+         );
+         $introcontent .= html_writer::end_div();
+diff --git a/course/format/social/lang/en/format_social.php b/course/format/social/lang/en/format_social.php
+index 46e82b94e23576d052a5805a788a2b2601922734..151ea6b7a87ca4ec0b8d969df27fdd1065fc31ff 100644
+--- a/course/format/social/lang/en/format_social.php
++++ b/course/format/social/lang/en/format_social.php
+@@ -25,6 +25,6 @@
+ 
+ $string['numberdiscussions'] = 'Number of discussions';
+ $string['numberdiscussions_help'] = 'This setting specifies how many discussions should be displayed.';
+-$string['pluginname'] = 'Social format';
++$string['pluginname'] = 'Social';
+ $string['sectionname'] = 'section';
+ $string['privacy:metadata'] = 'The Social format plugin does not store any personal data.';
+diff --git a/course/format/templates/local/content/frontpagesection.mustache b/course/format/templates/local/content/frontpagesection.mustache
+index 90624a33c2aaa510894324f238637c0ae17dae61..f17865fa51d4e521048a3f53d968fe229fd37fdb 100644
+--- a/course/format/templates/local/content/frontpagesection.mustache
++++ b/course/format/templates/local/content/frontpagesection.mustache
+@@ -31,7 +31,7 @@
+ <div class="course-content">
+     {{#showsettings}}
+     <div class="mb-2">
+-        <a href="{{{settingsurl}}}" title="{{#str}} editsummary {{/str}}" aria-label="{{#str}} editsummary {{/str}}">
++        <a href="{{{settingsurl}}}" title="{{#str}} edit {{/str}}" aria-label="{{#str}} edit {{/str}}">
+             {{#pix}} t/edit, moodle {{/pix}}
+         </a>
+     </div>
+diff --git a/course/format/topics/lang/en/format_topics.php b/course/format/topics/lang/en/format_topics.php
+index 530ef8120fe5272242da5113548f332cb9c85188..1ee0f5a7ce10089ede43026e3c58b1f8c3fcd052 100644
+--- a/course/format/topics/lang/en/format_topics.php
++++ b/course/format/topics/lang/en/format_topics.php
+@@ -15,40 +15,23 @@
+ // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ /**
+- * Strings for component Topics course format.
++ * Strings for component Custom sections course format.
+  *
+  * @package   format_topics
+  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ 
+-$string['addsections'] = 'Add topic';
+-$string['currentsection'] = 'This topic';
+-$string['deletesection'] = 'Delete topic';
+-$string['editsection'] = 'Edit topic';
+-$string['editsectionname'] = 'Edit topic name';
+-$string['hidefromothers'] = 'Hide topic';
+-$string['newsectionname'] = 'New name for topic {$a}';
+-$string['page-course-view-topics'] = 'Any course main page in topics format';
+-$string['page-course-view-topics-x'] = 'Any course page in topics format';
+-$string['pluginname'] = 'Topics format';
+-$string['privacy:metadata'] = 'The Topics format plugin does not store any personal data.';
++$string['currentsection'] = 'Current section';
++$string['hidefromothers'] = 'Hide';
++$string['page-course-view-topics'] = 'Any course main page in custom sections format';
++$string['page-course-view-topics-x'] = 'Any course page in custom sections format';
++$string['pluginname'] = 'Custom sections';
++$string['privacy:metadata'] = 'The Custom sections format plugin does not store any personal data.';
+ $string['indentation'] = 'Allow indentation on course page';
+ $string['indentation_help'] = 'Allow teachers, and other users with the manage activities capability, to indent items on the course page.';
+ $string['section_highlight_feedback'] = 'Section {$a->name} is highlighted.';
+ $string['section_unhighlight_feedback'] = 'Highlight removed from section {$a->name}.';
+ $string['section0name'] = 'General';
+-$string['sectionavailability_title'] = 'Topic availability';
+-$string['sectiondelete_title'] = 'Delete topic?';
+-$string['sectionmove_title'] = 'Move topic';
+ $string['sectionname'] = 'Topic';
+-$string['sectionsavailability'] = 'Topics availability';
+-$string['sectionsavailability_title'] = 'Topics availability';
+-$string['sectionsdelete'] = 'Delete topics';
+-$string['sectionsdelete_info'] = 'This will delete {$a->count} topics and all the activities they contain.';
+-$string['sectionsdelete_title'] = 'Delete selected topics?';
+-$string['sectionsmove'] = 'Move topics';
+-$string['sectionsmove_info'] = 'Move {$a} topics after';
+-$string['sectionsmove_title'] = 'Move selected topics';
+-$string['selectsection'] = 'Select topic {$a}';
+-$string['showfromothers'] = 'Show topic';
++$string['showfromothers'] = 'Show';
+diff --git a/course/format/topics/lib.php b/course/format/topics/lib.php
+index 096b3a2e2abe71a42f15e5fd9de61cd7b97bb10c..cdc89f01e73fc8360d884251fdf11c451947aefc 100644
+--- a/course/format/topics/lib.php
++++ b/course/format/topics/lib.php
+@@ -99,7 +99,7 @@ class format_topics extends core_courseformat\base {
+      * @return string the page title
+      */
+     public function page_title(): string {
+-        return get_string('topicoutline');
++        return get_string('sectionoutline');
+     }
+ 
+     /**
+@@ -344,28 +344,6 @@ class format_topics extends core_courseformat\base {
+         return true;
+     }
+ 
+-    /**
+-     * Prepares the templateable object to display section name.
+-     *
+-     * @param \section_info|\stdClass $section
+-     * @param bool $linkifneeded
+-     * @param bool $editable
+-     * @param null|lang_string|string $edithint
+-     * @param null|lang_string|string $editlabel
+-     * @return inplace_editable
+-     */
+-    public function inplace_editable_render_section_name($section, $linkifneeded = true,
+-            $editable = null, $edithint = null, $editlabel = null) {
+-        if (empty($edithint)) {
+-            $edithint = new lang_string('editsectionname', 'format_topics');
+-        }
+-        if (empty($editlabel)) {
+-            $title = get_section_name($section->course, $section);
+-            $editlabel = new lang_string('newsectionname', 'format_topics', $title);
+-        }
+-        return parent::inplace_editable_render_section_name($section, $linkifneeded, $editable, $edithint, $editlabel);
+-    }
+-
+     /**
+      * Indicates whether the course format supports the creation of a news forum.
+      *
+diff --git a/course/format/weeks/lang/en/format_weeks.php b/course/format/weeks/lang/en/format_weeks.php
+index d8fcb9514074696ba6f88d03c6969a16d0255e7e..074f8b76860b1d2909ae6903e08462daeda4e355 100644
+--- a/course/format/weeks/lang/en/format_weeks.php
++++ b/course/format/weeks/lang/en/format_weeks.php
+@@ -22,33 +22,17 @@
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ 
+-$string['addsections'] = 'Add week';
++$string['addsection'] = 'Add week';
+ $string['automaticenddate'] = 'Calculate the end date from the number of sections';
+ $string['automaticenddate_help'] = 'If enabled, the end date for the course will be automatically calculated from the number of sections and the course start date.';
+-$string['currentsection'] = 'This week';
+-$string['deletesection'] = 'Delete week';
+-$string['editsection'] = 'Edit week';
+-$string['editsectionname'] = 'Edit week name';
+-$string['hidefromothers'] = 'Hide week';
+-$string['newsectionname'] = 'New name for week {$a}';
+-$string['page-course-view-weeks'] = 'Any course main page in weeks format';
+-$string['page-course-view-weeks-x'] = 'Any course page in weeks format';
+-$string['pluginname'] = 'Weekly format';
+-$string['privacy:metadata'] = 'The Weekly format plugin does not store any personal data.';
++$string['currentsection'] = 'Current week';
++$string['hidefromothers'] = 'Hide';
++$string['page-course-view-weeks'] = 'Any course main page in weekly sections format';
++$string['page-course-view-weeks-x'] = 'Any course page in weekly sections format';
++$string['pluginname'] = 'Weekly sections';
++$string['privacy:metadata'] = 'The Weekly sections format plugin does not store any personal data.';
+ $string['indentation'] = 'Allow indentation on course page';
+ $string['indentation_help'] = 'Allow teachers, and other users with the manage activities capability, to indent items on the course page.';
+ $string['section0name'] = 'General';
+-$string['sectionavailability_title'] = 'Week availability';
+-$string['sectiondelete_title'] = 'Delete week?';
+-$string['sectionmove_title'] = 'Move week';
+ $string['sectionname'] = 'Week';
+-$string['sectionsavailability'] = 'Weeks availability';
+-$string['sectionsavailability_title'] = 'Weeks availability';
+-$string['sectionsdelete'] = 'Delete weeks';
+-$string['sectionsdelete_info'] = 'This will delete {$a->count} weeks and all the activities they contain.';
+-$string['sectionsdelete_title'] = 'Delete selected weeks?';
+-$string['sectionsmove'] = 'Move weeks';
+-$string['sectionsmove_info'] = 'Move {$a} weeks after';
+-$string['sectionsmove_title'] = 'Move selected weeks';
+-$string['selectsection'] = 'Select week {$a}';
+-$string['showfromothers'] = 'Show week';
++$string['showfromothers'] = 'Show';
+diff --git a/course/format/weeks/lib.php b/course/format/weeks/lib.php
+index d54e0cf82ee8e33d3ca9fbbc5c7481b7c3cba958..bffb78951f256b6addc94f80be034795652a6fa0 100644
+--- a/course/format/weeks/lib.php
++++ b/course/format/weeks/lib.php
+@@ -58,7 +58,7 @@ class format_weeks extends core_courseformat\base {
+      * @return string the page title
+      */
+     public function page_title(): string {
+-        return get_string('weeklyoutline');
++        return get_string('sectionoutline');
+     }
+ 
+     /**
+@@ -443,28 +443,6 @@ class format_weeks extends core_courseformat\base {
+         return true;
+     }
+ 
+-    /**
+-     * Prepares the templateable object to display section name
+-     *
+-     * @param \section_info|\stdClass $section
+-     * @param bool $linkifneeded
+-     * @param bool $editable
+-     * @param null|lang_string|string $edithint
+-     * @param null|lang_string|string $editlabel
+-     * @return \core\output\inplace_editable
+-     */
+-    public function inplace_editable_render_section_name($section, $linkifneeded = true,
+-                                                         $editable = null, $edithint = null, $editlabel = null) {
+-        if (empty($edithint)) {
+-            $edithint = new lang_string('editsectionname', 'format_weeks');
+-        }
+-        if (empty($editlabel)) {
+-            $title = get_section_name($section->course, $section);
+-            $editlabel = new lang_string('newsectionname', 'format_weeks', $title);
+-        }
+-        return parent::inplace_editable_render_section_name($section, $linkifneeded, $editable, $edithint, $editlabel);
+-    }
+-
+     /**
+      * Returns the default end date for weeks course format.
+      *
+diff --git a/lang/en/admin.php b/lang/en/admin.php
+index 0e18725bb49e716c3c799d06bf50d830f0754e65..acd486a0c778735c53d31ea639d65640521d2610 100644
+--- a/lang/en/admin.php
++++ b/lang/en/admin.php
+@@ -1306,7 +1306,7 @@ $string['sitepolicyhandlercore'] = 'Default (core)';
+ $string['sitepolicyhandlerplugin'] = '{$a->name} ({$a->component})';
+ $string['sitepolicyguest'] = 'Site policy URL for guests';
+ $string['sitepolicyguest_help'] = 'The URL of the site policy that all guests must see and agree to before accessing the site. Note that this setting will only have an effect if the site policy handler is set to default (core).';
+-$string['sitesectionhelp'] = 'If selected, a topic section will be displayed on the site home.';
++$string['sitesectionhelp'] = 'Display a section at the top of the page where you can add custom content.';
+ $string['sixtyfourbitsrequired'] = 'It has been detected that your site is not using a 64-bit PHP version. You are required to upgrade your system (operating system, PHP...) before installing this Moodle version.';
+ $string['sixtyfourbitswarning'] = 'It has been detected that your site is not using a 64-bit PHP version. It is recommended that you upgrade your site to ensure future compatibility.';
+ $string['slasharguments'] = 'Use slash arguments';
+diff --git a/lang/en/courseformat.php b/lang/en/courseformat.php
+index f350163b8dc2144a9f0131942ccca643ff5f8d01..2056bb84cd8fd0725b1de3c61ec87fe834de6376 100644
+--- a/lang/en/courseformat.php
++++ b/lang/en/courseformat.php
+@@ -22,6 +22,7 @@
+  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
+ 
++$string['addsection'] = 'Add section';
+ $string['availability_show'] = 'Show on course page';
+ $string['availability_show_help'] = 'Available to students (subject to any access restrictions which may be set).';
+ $string['availability_hide'] = 'Hide on course page';
+diff --git a/lang/en/moodle.php b/lang/en/moodle.php
+index 60623e966f3e083f55a52a2033dc3e3f7465ab4b..f2f5a1a842fbb0b4e3301de80eec9b2f5e5c98d7 100644
+--- a/lang/en/moodle.php
++++ b/lang/en/moodle.php
+@@ -547,7 +547,7 @@ $string['deletecheckfiles'] = 'Are you absolutely sure you want to delete these
+ $string['deletecheckfull'] = 'Are you absolutely sure you want to completely delete the user {$a}, including their enrolments, activity and other user data?';
+ $string['deletecheckwarning'] = 'You are about to delete these files';
+ $string['deletepicture'] = 'Delete picture';
+-$string['deletesection'] = 'Delete section';
++$string['deletesection'] = 'Delete';
+ $string['deleteselected'] = 'Delete selected';
+ $string['deleteselectedkey'] = 'Delete selected key';
+ $string['deletingcourse'] = 'Deleting {$a}';
+@@ -630,7 +630,7 @@ $string['editorpreferences'] = 'Editor preferences';
+ $string['editorresettodefaults'] = 'Reset to default values';
+ $string['editorsettings'] = 'Editor settings';
+ $string['editorshortcutkeys'] = 'Editor shortcut keys';
+-$string['editsection'] = 'Edit section';
++$string['editsection'] = 'Edit settings';
+ $string['editsectionname'] = 'Edit section name';
+ $string['editsummary'] = 'Edit summary';
+ $string['edittitle'] = 'Edit title';
+@@ -938,10 +938,10 @@ $string['forgotteninvalidurl'] = 'Invalid password reset URL';
+ $string['format'] = 'Format';
+ $string['format_help'] = 'The course format determines the layout of the course page.
+ 
+-* Single activity format - For displaying a single activity or resource (such as a Quiz or SCORM package) on the course page
+-* Social format - A forum is displayed on the course page
+-* Topics format - The course page is organised into topic sections
+-* Weekly format - The course page is organised into weekly sections, with the first week starting on the course start date';
++* Single activity - The course contains only one activity or resource.
++* Social - A forum is displayed on the course page.
++* Custom sections - The course is divided into customisable sections.
++* Weekly sections - The course is divided into sections corresponding to each week, beginning from the course start date.';
+ $string['formathtml'] = 'HTML format';
+ $string['formatmarkdown'] = 'Markdown format';
+ $string['formatplain'] = 'Plain text format';
+@@ -1045,7 +1045,7 @@ $string['hideshowblocks'] = 'Hide or show blocks';
+ $string['hidepopoverwindow'] = 'Hide popover window';
+ $string['highlight'] = 'Highlight';
+ $string['highlighted'] = 'Highlighted';
+-$string['highlightoff'] = 'Remove highlight';
++$string['highlightoff'] = 'Unhighlight';
+ $string['hits'] = 'Hits';
+ $string['hitsoncourse'] = 'Hits on {$a->coursename} by {$a->username}';
+ $string['hitsoncoursetoday'] = 'Today\'s hits on {$a->coursename} by {$a->username}';
+@@ -1981,6 +1981,7 @@ $string['secs'] = 'secs';
+ $string['section'] = 'Section';
+ $string['sectionactionnotsupported'] = 'Section action "{$a}" is not supported here';
+ $string['sectionname'] = 'Section name';
++$string['sectionoutline'] = 'Section outline';
+ $string['sections'] = 'Sections';
+ $string['seealsostats'] = 'See also: stats';
+ $string['select'] = 'Select';
+@@ -2092,7 +2093,7 @@ $string['sitepartlist'] = 'You do not have the required permissions to view the
+ $string['sitepartlist0'] = 'You must be a site teacher to be allowed to see the site participants list';
+ $string['sitepartlist1'] = 'You must be a teacher to be allowed to see the site participants list';
+ $string['sites'] = 'Sites';
+-$string['sitesection'] = 'Include a topic section';
++$string['sitesection'] = 'Add custom content';
+ $string['sitesettings'] = 'Site settings';
+ $string['siteteachers'] = 'Site teachers';
+ $string['size'] = 'Size';
+diff --git a/mod/h5pactivity/index.php b/mod/h5pactivity/index.php
+index f72fb4b7cdfd0d3418f648f2c45a58db002ccd9e..b332cd2fd3ff0251dcaaf5255935289dca043f35 100644
+--- a/mod/h5pactivity/index.php
++++ b/mod/h5pactivity/index.php
+@@ -57,11 +57,8 @@ $table = new html_table();
+ $table->attributes['class'] = 'generaltable mod_index';
+ 
+ $align = ['center', 'left'];
+-if ($course->format == 'weeks') {
+-    $table->head  = [get_string('week'), get_string('name')];
+-    $table->align = ['center', 'left'];
+-} else if ($course->format == 'topics') {
+-    $table->head  = [get_string('topic'), get_string('name')];
++if ($course->format == 'weeks' || $course->format == 'topics') {
++    $table->head  = [get_string('section'), get_string('name')];
+     $table->align = ['center', 'left'];
+ } else {
+     $table->head  = [get_string('name')];

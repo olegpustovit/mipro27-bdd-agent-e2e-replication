@@ -1,0 +1,14 @@
+diff --git a/lib/tests/behat/behat_permissions.php b/lib/tests/behat/behat_permissions.php
+index 842e320be7c2d6dc8d23c45198d6d72b90e3869b..b0bca4842f69a89713ced9d04d6431dc702f9213 100644
+--- a/lib/tests/behat/behat_permissions.php
++++ b/lib/tests/behat/behat_permissions.php
+@@ -156,7 +156,8 @@ class behat_permissions extends behat_base {
+     public function capability_has_permission($capabilityname, $permission) {
+ 
+         // We already know the name, so we just need the value.
+-        $radioxpath = "//table[@class='rolecap']/descendant::input[@type='radio']" .
++        $radioxpath = "//table[contains(concat(' ',
++ normalize-space(@class), ' '), ' rolecap ')]/descendant::input[@type='radio']" .
+             "[@name='" . $capabilityname . "'][@checked]";
+ 
+         $checkedradio = $this->find('xpath', $radioxpath);

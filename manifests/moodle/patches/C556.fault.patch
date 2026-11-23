@@ -1,0 +1,90 @@
+diff --git a/public/mod/assign/amd/src/grading_form_change_checker.js b/public/mod/assign/amd/src/grading_form_change_checker.js
+index 2fc173040227c18bb7d0de68a661a59ecd95df2c..3cbaa2bfd183ea6c1ba6a2b1b72941eabb54dde6 100644
+--- a/public/mod/assign/amd/src/grading_form_change_checker.js
++++ b/public/mod/assign/amd/src/grading_form_change_checker.js
+@@ -48,12 +48,8 @@ define(['jquery'], function($) {
+             $(selector).trigger('save-form-state');
+ 
+             var data = $(selector).serialize(),
+-                previousdata = $(selector).data('saved-form-state'),
+-                unresolvederror = $(selector).data('unresolved-error');
++                previousdata = $(selector).data('saved-form-state');
+ 
+-            if (unresolvederror) {
+-                return true;
+-            }
+             if (typeof previousdata === 'undefined') {
+                 return false;
+             }
+diff --git a/public/mod/assign/amd/src/grading_panel.js b/public/mod/assign/amd/src/grading_panel.js
+index d4be998793d0cc82d2d9cad2a203a928dc6e1899..55fd2a411625079d93182b1048a8f1ae251ce607 100644
+--- a/public/mod/assign/amd/src/grading_panel.js
++++ b/public/mod/assign/amd/src/grading_panel.js
+@@ -194,16 +194,9 @@ define([
+             nextUserId = this._lastUserId;
+         }
+         if (response.length) {
+-            str.get_string('errorgradechangessaveddetail', 'mod_assign')
+-                .then(function(str) {
+-                    Toast.add(str, {type: 'danger', delay: 4000});
+-                    return str;
+-                })
+-                .catch(notification.exception);
+-
+             // There was an error saving the grade. Re-render the form using the submitted data so we can show
+             // validation errors.
+-            $(document).trigger('reset', [this._lastUserId, formdata, true]);
++            $(document).trigger('reset', [this._lastUserId, formdata]);
+         } else {
+             str.get_string('gradechangessaveddetail', 'mod_assign')
+             .then(function(str) {
+@@ -235,16 +228,15 @@ define([
+      * @param {Event} e
+      * @param {Integer} userid
+      * @param {Array} formdata
+-     * @param {Boolean} unresolvederror
+      */
+-    GradingPanel.prototype._resetForm = function(e, userid, formdata, unresolvederror) {
++    GradingPanel.prototype._resetForm = function(e, userid, formdata) {
+         // The form was cancelled - refresh with default values.
+         var event = $.Event("custom");
+         if (typeof userid == "undefined") {
+             userid = this._lastUserId;
+         }
+         this._lastUserId = 0;
+-        this._refreshGradingPanel(event, userid, formdata, -1, unresolvederror);
++        this._refreshGradingPanel(event, userid, formdata);
+     };
+ 
+     /**
+@@ -324,9 +316,8 @@ define([
+      * @param {Number} userid
+      * @param {String} submissiondata serialised submission data.
+      * @param {Integer} attemptnumber
+-     * @param {Boolean} unresolvederror
+      */
+-    GradingPanel.prototype._refreshGradingPanel = function(event, userid, submissiondata, attemptnumber, unresolvederror) {
++    GradingPanel.prototype._refreshGradingPanel = function(event, userid, submissiondata, attemptnumber) {
+         var contextid = this._region.attr('data-contextid');
+         if (typeof submissiondata === 'undefined') {
+             submissiondata = '';
+@@ -334,9 +325,6 @@ define([
+         if (typeof attemptnumber === 'undefined') {
+             attemptnumber = -1;
+         }
+-        if (typeof unresolvederror === 'undefined') {
+-            unresolvederror = false;
+-        }
+         // Skip reloading if it is the same user.
+         if (this._lastUserId == userid && this._lastAttemptNumber == attemptnumber && submissiondata === '') {
+             return;
+@@ -377,9 +365,6 @@ define([
+                             });
+                             $('[data-region="attempt-chooser"]').on('click', this._chooseAttempt.bind(this));
+                             this._addPopoutButtons('[data-region="grade-panel"] .gradeform');
+-                            if (unresolvederror) {
+-                                $('[data-region="grade-panel"] .gradeform').data('unresolved-error', true);
+-                            }
+                             $(document).trigger('finish-loading-user');
+                             // Tell behat we are friends again.
+                             window.M.util.js_complete('mod-assign-loading-user');

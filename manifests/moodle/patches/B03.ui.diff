@@ -1,0 +1,67 @@
+diff --git a/public/lib/classes/output/action_menu.php b/public/lib/classes/output/action_menu.php
+index d1868b1b16961a0cbb95e0b58ddfdc4346dd2fad..ef4970dd58c26d2b0aa3246d5428f84ecc83f6f2 100644
+--- a/public/lib/classes/output/action_menu.php
++++ b/public/lib/classes/output/action_menu.php
+@@ -218,7 +218,8 @@ class action_menu implements renderable, templatable {
+         }
+         $label = $triggername ?? get_string('actions');
+         $triggerclasses = self::DEFAULT_KEBAB_TRIGGER_CLASSES . ' ' . $extraclasses;
+-        $icon = $output->pix_icon('i/menu', $label);
++        $icon = $output->pix_icon('i/menu', '') . html_writer::span($label, 'visually-hidden');
++        $this->triggerattributes += ['title' => $label];
+         $this->set_menu_trigger($icon, $triggerclasses);
+     }
+ 
+diff --git a/public/lib/templates/action_menu_trigger.mustache b/public/lib/templates/action_menu_trigger.mustache
+index e162a7c6c8b538edfde0adcf8e7d9e7c3fe6a5b2..d5b97454881d24cef9595b35e1c68636fe34f303 100644
+--- a/public/lib/templates/action_menu_trigger.mustache
++++ b/public/lib/templates/action_menu_trigger.mustache
+@@ -88,7 +88,7 @@
+         tabindex="0"
+         class="{{triggerextraclasses}} dropdown-toggle icon-no-margin"
+         id="action-menu-toggle-{{instance}}"
+-        aria-label="{{title}}"
++        {{#title}}aria-label="{{title}}"{{/title}}
+         data-bs-toggle="dropdown"
+         role="{{triggerrole}}"
+         aria-haspopup="true"
+@@ -102,7 +102,7 @@
+         {{{menutrigger}}}
+             {{#icon}}
+                 {{#pix}}
+-                    {{key}},{{component}},{{title}}
++                    {{key}},{{component}}
+                 {{/pix}}
+             {{/icon}}
+             {{#rawicon}}{{{.}}}{{/rawicon}}
+diff --git a/public/reportbuilder/classes/table/system_report_table.php b/public/reportbuilder/classes/table/system_report_table.php
+index 741e6b0a98b86c673406786d2bbbca27b76da213..5bba520b566b6f7796be470433422c09025dac41 100644
+--- a/public/reportbuilder/classes/table/system_report_table.php
++++ b/public/reportbuilder/classes/table/system_report_table.php
+@@ -259,10 +259,7 @@ class system_report_table extends base_report_table {
+         global $OUTPUT;
+ 
+         $menu = new action_menu();
+-        $menu->set_menu_trigger(
+-            $OUTPUT->pix_icon('i/menu', get_string('actions', 'core_reportbuilder')),
+-            'btn btn-icon d-flex no-caret',
+-        );
++        $menu->set_kebab_trigger(get_string('actions', 'core_reportbuilder'));
+ 
+         $actions = array_filter($this->report->get_actions(), function($action) use ($row) {
+             // Only return dividers and action items who can be displayed for current users.
+diff --git a/public/course/classes/management_renderer.php b/public/course/classes/management_renderer.php
+index 491f97282bfb97882771875895c0f079f682464a..4f8e7aef2f17ea4c390b1aea9247adb2b7f324f7 100644
+--- a/public/course/classes/management_renderer.php
++++ b/public/course/classes/management_renderer.php
+@@ -332,6 +332,10 @@ class core_course_management_renderer extends plugin_renderer_base {
+             $actions = \core_course\management\helper::get_category_listitem_actions($category);
+         }
+         $menu = new action_menu();
++        $label = get_string('actionsmenu');
++        $actionicon = $this->output->pix_icon('t/edit_menu', '') . html_writer::span($label, 'visually-hidden');
++        $menu->set_menu_trigger($actionicon, 'iconsmall actionmenu');
++        $menu->triggerattributes['title'] = $label;
+         $menu->attributes['class'] .= ' category-item-actions item-actions';
+         $hasitems = false;
+         foreach ($actions as $key => $action) {

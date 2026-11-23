@@ -1,0 +1,46 @@
+diff --git a/public/mod/quiz/classes/output/renderer.php b/public/mod/quiz/classes/output/renderer.php
+index f29f14edb845bd716e4095ed045b6507d1c86f9d..8fe58d7505e10af9d0aed8e065eca0c009f28549 100644
+--- a/public/mod/quiz/classes/output/renderer.php
++++ b/public/mod/quiz/classes/output/renderer.php
+@@ -709,7 +709,7 @@ class renderer extends plugin_renderer_base {
+             $delay = 0;
+         }
+         $this->page->requires->js_init_call('M.mod_quiz.secure_window.close',
+-            [$url->out(false), $delay], false, quiz_get_js_module());
++                [$url, $delay], false, quiz_get_js_module());
+ 
+         $output .= $this->box_end();
+         $output .= $this->footer();
+diff --git a/public/mod/quiz/module.js b/public/mod/quiz/module.js
+index c116172f5b7a90c68ca9f61f3451d9ceaac1efca..1921b6e43e127a3a81a0db46c734b23c9bca822d 100644
+--- a/public/mod/quiz/module.js
++++ b/public/mod/quiz/module.js
+@@ -398,26 +398,13 @@ M.mod_quiz.secure_window = {
+         e.halt();
+     },
+ 
+-    /**
+-     * Initialize the event listener for the secure window close button
+-     *
+-     * @param {Object} Y YUI instance. When called from renderer, this parameter precedes the others
+-     * @param {String} url
+-     */
+     init_close_button: function(Y, url) {
+         Y.on('click', function(e) {
+-            M.mod_quiz.secure_window.close(Y, url, 0);
++            M.mod_quiz.secure_window.close(url, 0)
+         }, '#secureclosebutton');
+     },
+ 
+-    /**
+-     * Close the secure window, or redirect to URL if the opener is no longer present
+-     *
+-     * @param {Object} Y YUI instance. When called from renderer, this parameter precedes the others
+-     * @param {String} url
+-     * @param {Number} delay
+-     */
+-    close: function(Y, url, delay) {
++    close: function(url, delay) {
+         setTimeout(function() {
+             if (window.opener) {
+                 window.opener.document.location.reload();

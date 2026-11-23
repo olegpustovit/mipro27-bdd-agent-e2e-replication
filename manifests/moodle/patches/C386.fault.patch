@@ -1,0 +1,29 @@
+diff --git a/public/mod/data/field/multimenu/field.class.php b/public/mod/data/field/multimenu/field.class.php
+index 8327db214d8dc618c8024aa541a7c1762a1a1756..5090c91b79d8d14fa3d59f0a4b6d52d4c54b6aae 100644
+--- a/public/mod/data/field/multimenu/field.class.php
++++ b/public/mod/data/field/multimenu/field.class.php
+@@ -64,8 +64,8 @@ class data_field_multimenu extends data_field_base {
+                 $content = array();
+             }
+         } else if ($recordid) {
+-            $contentfield = $DB->get_field('data_content', 'content', ['fieldid' => $this->field->id, 'recordid' => $recordid]);
+-            $content = explode('##', $contentfield ?? '');
++            $content = $DB->get_field('data_content', 'content', array('fieldid'=>$this->field->id, 'recordid'=>$recordid));
++            $content = explode('##', $content);
+         } else {
+             $content = array();
+         }
+diff --git a/public/mod/data/field/radiobutton/field.class.php b/public/mod/data/field/radiobutton/field.class.php
+index 1e5b960455f778c9202b80478819c5b110466d5d..9b70fe53d5613ea5c278b6f8dec370d4e5d9c498 100644
+--- a/public/mod/data/field/radiobutton/field.class.php
++++ b/public/mod/data/field/radiobutton/field.class.php
+@@ -63,8 +63,7 @@ class data_field_radiobutton extends data_field_base {
+                 $content = '';
+             }
+         } else if ($recordid) {
+-            $contentfield = $DB->get_field('data_content', 'content', ['fieldid' => $this->field->id, 'recordid' => $recordid]);
+-            $content = trim($contentfield ?? '');
++            $content = trim($DB->get_field('data_content', 'content', array('fieldid'=>$this->field->id, 'recordid'=>$recordid)));
+         } else {
+             $content = '';
+         }

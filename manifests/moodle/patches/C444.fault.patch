@@ -1,0 +1,22 @@
+diff --git a/public/mod/data/lib.php b/public/mod/data/lib.php
+index bbff1ec514c80ec9821f9720fdf74b8960ef1881..61a1558a8c061c5a3aa748bc7bad1f65006dfd84 100644
+--- a/public/mod/data/lib.php
++++ b/public/mod/data/lib.php
+@@ -508,6 +508,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
+      * @return bool|string
+      */
+     function display_browse_field($recordid, $template) {
++        global $DB;
+         $content = $this->get_data_content($recordid);
+         if (!$content || !isset($content->content)) {
+             return '';
+@@ -518,8 +519,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
+             $options->filter = false;
+         }
+         $options->para = false;
+-        $format = !empty($content->content1) && !empty(trim($content->content1)) ? $content->content1 : null;
+-        $str = format_text($content->content, $format, $options);
++        $str = format_text($content->content, $content->content1, $options);
+         return $str;
+     }
+ 

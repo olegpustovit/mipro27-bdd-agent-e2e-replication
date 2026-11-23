@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "moodle-manifest.schema.json",
+  "title": "Moodle break/fault study manifest",
+  "type": "object",
+  "required": ["schema_version", "moodle", "scenarios", "breaks", "faults"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "patches": {"type": "object", "description": "concrete patches at the pin (mining/make_patches.py); sha256 per file in each break/fault"},
+    "generated_by": {"type": "string"},
+    "seeded_provenance": {"type": "object", "required": ["subagent", "frozen_in", "audit"], "description": "who wrote the seeded faults (Claude Code subagent transcript hash, model) and what that writer had read before each freeze commit"},
+    "moodle": {
+      "type": "object",
+      "required": ["repo", "line", "pin", "window", "layout"],
+      "additionalProperties": false,
+      "properties": {
+        "repo": {"type": "string"},
+        "line": {"type": "string"},
+        "layout": {"type": "string"},
+        "pin": {
+          "type": "object", "required": ["commit", "branch", "release"], "additionalProperties": false,
+          "properties": {"commit": {"$ref": "#/$defs/sha40"}, "branch": {"type": "string"}, "release": {"type": "string"}}
+        },
+        "window": {
+          "type": "object", "required": ["from_commit", "from_date", "until_commit", "until_date"], "additionalProperties": false,
+          "properties": {"from_commit": {"$ref": "#/$defs/sha40"}, "from_date": {"$ref": "#/$defs/date"},
+                         "until_commit": {"$ref": "#/$defs/sha40"}, "until_date": {"$ref": "#/$defs/date"}, "note": {"type": "string"}}
+        }
+      }
+    },
+    "scenarios": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["id", "feature", "name", "tags", "javascript"], "additionalProperties": false,
+        "properties": {
+          "id": {"$ref": "#/$defs/scenarioId"},
+          "feature": {"type": "string", "pattern": "\\.feature$"},
+          "name": {"type": "string", "minLength": 1},
+          "tags": {"type": "array", "items": {"type": "string", "pattern": "^@"}},
+          "javascript": {"type": "boolean"}
+        }
+      }
+    },
+    "breaks": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "mdl", "kind", "class", "ui_commits", "test_fix_commit", "ui_half", "test_half", "gherkin_version", "affected_scenarios", "affected_total", "state_recipes", "usable"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"$ref": "#/$defs/breakId"},
+          "mdl": {"type": "string", "pattern": "^MDL-\\d+$"},
+          "kind": {"enum": ["paired", "combined"], "description": "paired: separate UI commit then test-fix commit; combined: one commit holds both halves"},
+          "class": {"enum": ["i", "ii"], "description": "iii (test data) is excluded and never listed"},
+          "selector_type_only": {"type": "boolean", "description": "class ii only: the Gherkin change is just a Behat selector type"},
+          "ui_commits": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sha10plus"}},
+          "test_fix_commit": {"$ref": "#/$defs/sha10plus"},
+          "ui_half": {"$ref": "#/$defs/half"},
+          "test_half": {"$ref": "#/$defs/half"},
+          "gherkin_version": {"enum": ["unchanged", "developers_new"], "description": "Gherkin both arms receive: class i unchanged, class ii the developers' new wording"},
+          "affected_scenarios": {"type": "array", "items": {"$ref": "#/$defs/scenarioId"}},
+          "affected_total": {"type": "integer", "minimum": 0, "description": "scenarios at the pin that directly use the repaired step/selector or were edited by the repair"},
+          "match_precision": {"enum": ["direct-step", "selector-type", "feature-diff"]},
+          "patches": {"type": "object", "description": "ui_diff/test_diff forward provenance diffs; broken/before: pin-applicable state patches; each {file, sha256}"},
+          "patch_flags": {"type": "object"},
+          "test_half_split": {
+            "type": "object", "required": ["feature_files", "step_files", "identical_to_broken", "method", "empty"], "additionalProperties": false,
+            "description": "mining/make_steps_patches.py: the developer test half split into .feature files and step-definition/selector files; patches.broken_steps reverts only the latter (arm B starting state broken-steps:Bxx). empty = the fix touched no step definition or selector (Gherkin-only fix).",
+            "properties": {"feature_files": {"type": "array", "items": {"type": "string"}}, "step_files": {"type": "array", "items": {"type": "string"}}, "identical_to_broken": {"type": "boolean"}, "method": {"type": "string"}, "empty": {"type": "boolean"},
+                           "start_rows": {"const": "broken-steps", "description": "wave 3 (B14+): the model-free trials of the start state carry the state name broken-steps:Bxx although the patch is byte-identical to broken"}}
+          },
+          "state_recipes": {
+            "type": "object", "required": ["adapted", "broken", "before_break"], "additionalProperties": false,
+            "properties": {
+              "adapted": {"$ref": "#/$defs/recipe"},
+              "broken": {"$ref": "#/$defs/recipe"},
+              "before_break": {"$ref": "#/$defs/recipe"}
+            }
+          },
+          "usable": {"type": "boolean"},
+          "notes": {"type": "string"},
+          "test_fix_size": {"type": "object", "required": ["files", "hunks", "added", "deleted"], "description": "wave 3 (B14+): size of the developers' test fix (Behat PHP files, hunks, added and deleted lines of the forward diff)"},
+          "mining": {"type": "object", "description": "wave 3 (B14+): how the break was found (mining/mine_breaks_v2.py): link kind, commit date, static scenario count, impact patterns/selectors, size of the pin-to-old-steps patch"},
+          "validation": {"type": "object", "description": "wave 3 (B14+): model-free validation through the ledger (plans, scenarios probed and bitten, failure kinds, before state)"}
+        },
+        "allOf": [
+          {"if": {"properties": {"class": {"const": "i"}}}, "then": {"properties": {"gherkin_version": {"const": "unchanged"}}}},
+          {"if": {"properties": {"class": {"const": "ii"}}}, "then": {"properties": {"gherkin_version": {"const": "developers_new"}}}}
+        ]
+      }
+    },
+    "fault_candidates": {
+      "type": "array",
+      "description": "Wave-2 fault candidates for the scenarios where a break bites. Every candidate that was screened in is kept, accepted or rejected with its reason. origin separates mined (a real upstream bug fix, reverted at the pin) from seeded (a hand-written semantic mutation). Ids are never reused.",
+      "items": {
+        "type": "object",
+        "required": ["id", "origin", "status", "applies_cleanly"],
+        "properties": {
+          "id": {"$ref": "#/$defs/candidateId"},
+          "origin": {"enum": ["mined", "seeded"]},
+          "status": {"enum": ["pending", "accepted", "rejected"]},
+          "rejection_reason": {"type": "string"},
+          "tried": {"type": "boolean"},
+          "fix_commit": {"$ref": "#/$defs/sha10plus"},
+          "mdl": {"type": "string", "pattern": "^MDL-\\d+$"},
+          "revert_method": {"type": "string"},
+          "applies_cleanly": {"type": "boolean"},
+          "probe_scenarios": {"type": "array", "items": {"$ref": "#/$defs/scenarioId"}},
+          "patch": {"type": "object", "required": ["file", "sha256"]},
+          "targets": {"type": "array", "items": {"type": "object", "required": ["scenario", "step_index", "step_text", "frozen_at"]}},
+          "seeded": {"type": "object", "required": ["intent", "expected_failing_step", "written_at", "writer"], "properties": {"expected_failing_steps": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["scenario", "behat_step_index", "step_text"]}, "description": "X016+: every scenario the fault is expected to fail in, with the Behat step index and step text, committed before any run"},
+            "writer": {"type": "object", "required": ["kind", "parent_session", "subagent_id", "transcript_sha256", "model_per_transcript", "frozen_in_commit"], "properties": {"subagent_id": {"type": ["string", "null"]}, "transcript_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}, "note": {"type": "string"}}}}}
+        },
+        "allOf": [
+          {"if": {"properties": {"origin": {"const": "mined"}}}, "then": {"required": ["fix_commit", "mdl", "revert_hunks"]}},
+          {"if": {"properties": {"origin": {"const": "seeded"}}}, "then": {"required": ["seeded"]}},
+          {"if": {"properties": {"status": {"const": "rejected"}}}, "then": {"required": ["rejection_reason"]}}
+        ]
+      }
+    },
+    "fault_cross_runs": {
+      "type": "array",
+      "description": "Original faults (F01..F24, real upstream fixes) probed in other biting scenarios of the same component; same screening and confirmation as fault_candidates. id is the F id; the fault's own patch is reused.",
+      "items": {
+        "type": "object",
+        "required": ["id", "origin", "status", "applies_cleanly", "probe_scenarios"],
+        "properties": {
+          "id": {"$ref": "#/$defs/faultId"},
+          "origin": {"const": "mined"},
+          "status": {"enum": ["pending", "accepted", "rejected"]},
+          "probe_scenarios": {"type": "array", "items": {"$ref": "#/$defs/scenarioId"}}
+        },
+        "allOf": [{"if": {"properties": {"status": {"const": "rejected"}}}, "then": {"required": ["rejection_reason"]}}]
+      }
+    },
+    "faults": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "fix_commit", "mdl", "date", "component", "tracker_type", "revert_hunks", "applies_cleanly", "target", "linked_breaks", "states_to_probe"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"$ref": "#/$defs/faultId"},
+          "fix_commit": {"$ref": "#/$defs/sha10plus"},
+          "mdl": {"type": "string", "pattern": "^MDL-\\d+$"},
+          "date": {"$ref": "#/$defs/date"},
+          "component": {"type": "string"},
+          "tracker_type": {"const": "Bug"},
+          "alt_targets": {"type": "array", "description": "other scenarios the same fix touched that are present at the pin and in `scenarios`", "items": {"type": "object"}},
+          "patch": {"type": "object", "description": "{file, sha256}: revert of the fix's non-test source hunks, applies at the pin"},
+          "patch_flags": {"type": "object"},
+          "summary": {"type": "string"},
+          "revert_hunks": {
+            "type": "object", "required": ["source_files"], "additionalProperties": false,
+            "properties": {"source_files": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+                           "build_files": {"type": "array", "items": {"type": "string"}, "description": "generated files of the fix; rebuild with grunt instead of reverting"}}
+          },
+          "applies_cleanly": {"type": "boolean", "description": "git apply -R --check of the source hunks at the pin; static check only, Behat not run"},
+          "target": {
+            "type": "object", "required": ["scenario", "step_index", "step_text", "javascript", "scenario_added_by_fix"], "additionalProperties": false,
+            "properties": {"scenario": {"$ref": "#/$defs/scenarioId"}, "step_index": {"type": "integer", "minimum": 0},
+                           "step_text": {"type": "string", "minLength": 1}, "javascript": {"type": "boolean"}, "scenario_added_by_fix": {"type": "boolean"},
+                           "a11y_only": {"type": "boolean"}}
+          },
+          "linked_breaks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/breakId"}},
+          "break_step_index": {"type": "object", "propertyNames": {"pattern": "^B\\d{2}$"}, "additionalProperties": {"type": ["integer", "null"]},
+                               "description": "per linked break: 0-based index of the first scenario step the break repair touches (null = Background step); compare with target.step_index"},
+          "states_to_probe": {
+            "type": "array", "minItems": 2,
+            "items": {"enum": ["before_break", "after_adaptation"]},
+            "description": "fault is reintroduced on top of each state; the scenario must fail at the target step in both"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha40": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "sha10plus": {"type": "string", "pattern": "^[0-9a-f]{10,40}$"},
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "scenarioId": {"type": "string", "pattern": "^S\\d{3}$"},
+    "breakId": {"type": "string", "pattern": "^B\\d{2}$"},
+    "faultId": {"type": "string", "pattern": "^F\\d{2}$"},
+    "candidateId": {"type": "string", "pattern": "^[CX]\\d{3}$", "description": "C = mined from history, X = seeded"},
+    "half": {
+      "type": "object", "required": ["files", "summary"], "additionalProperties": false,
+      "properties": {"files": {"type": "array", "items": {"type": "string"}}, "summary": {"type": "string", "minLength": 1}}
+    },
+    "recipe": {
+      "type": "object", "required": ["how", "applies_cleanly_at_pin"], "additionalProperties": false,
+      "properties": {"how": {"type": "string"}, "applies_cleanly_at_pin": {"type": ["boolean", "null"]}}
+    }
+  }
+}

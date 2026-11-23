@@ -1,0 +1,30 @@
+diff --git a/public/grade/tests/behat/behat_grades.php b/public/grade/tests/behat/behat_grades.php
+index a45559e02faf36baa0b337dbf8de895595ee5ae7..05cbdfc7ad08506efaac121e1fba072a2b06cd62 100644
+--- a/public/grade/tests/behat/behat_grades.php
++++ b/public/grade/tests/behat/behat_grades.php
+@@ -266,20 +266,16 @@ class behat_grades extends behat_base {
+             throw new Exception('Unknown item type: ' . $itemtype);
+         }
+ 
+-        $xpath = "//table[@id='grade_edit_tree_table']";
+-
+-        if (($page == 'grader') || ($page == 'setup')) {
+-            if ($page == 'grader') {
+-                $xpath = "//table[@id='user-grades']";
+-            }
+-
++        if ($page == 'grader') {
+             if ($itemtype == 'gradeitem') {
+-                $xpath .= "//*[@data-type='item'][@data-id='" . $itemid . "']";
++                $xpath = "//table[@id='user-grades']//*[@data-type='item'][@data-id='" . $itemid . "']";
+             } else if (($itemtype == 'category') || ($itemtype == 'course')) {
+-                $xpath .= "//*[@data-type='category'][@data-id='" . $itemid . "']";
++                $xpath = "//table[@id='user-grades']//*[@data-type='category'][@data-id='" . $itemid . "']";
+             } else {
+                 throw new Exception('Unknown item type: ' . $itemtype);
+             }
++        } else if ($page == 'setup') {
++            $xpath = "//table[@id='grade_edit_tree_table']//*[@data-id='" . $itemid . "']";
+         } else {
+             throw new Exception('Unknown page: ' . $page);
+         }

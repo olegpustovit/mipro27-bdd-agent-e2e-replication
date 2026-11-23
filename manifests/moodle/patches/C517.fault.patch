@@ -1,0 +1,35 @@
+diff --git a/public/lib/questionlib.php b/public/lib/questionlib.php
+index 448c4d7442790e4bb348decdb2d4e00273729b54..9b383f4832b39305f291bd6f61340bcd8ee7f963 100644
+--- a/public/lib/questionlib.php
++++ b/public/lib/questionlib.php
+@@ -733,12 +733,6 @@ function question_move_category_to_context($categoryid, $oldcontextid, $newconte
+ 
+     $questionids = $DB->get_records_sql_menu($sql, [$categoryid]);
+     foreach ($questionids as $questionid => $qtype) {
+-
+-        // If the question type is invalid, use "missingtype" so we have a valid qtype to call move_files() on.
+-        if (!\question_bank::is_qtype_installed($qtype)) {
+-            $qtype = 'missingtype';
+-        }
+-
+         question_bank::get_qtype($qtype)->move_files($questionid, $oldcontextid, $newcontextid);
+         // Purge this question from the cache.
+         question_bank::notify_question_edited($questionid);
+diff --git a/public/question/type/missingtype/questiontype.php b/public/question/type/missingtype/questiontype.php
+index 89d2eb87904d6f8ef6229614448f961af4531523..de3d5cc43006d30ff610fcfd805374a412870514 100644
+--- a/public/question/type/missingtype/questiontype.php
++++ b/public/question/type/missingtype/questiontype.php
+@@ -93,13 +93,4 @@ class qtype_missingtype extends question_type {
+ 
+         $mform->display();
+     }
+-
+-    #[\Override]
+-    public function move_files($questionid, $oldcontextid, $newcontextid) {
+-        parent::move_files($questionid, $oldcontextid, $newcontextid);
+-        $this->move_files_in_answers($questionid, $oldcontextid, $newcontextid);
+-        $this->move_files_in_hints($questionid, $oldcontextid, $newcontextid);
+-        $this->move_files_in_combined_feedback($questionid, $oldcontextid, $newcontextid);
+-    }
+-
+ }

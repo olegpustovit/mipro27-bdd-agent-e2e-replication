@@ -1,0 +1,26 @@
+diff --git a/public/mod/quiz/classes/output/edit_renderer.php b/public/mod/quiz/classes/output/edit_renderer.php
+index a9d59b1b46e020e3600949b2774cee0167e9b15f..2066f7b4728415791296cabe380bbd634b3810e9 100644
+--- a/public/mod/quiz/classes/output/edit_renderer.php
++++ b/public/mod/quiz/classes/output/edit_renderer.php
+@@ -714,7 +714,7 @@ class edit_renderer extends \plugin_renderer_base {
+         // Add a new section to the add_menu if possible. This is always added to the HTML
+         // then hidden with CSS when no needed, so that as things are re-ordered, etc. with
+         // Ajax it can be relevaled again when necessary.
+-        $params = ['cmid' => $structure->get_cmid(), 'addsectionatpage' => $page];
++        $params = ['cmid' => $structure->get_cmid(), 'addsectionatpage' => $page, 'sesskey' => sesskey()];
+ 
+         $actions['addasection'] = new \action_menu_link_secondary(
+             new \moodle_url($pageurl, $params),
+diff --git a/public/mod/quiz/edit.php b/public/mod/quiz/edit.php
+index 3258abefa8a5add7d73bea4ea7105c0da351c3ca..691f69b4394842e6ad8f2fd0c793a55a3ca881c1 100644
+--- a/public/mod/quiz/edit.php
++++ b/public/mod/quiz/edit.php
+@@ -124,7 +124,7 @@ if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
+     redirect($afteractionurl);
+ }
+ 
+-if ($addsectionatpage = optional_param('addsectionatpage', false, PARAM_INT)) {
++if (($addsectionatpage = optional_param('addsectionatpage', false, PARAM_INT)) && confirm_sesskey()) {
+     // Add a section to the quiz.
+     $structure->check_can_be_edited();
+     $structure->add_section_heading($addsectionatpage);

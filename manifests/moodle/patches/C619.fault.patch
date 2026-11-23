@@ -1,0 +1,56 @@
+diff --git a/public/question/bank/editquestion/question.php b/public/question/bank/editquestion/question.php
+index 0972a02f3a485b91648d7652b524db04306c11f8..fd7eab9b6ae67263054575447de4493fda781be4 100644
+--- a/public/question/bank/editquestion/question.php
++++ b/public/question/bank/editquestion/question.php
+@@ -129,17 +129,6 @@ if ($id) {
+     throw new moodle_exception('notenoughdatatoeditaquestion', 'question', $returnurl);
+ }
+ 
+-// If we get to the editing page from somewhere outside the question bank (such as the quiz) while migration is still
+-// pending, redirect back with a warning.
+-if (!\core_question\local\bank\question_bank_helper::has_bank_migration_task_completed_successfully()) {
+-    $defaultactivityname = \core_question\local\bank\question_bank_helper::get_default_question_bank_activity_name();
+-    redirect(
+-        $returnurl,
+-        get_string('transfernotfinished', 'mod_' . $defaultactivityname),
+-        messagetype: \core\output\notification::NOTIFY_WARNING,
+-    );
+-}
+-
+ $qtypeobj = question_bank::get_qtype($question->qtype);
+ 
+ if (isset($question->categoryobject)) {
+diff --git a/public/question/classes/local/bank/question_bank_helper.php b/public/question/classes/local/bank/question_bank_helper.php
+index b82a55cc2ec7bcaf34d6de4ecf19793eace178de..4a27178b0754c01b18edbb143435ecf3b21fec05 100644
+--- a/public/question/classes/local/bank/question_bank_helper.php
++++ b/public/question/classes/local/bank/question_bank_helper.php
+@@ -694,8 +694,7 @@ class question_bank_helper {
+     public static function has_bank_migration_task_completed_successfully(): bool {
+         $defaultbank = self::get_default_question_bank_activity_name();
+         $task = manager::get_adhoc_tasks("\\mod_{$defaultbank}\\task\\transfer_question_categories");
+-        $subtasks = manager::get_adhoc_tasks("\\mod_{$defaultbank}\\task\\transfer_questions");
+-        return empty($task) && empty($subtasks);
++        return empty($task);
+     }
+ 
+     /**
+diff --git a/public/question/edit.php b/public/question/edit.php
+index 349cd720f9a1dcad85020373f88803d015bd2150..5e98814b02594d75c070200288889d47c4a16f24 100644
+--- a/public/question/edit.php
++++ b/public/question/edit.php
+@@ -72,13 +72,9 @@ $PAGE->set_show_navigation_footer(false);
+ echo $OUTPUT->header();
+ if (!\core_question\local\bank\question_bank_helper::has_bank_migration_task_completed_successfully()) {
+     $defaultactivityname = \core_question\local\bank\question_bank_helper::get_default_question_bank_activity_name();
+-    echo $OUTPUT->notification(
+-        get_string('transfernotfinished', 'mod_' . $defaultactivityname),
+-        \core\output\notification::NOTIFY_WARNING,
+-        false,
++    echo $OUTPUT->notification(get_string('transfernotfinished', 'mod_' . $defaultactivityname),
++        \core\output\notification::NOTIFY_WARNING
+     );
+-    echo $OUTPUT->footer();
+-    exit();
+ }
+ 
+ // Print horizontal nav if needed.

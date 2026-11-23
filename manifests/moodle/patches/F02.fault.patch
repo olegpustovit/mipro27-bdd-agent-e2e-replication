@@ -1,0 +1,30 @@
+diff --git a/public/course/modlib.php b/public/course/modlib.php
+index 1ee04a969fc3d6a66f5d8423be03ab62a797840a..09b1b6f04b1852d19199547b36fc1f99e40dd72a 100644
+--- a/public/course/modlib.php
++++ b/public/course/modlib.php
+@@ -455,11 +455,6 @@ function edit_module_post_actions($moduleinfo, $course) {
+         }
+     }
+ 
+-    if (plugin_supports('mod', $moduleinfo->modulename, FEATURE_USES_QUESTIONS) && empty($moduleinfo->skipdefaultcategory)) {
+-        // Create the default question category.
+-        question_get_default_category($modcontext->id, true);
+-    }
+-
+     return $moduleinfo;
+ }
+ 
+diff --git a/public/question/classes/local/bank/question_bank_helper.php b/public/question/classes/local/bank/question_bank_helper.php
+index b82a55cc2ec7bcaf34d6de4ecf19793eace178de..4b5aaa032029ec782ab698bd29f692efd136050a 100644
+--- a/public/question/classes/local/bank/question_bank_helper.php
++++ b/public/question/classes/local/bank/question_bank_helper.php
+@@ -655,9 +655,6 @@ class question_bank_helper {
+         $data->name = $bankname;
+         $data->type = in_array($type, self::SHARED_TYPES) ? $type : self::TYPE_STANDARD;
+         $data->showdescription = $type === self::TYPE_STANDARD ? 0 : 1;
+-        // Don't create the default category if this is being created by the system as part of a migration or restore,
+-        // existing categories will be migrated to the new context.
+-        $data->skipdefaultcategory = $type === self::TYPE_SYSTEM;
+ 
+         $mod = add_moduleinfo($data, $course);
+ 

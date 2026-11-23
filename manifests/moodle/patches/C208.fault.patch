@@ -1,0 +1,263 @@
+diff --git a/public/grade/classes/route/scope/grade/read_self.php b/public/grade/classes/route/scope/grade/read_self.php
+deleted file mode 100644
+index c32d74da9befe5ceafd1ff477737cdf338ade704..0000000000000000000000000000000000000000
+--- a/public/grade/classes/route/scope/grade/read_self.php
++++ /dev/null
+@@ -1,32 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace core_grades\route\scope\grade;
+-
+-/**
+- * The core_grades:grade:read:self scope.
+- *
+- * This scope is used to guard reading a user's own grade data.
+- *
+- * @package    core_grades
+- * @copyright  Andrew Lyons <andrew@nicols.co.uk>
+- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-#[\core\router\scope\identifier_attribute('self')]
+-#[\core\router\scope\summary_attribute('grade_read_self_scope_summary', 'core_grades')]
+-#[\core\router\scope\description_attribute('grade_read_self_scope_desc', 'core_grades')]
+-class read_self extends read {
+-}
+diff --git a/public/user/classes/route/api/preferences.php b/public/user/classes/route/api/preferences.php
+index 574333050f38e7eb447d0b79ed2becfc21481809..d1b9dee206b5b6ebe717953543357db9a20a4088 100644
+--- a/public/user/classes/route/api/preferences.php
++++ b/public/user/classes/route/api/preferences.php
+@@ -69,7 +69,7 @@ class preferences {
+         ],
+     )]
+     #[scopeset(
+-        new \core_user\route\scope\user\read_self(),
++        new \core_user\route\scope\user\read(),
+     )]
+     public function get_preferences(
+         ResponseInterface $response,
+@@ -119,8 +119,8 @@ class preferences {
+         ],
+     )]
+     #[scopeset(
+-        new \core_user\route\scope\user\read_self(),
+-        new \core_user\route\scope\user\update_self(),
++        new \core_user\route\scope\user\read(),
++        new \core_user\route\scope\user\write(),
+     )]
+     public function set_preferences(
+         ResponseInterface $response,
+@@ -201,8 +201,8 @@ class preferences {
+         ],
+     )]
+     #[scopeset(
+-        new \core_user\route\scope\user\read_self(),
+-        new \core_user\route\scope\user\update_self(),
++        new \core_user\route\scope\user\read(),
++        new \core_user\route\scope\user\write(),
+     )]
+     public function set_preference(
+         ResponseInterface $response,
+diff --git a/public/user/classes/route/scope/user/create.php b/public/user/classes/route/scope/user/create.php
+deleted file mode 100644
+index f8188a87662deaca34de0321a8d43bd95d3c574c..0000000000000000000000000000000000000000
+--- a/public/user/classes/route/scope/user/create.php
++++ /dev/null
+@@ -1,32 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace core_user\route\scope\user;
+-
+-/**
+- * The core_user:user:create scope.
+- *
+- * This scope is used to guard user creation.
+- *
+- * @package    core_user
+- * @copyright  Andrew Lyons <andrew@nicols.co.uk>
+- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-#[\core\router\scope\identifier_attribute('create')]
+-#[\core\router\scope\summary_attribute('user_create_scope_summary', 'core_user')]
+-#[\core\router\scope\description_attribute('user_create_scope_desc', 'core_user')]
+-class create extends abstract_scope {
+-}
+diff --git a/public/user/classes/route/scope/user/read_self.php b/public/user/classes/route/scope/user/read_self.php
+deleted file mode 100644
+index 9a657b922464855668f6ebfed7e0239309e61fed..0000000000000000000000000000000000000000
+--- a/public/user/classes/route/scope/user/read_self.php
++++ /dev/null
+@@ -1,32 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace core_user\route\scope\user;
+-
+-/**
+- * The core_user:user:read:self scope.
+- *
+- * This scope is used to guard reading the current user's own information.
+- *
+- * @package    core_user
+- * @copyright  Andrew Lyons <andrew@nicols.co.uk>
+- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-#[\core\router\scope\identifier_attribute('self')]
+-#[\core\router\scope\summary_attribute('user_read_self_scope_summary', 'core_user')]
+-#[\core\router\scope\description_attribute('user_read_self_scope_desc', 'core_user')]
+-class read_self extends read {
+-}
+diff --git a/public/user/classes/route/scope/user/update.php b/public/user/classes/route/scope/user/update.php
+deleted file mode 100644
+index 941989faf7555285408d33b62a6bf0c7f9b2aa72..0000000000000000000000000000000000000000
+--- a/public/user/classes/route/scope/user/update.php
++++ /dev/null
+@@ -1,32 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace core_user\route\scope\user;
+-
+-/**
+- * The core_user:user:update scope.
+- *
+- * This scope is used to guard updating user information for any user.
+- *
+- * @package    core_user
+- * @copyright  2026 Mihail Geshoski <mihailgesoski@gmail.com>
+- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-#[\core\router\scope\identifier_attribute('update')]
+-#[\core\router\scope\summary_attribute('user_update_scope_summary', 'core_user')]
+-#[\core\router\scope\description_attribute('user_update_scope_desc', 'core_user')]
+-class update extends abstract_scope {
+-}
+diff --git a/public/user/classes/route/scope/user/update_self.php b/public/user/classes/route/scope/user/update_self.php
+deleted file mode 100644
+index d275322349da5cfe8fe337c2a7c48d1f4a60a22b..0000000000000000000000000000000000000000
+--- a/public/user/classes/route/scope/user/update_self.php
++++ /dev/null
+@@ -1,32 +0,0 @@
+-<?php
+-// This file is part of Moodle - http://moodle.org/
+-//
+-// Moodle is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-//
+-// Moodle is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-//
+-// You should have received a copy of the GNU General Public License
+-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+-
+-namespace core_user\route\scope\user;
+-
+-/**
+- * The core_user:user:update:self scope.
+- *
+- * This scope is used to guard updating the current user's own information.
+- *
+- * @package    core_user
+- * @copyright  Andrew Lyons <andrew@nicols.co.uk>
+- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+- */
+-#[\core\router\scope\identifier_attribute('self')]
+-#[\core\router\scope\summary_attribute('user_update_self_scope_summary', 'core_user')]
+-#[\core\router\scope\description_attribute('user_update_self_scope_desc', 'core_user')]
+-class update_self extends update {
+-}
+diff --git a/public/user/classes/route/scope/user/write.php b/public/user/classes/route/scope/user/write.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..43914d864d05ed5dd4b54890df08ef7dc0953058
+--- /dev/null
++++ b/public/user/classes/route/scope/user/write.php
+@@ -0,0 +1,32 @@
++<?php
++// This file is part of Moodle - http://moodle.org/
++//
++// Moodle is free software: you can redistribute it and/or modify
++// it under the terms of the GNU General Public License as published by
++// the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// Moodle is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++//
++// You should have received a copy of the GNU General Public License
++// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
++
++namespace core_user\route\scope\user;
++
++/**
++ * The core_user:user:write scope.
++ *
++ * This scope is used to handle user write-related routes.
++ *
++ * @package    core_user
++ * @copyright  2026 Mihail Geshoski <mihailgesoski@gmail.com>
++ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
++ */
++#[\core\router\scope\identifier_attribute('write')]
++#[\core\router\scope\summary_attribute('user_write_scope_summary', 'core_user')]
++#[\core\router\scope\description_attribute('user_write_scope_desc', 'core_user')]
++class write extends abstract_scope {
++}

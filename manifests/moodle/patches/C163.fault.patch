@@ -1,0 +1,20 @@
+diff --git a/public/lib/editor/tiny/plugins/media/amd/src/embed/embedinsert.js b/public/lib/editor/tiny/plugins/media/amd/src/embed/embedinsert.js
+index be41c91c0129467aefa888c81d8e16e0934e0d41..2b814b6b5060405589b55bd8d7019116b83bf9e9 100644
+--- a/public/lib/editor/tiny/plugins/media/amd/src/embed/embedinsert.js
++++ b/public/lib/editor/tiny/plugins/media/amd/src/embed/embedinsert.js
+@@ -123,13 +123,9 @@ export class EmbedInsert {
+             // Process the media preview.
+             this.processMediaPreview();
+         } else { // Media added using dropzone or repositories.
+-            // Only check media type via HEAD request for same-origin URLs (e.g. dropzone uploads).
+-            // Cross-origin URLs (e.g. YouTube) would fail due to CORS policy.
+-            if (!this.mediaType && parsedUrl.origin === window.location.origin) {
+-                this.mediaType = await checkMediaType(url);
+-            }
++            this.mediaType ??= await checkMediaType(url);
+ 
+-            // If media type is still unknown, try fetching preview to detect external media providers.
++            // If checkMediaType returns null, try fetching preview to detect external media providers.
+             if (!this.mediaType) {
+                 this.filteredContent = await fetchPreview(this.originalUrl, this.contextId);
+                 // If the filtered content is not empty, it means Moodle's filter recognized it as external media.
