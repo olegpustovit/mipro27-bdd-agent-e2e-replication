@@ -15,6 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'counts'))
 
 import cost  # noqa: E402
+import followups  # noqa: E402
 import matched  # noqa: E402
 import moodle  # noqa: E402
 import opus_reparse  # noqa: E402
@@ -23,7 +24,7 @@ from common import main  # noqa: E402
 
 
 def run(ck):
-    for module in (payment, matched, opus_reparse, moodle, cost):
+    for module in (payment, matched, opus_reparse, followups, moodle, cost):
         module.run(ck)
 
 
