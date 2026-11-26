@@ -22,7 +22,7 @@ CHANGES = ['B04', 'B07', 'B15', 'B25', 'B27', 'B28', 'B29', 'B34']
 SAME_ASSERTION = 'B04'  # the change whose edited step contains the target assertion
 MODELS = {'gpt-6-luna': 'Luna', 'gpt-5.6-terra': 'Terra', 'claude-haiku-5-5': 'Haiku'}
 SETUP_CAUSE = 'Scenario has no leading data steps'
-PAIR = re.compile(r'^(B\d+)\.(S\d+)\s+(X\d+)\s+([ABC])\s+(\S+)\s+(\d+)\s+\S+\s+(\S+)\s+(\S+) \(target \d+\)$')
+PAIR = re.compile(r'^(B\d+)\.(S\d+)\s+(X\d+)\s+([ABC])\s+(\S+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+) \(target \d+\)$')
 INVALID = re.compile(r'^  [0-9a-f]+/(B\d+)\.(S\d+)/(healthy|fault:X\d+)/([ABC])/(\S+)/r(\d+): (.+)$')
 
 EXPECTED = {
@@ -48,9 +48,9 @@ def parse():
     pairs, causes = [], {}
     for line in (ROOT / 'results/moodle-campaign.txt').read_text('utf-8').splitlines():
         if m := PAIR.match(line):
-            change, scenario, fault, arm, model, rep, healthy, faulty = m.groups()
+            change, scenario, fault, arm, model, rep, outcome, healthy, faulty = m.groups()
             pairs.append({'change': change, 'case': f'{change}.{scenario}', 'arm': arm, 'model': model,
-                          'rep': int(rep), 'healthy': healthy, 'faulty': faulty})
+                          'rep': int(rep), 'outcome': outcome, 'healthy': healthy, 'faulty': faulty})
         elif m := INVALID.match(line):
             change, scenario, kind, arm, model, rep, cause = m.groups()
             key = (f'{change}.{scenario}', 'healthy' if kind == 'healthy' else 'faulty', arm, model, int(rep))

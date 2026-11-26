@@ -5,7 +5,7 @@ executable: maintained step definitions, and an LLM browser agent that interpret
 unchanged scenario on every run. It holds the study code, every recorded execution and
 automated grade, the derived reports, and scripts that recompute every count in the paper.
 
-Version 1.1.2. Changes are listed under [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
+Version 1.1.3. Changes are listed under [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
 All results are exploratory; see `AGENTS.md` and `REPRODUCE.md` for the run status.
 
 ## Quick start: recompute the paper's counts
@@ -21,11 +21,11 @@ uv run scripts/reproduce_counts.py
 The script prints one table per study part and compares each value with the number stated
 in the paper. A difference is printed as `MISMATCH`, listed on stderr, and the script exits
 with status 1. Values are never adjusted to match. The output of this release is in
-`results/counts-v1.1.2.txt`: all 138 stated values match; 15 rows are informational (no
+`results/counts-v1.1.3.txt`: all 158 stated values match; 15 rows are informational (no
 stated value).
 
 Each part can also be run alone: `uv run scripts/counts/<part>.py` with `payment`, `matched`,
-`opus_reparse`, `moodle` or `cost`.
+`opus_reparse`, `followups`, `moodle`, `verified`, or `cost`.
 
 ## Scoring rules used by the count scripts
 
@@ -56,6 +56,20 @@ Moodle (`scripts/counts/moodle.py`)
 - Same-assertion cluster: change B04, whose edited step contains the target assertion;
   downstream: the other seven changes.
 
+Verified catches (`scripts/counts/verified.py`)
+- Payment app. Each case's target check is the single normalized `failedAssertion` shared by
+  its maintained faulty runs. Normalization trims whitespace, strips a leading Gherkin keyword
+  (`Given`, `When`, `Then`, `And`, or `But`), then trims and lower-cases the result.
+  A verified catch requires status `fail` and a normalized `failedAssertion` matching that target.
+  A verified paired catch also requires the healthy partner to pass under the pairing rule above.
+  Unresolved faulty runs are excluded from the catch numerator.
+- The payment-app social follow-up denominator covers main-comparison healthy runs of the two
+  social scenarios on v0 and v2. The count includes every run that did not pass.
+- Moodle. A verified paired catch is a per-pair `caught` outcome in `results/moodle-campaign.txt`.
+  The report requires a healthy pass and a failure at the target step. Setup-excluded pairs are
+  omitted from the arm C denominator. Arm A is also counted on the 14 scenario–fault pairs that
+  arm C could run.
+
 Cost (`scripts/counts/cost.py`)
 - Mean cost per execution (healthy and faulty) times the number of scenarios: 12 for the
   payment app (`record.elapsedMs`, input + output tokens; the step-definition mean includes the
@@ -74,7 +88,7 @@ Cost (`scripts/counts/cost.py`)
 | `experiment-4/` | Follow-up comparison: four configurations x 36 runs, both automated grade files, the manifest, the 12 re-read Opus verdicts (`campaign-experiment4-opus-verdict-v2`), and `source-pins/` with the prompt contract the comparison pinned. |
 | `moodle-ledger/` | Moodle measurement ledger (`trials.jsonl`, `tasks.jsonl`, content-addressed `blobs/`) and the Cypress follow-up runs under `runs/`. |
 | `clock-recovery/` | Re-evaluated follow-up traces and their grades. |
-| `results/` | Derived reports. `counts-v1.1.2.txt` is the output of `scripts/reproduce_counts.py`. |
+| `results/` | Derived reports. `counts-v1.1.3.txt` is the output of `scripts/reproduce_counts.py`. |
 | `scripts/` | Study and analysis code (Node 24) and the count scripts (`reproduce_counts.py`, `counts/`). |
 | `study/`, `adapters/`, `manifests/`, `docker/` | Scenarios, step definitions, plans, Moodle adapter, case manifests and patches, Moodle Behat configuration. |
 | `provenance/` | How runs were launched and graded: adjudicator prompts and sessions, second-grader verdicts, orchestration scripts. |
@@ -90,6 +104,11 @@ Checksums: `RELEASE.SHA256SUMS` (every file), `experiment-4/EXECUTION.SHA256SUMS
 The Node analyses that produced the derived reports (`npm run analyze`, the Moodle report,
 the follow-up-comparison summary), the re-run procedure for each campaign and the local trace
 console are described in `REPRODUCE.md`. They need Node 24 and `npm ci`.
+
+## Changes in v1.1.3
+
+- `scripts/counts/verified.py` checks verified and verified paired catches for the payment app,
+  step-verified paired catches for Moodle, and the payment-app social follow-up denominators.
 
 ## Changes in v1.1.2
 
