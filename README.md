@@ -5,7 +5,7 @@ executable: maintained step definitions, and an LLM browser agent that interpret
 unchanged scenario on every run. It holds the study code, every recorded execution and
 automated grade, the derived reports, and scripts that recompute every count in the paper.
 
-Version 1.1.3. Changes are listed under [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
+Version 1.1.4. Changes are listed under [Changes in v1.1.4](#changes-in-v114), [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
 All results are exploratory; see `AGENTS.md` and `REPRODUCE.md` for the run status.
 
 ## Quick start: recompute the paper's counts
@@ -21,11 +21,11 @@ uv run scripts/reproduce_counts.py
 The script prints one table per study part and compares each value with the number stated
 in the paper. A difference is printed as `MISMATCH`, listed on stderr, and the script exits
 with status 1. Values are never adjusted to match. The output of this release is in
-`results/counts-v1.1.3.txt`: all 158 stated values match; 15 rows are informational (no
+`results/counts-v1.1.4.txt`: all 191 stated values match; 14 rows are informational (no
 stated value).
 
 Each part can also be run alone: `uv run scripts/counts/<part>.py` with `payment`, `matched`,
-`opus_reparse`, `followups`, `moodle`, `verified`, or `cost`.
+`opus_reparse`, `followups`, `moodle`, `verified`, `maintenance`, or `cost`.
 
 ## Scoring rules used by the count scripts
 
@@ -37,6 +37,8 @@ Payment app (Cypress Real World App, main comparison; `scripts/counts/payment.py
 - Paired catch: the faulty run does not pass AND the healthy run of the same case, revision and
   repetition passes; when that repetition has no healthy run, repetition 1 is used.
 - Social scenarios: `social-like` and `social-comment`.
+- Healthy runs that do not pass are counted by interface revision (v0, v1, v2).
+  For each browser agent, the v1 breakdown also checks how many of these runs are social.
 - "Stopped before the fault": faulty runs that the first grader classed `action_failure` or
   `no_opportunity` (`data/campaigns/*/adjudication.jsonl`).
 
@@ -48,6 +50,8 @@ Follow-up comparison, called the matched comparison in earlier versions (`script
   records from the original raw responses: a response may end with one JSON verdict object
   after prose, with the same conflict checks (exactly one verdict object; status `pass`,
   `fail` or `unresolved`; no second explicit verdict in the prose).
+  Applying verdict parser v2 to all 648 recorded responses changes the status of zero
+  main-comparison responses.
 
 Moodle (`scripts/counts/moodle.py`)
 - Runs whose cause is the setup error "Scenario has no leading data steps..." are excluded
@@ -62,13 +66,20 @@ Verified catches (`scripts/counts/verified.py`)
   (`Given`, `When`, `Then`, `And`, or `But`), then trims and lower-cases the result.
   A verified catch requires status `fail` and a normalized `failedAssertion` matching that target.
   A verified paired catch also requires the healthy partner to pass under the pairing rule above.
-  Unresolved faulty runs are excluded from the catch numerator.
+  Unresolved faulty runs are excluded from the catch numerator. The breakdown outside
+  the social scenarios excludes both social cases from the numerator and denominator.
 - The payment-app social follow-up denominator covers main-comparison healthy runs of the two
   social scenarios on v0 and v2. The count includes every run that did not pass.
 - Moodle. A verified paired catch is a per-pair `caught` outcome in `results/moodle-campaign.txt`.
   The report requires a healthy pass and a failure at the target step. Setup-excluded pairs are
   omitted from the arm C denominator. Arm A is also counted on the 14 scenario–fault pairs that
   arm C could run.
+
+Step-definition maintenance (`scripts/counts/maintenance.py`)
+- The campaign A journal records one `maintenance-finished` entry for each of v1 and v2.
+  Session minutes come from `elapsedMs / 60000`. Accepted edits and validation runs come
+  from `record.frozen`. The script checks `budgetExpired` and sums the input and output tokens
+  from `record.agent.usage`. Totals use the unrounded duration and token counts.
 
 Cost (`scripts/counts/cost.py`)
 - Mean cost per execution (healthy and faulty) times the number of scenarios: 12 for the
@@ -88,7 +99,7 @@ Cost (`scripts/counts/cost.py`)
 | `experiment-4/` | Follow-up comparison: four configurations x 36 runs, both automated grade files, the manifest, the 12 re-read Opus verdicts (`campaign-experiment4-opus-verdict-v2`), and `source-pins/` with the prompt contract the comparison pinned. |
 | `moodle-ledger/` | Moodle measurement ledger (`trials.jsonl`, `tasks.jsonl`, content-addressed `blobs/`) and the Cypress follow-up runs under `runs/`. |
 | `clock-recovery/` | Re-evaluated follow-up traces and their grades. |
-| `results/` | Derived reports. `counts-v1.1.3.txt` is the output of `scripts/reproduce_counts.py`. |
+| `results/` | Derived reports. `counts-v1.1.4.txt` is the output of `scripts/reproduce_counts.py`. |
 | `scripts/` | Study and analysis code (Node 24) and the count scripts (`reproduce_counts.py`, `counts/`). |
 | `study/`, `adapters/`, `manifests/`, `docker/` | Scenarios, step definitions, plans, Moodle adapter, case manifests and patches, Moodle Behat configuration. |
 | `provenance/` | How runs were launched and graded: adjudicator prompts and sessions, second-grader verdicts, orchestration scripts. |
@@ -104,6 +115,12 @@ Checksums: `RELEASE.SHA256SUMS` (every file), `experiment-4/EXECUTION.SHA256SUMS
 The Node analyses that produced the derived reports (`npm run analyze`, the Moodle report,
 the follow-up-comparison summary), the re-run procedure for each campaign and the local trace
 console are described in `REPRODUCE.md`. They need Node 24 and `npm ci`.
+
+## Changes in v1.1.4
+
+- Added checks for payment-app verified paired catches outside the social scenarios,
+  healthy runs that did not pass by revision, and step-definition maintenance sessions.
+- Checked the replay size and that verdict parser v2 changes zero main-comparison responses.
 
 ## Changes in v1.1.3
 

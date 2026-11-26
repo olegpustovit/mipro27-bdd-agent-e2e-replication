@@ -13,6 +13,7 @@
    moodle-ledger/runs/campaign-f-20261118-opus-verdict-v2.
 """
 from common import ROOT, Checker, main, read_jsonl
+from payment import CAMPAIGNS
 from verdict_parser import decode, scenario_assertions
 
 SOURCES = [
@@ -62,12 +63,15 @@ def run(ck: Checker):
             new = decode(agent['rawResponse'], assertions, version=2)
             if new['reportedStatus'] != agent['reportedStatus']:
                 changes.setdefault(path, []).append((record, new))
-    ck.check('recorded responses replayed', total)
+    ck.check('recorded responses replayed', total, 648)
     ck.check('version 1 port reproduces recorded decoding', f'{v1_agree}/{total}', f'{total}/{total}')
     ck.check('responses whose status changes under v2', sum(map(len, changes.values())), 13)
     ck.check('  of which campaign-experiment4-opus', len(changes.get('experiment-4/campaign-experiment4-opus/trials.jsonl', [])), 12)
     ck.check('  of which Opus follow-up (clock recovery)',
              len(changes.get('clock-recovery/campaign-f-20261118-opus-clock-recovery/trials.jsonl', [])), 1)
+    main_comparison_paths = {f'data/campaigns/{campaign}/trials.jsonl.zst' for campaign, _ in CAMPAIGNS.values()}
+    ck.check('  changes to main-comparison responses',
+             sum(len(changes.get(path, ())) for path in main_comparison_paths), 0)
     others = [p for p in changes if p not in RECOVERED]
     ck.check('  changes in any other campaign', len(others), 0)
 

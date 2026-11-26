@@ -2,7 +2,7 @@
 # requires-python = ">=3.14"
 # dependencies = []
 # ///
-"""Verified catches in the payment app and Moodle, and social follow-up denominators."""
+"""Verified catches in the payment app and Moodle, and payment-app healthy-run counts."""
 import re
 from collections import defaultdict
 
@@ -15,6 +15,13 @@ EXPECTED_PAYMENT = {
     'Luna': ('37/48', '37/48', '37/40'),
     'Terra': ('41/48', '40/48', '40/40'),
     'Haiku': ('44/48', '36/48', '40/40'),
+}
+EXPECTED_PAIRED_OUTSIDE_SOCIAL = {'coded': '39/40', 'Luna': '37/40', 'Terra': '40/40', 'Haiku': '33/40'}
+EXPECTED_HEALTHY_NOT_PASSING = {
+    'coded': ('1/12', '7/12', '1/36'),
+    'Luna': ('2/12', '2/12', '6/36'),
+    'Terra': ('2/12', '2/12', '3/36'),
+    'Haiku': ('3/12', '2/12', '6/36'),
 }
 EXPECTED_SOCIAL = {'Luna': '7/8', 'Terra': '5/8', 'Haiku': '3/8'}
 EXPECTED_MOODLE = {'Luna': '8/28', 'Terra': '18/28', 'Haiku': '13/28'}
@@ -62,10 +69,27 @@ def payment_counts(ck):
         ck.check(f'{label} verified paired catches', f'{paired}/{len(faulty)}', expected_paired)
         ck.check(f'{label} verified catches outside social scenarios',
                  f'{verified_outside}/{outside_social}', expected_outside)
+        paired_outside, _ = payment.paired_catches(
+            [r for r in healthy + verified if r['caseId'] not in payment.SOCIAL])
+        ck.check(f'{label} verified paired catches outside social scenarios',
+                 f'{paired_outside}/{outside_social}', EXPECTED_PAIRED_OUTSIDE_SOCIAL[label])
         if label in EXPECTED_SOCIAL:
             social = [r for r in healthy if r['caseId'] in payment.SOCIAL and r['revision'] in ('v0', 'v2')]
             ck.check(f'{label} healthy social runs not passing (v0 and v2)',
                      f'{sum(r["status"] != "pass" for r in social)}/{len(social)}', EXPECTED_SOCIAL[label])
+
+
+def healthy_version_counts(ck):
+    ck.section('Payment app: healthy runs not passing by revision')
+    for label, expected_counts in EXPECTED_HEALTHY_NOT_PASSING.items():
+        healthy = [r for r in payment.runs(label)[1] if r['kind'] == 'healthy']
+        for revision, expected in zip(('v0', 'v1', 'v2'), expected_counts, strict=True):
+            runs = [r for r in healthy if r['revision'] == revision]
+            failed = [r for r in runs if r['status'] != 'pass']
+            ck.check(f'{label} healthy runs not passing ({revision})', f'{len(failed)}/{len(runs)}', expected)
+            if revision == 'v1' and label != 'coded':
+                social = sum(r['caseId'] in payment.SOCIAL for r in failed)
+                ck.check(f'{label} healthy v1 failures in social scenarios', f'{social}/{len(failed)}', '2/2')
 
 
 def moodle_counts(ck):
@@ -98,6 +122,7 @@ def caught_fraction(pairs):
 
 def run(ck: Checker):
     payment_counts(ck)
+    healthy_version_counts(ck)
     moodle_counts(ck)
 
 

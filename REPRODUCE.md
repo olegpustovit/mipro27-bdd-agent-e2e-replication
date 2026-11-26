@@ -11,9 +11,13 @@ uv run scripts/reproduce_counts.py
 ```
 
 Uses the Python 3.14 standard library only and compares every value with the paper; see
-`README.md` for the scoring rules and `results/counts-v1.1.3.txt` for the expected output.
+`README.md` for the scoring rules and `results/counts-v1.1.4.txt` for the expected output.
 Run a part individually with `uv run scripts/counts/<part>.py`. Parts are `payment`,
-`matched`, `opus_reparse`, `followups`, `moodle`, `verified`, and `cost`.
+`matched`, `opus_reparse`, `followups`, `moodle`, `verified`, `maintenance`, and `cost`.
+`verified` checks payment-app verified paired catches outside the two social scenarios,
+healthy runs that did not pass by revision, and the social share of agents' v1 failures.
+`maintenance` reads campaign A's journal for the v1 and v2 step-definition maintenance sessions.
+`opus_reparse` checks that the replay of 648 recorded responses changes zero main-comparison statuses.
 The payment-app step-definition cost mean includes the two infrastructure-invalid runs (they started
 and exited 1 and count as failed runs in the outcomes), giving 1.48 minutes per 12-scenario suite.
 
