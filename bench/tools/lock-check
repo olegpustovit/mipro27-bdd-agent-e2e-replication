@@ -1,0 +1,109 @@
+#!/usr/bin/env node
+
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const bench = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const lockPath = resolve(bench, 'env.lock.json');
+const sha256 = /^[a-f0-9]{64}$/;
+let failed = false;
+
+function check(field, callback) {
+  try {
+    callback();
+  } catch (error) {
+    failed = true;
+    console.error(`lock-check: ${field}: ${error.message}`);
+  }
+}
+
+function match(pinned, observed) {
+  if (typeof observed !== 'string' || pinned !== observed) {
+    throw new Error(`pinned ${JSON.stringify(pinned)}, observed ${JSON.stringify(observed)}`);
+  }
+}
+
+function output(command, ...args) {
+  const result = spawnSync(command, args, { encoding: 'utf8', timeout: 15_000 });
+  if (result.error || result.status !== 0) {
+    throw new Error(`${command} failed: ${result.error?.code ?? result.signal ?? result.status}`);
+  }
+  return result.stdout.trim();
+}
+
+function promptHash() {
+  const hash = createHash('sha256');
+  for (const file of ['template.md', 'glossary.md']) {
+    const bytes = readFileSync(resolve(bench, 'prompt', file));
+    hash.update(`${file}\0${bytes.length}\0`).update(bytes);
+  }
+  return hash.digest('hex');
+}
+
+function checkImage(field, pin) {
+  let observed;
+  check(`${field}.ref`, () => {
+    if (!pin || typeof pin.ref !== 'string' || !pin.ref || pin.ref.startsWith('-')) {
+      throw new Error('missing image reference');
+    }
+    observed = output('docker', 'image', 'inspect', '--format', '{{.Id}}', pin.ref);
+  });
+  check(`${field}.digest`, () => {
+    if (typeof pin?.digest !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(pin.digest)) {
+      throw new Error('missing or invalid image digest');
+    }
+    if (observed !== undefined) match(pin.digest, observed);
+  });
+}
+
+function verify() {
+  const lock = JSON.parse(readFileSync(lockPath, 'utf8'));
+  const plan = JSON.parse(readFileSync(resolve(bench, 'plan/plan.json'), 'utf8'));
+  const bin = resolve(bench, '../node_modules/.bin');
+
+  check('node', () => match(lock.node, process.versions.node));
+  check('playwright', () => match(lock.playwright, output(resolve(bin, 'playwright'), '--version').replace(/^Version /, '')));
+  check('playwrightMcp', () => match(lock.playwrightMcp, output(resolve(bin, 'playwright-mcp'), '--version').replace(/^Version /, '')));
+  check('codexCli', () => match(lock.codexCli, output('codex', '--version').replace(/^codex-cli /, '')));
+
+  for (const arm of [...plan.pay.arms, ...plan.mdl.arms].filter(arm => arm.kind === 'agent')) {
+    check(`models.${arm.id}.id`, () => match(lock.models?.[arm.id]?.id, arm.model));
+    check(`models.${arm.id}.effort`, () => {
+      match(lock.models?.[arm.id]?.effort, arm.detail.match(/, (\w+) reasoning effort/)?.[1]);
+    });
+  }
+
+  check('promptSha256', () => {
+    if (typeof lock.promptSha256 !== 'string' || !sha256.test(lock.promptSha256)) {
+      throw new Error('missing or invalid prompt hash');
+    }
+    match(lock.promptSha256, promptHash());
+  });
+  for (const role of ['app', 'db']) {
+    const pins = lock.images?.[role];
+    if (!pins || typeof pins !== 'object' || Array.isArray(pins) || !Object.keys(pins).length) {
+      check(`images.${role}`, () => { throw new Error('no pinned images'); });
+      continue;
+    }
+    for (const [name, pin] of Object.entries(pins)) {
+      checkImage(`images.${role}.${name}`, pin);
+    }
+  }
+  for (const role of ['browser', 'agent']) {
+    checkImage(`images.${role}`, lock.images?.[role]);
+  }
+  if (!failed) console.log('lock-check: all environment pins match');
+}
+
+check('env.lock.json', () => {
+  if (process.argv.length === 2) verify();
+  else if (process.argv.length === 3 && process.argv[2] === '--print-prompt-sha256') {
+    console.log(promptHash());
+  } else {
+    throw new Error('usage: lock-check [--print-prompt-sha256]');
+  }
+});
+if (failed) process.exitCode = 1;
