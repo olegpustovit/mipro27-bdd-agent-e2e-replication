@@ -1,0 +1,38 @@
+diff --git a/public/course/format/classes/output/local/content/cm/completion.php b/public/course/format/classes/output/local/content/cm/completion.php
+index c053955..daf70ed 100644
+--- a/public/course/format/classes/output/local/content/cm/completion.php
++++ b/public/course/format/classes/output/local/content/cm/completion.php
+@@ -87,14 +87,17 @@ class completion implements externable, named_templatable, renderable {
+         $showcompletionconditions = $course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS;
+         $completiondetails = cm_completion_details::get_instance($this->mod, $USER->id, $showcompletionconditions);
+ 
++        $showhiddenmanual = !$showcompletionconditions && $this->mod->modname === 'choice' &&
++            $completiondetails->is_manual();
+         $showcompletioninfo = $completiondetails->has_completion() &&
+-            ($showcompletionconditions || $completiondetails->show_manual_completion());
++            ($showcompletionconditions || $completiondetails->show_manual_completion() || $showhiddenmanual);
+         if (!$showcompletioninfo) {
+             return null;
+         }
+ 
+         $completion = new activity_completion($this->mod, $completiondetails, $this->smallbutton);
+         $completiondata = $completion->export_for_template($output);
++        $completiondata->showhiddenmanual = $showhiddenmanual;
+ 
+         if ($completiondata->isautomatic || ($completiondata->ismanual && !$completiondata->istrackeduser)) {
+             $completiondata->completiondialog = $this->get_completion_dialog($output, $completiondata);
+diff --git a/public/course/format/templates/local/content/cm/completion.mustache b/public/course/format/templates/local/content/cm/completion.mustache
+index ef53768..557c584 100644
+--- a/public/course/format/templates/local/content/cm/completion.mustache
++++ b/public/course/format/templates/local/content/cm/completion.mustache
+@@ -57,6 +57,10 @@
+             </div>
+         {{/completiondialog}}
+ 
++        {{#showhiddenmanual}}
++            {{> core_course/completion_manual }}
++        {{/showhiddenmanual}}
++
+         {{! Manual completion button }}
+         {{#showmanualcompletion}}
+             {{#istrackeduser}}

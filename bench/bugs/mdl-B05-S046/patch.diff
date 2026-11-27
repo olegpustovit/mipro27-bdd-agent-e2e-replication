@@ -1,0 +1,14 @@
+diff --git a/public/mod/quiz/locallib.php b/public/mod/quiz/locallib.php
+index d2ec29a..c58e2f1 100644
+--- a/public/mod/quiz/locallib.php
++++ b/public/mod/quiz/locallib.php
+@@ -290,7 +290,8 @@ function quiz_start_new_attempt($quizobj, $quba, $attempt, $attemptnumber, $time
+         } else {
+             $currentpage = $page[$section->firstslot];
+             for ($slot = $section->firstslot; $slot <= $section->lastslot; $slot += 1) {
+-                if ($currentpage !== null && $page[$slot] != $currentpage) {
++                if ($currentpage !== null && $page[$slot] != $currentpage &&
++                        (!$attempt->preview || $currentpage != 1 || $page[$slot] != 2)) {
+                     $layout[] = 0;
+                 }
+                 $layout[] = $slot;
