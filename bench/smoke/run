@@ -1,0 +1,136 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# dependencies = []
+# ///
+"""Run the P9 matrix in a fresh smoke ledger and disposable dashboard."""
+import argparse
+from collections import defaultdict
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+from statistics import median
+import subprocess
+from tempfile import TemporaryDirectory, mkdtemp
+
+BENCH = Path(__file__).resolve().parents[1]
+LIVE = "kq608ae9cng6"
+WORKERS = 8
+SCENARIOS = {("pay", "v1", "bank-create"): 4, ("mdl", "B15-post", "S091"): 5}
+
+
+def run(*args, capture=False, **options):
+    print("+", shlex.join(map(str, args)), flush=True)
+    return subprocess.run(args, cwd=BENCH, text=True, stdout=subprocess.PIPE if capture else None,
+                          **options)
+
+
+def output(*args):
+    return run(*args, capture=True, check=True).stdout
+
+
+def write_json(path, data):
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+COLORS = {
+    "pass": "--ok", "caught_target": "--ok", "caught_other": "--warn",
+    "missed": "--bad", "false_alarm": "--bad", "unresolved": "--unres", "invalid": "--inv",
+}
+
+
+def check_color(html, outcome):
+    if not any(f".o-{outcome}" in [selector.strip() for selector in selectors.split(",")] and f"var({COLORS[outcome]})" in background
+               for selectors, background in re.findall(r"([^{}]+)\{background:([^}]+)\}", html)):
+        raise ValueError(f"Dashboard CSS does not match the expected color for {outcome}")
+
+
+def check_dashboard(artifact, records, items, html):
+    histories = defaultdict(list)
+    for row in records:
+        histories[row["item_id"]].append(row)
+    for item_id, history in histories.items():
+        latest = history[-1]
+        item = items[item_id]
+        app, version, scenario, condition, arm = (item[key] for key in
+                                                   ("app", "version", "scenario", "condition", "arm"))
+        path = f"res-{app}-{arm}/{item_id}"
+        body = json.loads(output("art", "db", "get", artifact, path))["body"]
+        answer = latest["agent_answer"] or latest["coded_result"] or {}
+        status = answer.get("status")
+        if not latest["valid"]:
+            expected = "invalid"
+        elif status == "unresolved":
+            expected = "unresolved"
+        elif condition == "healthy":
+            expected = "pass" if status == "pass" else "false_alarm"
+        elif status == "pass":
+            expected = "missed"
+        else:
+            expected = ("caught_target" if answer["failed_step"] == SCENARIOS[(app, version, scenario)]
+                        else "caught_other")
+        if body["outcome"] != expected:
+            raise ValueError(f"{item_id}: expected {expected}, got {body['outcome']}")
+        check_color(html, expected)
+        if [entry["ledger_hash"] for entry in body["attempts"]] != [
+            row["record_sha256"] for row in history
+        ]:
+            raise ValueError(f"{item_id}: dashboard attempt history differs")
+    print(f"Verified dashboard outcomes, color rules, and attempt hashes for {len(histories)} items")
+
+
+def main():
+    argparse.ArgumentParser(description=__doc__).parse_args()
+    os.umask(0o077)
+    root = BENCH / "ledger-smoke"
+    root.mkdir(exist_ok=True)
+    ledger = Path(mkdtemp(prefix="p9-", dir=root))
+    plan_path = ledger / "plan.json"
+    plan = json.loads((BENCH / "plan/plan.json").read_text())
+    plan["items"] = [item for item in plan["items"] if item["rep"] == 1 and
+                     (item["app"], item["version"], item["scenario"]) in SCENARIOS]
+    if len(plan["items"]) != 20:
+        raise ValueError("Expected 20 selected smoke items")
+    write_json(plan_path, plan)
+    metadata = ledger / "targets.json"
+    write_json(metadata, {"targets": {"/".join(key): {"step": step} for key, step in SCENARIOS.items()}})
+    with TemporaryDirectory(prefix="p9-dashboard-") as tmp:
+        page = Path(tmp) / "index.html"
+        html = output("art", "read", LIVE, "index.html")
+        page.write_text(html.replace("<title>", "<title>Disposable P9 smoke · ", 1))
+        published = output("art", "publish", page, "--visibility", "private", "--icon", "chart",
+                           "--capabilities", '{"db":{}}')
+        artifact = re.search(r"/a/([a-z0-9]+)", published)[1]
+        if artifact == LIVE:
+            raise ValueError("Refusing to use the study dashboard")
+        try:
+            result = run(BENCH / "sync/dashboard", "--artifact", artifact, "--plan", plan_path,
+                         "--ledger-dir", ledger, "--metadata", metadata, "--batch", "--filter", "rep=1",
+                         "--seed", "9", "--workers", str(WORKERS), "--alert-sink", ledger / "alerts.jsonl", umask=0o022)
+            run(BENCH / "tools/verify-ledger", "--ledger-dir", ledger, check=True)
+            records = [json.loads(line) for line in (ledger / "attempts.jsonl").read_text().splitlines()]
+            check_dashboard(artifact, records, {item["id"]: item for item in plan["items"]}, html)
+            times = defaultdict(list)
+            for row in records:
+                answer = row["agent_answer"] or row["coded_result"] or {}
+                print(json.dumps({key: row[key] for key in
+                                  ("item_id", "attempt", "worker", "valid", "minutes", "wall_minutes", "tokens")}
+                                 | {"status": answer.get("status"), "step": answer.get("failed_step")}))
+                if row["valid"]:
+                    times[row["arm"]].append(row["minutes"])
+            if result.returncode == 0 and len({row["item_id"] for row in records if row["valid"]}) == 20:
+                write_json(ledger / "smoke-times.json", {arm: median(values) for arm, values in times.items()})
+            elif result.returncode == 0:
+                raise ValueError("Smoke matrix lacks valid results for all 20 items")
+            return result.returncode
+        finally:
+            try:
+                run("art", "delete", artifact, "--yes", check=True)
+            finally:
+                run(BENCH / "tools/secret-scan", ledger, check=True)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
