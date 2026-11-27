@@ -1,0 +1,27 @@
+diff --git a/src/machines/authMachine.ts b/src/machines/authMachine.ts
+index 669f4d7..efa95ed 100644
+--- a/src/machines/authMachine.ts
++++ b/src/machines/authMachine.ts
+@@ -67,7 +67,7 @@ export const authMachine = Machine<AuthMachineContext, AuthMachineSchema, AuthMa
+       loading: {
+         invoke: {
+           src: "performLogin",
+-          onDone: { target: "authorized", actions: "onSuccess" },
++          onDone: { target: "unauthorized", actions: "onSuccess" },
+           onError: { target: "unauthorized", actions: "onError" },
+         },
+       },
+@@ -156,9 +156,10 @@ export const authMachine = Machine<AuthMachineContext, AuthMachineSchema, AuthMa
+       performLogin: async (ctx, event) => {
+         return await httpClient
+           .post(`http://localhost:${backendPort}/login`, event)
+-          .then(({ data }) => {
+-            history.push("/");
+-            return data;
++          .then(async () => {
++            await httpClient.post(`http://localhost:${backendPort}/logout`);
++            history.replace("/signin");
++            return { user: undefined };
+           })
+           .catch((error) => {
+             throw new Error("Username or password is invalid");
