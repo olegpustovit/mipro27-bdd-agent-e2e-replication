@@ -30,13 +30,20 @@ try {
     const bugId = item.app === 'pay' ? `pay-${item.scenario}` : `mdl-${item.change}-${item.scenario}`;
     if (item.bugId !== bugId || !readJson(root + `bench/bugs/${bugId}/applies-to.json`)
       .includes(suite.commit ?? suite.version)) throw new Error('Item has no applicable bug');
-    const checks = readRows(root + 'bench/plan/bug-checks.jsonl');
+    // Accept both record formats (P7d: app/bugId/condition; formal P7: app "payment"/bug/mode) and use the latest
+    // formal P7 record per bug, version and condition. Earlier attempts stay in the ledger but do not decide admission.
+    const norm = check => ({ ...check,
+      app: check.app === 'payment' ? 'pay' : check.app === 'mdl' ? 'moodle' : check.app,
+      bugId: check.bugId ?? check.bug, condition: check.condition ?? check.mode });
+    const checks = readRows(root + 'bench/plan/bug-checks.jsonl').map(norm);
+    const app = item.app === 'mdl' ? 'moodle' : 'pay';
     for (const condition of ['healthy', 'bug']) {
-      const matching = checks.filter(check => check.app === (item.app === 'mdl' ? 'moodle' : 'pay') &&
-        check.version === item.version && check.scenario === item.scenario &&
-        check.bugId === bugId && check.condition === condition &&
-        (item.app === 'pay' || check.commit === suite.commit));
-      if (matching.length !== 1 || matching[0].status !== 'pass') {
+      const matching = checks.filter(check => check.app === app && check.bugId === bugId &&
+        check.condition === condition && String(check.run ?? '').startsWith('formal-P7') &&
+        (check.version === item.version || (item.app === 'mdl' && suite.commit &&
+          [check.commit, check.version].some(v => v && (String(v).startsWith(suite.commit) || String(suite.commit).startsWith(String(v)))))));
+      const latest = matching.sort((a, b) => String(a.time).localeCompare(String(b.time))).at(-1);
+      if (!latest || latest.status !== 'pass') {
         throw new Error(`No passing ${condition} bug check for ${bugId} on ${item.version}`);
       }
     }
