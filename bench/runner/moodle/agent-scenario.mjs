@@ -37,7 +37,7 @@ export function agentScenario(plan, id) {
 }
 
 // The prebuilt bench app provides the matching scenario's generator state.
-export async function writeAgentScenario(item, out) {
+export function planAgentScenario(item) {
   const [id, suffix] = item.scenario.replace(/\.feature$/, '').split('.');
   const version = /^(B\d+)(?:-(pre|post))?$/.exec(item.version);
   const change = item.change ?? version?.[1];
@@ -51,7 +51,12 @@ export async function writeAgentScenario(item, out) {
     .find(candidate => candidate.id === id && candidate.decision === 'eligible');
   if (!entry) throw new Error('Moodle scenario is not eligible for an agent run');
   const text = readFileSync(new URL(`../../${entry[phase].scenarioTextPath}`, import.meta.url), 'utf8');
+  return { plan: planHandoff(text, {}), id };
+}
+
+export async function writeAgentScenario(item, out) {
+  const { plan, id } = planAgentScenario(item);
   const file = join(out, 'agent-scenario.feature');
-  await writeFile(file, agentScenario(planHandoff(text, {}), id), { flag: 'wx', mode: 0o600 });
+  await writeFile(file, agentScenario(plan, id), { flag: 'wx', mode: 0o600 });
   return file;
 }

@@ -44,6 +44,19 @@ export async function moodle(item) {
     throw new Error('Unknown Moodle coded arm for this phase');
   }
 
+  if (process.env.BENCH_MOODLE_WEB) {
+    const { pinnedMoodle } = await import('../moodle/pinned.mjs');
+    const adapter = pinnedMoodle(process.env.BENCH_MOODLE_WEB);
+    if (stepPatch) {
+      const patch = readFileSync(stepPatch, 'utf8');
+      await adapter.exec('webserver', ['git', 'apply', '--check', '-'], { cwd: '/var/www/html', input: patch });
+      await adapter.exec('webserver', ['git', 'apply', '-'], { cwd: '/var/www/html', input: patch });
+    }
+    const source = await adapter.exec('webserver', ['cat', `/var/www/html/${feature}`]);
+    const target = findScenario(parseFeature(source.stdout), { line, name });
+    const result = await runScenario(adapter, { feature, line, timeoutMs: 120_000 });
+    return interpret(result, name, scenario, commit, target.kind === 'scenario');
+  }
   const patch = stackPatches([stepPatch, bugPatch].filter(Boolean).map(file => readFileSync(file, 'utf8')));
   const adapter = new MoodleAdapter({
     moodleCommit: commit, worker: process.env.BENCH_MOODLE_WORKER ?? 'w89',
@@ -60,21 +73,25 @@ export async function moodle(item) {
     const source = readFileSync(join(adapter.dirs.src, feature), 'utf8');
     const target = findScenario(parseFeature(source), { line, name });
     const result = await runScenario(adapter, { feature, line, timeoutMs: 120_000 });
-    if (result.status === 'error' || !result.scenarios.length ||
-        (target.kind === 'scenario' && result.scenarios.some(entry => entry.name !== name))) {
-      throw new Error(`Behat did not complete ${scenario} (exit ${result.exitCode})`);
-    }
-    const failed = result.scenarios.find(entry => entry.status !== 'passed');
-    if (!failed) return { status: 'pass', message: `Behat passed at ${commit}` };
-    const step = failed.failingStep;
-    const steps = failed.steps.filter(entry => !entry.background);
-    return {
-      status: 'fail',
-      failed_step: step && !step.background ? steps.indexOf(step) + 1 : null,
-      failed_step_text: step && !step.background ? `${step.keyword} ${step.text}` : null,
-      message: step ? `Behat ${step.background ? 'Background' : 'scenario'} step: ${step.status}` : 'Behat scenario failed outside a numbered step',
-    };
+    return interpret(result, name, scenario, commit, target.kind === 'scenario');
   } finally {
     try { if (started) await adapter.revertDiff(); } finally { release(); }
   }
+}
+
+function interpret(result, name, scenario, commit, exactName) {
+  if (result.status === 'error' || !result.scenarios.length ||
+      (exactName && result.scenarios.some(entry => entry.name !== name))) {
+    throw new Error(`Behat did not complete ${scenario} (exit ${result.exitCode}): ${result.stderrTail || result.stdoutTail}`);
+  }
+  const failed = result.scenarios.find(entry => entry.status !== 'passed');
+  if (!failed) return { status: 'pass', message: `Behat passed at ${commit}` };
+  const step = failed.failingStep;
+  const steps = failed.steps.filter(entry => !entry.background);
+  return {
+    status: 'fail',
+    failed_step: step && !step.background ? steps.indexOf(step) + 1 : null,
+    failed_step_text: step && !step.background ? `${step.keyword} ${step.text}` : null,
+    message: step ? `Behat ${step.background ? 'Background' : 'scenario'} step: ${step.status}` : 'Behat scenario failed outside a numbered step',
+  };
 }

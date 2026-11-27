@@ -20,6 +20,7 @@ from tempfile import TemporaryDirectory
 
 from ledger import ITEM_ID, Ledger, canonical, digest, locked
 from notify import send
+from worker import DEFAULT_WORKERS, Worker
 
 BENCH = Path(__file__).resolve().parents[1]
 MAX_ATTEMPTS = 4
@@ -36,7 +37,7 @@ def arguments():
     selection.add_argument("--item", help="exact plan item ID")
     selection.add_argument("--filter", action="append", metavar="FIELD=VALUE",
                            help="exact item match; repeat to combine filters")
-    parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--workers", type=int)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--resume", action="store_true", help="skip items with a valid result in this ledger")
     parser.add_argument("--list-order", action="store_true", help="print seeded schedule and exit")
@@ -53,6 +54,10 @@ def arguments():
     parser.add_argument("--min-memory-bytes", type=int, default=GIB)
     parser.add_argument("--min-disk-bytes", type=int, default=2 * GIB)
     args = parser.parse_args()
+    if args.workers is None:
+        standard = (args.agent_run == BENCH / "agent/run" and
+                    args.coded_run == BENCH / "runner/coded-run")
+        args.workers = DEFAULT_WORKERS if standard else 1
     if args.workers < 1 or min(args.min_memory_bytes, args.min_disk_bytes) < 0:
         parser.error("workers must be positive and resource thresholds must be nonnegative")
     return args
@@ -164,7 +169,27 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
     clock = time.monotonic()
     is_agent = arm["kind"] == "agent"
     command = args.agent_run if is_agent else args.coded_run
-    exit_code = run_command(command, "--item", raw / "item.json", "--out", raw)
+    default = BENCH / ("agent/run" if is_agent else "runner/coded-run")
+    images = dict.fromkeys(("app", "db", "browser", "agent"))
+    if command.resolve() == default:
+        instance = None
+        exit_code = None
+        error = None
+        try:
+            with Worker(item, pins, is_agent) as instance:
+                images = instance.images
+                instance.start()
+                exit_code = instance.run(raw)
+        except (RuntimeError, OSError, KeyError, ValueError, subprocess.SubprocessError) as failure:
+            error = str(failure)
+            exit_code = None
+        (raw / "worker.json").write_text(json.dumps({
+            "startup_ms": instance.startup_ms if instance else None,
+            "teardown_ms": instance.teardown_ms if instance else None,
+            "error": error,
+        }) + "\n")
+    else:
+        exit_code = run_command(command, "--item", raw / "item.json", "--out", raw)
     elapsed = (time.monotonic() - clock) / 60
     model_pin = pins.get("models", {}).get(item["arm"], {})
     tool_versions = {key: pins[key] for key in ("node", "playwright", "playwrightMcp", "codexCli")
@@ -172,7 +197,7 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
     record = {
         **plan_identity, "item_id": item["id"], "attempt": attempt, "worker": worker,
         "seed": args.seed, "arm": item["arm"], "started_at": started, "finished_at": now(),
-        "image_digests": dict.fromkeys(("app", "db", "browser", "agent")),
+        "image_digests": images,
         "tool_versions": tool_versions, "model": model_pin.get("id", arm.get("model")),
         "effort": model_pin.get("effort", arm.get("effort")),
         "prompt_sha256": pins.get("promptSha256") if is_agent else None,
@@ -204,8 +229,8 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
         if exit_code is None:
             record["invalid_reason"] = "adapter unavailable or exceeded host timeout"
             return record, stop
-        if not is_agent and exit_code not in {0, 1}:
-            record["invalid_reason"] = "coded adapter infrastructure error"
+        if exit_code not in ({0} if is_agent else {0, 1}):
+            record["invalid_reason"] = f"{'agent' if is_agent else 'coded'} adapter infrastructure error"
             return record, stop
         answer, value = adapter_result(raw, is_agent)
         record["agent_answer" if is_agent else "coded_result"] = answer
@@ -363,7 +388,12 @@ def work(args, ledger, rules, identity, arms, items, pins):
     return 3 if missing else 0
 
 
+def interrupt(_signum, _frame):
+    raise KeyboardInterrupt
+
+
 def main():
+    signal.signal(signal.SIGTERM, interrupt)
     args = arguments()
     try:
         plan_bytes = args.plan.read_bytes()
@@ -374,6 +404,9 @@ def main():
             print(*(item["id"] for item in items), sep="\n")
             return 0
         return execute(args, plan, items, plan_bytes)
+    except KeyboardInterrupt:
+        print("run-item: interrupted after active workers cleaned up", file=sys.stderr)
+        return 130
     except (ValueError, KeyError, TypeError, OSError) as error:
         print(f"run-item: {error}", file=sys.stderr)
         return 1

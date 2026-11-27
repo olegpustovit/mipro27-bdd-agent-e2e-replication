@@ -1,0 +1,174 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# ///
+"""Technical checks using seeded containers and no model calls."""
+from argparse import ArgumentParser
+from concurrent.futures import ThreadPoolExecutor
+import json
+import re
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from threading import Barrier
+from time import monotonic
+
+from worker import BENCH, DEFAULT_WORKERS, Worker, docker
+
+pins = json.loads((BENCH / "env.lock.json").read_text())
+barrier = Barrier(DEFAULT_WORKERS, timeout=90)
+
+
+def clean(name):
+    assert not docker("ps", "-aq", "--filter", f"label=mipro.p2={name}").stdout.strip()
+    assert not docker("network", "ls", "-q", "--filter", f"label=mipro.p2={name}").stdout.strip()
+    return "containers=0 networks=0"
+
+
+def coded(index):
+    item = {"id": f"p2-smoke-{index}", "app": "pay", "version": "v0",
+            "scenario": "auth-login", "condition": "healthy", "arm": "sd-cur"}
+    start = monotonic()
+    with TemporaryDirectory(prefix="p2-smoke-") as tmp:
+        raw = Path(tmp)
+        (raw / "item.json").write_text(json.dumps(item))
+        with Worker(item, pins) as worker:
+            worker.start()
+            # Mutate each container's actual Lowdb file while all workers are
+            # live. Restore it before executing the ordinary coded scenario.
+            db = "/app/data/database.json"
+            marker = f"p2Smoke{index}"
+            def edit(script, *args):
+                return docker("exec", worker.app, "node", "-e", script, db, *args).stdout.strip()
+
+            edit("const fs=require('fs');const f=process.argv[1];"
+                 "const data=JSON.parse(fs.readFileSync(f));data[process.argv[2]]=true;"
+                 "fs.copyFileSync(f,f+'.p2');fs.writeFileSync(f,JSON.stringify(data))", marker)
+            barrier.wait()
+            keys = edit("console.log(Object.keys(require(process.argv[1])).filter(k=>k.startsWith('p2Smoke')).join(','))")
+            assert keys == marker, (keys, marker)
+            docker("exec", worker.app, "mv", db + ".p2", db)
+            assert worker.run(raw) == 0, (raw / "coded.json").read_text()
+            peak_mib = sum(int(docker("exec", container, "cat", "/sys/fs/cgroup/memory.peak").stdout)
+                           for container in (worker.app, worker.browser)) / (1024 * 1024)
+        return (f"worker={index} marker={marker} coded=pass startup_ms={worker.startup_ms} "
+                f"teardown_ms={worker.teardown_ms} wall_ms={round((monotonic()-start)*1000)} "
+                f"peak_mib={peak_mib:.0f} {clean(worker.name)}")
+
+
+def network():
+    item = {"app": "mdl", "version": "B01-pre", "condition": "healthy"}
+    with Worker(item, pins, agent=True) as worker:
+        worker.start()
+        db_ip = worker.addr(worker.db)
+        browser_ip = worker.addr(worker.browser)
+        script = """
+            const net = require('node:net');
+            const [db, app, browser] = process.argv.slice(1);
+            function connects(host, port) {
+              return new Promise(resolve => {
+                const s = net.connect(port, host);
+                const done = value => { s.destroy(); resolve(value); };
+                s.on('connect', () => done(true)).on('error', () => done(false));
+                s.setTimeout(1500, () => done(false));
+              });
+            }
+            Promise.all([connects(db,5432),connects(app,80),connects('1.1.1.1',443),
+              connects(browser,3000)]).then(v => console.log(JSON.stringify(v)));
+        """
+        result = docker("exec", worker.agent, "node", "-e", script, db_ip, worker.app_ip, browser_ip)
+        assert json.loads(result.stdout) == [False, False, False, True], result.stdout
+        probe = """
+            const http = require('node:http');
+            async function probe(path) {
+              return new Promise((resolve,reject) => {
+                const req = http.request(process.argv[1], {method:'CONNECT',path});
+                req.on('connect',(r,s) => { s.destroy(); resolve(r.statusCode); });
+                req.on('error',reject);
+                req.setTimeout(8000, () => req.destroy(new Error('proxy timeout')));
+                req.end();
+              });
+            }
+            Promise.all(['example.com:443','api.openai.com:443'].map(probe))
+              .then(v => console.log(JSON.stringify(v)));
+        """
+        result = docker("exec", worker.agent, "node", "-e", probe, worker.proxy)
+        assert json.loads(result.stdout) == [403, 200], result.stdout
+        browser = docker("exec", worker.browser, "node", "-e", script, db_ip, worker.app_ip, "1.1.1.1")
+        assert json.loads(browser.stdout) == [False, True, False, False], browser.stdout
+        mounts = json.loads(docker("inspect", "-f", "{{json .Mounts}}", worker.agent).stdout)
+        assert any(m["Destination"] == "/home/node/.codex/auth.json" and not m["RW"] for m in mounts)
+    print("agent db=blocked app=blocked direct_internet=blocked browser=allowed "
+          "proxy_other=403 proxy_openai=200 browser_db=blocked browser_app=allowed "
+          f"auth=readonly {clean(worker.name)}")
+
+
+def moodle_smoke():
+    app = "mdl"
+    item = {"app": app, "version": "B01-pre", "change": "B01", "phase": "pre",
+            "scenario": "S027", "condition": "healthy", "arm": "sd-old"}
+    item["id"] = f"p2-smoke-{app}"
+    with TemporaryDirectory(prefix="p2-smoke-") as tmp:
+        raw = Path(tmp)
+        (raw / "item.json").write_text(json.dumps(item))
+        with Worker(item, pins) as worker:
+            worker.start()
+            code = worker.run(raw)
+            report = json.loads((raw / "coded.json").read_text())
+            fields = ("status", "failed_step", "message", "tool_calls", "unresolved_cause")
+            summary = {key: report[key] for key in fields if key in report}
+            peak = sum(int(docker("exec", container, "cat", "/sys/fs/cgroup/memory.peak").stdout)
+                       for container in (worker.app, worker.db, worker.browser)) / (1024 * 1024)
+            print(f"{app} adapter_exit={code} {json.dumps(summary)} "
+                  f"startup_ms={worker.startup_ms} peak_mib={peak:.0f}", flush=True)
+            assert code == 0 and report["status"] == "pass"
+    print(f"{app} teardown_ms={worker.teardown_ms} {clean(worker.name)}")
+
+
+def luna_smoke():
+    item = {"app": "pay", "version": "v0", "scenario": "auth-login", "condition": "healthy"}
+    with Worker(item, pins, agent=True) as worker:
+        worker.start()
+        auth = docker("exec", worker.agent, "codex", "login", "status", check=False)
+        print(f"luna_login_status_exit={auth.returncode}", flush=True)
+        result = docker("exec", "-e", f"HTTPS_PROXY={worker.proxy}",
+                        "-e", f"HTTP_PROXY={worker.proxy}", worker.agent, "codex", "exec",
+                        "--ignore-user-config", "--ignore-rules", "--skip-git-repo-check",
+                        "--ephemeral", "--json", "-m", "gpt-6-luna",
+                        "-c", 'model_catalog_json="/opt/bench/work/models_cache.json"', "--",
+                        "Reply only with P2_CONNECTED. Use no tools.", timeout=70, check=False)
+        events = [json.loads(line) for line in result.stdout.splitlines() if line.startswith("{")]
+        completed = any(event.get("type") == "turn.completed" for event in events)
+        answer = any(event.get("item", {}).get("text", "").strip() == "P2_CONNECTED" for event in events)
+        print(f"luna_exit={result.returncode} turn_completed={completed} expected_answer={answer}", flush=True)
+        if not completed:
+            diagnostics = (result.stdout + result.stderr).lower()
+            labels = [needle for needle in ("unauthorized", "forbidden", "token refresh", "read-only",
+                      "model not found", "not supported", "connection refused", "timed out",
+                      "invalid proxy", "stream disconnected", "error sending request",
+                      "operation not permitted", "permission denied", "failed to write")
+                      if needle in diagnostics]
+            codes = sorted(set(re.findall(r"\b(?:400|401|403|404|429|500|502|503)\b", diagnostics)))
+            print(f"luna_failure_labels={labels} http_codes={codes}", flush=True)
+        assert result.returncode == 0 and completed and answer
+    print(f"luna {clean(worker.name)}")
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--only", choices=["network", "moodle", "luna"])
+    parser.add_argument("--rounds", type=int, default=3, help="consecutive parallel coded rounds")
+    args = parser.parse_args()
+    if args.only == "moodle":
+        moodle_smoke()
+    elif args.only == "luna":
+        luna_smoke()
+    elif args.only == "network":
+        network()
+    else:
+        if args.rounds < 1:
+            parser.error("--rounds must be positive")
+        with ThreadPoolExecutor(DEFAULT_WORKERS) as executor:
+            for round_number in range(1, args.rounds + 1):
+                for result in executor.map(coded, range(DEFAULT_WORKERS)):
+                    print(f"round={round_number} {result}", flush=True)
+        network()
