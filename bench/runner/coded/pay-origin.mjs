@@ -40,11 +40,6 @@ if (origin !== defaultApp || apiOrigin !== defaultApi || apiPrefix) {
       if (url === fixture && apiOrigin !== defaultApi) {
         source = source.replace('http://127.0.0.1:3001/testData/seed', apiOrigin + '/testData/seed');
       }
-      // The pinned image mounts the same API router under /api. Keep the
-      // hold-out binding's exact PATCH endpoint and HTTP success check.
-      if (apiPrefix && versioned && url.endsWith('/hold-out.mjs')) {
-        source = source.replace(String.raw`/^\/users\/[^/]+$/`, String.raw`/^\/api\/users\/[^/]+$/`);
-      }
       return { ...result, source };
     },
   });

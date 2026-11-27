@@ -24,7 +24,11 @@ const notification = (page, text) => page.locator('[data-test^="notification-lis
   .filter({ has: page.getByText(text, { exact: true }) });
 
 Given('Ted opens the Notifications page', async function () {
+  // Wait for the list to load: the app ignores a dismiss sent while it is still loading.
+  const loaded = this.page.waitForResponse(response => response.request().method() === 'GET' &&
+    /^(?:\/api)?\/notifications$/.test(new URL(response.url()).pathname), { timeout: 10000 });
   await this.act(() => this.page.getByRole('link', { name: 'Notifications', exact: true }).click());
+  await loaded;
   await expect(heading(this.page, 'Notifications')).toBeVisible();
 });
 
@@ -106,16 +110,34 @@ When('Ted replaces the phone number with {string}', async function (number) {
   await this.act(() => phone(this.page).fill(number));
 });
 
+// After Accept or Reject the app hides the transaction, saves, reloads it and shows it again.
+// Wait for that round trip so the next check sees the updated transaction, not the blank moment.
+async function transactionUpdated(page) {
+  const isTransaction = response => /^(?:\/api)?\/transactions\/[^/]+$/.test(new URL(response.url()).pathname);
+  const saved = page.waitForResponse(response => response.request().method() === 'PATCH' && isTransaction(response), { timeout: 10000 });
+  const reloaded = page.waitForResponse(response => response.request().method() === 'GET' && isTransaction(response), { timeout: 10000 });
+  await saved;
+  await reloaded;
+  await expect(page.locator('[data-test="transaction-detail-header"]')).toBeVisible();
+}
+
 When('Ted clicks {string}', async function (name) {
   const control = button(this.page, name);
   if (name !== 'Save') {
+    const confirm = name === 'Reject Request';
+    const settled = name.endsWith(' Request') && !confirm ? transactionUpdated(this.page) : null;
     await this.act(() => control.click());
-    if (name === 'Reject Request') await this.act(() => button(this.page.getByRole('dialog'), 'Reject').click());
+    if (settled) await settled;
+    if (confirm) {
+      const rejected = transactionUpdated(this.page);
+      await this.act(() => button(this.page.getByRole('dialog'), 'Reject').click());
+      await rejected;
+    }
     return;
   }
   const [response] = await Promise.all([
     this.page.waitForResponse(response => response.request().method() === 'PATCH' &&
-      /^\/users\/[^/]+$/.test(new URL(response.url()).pathname), { timeout: 5000 }),
+      /^(?:\/api)?\/users\/[^/]+$/.test(new URL(response.url()).pathname), { timeout: 5000 }),
     this.act(() => control.click()),
   ]);
   assert(response.ok(), `Profile save returned HTTP ${response.status()}`);

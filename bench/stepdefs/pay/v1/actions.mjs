@@ -24,8 +24,15 @@ export async function addBank(w, bank, routing, account) {
   await w.act(() => w.locator('accountNumber').fill(account));
   await w.act(() => w.locator('save').click());
 }
+function isBankList(response) {
+  if (!/^(?:\/api)?\/graphql$/.test(new URL(response.url()).pathname)) return false;
+  try { return response.request().postDataJSON()?.operationName === 'ListBankAccount'; } catch { return false; }
+}
 export async function deleteBank(w, bank) {
+  // The app ignores a delete sent while it is still loading the list; wait for the list first.
+  const listed = w.page.waitForResponse(isBankList, { timeout: 10000 });
   await w.act(() => w.locator('banks').click());
+  await listed;
   const row = w.locator('bankRows').filter({ hasText: bank });
   await w.act(() => w.locator('deleteBank', row).click());
   await w.act(() => w.locator('deleteBank', w.page.getByRole('dialog')).click());
