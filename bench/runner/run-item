@@ -204,6 +204,9 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
         if exit_code is None:
             record["invalid_reason"] = "adapter unavailable or exceeded host timeout"
             return record, stop
+        if not is_agent and exit_code not in {0, 1}:
+            record["invalid_reason"] = "coded adapter infrastructure error"
+            return record, stop
         answer, value = adapter_result(raw, is_agent)
         record["agent_answer" if is_agent else "coded_result"] = answer
         record["minutes"] = value["minutes"]
