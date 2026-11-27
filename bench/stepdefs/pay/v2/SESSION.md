@@ -90,3 +90,18 @@ Why the interface requires each flagged change:
   `v*/actions.mjs`, and it does not cover the API origin, which the fixture's route allow-list still pins to `:3001`.
 - **Scenarios.** The 10 non-feed study scenarios ran by tag from `study/scenarios.feature`. The rest were
   `bench/scenarios/pay/social-{like,comment}.feature` and `bench/scenarios/pay/hold-out/hold-0{1..8}.feature`.
+
+## Coordinator review (2026-11-27)
+
+Session 1 was the first session to finish with 20 of 20 scenarios passing on healthy v2. Its code was fixed as the v2
+step definitions at that point, before the other change-2 sessions were looked at.
+
+diff-check found no removed or changed assertion and no removed step binding. The flagged edits are all ones the
+new interface requires:
+- actions.mjs: confirm the sign-out dialog (2.9), click Continue after the Pay/Request toggle (2.2), and Confirm in
+  the review dialog (2.3);
+- hold-out.mjs: map the scenario button names to renamed labels with exact matching (2.5, 2.7), and the renamed
+  confirm-password hook (2.5);
+- the phone field is found by its label because its placeholder was removed (2.7).
+
+Run 1 was invalid: the session cookie went to the wrong host because of the session's own port rewrite. Accepted.
