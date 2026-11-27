@@ -133,12 +133,20 @@ When('Ted clicks {string}', async function (name) {
     }
     return;
   }
+  // After a save the app reloads the profile and stores it in the browser; a page reload
+  // before that finishes restores the old profile. Wait for it.
+  const refreshed = this.page.waitForResponse(response => response.request().method() === 'GET' &&
+    /^(?:\/api)?\/checkAuth$/.test(new URL(response.url()).pathname), { timeout: 10000 });
   const [response] = await Promise.all([
     this.page.waitForResponse(response => response.request().method() === 'PATCH' &&
       /^(?:\/api)?\/users\/[^/]+$/.test(new URL(response.url()).pathname), { timeout: 5000 }),
     this.act(() => control.click()),
   ]);
   assert(response.ok(), `Profile save returned HTTP ${response.status()}`);
+  await refreshed;
+  await this.page.waitForFunction(() => {
+    try { return JSON.parse(localStorage.getItem('authState'))?.value === 'authorized'; } catch { return false; }
+  }, null, { timeout: 10000 });
 });
 
 When('Ted reloads the My Account page', async function () {

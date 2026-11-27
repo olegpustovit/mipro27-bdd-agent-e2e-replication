@@ -24,15 +24,30 @@ export async function addBank(w, bank, routing, account) {
   await w.act(() => w.locator('accountNumber').fill(account));
   await w.act(() => w.locator('save').click());
 }
-function isBankList(response) {
-  if (!/^(?:\/api)?\/graphql$/.test(new URL(response.url()).pathname)) return false;
-  try { return response.request().postDataJSON()?.operationName === 'ListBankAccount'; } catch { return false; }
+function isBankList(request) {
+  if (!/^(?:\/api)?\/graphql$/.test(new URL(request.url()).pathname)) return false;
+  try { return request.postDataJSON()?.operationName === 'ListBankAccount'; } catch { return false; }
+}
+// The app ignores a delete sent while it is loading the bank list, and it may load the list
+// more than once. Wait until list loading has started and then stayed quiet for 500 ms.
+async function afterBankListSettles(w, open) {
+  let inflight = 0, seen = 0, last = Date.now();
+  const started = request => { if (isBankList(request)) { inflight++; seen++; last = Date.now(); } };
+  const ended = request => { if (isBankList(request)) { inflight--; last = Date.now(); } };
+  w.page.on('request', started); w.page.on('requestfinished', ended); w.page.on('requestfailed', ended);
+  try {
+    await open();
+    const deadline = Date.now() + 10000;
+    while (!(seen > 0 && inflight === 0 && Date.now() - last >= 500)) {
+      if (Date.now() > deadline) throw new Error('The bank list did not finish loading');
+      await w.page.waitForTimeout(50);
+    }
+  } finally {
+    w.page.off('request', started); w.page.off('requestfinished', ended); w.page.off('requestfailed', ended);
+  }
 }
 export async function deleteBank(w, bank) {
-  // The app ignores a delete sent while it is still loading the list; wait for the list first.
-  const listed = w.page.waitForResponse(isBankList, { timeout: 10000 });
-  await w.act(() => w.locator('banks').click());
-  await listed;
+  await afterBankListSettles(w, () => w.act(() => w.locator('banks').click()));
   const row = w.locator('bankRows').filter({ hasText: bank });
   await w.act(() => w.locator('deleteBank', row).click());
   await w.act(() => w.locator('deleteBank', w.page.getByRole('dialog')).click());
