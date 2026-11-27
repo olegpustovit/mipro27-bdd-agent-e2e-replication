@@ -50,6 +50,7 @@ function resultOf(messages, code, scenario) {
     failed_step: step ? index + 1 : null,
     failed_step_text: step ? step.keyword + step.text : null,
     message: `Cucumber ${step ? 'scenario' : 'Background'} step: ${status.toLowerCase()}`,
+    error: (outcome?.message ?? '').slice(0, 2000) || null,
   };
 }
 
