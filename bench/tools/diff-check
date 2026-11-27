@@ -1,0 +1,188 @@
+#!/usr/bin/env node
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { extname, join } from 'node:path';
+import { parse } from 'acorn';
+
+const bindingMethods = new Set(['Given', 'When', 'Then', 'defineStep']);
+const locatorMethods = new Set([
+  'locator', 'getByText', 'getByLabel', 'getByPlaceholder', 'getByTestId',
+  'getByTitle', 'getByAltText',
+]);
+const jsExtensions = new Set(['.js', '.mjs', '.cjs']);
+const metadata = new Set(['start', 'end', 'loc']);
+
+function sources(path, relative = '') {
+  const location = join(path, relative);
+  if (!statSync(location).isDirectory()) {
+    return new Map([[relative || '.', location]]);
+  }
+
+  const files = new Map();
+  for (const entry of readdirSync(location, { withFileTypes: true })) {
+    const child = join(relative, entry.name);
+    if (entry.isDirectory()) {
+      for (const [key, file] of sources(path, child)) files.set(key, file);
+    } else if (entry.isFile() && jsExtensions.has(extname(entry.name))) {
+      files.set(child, join(path, child));
+    }
+  }
+  return files;
+}
+
+function memberName(node) {
+  if (node?.type !== 'MemberExpression') return;
+  return node.computed ? node.property.value : node.property.name;
+}
+
+function isString(node) {
+  return node?.type === 'Literal' && typeof node.value === 'string';
+}
+
+function normalizeSelectors(node, file) {
+  if (node.type === 'CallExpression') {
+    const method = memberName(node.callee);
+    if (locatorMethods.has(method) && isString(node.arguments[0])) {
+      node.arguments[0].value = '';
+    }
+    if (method === 'getByRole' && node.arguments[1]?.type === 'ObjectExpression') {
+      for (const property of node.arguments[1].properties) {
+        if (!property.computed && (property.key?.name ?? property.key?.value) === 'name' &&
+            isString(property.value)) {
+          property.value.value = '';
+        }
+      }
+    }
+  }
+
+  if (file.endsWith('/locators.mjs') || file === 'locators.mjs') {
+    if (node.type === 'VariableDeclarator' && node.id.name === 'locators' &&
+        node.init?.type === 'ObjectExpression') {
+      for (const property of node.init.properties) {
+        if (!property.computed && isString(property.value)) property.value.value = '';
+      }
+    }
+  }
+}
+
+function walk(node, visit) {
+  if (!node?.type) return;
+  visit(node);
+  for (const [key, value] of Object.entries(node)) {
+    if (metadata.has(key)) continue;
+    if (Array.isArray(value)) {
+      for (const child of value) walk(child, visit);
+    } else {
+      walk(value, visit);
+    }
+  }
+}
+
+function fingerprint(value) {
+  return JSON.stringify(value, function (key, child) {
+    if (metadata.has(key) || (key === 'raw' && this.type === 'Literal')) return undefined;
+    if (typeof child === 'bigint') return String(child);
+    return child;
+  });
+}
+
+function inspect(file) {
+  const source = readFileSync(file, 'utf8');
+  const ast = parse(source, { ecmaVersion: 'latest', sourceType: extname(file) === '.cjs' ? 'commonjs' : 'module', locations: true });
+  const bindings = new Set(bindingMethods);
+  const expects = new Set(['expect']);
+  for (const node of ast.body) {
+    if (node.type !== 'ImportDeclaration') continue;
+    for (const specifier of node.specifiers) {
+      if (node.source.value === '@cucumber/cucumber' && bindingMethods.has(specifier.imported?.name)) {
+        bindings.add(specifier.local.name);
+      }
+      if (['playwright/test', '@playwright/test'].includes(node.source.value) &&
+          specifier.imported?.name === 'expect') {
+        expects.add(specifier.local.name);
+      }
+    }
+  }
+
+  walk(ast, node => normalizeSelectors(node, file));
+  const inventory = { bindings: [], assertions: [] };
+  walk(ast, node => {
+    if (node.type !== 'CallExpression') return;
+    const { callee, arguments: args } = node;
+    const name = callee.name ?? memberName(callee);
+    const line = node.loc.start.line;
+    if (bindings.has(name)) {
+      inventory.bindings.push({ key: fingerprint([name, args[0]]), label: `step binding ${name}(${args[0] ? source.slice(args[0].start, args[0].end) : ''})`, line });
+    }
+    if (callee.type !== 'MemberExpression') return;
+
+    const modifiers = [];
+    let base = callee.object;
+    while (base.type === 'MemberExpression') {
+      modifiers.unshift(memberName(base));
+      base = base.object;
+    }
+    if (base.type !== 'CallExpression' || !expects.has(base.callee.name ?? memberName(base.callee))) return;
+    if (['configure', 'extend'].includes(memberName(base.callee))) return;
+
+    inventory.assertions.push({
+      key: fingerprint(node),
+      label: `expect(...).${[...modifiers, name].join('.')}`,
+      line,
+    });
+  });
+  return { ast, ...inventory };
+}
+
+function missing(previous, next) {
+  const remaining = new Map();
+  for (const { key } of next) remaining.set(key, (remaining.get(key) ?? 0) + 1);
+  return previous.filter(({ key }) => {
+    const count = remaining.get(key) ?? 0;
+    if (!count) return true;
+    remaining.set(key, count - 1);
+    return false;
+  });
+}
+
+function compare(before, after) {
+  const oldFiles = sources(before);
+  const newFiles = sources(after);
+  if (!oldFiles.size || !newFiles.size) throw new Error('both inputs must contain JavaScript source files');
+
+  const findings = [];
+  for (const key of new Set([...oldFiles.keys(), ...newFiles.keys()])) {
+    const oldFile = oldFiles.get(key);
+    const newFile = newFiles.get(key);
+    if (!oldFile || !newFile) {
+      findings.push(`${oldFile ?? newFile}: source file ${oldFile ? 'removed' : 'added'}`);
+      continue;
+    }
+    const original = inspect(oldFile);
+    const updated = inspect(newFile);
+    if (fingerprint(original.ast) === fingerprint(updated.ast)) continue;
+
+    const removed = missing(original.bindings, updated.bindings);
+    const changed = missing(original.assertions, updated.assertions);
+    for (const { label, line } of removed) findings.push(`${oldFile}:${line}: removed or changed ${label}`);
+    for (const { label, line } of changed) findings.push(`${oldFile}:${line}: removed or changed assertion ${label}`);
+    if (!removed.length && !changed.length) {
+      findings.push(`${oldFile}: AST changed outside supported locator values; check assertion inputs and execution paths`);
+    }
+  }
+  return findings;
+}
+
+try {
+  const [before, after] = process.argv.slice(2);
+  if (process.argv.length !== 4) throw new Error('usage: bench/tools/diff-check <before-file-or-dir> <after-file-or-dir>');
+  const findings = compare(before, after);
+  if (findings.length) {
+    for (const finding of findings) console.error(finding);
+    process.exitCode = 1;
+  } else {
+    console.log('PASS: assertion and step binding ASTs preserved');
+  }
+} catch (error) {
+  console.error(`diff-check: ${error.message}`);
+  process.exitCode = 2;
+}
