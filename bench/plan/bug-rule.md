@@ -22,3 +22,13 @@ Exclude all study run results, arm implementations, and prior seeded faults.
    then the most recent upstream source date, then the lexical source URL.
    Record a reason for every rejected candidate. Record an explicit TODO if
    no candidate qualifies or the scenario or tested revision is pending.
+
+## Owner-approved amendment, 2026-11-27
+
+For the payment app, step 2 may use a specific real bug report from another
+open-source web application's public tracker. The report must describe the same
+failure in the same kind of component. Apply the existing eligibility checks
+and preference for a reversible fix from the payment app's own history. Cite
+the external report by ID or URL and label the selection
+`re-created-from-report`. Moodle candidates still come only from Moodle's own
+history and tracker.
