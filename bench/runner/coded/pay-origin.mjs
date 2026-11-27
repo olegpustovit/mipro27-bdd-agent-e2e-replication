@@ -1,24 +1,44 @@
-// Keep the legacy support code shared with its original harness. Scope the
-// origin substitution to the support and browser fixture files it uses.
+// Rewrite fixture origins only in the payment support and browser fixture.
 import { registerHooks } from 'node:module';
 
-const origin = new URL(process.env.BENCH_APP_URL).origin;
-const root = new URL('../../../', import.meta.url);
-const legacy = new Set([
-  'study/actions.mjs', 'study/steps.mjs', 'study/world.mjs',
-  'scripts/fixture.mjs',
-  ...['v0', 'v1', 'v2'].map(version => `bench/stepdefs/pay/${version}/hold-out.mjs`),
-].map(path => new URL(path, root).href));
+const defaultApp = 'http://localhost:3000';
+const defaultApi = 'http://localhost:3001';
 
-if (origin !== 'http://localhost:3000') {
+function configuredOrigin(name, fallback) {
+  const url = new URL(process.env[name] ?? fallback);
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password ||
+      url.pathname !== '/' || url.search || url.hash) {
+    throw new Error(`${name} must specify an HTTP(S) origin without credentials`);
+  }
+  return url.origin;
+}
+
+export const origin = configuredOrigin('BENCH_APP_URL', 'invalid:');
+const apiOrigin = configuredOrigin('BENCH_PAY_API_URL', defaultApi);
+const root = new URL('../../../', import.meta.url);
+const fixture = new URL('scripts/fixture.mjs', root).href;
+const shared = new Set([
+  'study/actions.mjs', 'study/steps.mjs', 'study/world.mjs', 'study/locators.mjs',
+  'scripts/fixture.mjs', 'scripts/ui-observer.mjs',
+].map(path => new URL(path, root).href));
+const versionDirectory = new URL('bench/stepdefs/pay/', root).href;
+const versionSupport = /^[\w-]+\/(?:actions|hold-out|locators|social|steps|world)\.mjs$/;
+
+if (origin !== defaultApp || apiOrigin !== defaultApi) {
   registerHooks({
     load(url, context, nextLoad) {
       const result = nextLoad(url, context);
-      if (!legacy.has(url)) return result;
-      return {
-        ...result,
-        source: result.source.toString().replaceAll('http://localhost:3000', origin),
-      };
+      const versioned = url.startsWith(versionDirectory) &&
+        versionSupport.test(url.slice(versionDirectory.length));
+      if (!shared.has(url) && !versioned) return result;
+      let source = result.source.toString().replace(/http:\/\/localhost:300[01]/g, match => {
+        if (match === defaultApp) return origin;
+        return url === fixture ? apiOrigin : match;
+      });
+      if (url === fixture && apiOrigin !== defaultApi) {
+        source = source.replace('http://127.0.0.1:3001/testData/seed', apiOrigin + '/testData/seed');
+      }
+      return { ...result, source };
     },
   });
 }
