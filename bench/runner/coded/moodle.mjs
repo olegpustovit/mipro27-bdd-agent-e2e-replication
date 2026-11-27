@@ -1,42 +1,50 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { MoodleAdapter } from '../../../adapters/moodle/adapter.mjs';
 import { runScenario } from '../../../adapters/moodle/behat-runner.mjs';
 import { run } from '../../../adapters/moodle/shell.mjs';
-import { parseFeature } from '../../../adapters/moodle/gherkin.mjs';
-import { loadManifest } from '../../../adapters/moodle/manifest.mjs';
+import { findScenario, parseFeature } from '../../../adapters/moodle/gherkin.mjs';
 import { ensureStateText, stackPatches } from '../../../adapters/moodle/state-text.mjs';
-import { applyRuntime, RUNTIME_OF } from '../../../followups-2026-11/d-moodle-replay/scripts/runtime.mjs';
 
-const root = fileURLToPath(new URL('../../../', import.meta.url));
+const readJson = url => JSON.parse(readFileSync(url, 'utf8'));
+const manifest = readJson(new URL('../../apps/moodle/changes.json', import.meta.url));
 
-export async function moodle(item) {
+export function resolveMoodleItem(item) {
   const { change, phase, scenario, condition, arm, bugId } = item;
-  const replay = join(root, 'followups-2026-11/d-moodle-replay');
-  const pins = readFileSync(join(replay, 'feasibility/commits.tsv'), 'utf8').split('\n')
-    .map(line => line.split('\t')).find(([id]) => id === change);
-  const commit = pins?.[phase === 'pre' ? 2 : 1];
-  if (!RUNTIME_OF[change] || !commit || !['pre', 'post'].includes(phase) || item.version !== `${change}-${phase}`) {
+  const build = manifest.changes.find(entry => entry.id === change && entry.decision === 'chosen');
+  if (!build || !['pre', 'post'].includes(phase) || item.version !== `${change}-${phase}`) {
     throw new Error('Unknown Moodle build or inconsistent version, change and phase');
   }
-  if (!['sd-old', 'sd-new'].includes(arm)) throw new Error('Unknown Moodle coded arm');
-  const target = loadManifest(root).scenarioById.get(scenario);
-  if (!target) throw new Error(`Unknown Moodle scenario: ${scenario}`);
+  const commit = build[phase];
+  const target = build.scenarios.find(entry => entry.id === scenario &&
+    ['eligible', 'coded-only'].includes(entry.decision));
+  if (!target) throw new Error(`Unknown Moodle scenario for ${change}: ${scenario}`);
+  if (!['healthy', 'bug'].includes(condition)) throw new Error('Unknown Moodle condition');
 
-  const patches = [];
-  if (arm === 'sd-old' && phase === 'post') {
-    patches.push(readFileSync(join(root, 'followups-2026-11/d-moodle-replay/data/patches',
-      `${change}.old-steps-at-post.patch`), 'utf8'));
-  }
+  let bugPatch = null;
   if (condition === 'bug') {
-    if (typeof bugId !== 'string' || !/^[\w-]+$/.test(bugId)) throw new Error('Invalid Moodle bug ID');
-    const path = join(root, 'bench/bugs', bugId, 'patch.diff');
-    if (!existsSync(path)) throw new Error(`Missing Moodle bug patch for ${bugId}`);
-    patches.push(readFileSync(path, 'utf8'));
+    const id = `mdl-${change}-${scenario}`;
+    if (phase !== 'post' || bugId !== id) throw new Error(`Expected post-change Moodle bug ${id}`);
+    const folder = new URL(`../../bugs/${id}/`, import.meta.url);
+    if (!readJson(new URL('applies-to.json', folder)).includes(commit)) {
+      throw new Error(`Moodle bug ${id} does not apply to ${commit}`);
+    }
+    bugPatch = new URL('patch.diff', folder);
   }
-  const patch = stackPatches(patches);
-  await applyRuntime(root, RUNTIME_OF[change]);
+  const stepPatch = arm === 'sd-old' && phase === 'post'
+    ? new URL(`moodle-steps/${change}.patch`, import.meta.url)
+    : null;
+  return { ...target[phase], name: target.name, commit, arm, stepPatch, bugPatch };
+}
+
+export async function moodle(item) {
+  const { scenario, phase } = item;
+  const { arm, bugPatch, commit, feature, line, name, stepPatch } = resolveMoodleItem(item);
+  if (arm !== 'sd-old' && !(arm === 'sd-new' && phase === 'post')) {
+    throw new Error('Unknown Moodle coded arm for this phase');
+  }
+
+  const patch = stackPatches([stepPatch, bugPatch].filter(Boolean).map(file => readFileSync(file, 'utf8')));
   const adapter = new MoodleAdapter({
     moodleCommit: commit, worker: process.env.BENCH_MOODLE_WORKER ?? 'w89',
   });
@@ -48,14 +56,12 @@ export async function moodle(item) {
     const head = await run('git', ['rev-parse', 'HEAD'], { cwd: adapter.dirs.src });
     if (head.stdout.trim() !== commit) throw new Error(`Moodle worker is not at ${commit}`);
     await ensureStateText(adapter, patch);
-    const relative = target.feature.replace(/^public\//, '');
-    const feature = existsSync(join(adapter.dirs.src, 'public', relative)) ? `public/${relative}` : relative;
+    // Native Behat executes the original setup and UI steps together, in source order.
     const source = readFileSync(join(adapter.dirs.src, feature), 'utf8');
-    const matches = parseFeature(source).scenarios.filter(entry => entry.name === target.name);
-    if (matches.length !== 1) throw new Error(`Expected one Moodle scenario named ${target.name}`);
-    const result = await runScenario(adapter, { feature, line: matches[0].line, timeoutMs: 120_000 });
+    const target = findScenario(parseFeature(source), { line, name });
+    const result = await runScenario(adapter, { feature, line, timeoutMs: 120_000 });
     if (result.status === 'error' || !result.scenarios.length ||
-        (matches[0].kind === 'scenario' && result.scenarios.some(entry => entry.name !== target.name))) {
+        (target.kind === 'scenario' && result.scenarios.some(entry => entry.name !== name))) {
       throw new Error(`Behat did not complete ${scenario} (exit ${result.exitCode})`);
     }
     const failed = result.scenarios.find(entry => entry.status !== 'passed');
