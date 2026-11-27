@@ -131,6 +131,11 @@ and incorrect amount filters. The external reports use different inputs or
 triggers under the amended rule. For hold-04 the affected profile field in the
 source is legal name. For hold-05 the source uses an imported customer and a full
 name. For hold-07 the source reopens a rejected expense via automatic resubmission.
+For hold-03, additional searches for signup confirmation mismatch and missing
+validation feedback found no fitting report in a well-known open-source web
+app. The Data-Boom course-project issue remains the direct match.
+[DevGuard #2117](https://github.com/l3montree-dev/devguard/issues/2117) reports
+a false mismatch message for identical passwords.
 For hold-08 the source compares amounts in the wrong currency. The planned change
 compares the upper bound in the wrong units.
 
