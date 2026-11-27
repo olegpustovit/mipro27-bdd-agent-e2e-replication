@@ -108,7 +108,7 @@ Scenarios with no finding: auth-login, auth-logout, bank-create, bank-delete, fe
 | M4 | Fixed | S042 names the Description choice and the Add and Save changes controls. |
 | M5 | Fixed | S044 names the main content, bottom Add menu and Questions per page control. |
 | M6 | Fixed | S047 names the question count summary and bottom Add menu. |
-| M7 | Deferred | The P6 healthy gate decides whether S042 and S044 fit the current agent budgets. |
+| M7 | S044 flagged | In the full matrix, the healthy B05 pre-change coded runs passed. S042 took 56.9 seconds for 56 UI steps and fits the 80-call and 5-minute screening limits at one call per UI step. S044 took 75.8 seconds for 136 UI steps and exceeds the 80-call screen by 56 under the same estimate. Both coded runs fit five minutes. Agent calls and time remain unmeasured. S044 remains in the plan for the coordinator to decide. |
 | M8 | Fixed | S094’s agent title omits the JavaScript-disabled qualifier. Coded Behat uses the non-JavaScript path and the agent browser runs JavaScript. |
 | M9 | Fixed | The payment check specifies the full transaction title and $12.00 amount. |
 | M10 | Fixed | The request names who is asked for $12. The check specifies the full transaction title and $12.00 amount. |
@@ -118,7 +118,7 @@ Scenarios with no finding: auth-login, auth-logout, bank-create, bank-delete, fe
 | L2 | Fixed | Social-like names the Everyone feed. |
 | L3 | Fixed | Social-comment names the Everyone feed. |
 | L4 | Fixed | The hidden-ID scenarios were removed from the shared feature. The runner selects the dedicated social features and can select the shared tagged feed scenarios directly. |
-| L5 | Open | Both B15 sources default to the Dashboard. The observed redirect in the seeded app remains to be checked on both commits. S091 is a non-JavaScript coded scenario and uses JavaScript in the agent browser. |
+| L5 | Verified | S091 logged in directly to the Dashboard (`/my/`) on both pinned, seeded B15 commits with JavaScript disabled and enabled. Native coded Behat uses the non-JavaScript scenario. The agent browser runs JavaScript. |
 | L6 | Fixed | S042–S047 refer to the quiz’s Questions page in the agent text. |
 
 H4 is addressed by M1–M6 and L6. [Agent wording](../scenarios/moodle/agent-wording.json) records 23 medium and 6 low step replacements across the 16 distinct scenario texts, plus the S094 title change. Replacements keep the original step positions. The agent runner records the hash of the rendered feature. The Moodle bug target cross-check remains pending the P7c/P7d target inventory.

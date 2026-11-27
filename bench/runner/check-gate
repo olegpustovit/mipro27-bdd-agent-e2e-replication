@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+import { isDeepStrictEqual } from 'node:util';
+import { key, readJson, readRows, root, suites } from './gate-data.mjs';
+
+try {
+  if (process.argv.length !== 4 || process.argv[2] !== '--item') {
+    throw new Error('Usage: check-gate --item ITEM_JSON');
+  }
+  const item = readJson(process.argv[3]);
+  const suite = suites.get(key(item));
+  if (!suite || !suite.items.some(candidate => candidate.scenario === item.scenario &&
+      candidate.change === item.change && candidate.phase === item.phase)) {
+    throw new Error('Item has no matching gate scenario');
+  }
+  const records = process.env.BENCH_GATE_RECORDS ?? root + 'bench/plan/gate.jsonl';
+  const rows = readRows(records).filter(row => key(row) === key(item));
+  const [row] = rows;
+  const ids = row?.scenarios?.map(result => result.scenario).sort();
+  const expected = suite.items.map(candidate => candidate.scenario).sort();
+  if (rows.length !== 1 || row.status !== 'pass' || row.commit !== suite.commit ||
+      row.total !== expected.length || row.passed !== expected.length ||
+      !isDeepStrictEqual(row.images, suite.images) || !isDeepStrictEqual(ids, expected) ||
+      row.scenarios.some(result => result.status !== 'pass' ||
+        (item.app === 'mdl' && result.scenario === 'S091' && result.landing?.status !== 'pass'))) {
+    throw new Error(`All-pass gate did not pass for ${key(item)}`);
+  }
+  if (item.condition === 'healthy') {
+    if (item.bugId != null) throw new Error('Healthy item has a bug ID');
+  } else if (item.condition === 'bug') {
+    const bugId = item.app === 'pay' ? `pay-${item.scenario}` : `mdl-${item.change}-${item.scenario}`;
+    if (item.bugId !== bugId || !readJson(root + `bench/bugs/${bugId}/applies-to.json`)
+      .includes(suite.commit ?? suite.version)) throw new Error('Item has no applicable bug');
+    const checks = readRows(root + 'bench/plan/bug-checks.jsonl');
+    for (const condition of ['healthy', 'bug']) {
+      const matching = checks.filter(check => check.app === (item.app === 'mdl' ? 'moodle' : 'pay') &&
+        check.version === item.version && check.scenario === item.scenario &&
+        check.bugId === bugId && check.condition === condition &&
+        (item.app === 'pay' || check.commit === suite.commit));
+      if (matching.length !== 1 || matching[0].status !== 'pass') {
+        throw new Error(`No passing ${condition} bug check for ${bugId} on ${item.version}`);
+      }
+    }
+  } else {
+    throw new Error('Unknown condition');
+  }
+} catch (error) {
+  console.error(error.message);
+  process.exitCode = 1;
+}

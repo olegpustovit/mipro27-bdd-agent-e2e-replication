@@ -44,6 +44,22 @@ export async function moodle(item) {
     throw new Error('Unknown Moodle coded arm for this phase');
   }
 
+  const pinnedWeb = process.env.BENCH_CODED_MOODLE_CONTAINER;
+  if (pinnedWeb) {
+    if (item.condition !== 'healthy' || stepPatch || bugPatch || !/^[a-f0-9]{64}$/.test(pinnedWeb)) {
+      throw new Error('Pinned Moodle runtime requires unmodified healthy steps and a container ID');
+    }
+    const adapter = {
+      exec(_service, args, { env = {}, cwd, ...options } = {}) {
+        return run('docker', ['exec', ...(cwd ? ['-w', cwd] : []),
+          ...Object.entries(env).flatMap(([key, value]) => ['-e', `${key}=${value}`]),
+          pinnedWeb, ...args], options);
+      },
+    };
+    const { stdout: source } = await adapter.exec('webserver', ['cat', `/var/www/html/${feature}`]);
+    return execute(adapter, source);
+  }
+
   const patch = stackPatches([stepPatch, bugPatch].filter(Boolean).map(file => readFileSync(file, 'utf8')));
   const adapter = new MoodleAdapter({
     moodleCommit: commit, worker: process.env.BENCH_MOODLE_WORKER ?? 'w89',
@@ -58,6 +74,12 @@ export async function moodle(item) {
     await ensureStateText(adapter, patch);
     // Native Behat executes the original setup and UI steps together, in source order.
     const source = readFileSync(join(adapter.dirs.src, feature), 'utf8');
+    return await execute(adapter, source);
+  } finally {
+    try { if (started) await adapter.revertDiff(); } finally { release(); }
+  }
+
+  async function execute(adapter, source) {
     const target = findScenario(parseFeature(source), { line, name });
     const result = await runScenario(adapter, { feature, line, timeoutMs: 120_000 });
     if (result.status === 'error' || !result.scenarios.length ||
@@ -74,7 +96,5 @@ export async function moodle(item) {
       failed_step_text: step && !step.background ? `${step.keyword} ${step.text}` : null,
       message: step ? `Behat ${step.background ? 'Background' : 'scenario'} step: ${step.status}` : 'Behat scenario failed outside a numbered step',
     };
-  } finally {
-    try { if (started) await adapter.revertDiff(); } finally { release(); }
   }
 }
