@@ -59,8 +59,8 @@ export async function buildMoodle({ bench, context, readJSON, git, command, dock
           ['--build-arg', `DB_IMAGE=${versions.images.db}`]);
         const appPin = await build(name, 'moodle.Dockerfile', webContext,
           ['--build-arg', `WEB_IMAGE=${versions.images.webserver}`, '--build-arg', `DOCROOT=${docroot}`]);
-        const first = await smoke(appPin, dbPin);
-        const second = await smoke(appPin, dbPin);
+        const first = await smokeMoodle(appPin, dbPin, docker, waitHealthy);
+        const second = await smokeMoodle(appPin, dbPin, docker, waitHealthy);
         if (first.seedSha256 !== second.seedSha256) throw new Error(`Moodle seed mismatch for ${name}`);
         record(name, appPin, dbPin, { ...first, secondStartupMs: second.startupMs });
       } finally {
@@ -69,30 +69,30 @@ export async function buildMoodle({ bench, context, readJSON, git, command, dock
     }
   }
   if (skipped.length) throw new Error(`Moodle seed cache missing ${skipped.join(', ')}`);
+}
 
-  async function smoke(app, db) {
-    const name = `p2a-mdl-${randomUUID()}`;
-    const network = docker('network', 'create', '--internal', name);
-    const containers = [];
-    try {
-      const dbID = docker('create', '--network', network, '--network-alias', 'db', db.digest);
-      containers.push(dbID);
-      const webID = docker('create', '--network', network, '--network-alias', 'webserver', app.digest);
-      containers.push(webID);
-      const start = performance.now();
-      docker('start', dbID);
-      const dbStartupMs = await waitHealthy(dbID, db.ref, start, 90_000);
-      // Sample before the first HTTP request creates sessions or warms caches.
-      const dump = docker('exec', dbID, 'pg_dump', '-U', 'moodle', 'moodle')
-        .split('\n').filter(line => !/^\\(?:un)?restrict /.test(line)).join('\n');
-      const seedSha256 = createHash('sha256').update(dump).digest('hex');
-      const webStart = performance.now();
-      docker('start', webID);
-      const webStartupMs = await waitHealthy(webID, app.ref, webStart, 90_000);
-      return { startupMs: dbStartupMs + webStartupMs, dbStartupMs, webStartupMs, seedSha256 };
-    } finally {
-      for (const id of containers.reverse()) docker('rm', '-f', '-v', id);
-      docker('network', 'rm', network);
-    }
+export async function smokeMoodle(app, db, docker, waitHealthy, subnet) {
+  const name = `p2a-mdl-${randomUUID()}`;
+  const network = await docker('network', 'create', '--internal', ...(subnet ? ['--subnet', subnet] : []), name);
+  const containers = [];
+  try {
+    const dbID = await docker('create', '--network', network, '--network-alias', 'db', db.digest);
+    containers.push(dbID);
+    const webID = await docker('create', '--network', network, '--network-alias', 'webserver', app.digest);
+    containers.push(webID);
+    const start = performance.now();
+    await docker('start', dbID);
+    const dbStartupMs = await waitHealthy(dbID, db.ref, start, 90_000);
+    // Sample before the first HTTP request creates sessions or warms caches.
+    const dump = (await docker('exec', dbID, 'pg_dump', '-U', 'moodle', 'moodle'))
+      .split('\n').filter(line => !/^\\(?:un)?restrict /.test(line)).join('\n');
+    const seedSha256 = createHash('sha256').update(dump).digest('hex');
+    const webStart = performance.now();
+    await docker('start', webID);
+    const webStartupMs = await waitHealthy(webID, app.ref, webStart, 90_000);
+    return { startupMs: dbStartupMs + webStartupMs, dbStartupMs, webStartupMs, seedSha256 };
+  } finally {
+    for (const id of containers.reverse()) await docker('rm', '-f', '-v', id);
+    await docker('network', 'rm', network);
   }
 }
