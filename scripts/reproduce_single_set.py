@@ -4,7 +4,7 @@
 # ///
 """Release check for the single set: run scripts/counts/single_set.py and compare with the stated numbers.
 
-Usage (from the package root): uv run scripts/reproduce_single_set.py
+Usage (from the package root): uv run scripts/reproduce_single_set.py [--stated PATH]
 Sibling of scripts/reproduce_counts.py (which checks the 1 Nov campaigns and is unchanged).
 
 Reads results/paper-numbers-single-set.txt: one stated value per line, `quantity | value`, where quantity is
@@ -28,13 +28,20 @@ from common import ROOT  # noqa: E402
 STATED = 'results/paper-numbers-single-set.txt'
 
 
+def stated_path():
+    """results/paper-numbers-single-set.txt, or another list given as --stated PATH (e.g. a draft's list)."""
+    return sys.argv[sys.argv.index('--stated') + 1] if '--stated' in sys.argv else STATED
+
+
 def stated_values():
     out = []
-    for n, line in enumerate((ROOT / STATED).read_text('utf-8').splitlines(), 1):
+    path = Path(stated_path())
+    path = path if path.is_absolute() else ROOT / path
+    for n, line in enumerate(path.read_text('utf-8').splitlines(), 1):
         if not line.strip() or line.lstrip().startswith('#'):
             continue
         if '|' not in line:
-            sys.exit(f'{STATED}:{n}: expected "quantity | value", got: {line}')
+            sys.exit(f'{stated_path()}:{n}: expected "quantity | value", got: {line}')
         quantity, value = (part.strip() for part in line.rsplit('|', 1))
         out.append((n, quantity, value))
     return out
@@ -61,9 +68,9 @@ def main():
             status = 'ok' if got == value else 'MISMATCH'
         print(f'{quantity:<{width}}  {got:>16}  {value:>16}  {status}')
         if status != 'ok':
-            problems.append(f'{STATED}:{n}: {quantity}: computed {got}, paper {value} ({status})')
+            problems.append(f'{stated_path()}:{n}: {quantity}: computed {got}, paper {value} ({status})')
     if not stated:
-        print(f'(no stated values in {STATED} yet)')
+        print(f'(no stated values in {stated_path()} yet)')
     print(f'\n{len(stated)} stated value(s) checked; {len(problems)} problem(s)')
     if problems:
         print('\n'.join(problems), file=sys.stderr)

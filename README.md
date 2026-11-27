@@ -5,7 +5,7 @@ executable: maintained step definitions, and an LLM browser agent that interpret
 unchanged scenario on every run. It holds the study code, every recorded execution and
 automated grade, the derived reports, and scripts that recompute every count in the paper.
 
-Version 1.2.1. Changes are listed under [Changes in v1.2.1](#changes-in-v121), [Changes in v1.2.0](#changes-in-v120), [Changes in v1.1.4](#changes-in-v114), [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
+Version 1.2.2. Changes are listed under [Changes in v1.2.2](#changes-in-v122), [Changes in v1.2.1](#changes-in-v121), [Changes in v1.2.0](#changes-in-v120), [Changes in v1.1.4](#changes-in-v114), [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
 All results are exploratory; see `AGENTS.md` and `REPRODUCE.md` for the run status.
 
 Since v1.2.0 the paper's numbers come from one consistent set of runs, the **single set**
@@ -275,7 +275,14 @@ The Node analyses that produced the derived reports (`npm run analyze`, the Mood
 the follow-up-comparison summary), the re-run procedure for each campaign and the local trace
 console are described in `REPRODUCE.md`. They need Node 24 and `npm ci`.
 
-## Changes in v1.2.1
+## Changes in v1.2.2
+
+- `results/paper-numbers-single-set.txt` is the final list of values the paper states from the single set
+  (282 values, matching the final manuscript). It adds one value, the replay's A-new verified catches on the
+  faulty post-change builds of B04, B07 and B15 (8/8). No recorded data or computed count changed.
+- `scripts/reproduce_single_set.py` takes an optional `--stated PATH` to check another list of stated values;
+  by default it checks `results/paper-numbers-single-set.txt` as before.
+
 
 - `scripts/counts/single_set.py` no longer needs git. Three checks compare `scripts/verdict.mjs`,
   `adapters/moodle/verdict.mjs`, `scripts/codex-boundary.mjs` and `scripts/drivers/omp.mjs` with the harness
