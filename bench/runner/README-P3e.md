@@ -24,6 +24,19 @@ with `npm run app` and run `make -C bench p3e-smoke-pay`. The smoke restores
 the synthetic seed between scenarios and after the last run. It also uses a
 separate empty sign-in page to verify step 2 failure reporting.
 
+For a v1 smoke, apply `bench/apps/pay/v1.patch` to the bootstrapped fixture
+at `0729f68` and start its frontend and API on free ports. Set `PORT` and
+`VITE_BACKEND_PORT` to those respective port numbers when starting the
+fixture, then run the smoke from the repository root.
+
+```sh
+BENCH_APP_URL="http://localhost:$app_port" BENCH_PAY_API_URL="http://localhost:$api_port" \
+  node bench/runner/coded/smoke-pay.mjs --version v1
+```
+
+`BENCH_PAY_API_URL` defaults to `http://localhost:3001` and controls the
+browser's API allowlist and the smoke's seed reset endpoint.
+
 The maintained payment arm uses the app version's definitions. The stale
 arm uses the preceding version's definitions. Each version uses
 `social.mjs` for the original suite and `hold-out.mjs` for hold-outs, as in

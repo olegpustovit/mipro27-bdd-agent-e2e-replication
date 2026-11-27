@@ -6,22 +6,27 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { acquireLock, reset } from '../../../scripts/fixture.mjs';
+import { parseArgs } from 'node:util';
+
+const { values: { version } } = parseArgs({ options: { version: { type: 'string', default: 'v0' } } });
+process.env.BENCH_APP_URL ??= 'http://localhost:3000';
+const { origin } = await import('./pay-origin.mjs');
+const { acquireLock, reset } = await import('../../../scripts/fixture.mjs');
 
 const plan = JSON.parse(readFileSync(new URL('../../plan/plan.json', import.meta.url)));
 const scenarios = new Map(plan.items.filter(item =>
-  item.app === 'pay' && item.version === 'v0' && item.arm === 'sd-cur' && item.condition === 'healthy'
+  item.app === 'pay' && item.version === version && item.arm === 'sd-cur' && item.condition === 'healthy'
 ).map(item => [item.scenario, item]));
+assert.equal(scenarios.size, 20, `Expected 20 healthy payment scenarios for ${version}`);
 const adapter = fileURLToPath(new URL('../coded-run', import.meta.url));
 const temp = mkdtempSync(join(tmpdir(), 'coded-smoke-'));
-const url = 'http://localhost:3000';
 
-async function run(item, origin, label = item.scenario) {
+async function run(item, appOrigin, label = item.scenario) {
   const file = join(temp, `${label}.json`);
   const out = join(temp, label);
   writeFileSync(file, JSON.stringify(item));
   const child = spawn(adapter, ['--item', file, '--out', out], {
-    env: { ...process.env, BENCH_APP_URL: origin }, stdio: 'ignore',
+    env: { ...process.env, BENCH_APP_URL: appOrigin }, stdio: 'ignore',
     timeout: 90_000, killSignal: 'SIGKILL',
   });
   const [code] = await once(child, 'close');
@@ -34,7 +39,7 @@ try {
   try {
     for (const item of scenarios.values()) {
       await reset();
-      const { code, result } = await run(item, url);
+      const { code, result } = await run(item, origin);
       console.log(item.scenario, JSON.stringify(result));
       if (code !== 0 || result.status !== 'pass') failures++;
     }

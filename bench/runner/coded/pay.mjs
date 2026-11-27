@@ -52,22 +52,27 @@ function resultOf(messages, code, scenario) {
   };
 }
 
+export function resolvePaymentSupport(item) {
+  const file = scenarioFile(item.scenario);
+  const previous = { v1: 'v0', v2: 'v1' };
+  const definitionVersion = item.arm === 'sd-stale' ? previous[item.version] : item.version;
+  if (!definitionVersion) throw new Error('No previous payment step definitions for this version');
+
+  const suite = file.includes('/hold-out/') ? 'hold-out' : 'social';
+  const directory = `bench/stepdefs/pay/${definitionVersion}`;
+  const world = definitionVersion === 'v0' ? 'study/world.mjs' : `${directory}/world.mjs`;
+  const support = `${directory}/${suite}.mjs`;
+  for (const path of [world, support]) {
+    if (!existsSync(join(root, path))) throw new Error(`Missing payment step definitions: ${path}`);
+  }
+  return { file, world, support };
+}
+
 export async function payment(item) {
   const { scenario, version } = item;
-  const file = scenarioFile(scenario);
-  const previous = { v1: 'v0', v2: 'v1' };
-  const definitionVersion = item.arm === 'sd-stale' ? previous[version] : version;
-  if (!definitionVersion) throw new Error('No previous payment step definitions for this version');
-  const suite = file.includes('/hold-out/') ? 'hold-out' : 'social';
-  const support = `bench/stepdefs/pay/${definitionVersion}/${suite}.mjs`;
-  if (!existsSync(join(root, support))) throw new Error(`Missing payment step definitions: ${support}`);
+  const { file, world, support } = resolvePaymentSupport(item);
 
-  const url = new URL(process.env.BENCH_APP_URL ?? 'invalid:');
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password ||
-      url.pathname !== '/' || url.search || url.hash) {
-    throw new Error('BENCH_APP_URL must specify an HTTP(S) origin without credentials');
-  }
-  await import('./pay-origin.mjs');
+  const { origin } = await import('./pay-origin.mjs');
   const { freshBrowser } = await import('../../../scripts/fixture.mjs');
   const temp = mkdtempSync(join(tmpdir(), 'coded-pay-'));
   try {
@@ -78,14 +83,15 @@ export async function payment(item) {
         const child = spawn(process.execPath, [
           '--import', fileURLToPath(new URL('./pay-origin.mjs', import.meta.url)),
           'node_modules/@cucumber/cucumber/bin/cucumber.js',
-          '--import', 'study/world.mjs',
+          '--import', world,
           '--import', support,
           '--format', `message:${events}`, '--retry', '0', '--exit',
           ...(file === 'study/scenarios.feature' ? ['--tags', `@${scenario}`] : []), file,
         ], {
           cwd: root, stdio: 'ignore', timeout: 60_000, killSignal: 'SIGKILL',
           env: { PATH: process.env.PATH, HOME: process.env.HOME, LANG: 'C.UTF-8', NO_COLOR: '1',
-            BENCH_APP_URL: url.origin, STUDY_CDP_ENDPOINT: browser.endpoint },
+            BENCH_APP_URL: origin, BENCH_PAY_API_URL: process.env.BENCH_PAY_API_URL,
+            STUDY_CDP_ENDPOINT: browser.endpoint },
         });
         child.once('error', reject);
         child.once('close', resolve);
