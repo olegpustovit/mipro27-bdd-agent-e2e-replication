@@ -1,0 +1,23 @@
+diff --git a/public/course/format/classes/output/local/content/cm/completion.php b/public/course/format/classes/output/local/content/cm/completion.php
+index c053955..383a8ad 100644
+--- a/public/course/format/classes/output/local/content/cm/completion.php
++++ b/public/course/format/classes/output/local/content/cm/completion.php
+@@ -87,14 +87,17 @@ class completion implements externable, named_templatable, renderable {
+         $showcompletionconditions = $course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS;
+         $completiondetails = cm_completion_details::get_instance($this->mod, $USER->id, $showcompletionconditions);
+ 
++        $showhiddenmanual = $this->mod->modname === 'assign' &&
++            $completiondetails->is_manual() && $completiondetails->is_tracked_user();
+         $showcompletioninfo = $completiondetails->has_completion() &&
+-            ($showcompletionconditions || $completiondetails->show_manual_completion());
++            ($showcompletionconditions || $completiondetails->show_manual_completion() || $showhiddenmanual);
+         if (!$showcompletioninfo) {
+             return null;
+         }
+ 
+         $completion = new activity_completion($this->mod, $completiondetails, $this->smallbutton);
+         $completiondata = $completion->export_for_template($output);
++        $completiondata->showmanualcompletion = $completiondata->showmanualcompletion || $showhiddenmanual;
+ 
+         if ($completiondata->isautomatic || ($completiondata->ismanual && !$completiondata->istrackeduser)) {
+             $completiondata->completiondialog = $this->get_completion_dialog($output, $completiondata);
