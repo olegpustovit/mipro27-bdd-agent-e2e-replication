@@ -14,3 +14,9 @@ plan-1 as follows. No result of those runs is reported as a result of this study
 | 2021 Moodle changes out by the eligibility rule | Only one of four could run both approaches on the older runtime | followups-2026-11/d-moodle-replay |
 | Same limits and prompt in both apps; all agents in Codex CLI | Limits, prompts and agent tools differed between apps and models | earlier campaign configs |
 | Real bugs with an independent check; 8 hold-out scenarios | Seeded bugs were accepted only through the step definitions; the 12 scenarios were seen during exploration | plan reviews of 27 Nov |
+
+## Coordinator records after the P10 review (2026-11-27)
+
+- **Step definitions after P5.** The P4b scenario fixes changed scenario text (payment and request titles, the hold-06 and hold-07 setup moved to the API, the profile-email save step) after the P5 first-pass sessions. The v0, v1 and v2 step definitions were edited only where a binding's text changed. No check was removed or weakened, apart from the hold-06 and hold-07 setup checks, which the API fixture verification now covers. Merge commit 27405e7 records this.
+- **P7 failed attempts.** bench/plan/bug-checks.jsonl keeps 68 failed rows from formal P7 runs that later passed. They came from environment failures under parallel load (Moodle readiness and seeding races during the first matrix runs). The admission rule uses the latest formal P7 result per bug, version and condition. All 139 final passes were rechecked against the pinned images (P10 review, m7).
+- **Agent limits.** Owner decision: 250 tool calls and 15 minutes for every agent in both apps, raised from 80 calls and 5 minutes. The reason is that four Moodle quiz scenarios (S042, S043, S045, S046) need about 4 tool calls per user step. S044 stays excluded at the new limit.
