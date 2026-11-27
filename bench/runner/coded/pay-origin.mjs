@@ -15,6 +15,8 @@ function configuredOrigin(name, fallback) {
 
 export const origin = configuredOrigin('BENCH_APP_URL', 'invalid:');
 const apiOrigin = configuredOrigin('BENCH_PAY_API_URL', defaultApi);
+const apiPrefix = process.env.BENCH_PAY_API_PREFIX ?? '';
+if (!['', '/api'].includes(apiPrefix)) throw new Error('Unknown payment API prefix');
 const root = new URL('../../../', import.meta.url);
 const fixture = new URL('scripts/fixture.mjs', root).href;
 const shared = new Set([
@@ -24,7 +26,7 @@ const shared = new Set([
 const versionDirectory = new URL('bench/stepdefs/pay/', root).href;
 const versionSupport = /^[\w-]+\/(?:actions|hold-out|locators|social|steps|world)\.mjs$/;
 
-if (origin !== defaultApp || apiOrigin !== defaultApi) {
+if (origin !== defaultApp || apiOrigin !== defaultApi || apiPrefix) {
   registerHooks({
     load(url, context, nextLoad) {
       const result = nextLoad(url, context);
@@ -37,6 +39,11 @@ if (origin !== defaultApp || apiOrigin !== defaultApi) {
       });
       if (url === fixture && apiOrigin !== defaultApi) {
         source = source.replace('http://127.0.0.1:3001/testData/seed', apiOrigin + '/testData/seed');
+      }
+      // The pinned image mounts the same API router under /api. Keep the
+      // hold-out binding's exact PATCH endpoint and HTTP success check.
+      if (apiPrefix && versioned && url.endsWith('/hold-out.mjs')) {
+        source = source.replace(String.raw`/^\/users\/[^/]+$/`, String.raw`/^\/api\/users\/[^/]+$/`);
       }
       return { ...result, source };
     },

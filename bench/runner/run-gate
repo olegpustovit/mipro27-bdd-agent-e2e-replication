@@ -1,0 +1,177 @@
+#!/usr/bin/env node
+import { randomInt, randomUUID } from 'node:crypto';
+import { mkdtemp, mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { isDeepStrictEqual, parseArgs } from 'node:util';
+import { run, until } from '../../adapters/moodle/shell.mjs';
+import { key, lock, readJson, readRows, root, suites } from './gate-data.mjs';
+
+const records = root + 'bench/plan/gate.jsonl';
+const { values } = parseArgs({ options: { 'retry-version': { type: 'string' } } });
+const retry = values['retry-version'];
+const selected = retry ? [suites.get(retry)] : [...suites.values()];
+const previous = retry ? readRows(records) : [];
+const failed = previous.find(row => key(row) === retry);
+if (retry) {
+  const [suite] = selected;
+  if (!suite || !failed || failed.status !== 'fail' || failed.commit !== suite.commit ||
+      !isDeepStrictEqual(failed.images, suite.images)) {
+    throw new Error('Retry requires a failed version record with matching image and source pins');
+  }
+}
+const jobs = Number(process.env.BENCH_GATE_JOBS ?? 4);
+if (!Number.isSafeInteger(jobs) || jobs < 1) throw new Error('BENCH_GATE_JOBS must be a positive integer');
+if (process.version !== `v${lock.node}`) throw new Error(`Gate requires Node ${lock.node}`);
+const temp = await mkdtemp(join(tmpdir(), 'p6-gate-'));
+const docker = (args, options) => run('docker', args, { timeoutMs: 180_000, ...options });
+const mount = (from, to, readonly = true) => ['--mount', `type=bind,src=${from},dst=${to}${readonly ? ',readonly' : ''}`];
+const source = ['bench', 'scripts', 'study', 'adapters', 'data', 'manifests']
+  .flatMap(dir => mount(join(root, dir), `/opt/bench/${dir}`));
+
+async function healthy(id) {
+  await until('container health', async () => {
+    const { stdout } = await docker(['inspect', '-f', '{{.State.Health.Status}}', id]);
+    return stdout.trim() === 'healthy';
+  }, { timeoutMs: 90_000, everyMs: 300 });
+}
+
+async function runDisposable(suite, callback) {
+  const { images, app } = suite;
+  if (Object.values(images).some(pin => !pin)) throw new Error('Missing environment image pin');
+  const network = `p6-${randomUUID()}`;
+  const owned = [];
+  // Small private subnets leave the daemon's default address pools available to other workers.
+  const subnet = `10.${randomInt(64, 128)}.${randomInt(256)}.0/28`;
+  await docker(['network', 'create', '--internal', '--subnet', subnet, network]);
+  try {
+    async function start(alias, image, args = []) {
+      const name = `${network}-${alias}`;
+      owned.push(name);
+      const { stdout } = await docker(['run', '-d', '--pull=never', '--name', name,
+        '--network', network, '--network-alias', alias, ...args, image]);
+      return stdout.trim();
+    }
+
+    if (app === 'pay') {
+      if (images.app !== images.db) throw new Error('Payment requires a shared app/database image');
+      const web = await start('pay', images.app);
+      await healthy(web);
+      return await callback(web, network);
+    }
+
+    const db = await start('db', images.db);
+    const browser = await start('selenium', images.browser, ['--shm-size=1g']);
+    await healthy(db);
+    const web = await start('webserver', images.app);
+    await healthy(web);
+    await until('Selenium readiness', async () => {
+      const { stdout } = await docker(['exec', browser, 'curl', '-fsS', 'http://localhost:4444/status']);
+      return JSON.parse(stdout).value.ready;
+    }, { timeoutMs: 45_000 });
+    return await callback(web, network);
+  } finally {
+    for (const name of owned.reverse()) await docker(['rm', '-fv', name], { check: false });
+    await docker(['network', 'rm', network]);
+  }
+}
+
+async function coded(suite, item, web, dir) {
+  let execution;
+  if (item.app === 'pay') {
+    execution = await docker(['run', '--rm', '--pull=never', '--name', `p6-coded-${randomUUID()}`,
+      '--network', `container:${web}`, '--shm-size=1g', ...source, ...mount(join(root, 'node_modules'), '/opt/bench/node_modules'), ...mount(dir, '/gate', false),
+      '-e', 'BENCH_APP_URL=http://localhost:3000', '-e', 'BENCH_PAY_API_URL=http://localhost:3001',
+      '-e', 'BENCH_PAY_API_PREFIX=/api',
+      suite.images.browser, 'node', 'bench/runner/coded-run', '--item', '/gate/item.json', '--out', '/gate'],
+    { check: false, timeoutMs: 120_000 });
+  } else {
+    execution = await run(root + 'bench/runner/coded-run', ['--item', join(dir, 'item.json'), '--out', dir],
+      { env: { BENCH_CODED_MOODLE_CONTAINER: web }, check: false, timeoutMs: 160_000 });
+  }
+  const result = readJson(join(dir, 'coded.json'));
+  return { ...result, exit: execution.code, status: execution.code === 0 && result.status === 'pass'
+    ? 'pass' : execution.code === 1 && result.status === 'fail' ? 'fail' : 'error' };
+}
+
+async function landing(web, network) {
+  const php = `<?php
+define('BEHAT_UTIL', true);
+define('CLI_SCRIPT', true);
+require('/var/www/html/config.php');
+require_once($CFG->dirroot . '/lib/testing/generator/lib.php');
+(new testing_data_generator())->create_user(['username' => 'teacher1', 'firstname' => 'Teacher',
+    'lastname' => 'One', 'email' => 'teacher1@example.com', 'password' => 'teacher1']);
+`;
+  await docker(['exec', '-i', web, 'php'], { input: php });
+  const { stdout } = await docker(['run', '--rm', '--pull=never', '--network', network,
+    ...source, lock.images.browser.digest, 'node', 'bench/runner/gate-landing.mjs'], { timeoutMs: 60_000 });
+  return JSON.parse(stdout);
+}
+
+async function check(item, suite) {
+  const dir = join(temp, item.id);
+  await mkdir(dir);
+  await writeFile(join(dir, 'item.json'), JSON.stringify(item));
+  let result;
+  try {
+    result = await runDisposable(suite, web => coded(suite, item, web, dir));
+  } catch (error) {
+    result = { status: 'error', message: error.message.split('\n')[0] };
+  }
+  if (item.scenario === 'S091') {
+    try {
+      result.landing = await runDisposable(suite, landing);
+    } catch (error) {
+      result.landing = { status: 'error', message: error.message.split('\n')[0] };
+    }
+  }
+  if (item.version === 'B05-pre' && ['S042', 'S044'].includes(item.scenario)) {
+    const changes = readJson(root + 'bench/apps/moodle/changes.json').changes;
+    const scenario = changes.find(change => change.id === item.change).scenarios.find(row => row.id === item.scenario);
+    const uiSteps = scenario.pre.handoff.ui.length;
+    const toolCallsLimit = 80;
+    const minutesLimit = 5;
+    const completed = result.status === 'pass';
+    const flagForCoordinator = uiSteps > toolCallsLimit || (completed && result.minutes >= minutesLimit);
+    result.budget = { uiSteps, toolCallsLimit, minutesLimit,
+      codedMinutes: result.minutes ?? null, flagForCoordinator,
+      assessment: !completed ? 'coded run did not pass; timing inconclusive'
+        : flagForCoordinator ? 'review before launch; exceeds a budget under the screening estimate'
+          : 'fits under the screening estimate; actual agent calls and time unmeasured' };
+  }
+  return { scenario: item.scenario, ...result };
+}
+
+try {
+  const pending = selected.flatMap(suite => suite.items.map(item => ({ suite, item })));
+  const byVersion = new Map(selected.map(suite => [suite, new Map()]));
+  await Promise.all(Array.from({ length: Math.min(jobs, pending.length) }, async () => {
+    for (let next = pending.shift(); next; next = pending.shift()) {
+      const { suite, item } = next;
+      const result = await check(item, suite);
+      byVersion.get(suite).set(item.scenario, result);
+      if (result.status !== 'pass') console.error(`${item.id}: ${result.status}: ${result.message}`);
+    }
+  }));
+  const rows = [...byVersion].map(([suite, results]) => {
+    const { items, ...identity } = suite;
+    const scenarios = items.map(item => results.get(item.scenario));
+    const passed = scenarios.filter(result => result.status === 'pass').length;
+    const landingPassed = scenarios.every(result => !result.landing || result.landing.status === 'pass');
+    const status = passed === scenarios.length && landingPassed ? 'pass' : 'fail';
+    console.log(`${suite.app}/${suite.version} ${passed}/${scenarios.length} ${status}`);
+    return { ...identity, status, passed, total: scenarios.length, scenarios };
+  });
+  const merged = retry ? previous.map(row => {
+    if (key(row) !== retry) return row;
+    const { priorAttempts = [], ...previousAttempt } = row;
+    return { ...rows[0], priorAttempts: [...priorAttempts, previousAttempt] };
+  }) : rows;
+  const next = `${records}.${process.pid}.tmp`;
+  await writeFile(next, merged.map(row => JSON.stringify(row)).join('\n') + '\n');
+  await rename(next, records);
+  if (merged.some(row => row.status !== 'pass')) process.exitCode = 1;
+} finally {
+  await rm(temp, { recursive: true, force: true });
+}

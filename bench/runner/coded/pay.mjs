@@ -93,6 +93,7 @@ export async function payment(item) {
           cwd: root, stdio: 'ignore', timeout: 60_000, killSignal: 'SIGKILL',
           env: { PATH: process.env.PATH, HOME: process.env.HOME, LANG: 'C.UTF-8', NO_COLOR: '1',
             BENCH_APP_URL: origin, BENCH_PAY_API_URL: process.env.BENCH_PAY_API_URL,
+            BENCH_PAY_API_PREFIX: process.env.BENCH_PAY_API_PREFIX,
             STUDY_CDP_ENDPOINT: browser.endpoint },
         });
         child.once('error', reject);
