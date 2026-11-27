@@ -73,3 +73,15 @@ option that removes the social.mjs flag. The two NL-FLOW flags stay either way.
   `cucumber.js --import v1/world.mjs --import v1/<steps|social|hold-out>.mjs --retry 0`.
 - **Scenarios.** The 10 non-feed study scenarios ran by tag from `study/scenarios.feature`. The rest were
   `bench/scenarios/pay/social-{like,comment}.feature` and `bench/scenarios/pay/hold-out/hold-0{1..8}.feature`.
+
+## Coordinator review (2026-11-27)
+
+Session 2 was the first session to finish with 20 of 20 scenarios passing on healthy v1. Its code was fixed as the
+v1 step definitions at that point, before sessions 1 and 3 were looked at.
+
+diff-check found no removed or changed assertion and no removed step binding. It flagged three files:
+- actions.mjs: one added click confirming the bank-delete dialog (spec 1.9);
+- hold-out.mjs: one added click confirming the reject-request dialog (spec 1.10), and an import path;
+- social.mjs: an import path.
+
+These are actions the new interface requires, not changes to any check. Accepted.
