@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+import { readFile } from 'node:fs/promises';
+import { parseArgs } from 'node:util';
+import { parseAnswer, scenarioSteps } from './answer.mjs';
+
+const { values } = parseArgs({ options: { answer: { type: 'string' }, scenario: { type: 'string' } } });
+if (!values.scenario) throw new Error('Usage: bench/agent/parse --scenario FILE [--answer FILE]');
+const [raw, scenario] = await Promise.all([
+  readFile(values.answer ?? '/dev/stdin', 'utf8'), readFile(values.scenario, 'utf8'),
+]);
+console.log(JSON.stringify(parseAnswer(raw, scenarioSteps(scenario)), null, 2));
