@@ -1,0 +1,138 @@
+UNIT pay:C:fault-v0-1/auth-login/runtime
+model gpt-5.6-terra driver codex-cli 0.159.3 (REPRODUCE.md) build v0+fault type faulty
+scenario auth-login 
+  1. Given I open the sign-in page
+  2. Then the sign-in heading is visible
+  3. When I sign in as "Heath93" with password "s3cret"
+  4. Then the authenticated home identifies "Heath93"
+  5. And the authenticated home route is "/" or "/public"
+fault {"file": "src/components/SignInForm.tsx", "before": "signInPending(values);", "after": "signInPending({ ...values, password: \"controlled-invalid-password\" });"}
+target [4] Then the authenticated home identifies "Heath93"
+VERDICT fail step [4] 'Then the authenticated home identifies "Heath93"'
+REASON Sign-in displayed “Username or password is invalid” and remained at /signin.
+parse_error None tool_calls 8 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+MSG I’ll run the sign-in scenario solely through the visible UI and verify the landing identity and route.
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T14-43-19-079Z.yml)
+#2 CALL browser_snapshot {"depth": 4}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic
+      - generic:
+        - generic: Password
+        - generic
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"name": "Username", "target": "[ref=e15]", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "[ref=e18]", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT ### Error
+Error: "[ref=e15]" does not match any elements. To use the element with from the page snapshot, pass "e15" as the target.
+#4 CALL browser_fill_form {"fields": [{"name": "Username", "target": "e15", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "e18", "type": "textbox", "value": "s3cret"}]}
+#4 RESULT ### Error
+Error: browserBackend.callTool: Error: Element is not an <input>, <textarea>, <select> or [contenteditable] and does not have a role allowing [aria-readonly]
+Call log:
+  - waiting for locator('aria-ref=e15')
+    - locator resolved to <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl css-1942ol5-MuiInputBase-root-MuiOutlinedInput-root">…</div>
+    - fill("Heath93")
+  - attempting fill action
+    - waiting for element to be visible, enabled and editable
+
+#5 CALL browser_snapshot {"depth": 6}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#6 CALL browser_fill_form {"fields": [{"name": "Username", "target": "e16", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "e19", "type": "textbox", "value": "s3cret"}]}
+#6 RESULT 
+#7 CALL browser_click {"target": "e26", "element": "Sign In"}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T14-43-29-623Z.yml)
+#8 CALL browser_snapshot {"depth": 5}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - alert:
+      - generic: Username or password is invalid
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+MSG {"status":"fail","reason":"Sign-in displayed “Username or password is invalid” and remained at /signin.","failedAssertion":"Then the authenticated home identifies \"Heath93\""}
+RAWRESPONSE {"status":"fail","reason":"Sign-in displayed “Username or password is invalid” and remained at /signin.","failedAssertion":"Then the authenticated home identifies \"Heath93\""}

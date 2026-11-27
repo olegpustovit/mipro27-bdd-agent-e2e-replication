@@ -1,0 +1,275 @@
+UNIT pay:C:fault-v2-2/feed-friends/runtime
+model gpt-5.6-terra driver codex-cli 0.159.3 (REPRODUCE.md) build v2+fault type faulty
+scenario feed-friends 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I select the "Friends" feed using its visible control
+  4. Then the "Contacts" feed at "/contacts" contains transactions
+fault {"file": "src/components/TransactionNavTabs.tsx", "before": "to=\"/contacts\" data-test=\"nav-contacts-tab\"", "after": "to=\"/personal\" data-test=\"nav-contacts-tab\""}
+target [4] Then the "Contacts" feed at "/contacts" contains transactions
+VERDICT fail step [4] 'Then the "Contacts" feed at "/contacts" contains transactions'
+REASON Selecting the visible Friends-equivalent control “People I know” opened /personal, labeled Personal, rather than the Contacts feed at /contacts.
+parse_error None tool_calls 10 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+MSG I’ll run the scenario solely through the visible interface and verify the specified identity, route, and populated contacts feed.
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-07-17-973Z.yml)
+#2 CALL browser_snapshot {"depth": 4}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic
+      - generic:
+        - generic: Password
+        - generic
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"name": "Username", "target": "input[name=\"username\"]", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "input[name=\"password\"]", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26", "element": "Continue sign-in button"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-07-23-830Z.yml)
+#5 CALL browser_snapshot {"depth": 5}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#6 CALL browser_click {"target": "e70", "element": "People I know feed tab"}
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-07-30-079Z.yml)
+#7 CALL browser_click {"target": "e49", "element": "open drawer button"}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-07-34-041Z.yml)
+#8 CALL browser_snapshot {"depth": 5}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer" [active]
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "People I know" [selected]
+      - tab "My activity"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Personal
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#9 CALL browser_wait_for {"time": 1}
+#9 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-07-39-024Z.yml)
+#10 CALL browser_snapshot {"depth": 8}
+#10 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer" [active]
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "People I know" [selected]
+      - tab "My activity"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Personal
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: +$42.36
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: "-$370.77"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: "-$250.66"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: "-$66.32"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: "-$395.32"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: "-$424.08"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: "-$204.12"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: +$36.56
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: +$440.36
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic
+                - generic: "-$218.71"
+            - separator
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+MSG {"status":"fail","reason":"Selecting the visible Friends-equivalent control “People I know” opened /personal, labeled Personal, rather than the Contacts feed at /contacts.","failedAssertion":"Then the \"Contacts\" feed at \"/contacts\" contains transactions"}
+RAWRESPONSE {"status":"fail","reason":"Selecting the visible Friends-equivalent control “People I know” opened /personal, labeled Personal, rather than the Contacts feed at /contacts.","failedAssertion":"Then the \"Contacts\" feed at \"/contacts\" contains transactions"}

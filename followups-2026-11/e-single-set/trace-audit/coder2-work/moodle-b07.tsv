@@ -1,0 +1,13 @@
+M000	CORRECT	high	@re	@re:[^\n]*frog-related content[^\n]*	banner shown on search results with display switch off; cited
+M001	CORRECT	high	@re	@re:[^\n]*frog-related content[^\n]*	banner shown with switch off; cited
+M002	CORRECT	high	@re	@re:[^\n]*frog-related content[^\n]*	banner shown with switch off; cited
+M003	CORRECT	high	@re	@re:[^\n]*frog-related content[^\n]*	banner shown with switch off; cited
+M004	CORRECT	high	@re	@re:[^\n]*frog-related content[^\n]*	banner shown with switch off; cited
+M005	WRONG-REASON	high	@reason	@reason	unresolved at step 2 (admin settings): agent's refs/selectors did not match ("e1e65" does not match any elements); never reached the search page
+M006	AGENT-ERROR	high	trace blob, result of tool call #7 browser_snapshot	tool result: - paragraph [ref=f2e84]: Section error!	agent guessed admin URL section=search (does not exist), mis-targeted the admin search box, and stopped at step 2 after 13 calls; the settings are on Manage global search (other runs set them)
+M007	AGENT-ERROR	medium	trace blob, result of tool call #26 browser_click	tool result: TimeoutError: browserBackend.callTool: Timeout 5000ms exceeded.	step 2 done; at step 3 agent used invalid locators on the admin page and one toggle click timed out; other runs used the same header search; agent gave up at 26 of 60 calls
+M008	CORRECT	medium	trace blob, result of tool call #22 browser_snapshot	tool result: - alert [ref=f12e64]: / - button "Dismiss this notification" [ref=f12e65] [cursor=pointer]	empty banner alert shown when only the switch is set (fault: || condition); agent cites the empty warning-style alert; class not visible in snapshot
+M009	CORRECT	high	trace blob, result of tool call #34 browser_snapshot	tool result: - alert [ref=f9e64]: / - button "Dismiss this notification" [ref=f9e65] [cursor=pointer]	empty alert (banner with blank text) above "No results"; cited
+M010	CORRECT	high	trace blob, result of tool call #24 browser_snapshot	tool result: - button "Dismiss this notification" [ref=f10e65] [cursor=pointer] (empty alert before - alert [ref=f10e67]: No results)	empty banner alert; cited
+M011	AGENT-ERROR	high	@reason	@reason	agent opened Manage global search (#8) but never looked at it, then concluded no control existed; that page holds the settings (other runs set them)
+M012	AGENT-ERROR	medium	@reason	@reason	step 2 done; header search click did not open the field and agent stopped at 26 of 60 calls without retrying; other runs used the same header search

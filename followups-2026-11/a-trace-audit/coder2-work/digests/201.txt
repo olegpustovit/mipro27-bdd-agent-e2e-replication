@@ -1,0 +1,318 @@
+UNIT pay:X4-sonnet:fault-v2-1/social-like/runtime
+model claude-sonnet-5-5 driver 2.1.327 (Claude Code) build v2+fault type faulty
+scenario social-like 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I open transaction "1xfcAhNDZK4"
+  4. Then the transaction detail heading is visible
+  5. And the displayed like count is a number
+  6. When I record the displayed like count
+  7. And I like the transaction
+  8. Then the displayed like count is one greater and Like is disabled
+  9. When I reload the current page
+  10. Then the displayed like count is one greater and Like is disabled
+fault {"file": "src/components/TransactionDetail.tsx", "before": "onClick={() => transactionLike(transaction.id)}", "after": "onClick={() => undefined}"}
+target [8, 10] Then the displayed like count is one greater and Like is disabled
+VERDICT fail step [8, 10] 'Then the displayed like count is one greater and Like is disabled'
+REASON I signed in as Heath93 and the home page showed @Heath93. I opened /transaction/1xfcAhNDZK4 and saw the 'Transaction Detail' heading with a like count of 0. I clicked the like button once. After waiting about 2 seconds the count was still 0 and the button was not disabled. I did not reload, because the Then step after the like had already failed.
+parse_error None tool_calls 16 timed_out False run_result recorded run_error None
+SOURCE ledger
+============================================================
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T17-46-02-741Z.yml)
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T17-46-06-483Z.yml)
+#5 CALL browser_snapshot {"depth": 3}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic
+    - generic:
+      - generic
+      - generic
+      - button "Account menu"
+      - generic
+  - main:
+    - generic:
+      - generic
+      - generic: Public
+      - grid "grid"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#6 CALL browser_click {"target": "e49"}
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T17-46-09-599Z.yml)
+#7 CALL browser_wait_for {"text": "@Heath93", "time": 3}
+#7 RESULT [isError] ### Error
+TimeoutError: Timeout 3000ms exceeded.
+Call log:
+[2m  - waiting for getByText('@Heath93').first() to be visible[22m
+[2m    10 × locator resolved to hidden <h6 data-test="v1-sidenav-username" class="MuiTypography-root MuiTypography-subtitle2 MuiTypography-gutterBottom css-1g5zjfx-MuiTypography-root">@Heath93</h6>[22m
+
+#8 CALL browser_snapshot {"depth": 4}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer" [active]
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#9 CALL browser_click {"target": "e49"}
+#9 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T17-46-17-773Z.yml)
+#10 CALL browser_snapshot {"depth": 5}
+#10 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer" [active]
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#11 CALL browser_navigate {"url": "http://localhost:3000/transaction/1xfcAhNDZK4"}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T17-46-19-693Z.yml)
+#12 CALL browser_snapshot {}
+#12 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e4]:
+  - banner [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - button "open drawer" [ref=f1e7]
+      - heading [level=1] [ref=f1e10]:
+        - link [ref=f1e11]:
+          - /url: /
+      - link "New" [ref=f1e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f1e58]:
+        - /url: /notifications
+  - generic [ref=f1e24]:
+    - generic [ref=f1e25]:
+      - generic [ref=f1e26]: T
+      - generic [ref=f1e29]:
+        - heading "Ted P" [level=6] [ref=f1e30]
+        - heading "@Heath93" [level=6] [ref=f1e31]
+    - generic [ref=f1e32]:
+      - generic [ref=f1e33]:
+        - heading "$1,509.53" [level=6] [ref=f1e34]
+        - heading "Account Balance" [level=6] [ref=f1e35]
+      - generic:
+        - separator
+      - button "Account menu" [ref=f1e37]
+      - generic:
+        - separator
+  - main [ref=f1e38]:
+    - generic [ref=f1e60]:
+      - heading "Transaction Detail" [level=2] [ref=f1e61]
+      - generic [ref=f1e62]:
+        - generic [ref=f1e72]:
+          - paragraph [ref=f1e74]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f1e76]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f1e77]: +$204.68
+      - generic [ref=f1e80]:
+        - generic [ref=f1e81]:
+          - generic [ref=f1e82]: "0"
+          - button [ref=f1e84]
+        - generic [ref=f1e92]:
+          - textbox "Write a comment..." [ref=f1e93]
+          - group [aria-hidden]
+    - paragraph [ref=f1e45]:
+      - text: Built by
+      - link [ref=f1e46]:
+        - /url: https://cypress.io
+```
+#13 CALL browser_click {"target": "f1e84"}
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T17-46-22-587Z.yml)
+#14 CALL browser_snapshot {"target": "f1e80"}
+#14 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e80]:
+  - generic [ref=f1e81]:
+    - generic [ref=f1e82]: "0"
+    - button [active] [ref=f1e84]
+  - generic [ref=f1e92]:
+    - textbox "Write a comment..." [ref=f1e93]
+    - group [aria-hidden]
+```
+#15 CALL browser_wait_for {"time": 2}
+#15 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T17-46-25-101Z.yml)
+#16 CALL browser_snapshot {"target": "f1e80"}
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e80]:
+  - generic [ref=f1e81]:
+    - generic [ref=f1e82]: "0"
+    - button [active] [ref=f1e84]
+  - generic [ref=f1e92]:
+    - textbox "Write a comment..." [ref=f1e93]
+    - group [aria-hidden]
+```
+RAWRESPONSE {"status":"fail","reason":"I signed in as Heath93 and the home page showed @Heath93. I opened /transaction/1xfcAhNDZK4 and saw the 'Transaction Detail' heading with a like count of 0. I clicked the like button once. After waiting about 2 seconds the count was still 0 and the button was not disabled. I did not reload, because the Then step after the like had already failed.","failedAssertion":"Then the displayed like count is one greater and Like is disabled"}

@@ -1,0 +1,13 @@
+M034	CORRECT	high	@re	@re:- generic \[ref=f2e154\]: teacher1	block shows username "teacher1" where the full name belongs; verdict cites "teacher1" in the block and no "Teacher One"
+M035	CORRECT	high	@re	@re:- generic \[ref=f2e154\]: teacher1	block shows username instead of full name; verdict says so explicitly
+M036	WRONG-REASON	medium	@reason	@reason	agent saw no block content (depth-8 snapshot) and failed on "no Logged in user block"; the username-for-full-name effect was never shown in a tool result
+M037	AGENT-ERROR	high	trace blob, result of tool call #17 browser_snapshot {"depth": 8}	tool result: - region "Logged in user" [ref=f4e133]: / - generic [ref=f4e134]: / - generic [ref=f4e135] / - generic [ref=f4e148]	block was added; depth-limited snapshot cut off the block contents and agent read the region as lacking "Teacher One"
+M038	WRONG-REASON	high	@reason	@reason	agent closed the Add Activity results block form without saving, so no block was added; failure is the agent's own action, faulty message logic never shown
+M039	WRONG-REASON	high	@reason	@reason	agent cancelled the block config form without saving; block never added
+M040	CORRECT	high	@re	@re:[^\n]*Error: the activity selected uses a grading method[^\n]*	block saved with no activity shows an error instead of "Please configure this block..." (inverted condition); cited
+M041	CORRECT	high	@re	@re:[^\n]*Error: the activity selected uses a grading method[^\n]*	same as r1; cited
+M042	WRONG-REASON	high	@reason	@reason	agent never opened the block drawer (button "Open block drawer" present) and stopped at step 3
+M043	WRONG-REASON	high	@re	@re:[^\n]*intercepts pointer events[^\n]*	agent opened course index then clicked behind its modal backdrop; never added the block
+M044	AGENT-ERROR	high	trace blob, result of tool call #14 browser_snapshot (Add Activity results block form open)	tool result: - button "Save changes" [ref=f2e416] [cursor=pointer]	agent left the block config form unsaved (last call #14) and judged the block absent
+M045	AGENT-ERROR	high	trace blob, result of tool call #11 browser_snapshot (course/view.php?id=2)	tool result: - switch "Edit mode" [ref=f5e16] [cursor=pointer]	Edit mode switch not checked: agent never turned editing on (step 2) yet said it was on, so the add-block control was absent
+M046	AGENT-ERROR	medium	trace blob, result of tool call #22 browser_snapshot {"depth": 12}	tool result: - region "Activity results" [ref=f7e332]: / - generic [ref=f7e333]	block was saved and is present; agent read its content from a snapshot with the drawer closed (then only a depth-6 snapshot after opening it), so the message was never captured; correct-build display not settled by trace

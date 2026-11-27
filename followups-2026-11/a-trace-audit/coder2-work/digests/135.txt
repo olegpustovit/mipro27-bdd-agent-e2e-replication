@@ -1,0 +1,1056 @@
+UNIT pay:D:fault-v0-2/transfer-request/runtime
+model claude-haiku-5-5 driver omp 18.14.0 (REPRODUCE.md) build v0+fault type faulty
+scenario transfer-request 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I "Request" "12" dollars to "Kristian Bradtke" with note "Study request"
+  4. Then a confirmation heading shows "Study request"
+  5. When I open my personal feed
+  6. And I reload the current page
+  7. Then my personal feed contains one visible "Study request" transaction for "$12.00" with "Kristian" as "requested"
+fault {"file": "src/components/TransactionCreateStepTwo.tsx", "before": "createTransaction({ transactionType, ...values });", "after": "createTransaction({ ...values, transactionType: \"payment\" });"}
+target [7] Then my personal feed contains one visible "Study request" transaction for "$12.00" with "Kristian" as "requested"
+VERDICT fail step [7] 'And my personal feed contains one visible "Study request" transaction for "$12.00" with "Kristian" as "requested"'
+REASON Request flow created a payment, not a request. Filled Amount "$12" and note "Study request", clicked the Request button; the confirmation heading read "Paid $12.00 for Study request" and the balance dropped $1,509.53 → $1,497.53. Confirmation heading does contain "Study request". After opening Mine (/personal) and reloading, exactly one "Study request" row exists: "Ted Parisian paid Kristian Bradtke", amount "-$12.00", not "requested". No row shows Kristian as "requested" for this transaction. The "Request" button click was made once; a second click attempt failed (ref not found) and did not submit.
+parse_error None tool_calls 32 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+THINK I'll start by taking a snapshot of the browser at localhost:3000 to see the current state, keeping things efficient.
+
+
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-38-51-698Z.yml)
+#2 RESULT ### Page
+- Page URL: about:blank
+### Snapshot
+```yaml
+
+```
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#4 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#5 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#6 CALL browser_snapshot {}
+#6 RESULT 
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-38-54-610Z.yml)
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The username field still looks empty after the fill, and I'm still on /signin, so maybe the fill didn't actually register—I'll try typing into the field directly instead.
+
+
+#7 CALL browser_type {"target": "e16", "element": "Username textbox", "text": "Heath93"}
+#8 CALL browser_type {"target": "e19", "element": "Password textbox", "text": "s3cret", "submit": true}
+#8 RESULT 
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-38-57-805Z.yml)
+#9 CALL browser_snapshot {}
+#9 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK The home page correctly shows "Ted P" and "@Heath93" when signed in, satisfying that requirement. Next I'll move to the request flow by clicking the New link to go to the transaction creation page.
+
+
+MSG Signed in; home shows "@Heath93". Opening the new-transaction flow.
+#10 CALL browser_click {"target": "e59", "element": "New transaction link"}
+#11 CALL browser_snapshot {}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-01-829Z.yml)
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK The snapshot still shows "/" even though the click reported navigating to /transaction/new, so this might be a stale snapshot. I'll take another one to confirm.
+
+
+#12 CALL browser_snapshot {}
+#12 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New" [active]:
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic:
+          - img [aria-hidden]:
+            - generic: "1"
+          - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - generic:
+          - textbox "Search..."
+          - group [aria-hidden]
+        - list:
+          - listitem:
+            - generic:
+              - generic: Kristian Bradtke
+              - paragraph:
+                - generic:
+                  - generic: "U: Arvilla_Hegmann"
+                  - generic: •
+                  - generic: "E: Skyla.Stamm@yahoo.com"
+                  - generic: •
+                  - generic: "P: 410-786-2112"
+          - listitem:
+            - generic:
+              - generic: Darrel Ortiz
+              - paragraph:
+                - generic:
+                  - generic: "U: Dina20"
+                  - generic: •
+                  - generic: "E: Marielle_Wiza@yahoo.com"
+                  - generic: •
+                  - generic: "P: 887-309-1593"
+          - listitem:
+            - generic:
+              - generic: Ruthie Prosacco
+              - paragraph:
+                - generic:
+                  - generic: "U: Reyes.Osinski"
+                  - generic: •
+                  - generic: "E: Norma27@gmail.com"
+                  - generic: •
+ 
+…[truncated 490 chars]
+#13 CALL browser_click {"target": "e533", "element": "Kristian Bradtke contact"}
+#14 CALL browser_snapshot {}
+#14 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-06-051Z.yml)
+#14 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New" [active]:
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic:
+          - img [aria-hidden]:
+            - generic: "1"
+          - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - generic:
+          - textbox "Search..."
+          - group [aria-hidden]
+        - list:
+          - listitem:
+            - generic:
+              - generic: Kristian Bradtke
+              - paragraph:
+                - generic:
+                  - generic: "U: Arvilla_Hegmann"
+                  - generic: •
+                  - generic: "E: Skyla.Stamm@yahoo.com"
+                  - generic: •
+                  - generic: "P: 410-786-2112"
+          - listitem:
+            - generic:
+              - generic: Darrel Ortiz
+              - paragraph:
+                - generic:
+                  - generic: "U: Dina20"
+                  - generic: •
+                  - generic: "E: Marielle_Wiza@yahoo.com"
+                  - generic: •
+                  - generic: "P: 887-309-1593"
+          - listitem:
+            - generic:
+              - generic: Ruthie Prosacco
+              - paragraph:
+                - generic:
+                  - generic: "U: Reyes.Osinski"
+                  - generic: •
+                  - generic: "E: Norma27@gmail.com"
+                  - generic: •
+ 
+…[truncated 490 chars]
+THINK The snapshot might be lagging behind, so I should wait a moment and take it again.
+
+
+#15 CALL browser_wait_for {"time": 2}
+#16 CALL browser_snapshot {}
+#16 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-09-581Z.yml)
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - generic:
+          - generic:
+            - textbox "Amount" [active]
+            - group [aria-hidden]
+          - generic:
+            - textbox "Add a note"
+            - group [aria-hidden]
+          - generic:
+            - generic:
+              - button "Request" [disabled]
+            - generic:
+              - button "Pay" [disabled]
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK I'll fill in the amount and note fields, then click Request — the button is likely disabled until an amount is entered.
+
+
+#17 CALL browser_type {"target": "e602", "element": "Amount textbox", "text": "12"}
+#18 CALL browser_type {"target": "e605", "element": "Add a note textbox", "text": "Study request"}
+#18 RESULT 
+#18 RESULT 
+#19 CALL browser_snapshot {}
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - generic:
+          - generic:
+            - textbox "Amount": $12
+            - group [aria-hidden]
+          - generic:
+            - textbox "Add a note" [active]: Study request
+            - group [aria-hidden]
+          - generic:
+            - button "Request"
+            - button "Pay"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK The amount displays correctly as $12, so I'll go ahead and click Request.
+
+
+#20 CALL browser_click {"target": "e609", "element": "Request button"}
+#21 CALL browser_wait_for {"time": 2}
+#22 CALL browser_snapshot {}
+#22 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-17-047Z.yml)
+#22 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-15-831Z.yml)
+#22 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - generic:
+          - generic:
+            - textbox "Amount": $12
+            - group [aria-hidden]
+          - generic:
+            - textbox "Add a note" [active]: Study request
+            - group [aria-hidden]
+          - generic:
+            - button "Request"
+            - button "Pay"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK The click on Request doesn't seem to have registered since the page still shows the Payment step unchanged. I'll try clicking it once more to see if it advances.
+
+
+MSG The Request click did not advance the page. Retrying the same control once.
+#23 CALL browser_click {"target": "e609", "element": "Request button"}
+#24 CALL browser_wait_for {"time": 3}
+#25 CALL browser_snapshot {}
+#25 RESULT [isError] Error: ### Error
+Error: Ref e609 not found in the current page snapshot. Try capturing new snapshot.
+#25 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-22-279Z.yml)
+#25 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,497.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic: Payment
+        - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - heading "Paid $12.00 for Study request" [level=2]
+        - generic:
+          - link "Return To Transactions":
+            - /url: /
+          - button "Create Another Transaction"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK Wait, the balance dropped by $12 and the heading now says "Paid $12.00 for Study request" — that's confusing since I thought I clicked the Request button, not Pay. I need to double-check which button ref I actually clicked and what it was labeled in the snapshot.
+
+Technically the heading does contain "Study request" so the literal assertion passes, but the underlying action looks like a payment rather than a request — I should check the feed to confirm what actually happened, since it should show "requested" with Kristian if this really was a request. No duplicate submission occurred since my second click attempt errored out harmlessly, so I'll navigate back to the transactions feed via the "Mine" tab and verify the entry there.
+
+
+MSG Submission produced a confirmation heading "Paid $12.00 for Study request" and the balance dropped by $12 — a payment, not a request. Recording this; continuing to the feed check without re-submitting. Going home via the confirmation's return link, then opening "Mine".
+#26 CALL browser_click {"target": "e634", "element": "Return To Transactions link"}
+#27 CALL browser_wait_for {"time": 2}
+#27 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-30-703Z.yml)
+#27 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-29-514Z.yml)
+#28 CALL browser_snapshot {}
+#28 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,497.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK I'll click the Mine tab and take a snapshot, then reload and snapshot again, since the scenario wants verification both before and after the reload.
+
+
+#29 CALL browser_click {"target": "e647", "element": "Mine tab"}
+#30 CALL browser_wait_for {"time": 2}
+#30 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-37-095Z.yml)
+#30 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-35-943Z.yml)
+MSG Now reloading the page as the scenario requires, then reading the feed.
+#31 CALL browser_reload {}
+#32 CALL browser_wait_for {"time": 2}
+#32 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e4]:
+  - banner [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - button "open drawer" [ref=f1e7]
+      - heading [level=1] [ref=f1e10]:
+        - link [ref=f1e11]:
+          - /url: /
+      - link "New" [ref=f1e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f1e19]:
+        - /url: /notifications
+    - tablist [ref=f1e26]:
+      - tab "Everyone" [selected] [ref=f1e27]
+      - tab "Friends" [ref=f1e28]
+      - tab "Mine" [ref=f1e29]
+  - generic [ref=f1e32]:
+    - generic [ref=f1e33]:
+      - generic [ref=f1e34]: T
+      - generic [ref=f1e36]:
+        - heading "Ted P" [level=6] [ref=f1e37]
+        - heading "@Heath93" [level=6] [ref=f1e38]
+    - generic [ref=f1e39]:
+      - generic [ref=f1e40]:
+        - heading "$1,497.53" [level=6] [ref=f1e41]
+        - heading "Account Balance" [level=6] [ref=f1e42]
+      - generic:
+        - separator
+      - list [ref=f1e44]:
+        - generic [ref=f1e45]:
+          - link "Home" [ref=f1e46]:
+            - /url: /
+          - link "My Account" [ref=f1e52]:
+            - /url: /user/settings
+          - link "Bank Accounts" [ref=f1e58]:
+            - /url: /bankaccounts
+          - link "Notifications" [ref=f1e64]:
+            - /url: /notifications
+      - generic:
+        - separator
+      - list [ref=f1e71]:
+        - button "Logout" [ref=f1e73]
+  - main [ref=f1e79]:
+    - generic [ref=f1e84]:
+      - generic [ref=f1e86]:
+        - 'button "Date: ALL" [ref=f1e89]'
+        - 'button "Amount: $0 - $1,000" [ref=f1e95]'
+      - generic [ref=f1e99]: Personal
+      - grid "grid" [ref=f1e101]:
+        - rowgroup [ref=f1e102]:
+          - generic [ref=f1e103]:
+            - listitem [ref=f1e104]:
+              - generic [ref=f1e117]:
+                - generic [ref=f1e119]:
+                  - paragraph [ref=f1e120]: Ted Parisian paid Kristian Bradtke
+                  - paragraph [ref=f1e121]: Study request
+                  - generic [ref=f1e122]:
+                    - paragraph [ref=f1e127]: "0"
+                    - paragraph [ref=f1e132]: "0"
+                - generic [ref=f1e133]: "-$12.00"
+            - separator [ref=f1e135]
+          - generic [ref=f1e136]:
+            - listitem [ref=f1e137]:
+              - generic [ref=f1e150]:
+                - generic [ref=f1e152]:
+                  - paragraph [ref=f1e153]: Ted Parisian requested Lia Rosenbaum
+                  - paragraph [ref
+…[truncated 4687 chars]
+#32 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-39-41-928Z.yml)
+THINK Checking the confirmation heading against the Then assertion — it mentions "Study request" so it passes literally even though it says "Paid" rather than describing the request type directly. Now verifying the feed shows exactly one "Study request" transaction for $12.00 with Kristian marked as "requested."
+
+The feed row actually says "Ted Parisian paid Kristian Bradtke" with amount "-$12.00," not "requested" as the assertion requires. This means the status mismatch fails the assertion, so the overall test result should be marked as fail with that evidence cited in the JSON output.
+
+
+MSG {"status":"fail","reason":"Request flow created a payment, not a request. Filled Amount \"$12\" and note \"Study request\", clicked the Request button; the confirmation heading read \"Paid $12.00 for Study request\" and the balance dropped $1,509.53 → $1,497.53. Confirmation heading does contain \"Study request\". After opening Mine (/personal) and reloading, exactly one \"Study request\" row exists: \"Ted Parisian paid Kristian Bradtke\", amount \"-$12.00\", not \"requested\". No row shows Kristian as \"requested\" for this transaction. The \"Request\" button click was made once; a second click attempt failed (ref not found) and did not submit.","failedAssertion":"And my personal feed contains one visible \"Study request\" transaction for \"$12.00\" with \"Kristian\" as \"requested\""}
+RAWRESPONSE {"status":"fail","reason":"Request flow created a payment, not a request. Filled Amount \"$12\" and note \"Study request\", clicked the Request button; the confirmation heading read \"Paid $12.00 for Study request\" and the balance dropped $1,509.53 → $1,497.53. Confirmation heading does contain \"Study request\". After opening Mine (/personal) and reloading, exactly one \"Study request\" row exists: \"Ted Parisian paid Kristian Bradtke\", amount \"-$12.00\", not \"requested\". No row shows Kristian as \"requested\" for this transaction. The \"Request\" button click was made once; a second click attempt failed (ref not found) and did not submit.","failedAssertion":"And my personal feed contains one visible \"Study request\" transaction for \"$12.00\" with \"Kristian\" as \"requested\""}

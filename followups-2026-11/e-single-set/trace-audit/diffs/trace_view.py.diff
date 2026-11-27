@@ -1,0 +1,28 @@
+--- ../../a-trace-audit/trace_view.py	2026-11-26 21:51:49.417475554 +0000
++++ trace_view.py	2026-11-27 05:59:08.045726228 +0000
+@@ -3,12 +3,14 @@
+ # dependencies = []
+ # ///
+ """Stream A1 coding aid (post-hoc): print a compact, readable digest of the recorded trace of one or more units.
++FOLLOWUP-E-TA: copy of followups-2026-11/a-trace-audit/trace_view.py for the single-set units; changes marked FOLLOWUP-E-TA.
+ 
+ It only reformats recorded evidence: tool calls with arguments, page URLs, snapshot lines that match scenario
+ keywords, the agent's messages, and the verdict. It reads no automated grades and holds no codes.
+ 
+-  uv run followups-2026-11/a-trace-audit/trace_view.py --set B --type faulty [--scenario bank-create] [--full N]
+-  uv run followups-2026-11/a-trace-audit/trace_view.py --unit '<unit_id>' --full 999
++  uv run followups-2026-11/e-single-set/trace-audit/trace_view.py --set pay-Luna --type faulty [--scenario bank-create] [--full N]
++  uv run followups-2026-11/e-single-set/trace-audit/trace_view.py --unit '<unit_id>' --full 999
++  (run sets: pay-Luna, pay-Terra, pay-Haiku, moodle-Luna, moodle-Terra, moodle-Haiku)
+ """
+ import argparse
+ import json
+@@ -18,7 +20,7 @@
+ from pathlib import Path
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = HERE.parents[1]
++ROOT = HERE.parents[2]  # FOLLOWUP-E-TA: one level deeper
+ sys.path.insert(0, str(ROOT / 'scripts/counts'))
+ from common import read_jsonl  # noqa: E402
+ 

@@ -1,0 +1,1086 @@
+UNIT pay:D:healthy-v0-1/transfer-request/runtime
+model claude-haiku-5-5 driver omp 18.14.0 (REPRODUCE.md) build v0 type healthy
+scenario transfer-request 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I "Request" "12" dollars to "Kristian Bradtke" with note "Study request"
+  4. Then a confirmation heading shows "Study request"
+  5. When I open my personal feed
+  6. And I reload the current page
+  7. Then my personal feed contains one visible "Study request" transaction for "$12.00" with "Kristian" as "requested"
+fault null
+target None None
+VERDICT unresolved step None 'None'
+REASON Signed in as Heath93 and the home page showed @Heath93, so the first Then was observed. The Request flow then stalled: the first Sign In click did not submit, and a contact-selection click did not advance until retried. Amount and note input was corrupted by fill/type combinations (amount became $12,112 and note became 'Study requestStudy request'), and clearing it with key presses exhausted the 80-tool-call cap before the Request button was clicked. The confirmation heading, the personal feed check, and the reload/persistence check were never reached.
+parse_error None tool_calls 93 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-17-48-489Z.yml)
+#2 RESULT ### Page
+- Page URL: about:blank
+### Snapshot
+```yaml
+
+```
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#4 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#5 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#6 CALL browser_snapshot {}
+#6 RESULT 
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-17-51-452Z.yml)
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The fill_form executed but the snapshot still isn't showing the values, and it looks like I'm still on the signin page. Let me wait a moment and take another snapshot to check.
+
+
+#7 CALL browser_wait_for {"time": 2}
+#8 CALL browser_snapshot {}
+#8 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-17-55-481Z.yml)
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+MSG The fields are filled but the click did not submit. Clicking Sign In again.
+#9 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#10 CALL browser_wait_for {"time": 2}
+#11 CALL browser_snapshot {}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-00-136Z.yml)
+#11 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-17-58-946Z.yml)
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The URL flickered to "/" before landing back on /signin, so maybe sign-in redirected home then bounced back. I'll take another snapshot after waiting a moment.
+
+
+#12 CALL browser_wait_for {"time": 3}
+#13 CALL browser_snapshot {}
+#13 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-05-190Z.yml)
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK I'm confirmed as signed in as Ted P (@Heath93). Now I need to request $12 from Kristian Bradtke with the note "Study request", so I'll click New to start a new transaction.
+
+
+MSG Signed in; home shows @Heath93. Opening the New transaction flow.
+#14 CALL browser_click {"target": "e60", "element": "New transaction link"}
+#15 CALL browser_wait_for {"time": 2}
+#15 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-10-355Z.yml)
+#15 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-09-213Z.yml)
+#16 CALL browser_snapshot {}
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New" [active]:
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic:
+          - img [aria-hidden]:
+            - generic: "1"
+          - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - generic:
+          - textbox "Search..."
+          - group [aria-hidden]
+        - list:
+          - listitem:
+            - generic:
+              - generic: Kristian Bradtke
+              - paragraph:
+                - generic:
+                  - generic: "U: Arvilla_Hegmann"
+                  - generic: •
+                  - generic: "E: Skyla.Stamm@yahoo.com"
+                  - generic: •
+                  - generic: "P: 410-786-2112"
+          - listitem:
+            - generic:
+              - generic: Darrel Ortiz
+              - paragraph:
+                - generic:
+                  - generic: "U: Dina20"
+                  - generic: •
+                  - generic: "E: Marielle_Wiza@yahoo.com"
+                  - generic: •
+                  - generic: "P: 887-309-1593"
+          - listitem:
+            - generic:
+              - generic: Ruthie Prosacco
+              - paragraph:
+                - generic:
+                  - generic: "U: Reyes.Osinski"
+                  - generic: •
+                  - generic: "E: Norma27@gmail.com"
+                  - generic: •
+ 
+…[truncated 490 chars]
+#17 CALL browser_click {"target": "e533", "element": "Kristian Bradtke contact item"}
+#18 CALL browser_wait_for {"time": 2}
+#19 CALL browser_snapshot {}
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-15-646Z.yml)
+#19 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-14-488Z.yml)
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New" [active]:
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic:
+          - img [aria-hidden]:
+            - generic: "1"
+          - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - generic:
+          - textbox "Search..."
+          - group [aria-hidden]
+        - list:
+          - listitem:
+            - generic:
+              - generic: Kristian Bradtke
+              - paragraph:
+                - generic:
+                  - generic: "U: Arvilla_Hegmann"
+                  - generic: •
+                  - generic: "E: Skyla.Stamm@yahoo.com"
+                  - generic: •
+                  - generic: "P: 410-786-2112"
+          - listitem:
+            - generic:
+              - generic: Darrel Ortiz
+              - paragraph:
+                - generic:
+                  - generic: "U: Dina20"
+                  - generic: •
+                  - generic: "E: Marielle_Wiza@yahoo.com"
+                  - generic: •
+                  - generic: "P: 887-309-1593"
+          - listitem:
+            - generic:
+              - generic: Ruthie Prosacco
+              - paragraph:
+                - generic:
+                  - generic: "U: Reyes.Osinski"
+                  - generic: •
+                  - generic: "E: Norma27@gmail.com"
+                  - generic: •
+ 
+…[truncated 490 chars]
+THINK The click didn't register a selection. Let me try clicking directly on the name text instead.
+
+
+MSG The contact click did not advance. Retrying on the name text.
+#20 CALL browser_click {"target": "e534", "element": "Kristian Bradtke name text"}
+#21 CALL browser_wait_for {"time": 3}
+#22 CALL browser_snapshot {}
+#22 RESULT [isError] Error: ### Error
+Error: Ref e534 not found in the current page snapshot. Try capturing new snapshot.
+#22 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-20-295Z.yml)
+#22 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - generic:
+          - generic:
+            - textbox "Amount" [active]
+            - group [aria-hidden]
+          - generic:
+            - textbox "Add a note"
+            - group [aria-hidden]
+          - generic:
+            - generic:
+              - button "Request" [disabled]
+            - generic:
+              - button "Pay" [disabled]
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#23 CALL browser_fill_form {"fields": [{"target": "e603", "name": "Amount", "type": "textbox", "value": "12"}, {"target": "e606", "name": "Add a note", "type": "textbox", "value": "Study request"}]}
+#24 CALL browser_snapshot {}
+#24 RESULT 
+#24 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - generic:
+          - generic:
+            - textbox "Amount" [active]
+            - group [aria-hidden]
+          - generic:
+            - textbox "Add a note"
+            - group [aria-hidden]
+          - generic:
+            - generic:
+              - button "Request" [disabled]
+            - generic:
+              - button "Pay" [disabled]
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK The snapshot isn't showing the filled values and the buttons are still disabled, which seems odd since the earlier signin fill did register. The fill might not have actually triggered React's controlled input state, so I should try using the type tool instead.
+
+
+MSG Amount and note are still not reflected in the snapshot and both buttons remain disabled. Typing into the fields directly.
+#25 CALL browser_type {"target": "e603", "text": "12", "element": "Amount textbox", "slowly": true}
+#26 CALL browser_type {"target": "e606", "text": "Study request", "element": "Add a note textbox", "slowly": true}
+#26 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-24-856Z.yml)
+#26 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-25-585Z.yml)
+#27 CALL browser_snapshot {}
+#27 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - generic:
+          - generic:
+            - textbox "Amount": $1,212
+            - group [aria-hidden]
+          - generic:
+            - textbox "Add a note" [active]: Study requestStudy request
+            - group [aria-hidden]
+          - generic:
+            - button "Request"
+            - button "Pay"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK The amount and note fields now show duplicated values from my typing - $1,212 instead of $12, and a repeated "Study requestStudy request" note. These are artifacts from my test input, so I need to clear both fields properly and retype the correct values.
+
+
+MSG My earlier fill and the typed input both landed, producing amount "$1,212" and note "Study requestStudy request". Correcting both fields.
+#28 CALL browser_click {"target": "e603", "element": "Amount textbox", "modifiers": ["Control"]}
+#29 CALL browser_press_key {"key": "Control+a"}
+#29 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-30-262Z.yml)
+#29 RESULT 
+#30 CALL browser_press_key {"key": "Backspace"}
+#31 CALL browser_type {"target": "e603", "text": "12", "element": "Amount textbox", "slowly": true}
+#31 RESULT 
+#31 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-32-168Z.yml)
+#32 CALL browser_click {"target": "e606", "element": "Add a note textbox"}
+#33 CALL browser_press_key {"key": "Control+a"}
+#34 CALL browser_snapshot {}
+#34 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-34-103Z.yml)
+#34 RESULT 
+#34 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - generic:
+          - generic:
+            - textbox "Amount" [active]: $12,112
+            - group [aria-hidden]
+          - generic:
+            - textbox "Add a note": Study requestStudy request
+            - group [aria-hidden]
+          - generic:
+            - button "Request"
+            - button "Pay"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK Neither Ctrl+a nor Backspace is clearing the field properly, and the amount keeps garbling into odd values like "$12,112". I'm thinking I need a different approach—maybe clicking into the field, pressing End, then hitting Backspace repeatedly before typing the correct value.
+
+
+MSG Select-all and Backspace did not clear the field. Trying End then repeated Backspace.
+#35 CALL browser_click {"target": "e603", "element": "Amount textbox"}
+#36 CALL browser_press_key {"key": "End"}
+#36 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-38-315Z.yml)
+#36 RESULT 
+#37 CALL browser_press_key {"key": "Backspace"}
+#38 CALL browser_press_key {"key": "Backspace"}
+#39 CALL browser_press_key {"key": "Backspace"}
+#40 CALL browser_press_key {"key": "Backspace"}
+#41 CALL browser_press_key {"key": "Backspace"}
+#42 CALL browser_press_key {"key": "Backspace"}
+#43 CALL browser_press_key {"key": "Backspace"}
+#44 CALL browser_press_key {"key": "Backspace"}
+#45 CALL browser_press_key {"key": "Backspace"}
+#45 RESULT 
+#45 RESULT 
+#45 RESULT 
+#45 RESULT 
+#45 RESULT 
+#45 RESULT 
+#45 RESULT 
+#45 RESULT 
+#45 RESULT 
+#46 CALL browser_snapshot {}
+#46 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - generic: Select Contact
+        - generic:
+          - img [aria-hidden]:
+            - generic: "2"
+          - generic: Payment
+        - generic:
+          - img [aria-hidden]:
+            - generic: "3"
+          - generic: Complete
+      - generic:
+        - heading "Kristian Bradtke" [level=2]
+        - generic:
+          - generic:
+            - generic:
+              - textbox "Amount" [active] [invalid]
+              - group [aria-hidden]
+            - paragraph: Please enter a valid amount
+          - generic:
+            - textbox "Add a note": Study requestStudy request
+            - group [aria-hidden]
+          - generic:
+            - generic:
+              - button "Request" [disabled]
+            - generic:
+              - button "Pay" [disabled]
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+MSG Amount is now empty. Typing 12 and clearing the note.
+#47 CALL browser_type {"target": "e603", "text": "12", "element": "Amount textbox", "slowly": true}
+#48 CALL browser_click {"target": "e606", "element": "Add a note textbox"}
+#48 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-44-736Z.yml)
+#48 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-18-44-136Z.yml)
+#49 CALL browser_press_key {"key": "End"}
+#50 CALL browser_press_key {"key": "Backspace"}
+#51 CALL browser_press_key {"key": "Backspace"}
+#52 CALL browser_press_key {"key": "Backspace"}
+#53 CALL browser_press_key {"key": "Backspace"}
+#54 CALL browser_press_key {"key": "Backspace"}
+#55 CALL browser_press_key {"key": "Backspace"}
+#56 CALL browser_press_key {"key": "Backspace"}
+#57 CALL browser_press_key {"key": "Backspace"}
+#58 CALL browser_press_key {"key": "Backspace"}
+#59 CALL browser_press_key {"key": "Backspace"}
+#60 CALL browser_press_key {"key": "Backspace"}
+#61 CALL browser_press_key {"key": "Backspace"}
+#62 CALL browser_press_key {"key": "Backspace"}
+#63 CALL browser_press_key {"key": "Backspace"}
+#64 CALL browser_press_key {"key": "Backspace"}
+#65 CALL browser_press_key {"key": "Backspace"}
+#66 CALL browser_press_key {"key": "Backspace"}
+#67 CALL browser_press_key {"key": "Backspace"}
+#68 CALL browser_press_key {"key": "Backspace"}
+#69 CALL browser_press_key {"key": "Backspace"}
+#70 CALL browser_press_key {"key": "Backspace"}
+#71 CALL browser_press_key {"key": "Backspace"}
+#72 CALL browser_press_key {"key": "Backspace"}
+#73 CALL browser_press_key {"key": "Backspace"}
+#74 CALL browser_press_key {"key": "Backspace"}
+#75 CALL browser_press_key {"key": "Backspace"}
+#76 CALL browser_press_key {"key": "Backspace"}
+#77 CALL browser_press_key {"key": "Backspace"}
+#78 CALL browser_press_key {"key": "Backspace"}
+#79 CALL browser_press_key {"key": "Backspace"}
+#80 CALL browser_press_key {"key": "Backspace"}
+#81 CALL browser_press_key {"key": "Backspace"}
+#82 CALL browser_press_key {"key": "Backspace"}
+#83 CALL browser_press_key {"key": "Backspace"}
+#84 CALL browser_press_key {"key": "Backspace"}
+#85 CALL browser_press_key {"key": "Backspace"}
+#86 CALL browser_press_key {"key": "Backspace"}
+#87 CALL browser_press_key {"key": "Backspace"}
+#88 CALL browser_press_key {"key": "Backspace"}
+#89 CALL browser_press_key {"key": "Backspace"}
+#90 CALL browser_press_key {"key": "Backspace"}
+#91 CALL browser_press_key {"key": "Backspace"}
+#92 CALL browser_press_key {"key": "Backspace"}
+#93 CALL browser_press_key {"key": "Backspace"}
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT 
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+#93 RESULT [isError] Error: Action cap reached (80 tool calls).
+THINK I've hit the tool call cap before the request could be submitted, so the scenario remains unresolved — the first Then passed since the authenticated home correctly identified Heath93, but the When step never completed. Since nothing actually failed, I should mark this unresolved with failedAssertion as null and report that outcome in JSON only.
+
+
+MSG {"status":"unresolved","reason":"Signed in as Heath93 and the home page showed @Heath93, so the first Then was observed. The Request flow then stalled: the first Sign In click did not submit, and a contact-selection click did not advance until retried. Amount and note input was corrupted by fill/type combinations (amount became $12,112 and note became 'Study requestStudy request'), and clearing it with key presses exhausted the 80-tool-call cap before the Request button was clicked. The confirmation heading, the personal feed check, and the reload/persistence check were never reached.","failedAssertion":null}
+RAWRESPONSE {"status":"unresolved","reason":"Signed in as Heath93 and the home page showed @Heath93, so the first Then was observed. The Request flow then stalled: the first Sign In click did not submit, and a contact-selection click did not advance until retried. Amount and note input was corrupted by fill/type combinations (amount became $12,112 and note became 'Study requestStudy request'), and clearing it with key presses exhausted the 80-tool-call cap before the Request button was clicked. The confirmation heading, the personal feed check, and the reload/persistence check were never reached.","failedAssertion":null}

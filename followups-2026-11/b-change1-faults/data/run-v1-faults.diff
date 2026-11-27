@@ -1,0 +1,55 @@
+0a1,7
+> // Stream B follow-up (2026-11-26): faulty builds on the change-1 (v1) interface.
+> // A copy of harness/scripts/exploratory-runner.mjs (replication commit 9c9eee2) with three changes, marked FOLLOWUP-B:
+> //  1. stages come from ./v1-fault-plan.mjs (healthy-v1-1 environment check, fault-v1-1, fault-v1-2), not exploratoryStages();
+> //  2. STUDY_ARMS (maintained|runtime) selects the arm; the maintained arm runs campaign A's frozen v1 step code
+> //     restored from STUDY_RUNTIME_RERUN_FROM (no maintenance session runs);
+> //  3. the runner's own file hashes are recorded in the frozen inputs.
+> // Everything else (trial execution, journal, ledger, invalid handling, never re-running a finished trial) is unchanged.
+8,20c15,28
+< import { exploratoryConfig, exploratoryStages } from '../study/exploratory-plan.mjs';
+< import { sourcePins, appPins, samePins } from './campaign-guard.mjs';
+< import { runMaintenance, runTrial } from './cumulative-runner.mjs';
+< import { createMaintenanceState } from './maintenance.mjs';
+< import { acquireLock, reset } from './fixture.mjs';
+< import { bounded } from './deadlines.mjs';
+< import { environmentFingerprint, fixtureProvenance } from './environment.mjs';
+< import { dataDir, ledgerPaths, ensureDirs } from './ledger/paths.mjs';
+< import { requireDeadline } from '../study/campaign-config.mjs';
+< import { blockedOrder, planTrials, startTrial, endTrial, reconcileEnded } from './ledger/trials.mjs';
+< import { trialKey } from './ledger/keys.mjs';
+< import { requestedModel } from './codex-boundary.mjs';
+< import { loadDriver, driverNameForModel } from './drivers/index.mjs';
+---
+> import { exploratoryConfig, exploratoryStages } from '../harness/study/exploratory-plan.mjs';
+> import { v1FaultStages, followupArms } from './v1-fault-plan.mjs'; // FOLLOWUP-B
+> import { sourcePins, appPins, samePins } from '../harness/scripts/campaign-guard.mjs';
+> import { runMaintenance, runTrial } from '../harness/scripts/cumulative-runner.mjs';
+> import { createMaintenanceState } from '../harness/scripts/maintenance.mjs';
+> import { acquireLock, reset } from '../harness/scripts/fixture.mjs';
+> import { bounded } from '../harness/scripts/deadlines.mjs';
+> import { environmentFingerprint, fixtureProvenance } from '../harness/scripts/environment.mjs';
+> import { dataDir, ledgerPaths, ensureDirs } from '../harness/scripts/ledger/paths.mjs';
+> import { requireDeadline } from '../harness/study/campaign-config.mjs';
+> import { blockedOrder, planTrials, startTrial, endTrial, reconcileEnded } from '../harness/scripts/ledger/trials.mjs';
+> import { trialKey } from '../harness/scripts/ledger/keys.mjs';
+> import { requestedModel } from '../harness/scripts/codex-boundary.mjs';
+> import { loadDriver, driverNameForModel } from '../harness/scripts/drivers/index.mjs';
+22c30,31
+< const root = fileURLToPath(new URL('../', import.meta.url));
+---
+> const root = fileURLToPath(new URL('../harness/', import.meta.url)); // FOLLOWUP-B: harness checkout
+> const followupFiles = ['run-v1-faults.mjs', 'v1-fault-plan.mjs'].map(name => [name, createHash('sha256').update(readFileSync(new URL('./' + name, import.meta.url))).digest('hex')]); // FOLLOWUP-B
+36c45,46
+<   return { mode: exploratoryConfig.mode, gatePassExists: false, config: { ...exploratoryConfig, executions, ...(invalidGuard ? { invalidGuard } : {}) }, runtimeStages, runtimeSource, ...(comparisonManifestSHA ? { comparisonManifestSHA } : {}), sourcePins: sourcePins(), appPins: appPins(),
+---
+>   return { mode: exploratoryConfig.mode, gatePassExists: false, followup: { stream: 'b-change1-faults', arms: followupArms(), files: Object.fromEntries(followupFiles), harnessCommit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() }, // FOLLOWUP-B
+>     config: { ...exploratoryConfig, executions, ...(invalidGuard ? { invalidGuard } : {}) }, runtimeStages, runtimeSource, ...(comparisonManifestSHA ? { comparisonManifestSHA } : {}), sourcePins: sourcePins(), appPins: appPins(),
+69c79
+<   const stages = exploratoryStages();
+---
+>   const stages = v1FaultStages(); // FOLLOWUP-B
+90c100
+<     (!rerunFrom || (t.arm === 'runtime' && (!runtimeStages || runtimeStages.includes(stage.id)))));
+---
+>     (!rerunFrom || (followupArms().includes(t.arm) && (!runtimeStages || runtimeStages.includes(stage.id))))); // FOLLOWUP-B: arm selection

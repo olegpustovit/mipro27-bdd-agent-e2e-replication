@@ -1,0 +1,341 @@
+UNIT moodle:6ac189f540b8/B04.S036/healthy/C/gpt-6-luna/r2
+model gpt-6-luna driver codex build Moodle pin cfe123f26fc7 (healthy); pair from change B04 type healthy
+scenario S036 Completion condition displaying for manual and auto completion
+  1. Given I log in as "teacher1"
+  2. When I am on "Course 1" course homepage
+  3. Then "Test choice manual" should have the "Mark as done" completion condition
+  4. And I follow "Test choice manual"
+  5. And the manual completion button for "Test choice manual" should be disabled
+  6. And I am on "Course 1" course homepage
+  7. And "Test choice auto" should have the "Make a choice" completion condition
+  8. And I follow "Test choice auto"
+  9. And "Test choice auto" should have the "Make a choice" completion condition
+fault null
+target None None
+VERDICT fail step 3 'Then "Test choice manual" should have the "Mark as done" completion condition'
+REASON Course 1 is open, but the visible page does not show “Test choice manual” or its “Mark as done” completion condition.
+parse_error None tool_calls 12 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll use the existing teacher session and verify the visible course pages and completion controls in step order.
+#1 CALL browser_snapshot {"depth": 5}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic
+          - button "Show notification window with no new notifications"
+          - button "Toggle messaging drawer"
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region "Main content blocks"
+      - contentinfo:
+        - button "Show footer":
+          - generic [aria-hidden]: "?"
+        - generic:
+          - link "Contact site support":
+            - /url: http://webserver/user/contactsitesupport.php
+          - generic
+          - generic
+```
+#2 CALL browser_navigate {"url": "http://webserver/course/view.php?id=1"}
+#2 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-31-20-841Z.yml)
+#3 CALL browser_snapshot {"depth": 8}
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e16]:
+            - switch "Edit mode" [ref=f1e17]
+            - generic [ref=f1e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e28]:
+            - generic [aria-hidden] [ref=f1e29]: 
+          - button "Toggle messaging drawer" [ref=f1e31]:
+            - generic [aria-hidden] [ref=f1e32]: 
+          - button "User menu" [ref=f1e38]: 
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]:
+          - heading "Dashboard" [level=1] [ref=f1e56]
+        - main [ref=f1e60]:
+          - region "Main content blocks" [ref=f1e62]:
+            - heading "Main content blocks" [level=2] [ref=f1e63]
+            - link "Skip Course overview" [ref=f1e64]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e65]:
+              - generic [ref=f1e66]:
+                - heading "Course overview" [level=3] [ref=f1e68]
+                - generic [ref=f1e70]
+            - link "Skip Timeline" [ref=f1e105]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e106]:
+              - generic [ref=f1e107]:
+                - heading "Timeline" [level=3] [ref=f1e109]
+                - generic [ref=f1e112]
+      - contentinfo [ref=f1e132]:
+        - button "Show footer" [ref=f1e133]:
+          - generic [aria-hidden] [ref=f1e134]: "?"
+        - generic [ref=f1e135]:
+          - link "Contact site support" [ref=f1e138]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e139]: 
+            - text: Contact site support
+          - generic [ref=f1e140]:
+            - generic [ref=f1e142]:
+              - text: You are logged in as
+              - link "Teacher 1" [ref=f1e143]:
+                - /url: http://webserver/user/profile.php?id=3
+              - text: (
+              - link "Log out" [ref=f1e144]:
+ 
+…[truncated 383 chars]
+#4 CALL browser_wait_for {"time": 2}
+#4 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-31-25-744Z.yml)
+#5 CALL browser_click {"target": "ref=f1e10", "element": "Dashboard navigation menu"}
+#5 RESULT ### Error
+Error: browserBackend.callTool: Unknown engine "ref" while parsing selector ref=f1e10
+#6 CALL browser_snapshot {"depth": 4}
+#6 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]
+        - generic [ref=f1e13]
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]
+        - main [ref=f1e60]
+      - contentinfo [ref=f1e132]:
+        - button "Show footer" [ref=f1e133]
+        - generic [ref=f1e135]
+```
+#7 CALL browser_click {"target": "text=Dashboard", "element": "Dashboard navigation dropdown"}
+#7 RESULT ### Error
+Error: browserBackend.callTool: Error: strict mode violation: locator('text=Dashboard') resolved to 3 elements:
+    1) <span class="mds-nav-pill__label">Dashboard</span> aka getByRole('menuitem', { name: 'Dashboard' })
+    2) <a tabindex="-1" aria-current="true" href="http://webserver/my/" data-aria-hidden-tab-index="" class="list-group-item list-group-item-action active ">↵                    Dashboard↵                </a> aka locator('#theme_boost-drawers-primary').getByText('Dashboard')
+    3) <h1 class="h2 mb-0">Dashboard</h1> aka getByRole('heading', { name: 'Dashboard' })
+
+Call log:
+  - waiting for locator('text=Dashboard')
+
+#8 CALL browser_click {"target": "[role=menuitem]", "element": "Dashboard navigation menu"}
+#8 RESULT ### Error
+Error: browserBackend.callTool: Error: strict mode violation: locator('[role=menuitem]') resolved to 29 elements:
+    1) <a tabindex="0" role="menuitem" aria-current="page" data-disableactive="true" href="http://webserver/my/" class="mds-nav-pill mds-nav-pill--selected">…</a> aka getByRole('menuitem', { name: 'Dashboard' })
+    2) <a href="#" tabindex="-1" role="menuitem" id="_r_1_-toggle" aria-haspopup="true" aria-expanded="false" data-bs-toggle="dropdown" aria-controls="_r_1_-menu" class="mds-nav-pill dropdown-toggle">…</a> aka locator('[id="_r_1_-toggle"]')
+    3) <a tabindex="-1" role="menuitem" class="dropdown-item " href="http://webserver/user/profile.php">↵                                                …</a> aka getByText('Profile')
+    4) <a tabindex="-1" role="menuitem" class="dropdown-item " href="http://webserver/grade/report/overview/index.php">↵                                                …</a> aka getByText('Grades')
+    5) <a tabindex="-1" role="menuitem" class="dropdown-item " href="http://webserver/calendar/view.php?view=month">↵                                                …</a> aka getByRole('navigation', { name: 'Site navigation' }).getByText('Calendar')
+    6) <a tabindex="-1" role="menuitem" class="dropdown-item " href="http://webserver/user/files.php">↵                                                …</a> aka getByText('Private files')
+    7) <a tabindex="-1" role="menuitem" class="dropdown-item " href="http://webserver/reportbuilder/index.php">↵                                                …</a> aka getByText('Reports')
+    8) <a tabindex="-1" role="menuitem" class="dropdown-item " href="http://webserver/user/preferences.php">↵                                                …</a> aka getByText('Preferences', { exact: true })
+    9) <a tabindex="-1" role="menuitem" class="dropdown-item " href="http://webserver/login/logout.php?sesskey=A8zJeKsZRa">↵                                                …</a> aka getByRole('navigation', { name: 'Site navigation' }).getByText('Log out')
+    10) <a href="#" data-pref="all" role="menuitem" data-value="all" aria-current="true" data-filter="grouping" class="dropdown-item dropdown-item-active" aria-controls="courses-view-6afa87186bfcb6afa871867ee63" aria-label="Show all courses except courses removed from view">↵                            All↵                …</a> aka getByLabel('Show all courses except')
+    ...
+
+Call log:
+  - waiting for locator('[role=menuitem]')
+
+#9 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#9 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-31-35-212Z.yml)
+#10 CALL browser_snapshot {"depth": 8}
+#10 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e48]:
+          - heading "Course 1" [level=1] [ref=f2e55]
+        - navigation "Course menu" [ref=f2e58]:
+          - menubar [ref=f2e59]:
+            - menuitem "Course" [ref=f2e60]
+            - menuitem "Settings" [ref=f2e63]
+            - menuitem "Participants" [ref=f2e65]
+            - menuitem "Grades" [ref=f2e67]
+            - menuitem "Activities" [ref=f2e69]
+            - menuitem "More " [ref=f2e71]:
+              - generic [ref=f2e72]: More
+              - text: 
+        - main [ref=f2e76]:
+          - generic [ref=f2e79]:
+            - heading "Section outline" [level=2] [ref=f2e80]
+            - button "Collapse all" [expanded] [ref=f2e82]:
+              - generic [ref=f2e83]:
+                - generic [aria-hidden] [ref=f2e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e85]:
+              - listitem [ref=f2e86]:
+                - generic [ref=f2e87]
+              - listitem [ref=f2e128]:
+                - generic [ref=f2e129]
+              - listitem [ref=f2e141]:
+                - generic [ref=f2e142]
+              - listitem [ref=f2e154]:
+                - generic [ref=f2e155]
+              - listitem [ref=f2e167]:
+                - generic [ref=f2e168]
+              - listitem [ref=f2e180]:
+                - generic [ref=f2e181]
+      - contentinfo [ref=f2e193]:
+        - button "Show footer" [ref=f2e19
+…[truncated 1257 chars]
+#11 CALL browser_wait_for {"time": 2}
+#11 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-31-39-589Z.yml)
+#12 CALL browser_snapshot {"depth": 8}
+#12 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e48]:
+          - heading "Course 1" [level=1] [ref=f2e55]
+        - navigation "Course menu" [ref=f2e58]:
+          - menubar [ref=f2e59]:
+            - menuitem "Course" [ref=f2e60]
+            - menuitem "Settings" [ref=f2e63]
+            - menuitem "Participants" [ref=f2e65]
+            - menuitem "Grades" [ref=f2e67]
+            - menuitem "Activities" [ref=f2e69]
+            - menuitem "More " [ref=f2e71]:
+              - generic [ref=f2e72]: More
+              - text: 
+        - main [ref=f2e76]:
+          - generic [ref=f2e79]:
+            - heading "Section outline" [level=2] [ref=f2e80]
+            - button "Collapse all" [expanded] [ref=f2e82]:
+              - generic [ref=f2e83]:
+                - generic [aria-hidden] [ref=f2e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e85]:
+              - listitem [ref=f2e86]:
+                - generic [ref=f2e87]
+              - listitem [ref=f2e128]:
+                - generic [ref=f2e129]
+              - listitem [ref=f2e141]:
+                - generic [ref=f2e142]
+              - listitem [ref=f2e154]:
+                - generic [ref=f2e155]
+              - listitem [ref=f2e167]:
+                - generic [ref=f2e168]
+              - listitem [ref=f2e180]:
+                - generic [ref=f2e181]
+      - contentinfo [ref=f2e193]:
+        - button "Show footer" [ref=f2e19
+…[truncated 1257 chars]
+MSG {"status":"fail","reason":"Course 1 is open, but the visible page does not show “Test choice manual” or its “Mark as done” completion condition.","failingStep":3,"failingStepText":"Then \"Test choice manual\" should have the \"Mark as done\" completion condition"}

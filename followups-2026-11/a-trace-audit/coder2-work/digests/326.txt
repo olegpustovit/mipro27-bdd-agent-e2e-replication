@@ -1,0 +1,1118 @@
+UNIT moodle:6ac189f540b8/B15.S094/healthy/C/claude-haiku-5-5/r1
+model claude-haiku-5-5 driver omp build Moodle pin cfe123f26fc7 (healthy); pair from change B15 type healthy
+scenario S094 Add the block to a the course with Javascript disabled
+  1. And I log in as "teacher1"
+  2. And I am on "Course 1" course homepage with editing mode on
+  3. Given I add the "Activity results" block
+  4. Then I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block"
+fault null
+target None None
+VERDICT fail step 4 'Then I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block"'
+REASON Step 3 opened 'Add Activity results block' settings dialog; I closed it with Cancel (no save). Block drawer 'Blocks' list was empty, and after a page reload the course shows no blocks. The text 'Please configure this block and select which activity it should display results from.' was never visible on the page (wait timed out). Caveat: the Cancel may have discarded a pending add; I did not click 'Save changes' to avoid configuring the block.
+parse_error None tool_calls 34 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+THINK I'm taking a snapshot of the browser first, since step 1 is already finished. Next is opening the Course 1 homepage with editing turned on, but I don't know the course URL yet, so I'll look at the page before going further.
+
+
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1763 chars]
+MSG Course 1 is id=2. Opening its homepage.
+#2 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-26-777Z.yml)
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1763 chars]
+THINK The snapshot still shows the old /my/ path, so the navigation probably hadn't taken effect when it was taken. I'll take a fresh snapshot.
+
+
+#4 CALL browser_snapshot {}
+#4 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open course index" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Course 1" [level=1] [ref=f1e55]
+        - navigation "Course menu" [ref=f1e58]:
+          - menubar [ref=f1e59]:
+            - menuitem "Course" [ref=f1e60]
+            - menuitem "Settings" [ref=f1e63]
+            - menuitem "Participants" [ref=f1e65]
+            - menuitem "Grades" [ref=f1e67]
+            - menuitem "Activities" [ref=f1e69]
+            - menuitem "More " [ref=f1e71]:
+              - generic [ref=f1e72]: More
+              - text: 
+        - main [ref=f1e76]:
+          - generic [ref=f1e79]:
+            - heading "Section outline" [level=2] [ref=f1e80]
+            - button [expanded] [ref=f1e82]:
+              - generic [ref=f1e83]:
+                - generic [aria-hidden] [ref=f1e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f1e85]:
+              - listitem [ref=f1e86]:
+                - generic [ref=f1e87]:
+                  - generic [ref=f1e89]:
+                    - button "General" [expanded] [ref=f1e90]:
+                      - generic "Collapse" [ref=f1e91]:
+                        - generic [aria-hidden] [ref=f1e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f1e94]:
+                      - link "General" [ref=f1e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - generic [ref=f1e98]
+…[truncated 4370 chars]
+THINK The edit mode switch is still off, so I'll click it to turn it on.
+
+
+#5 CALL browser_click {"target": "f1e16", "element": "Edit mode switch"}
+#6 CALL browser_snapshot {}
+#6 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-31-137Z.yml)
+#6 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open course index" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Course 1" [level=1] [ref=f1e55]
+        - navigation "Course menu" [ref=f1e58]:
+          - menubar [ref=f1e59]:
+            - menuitem "Course" [ref=f1e60]
+            - menuitem "Settings" [ref=f1e63]
+            - menuitem "Participants" [ref=f1e65]
+            - menuitem "Grades" [ref=f1e67]
+            - menuitem "Activities" [ref=f1e69]
+            - menuitem "More " [ref=f1e71]:
+              - generic [ref=f1e72]: More
+              - text: 
+        - main [ref=f1e76]:
+          - generic [ref=f1e79]:
+            - heading "Section outline" [level=2] [ref=f1e80]
+            - button [expanded] [ref=f1e82]:
+              - generic [ref=f1e83]:
+                - generic [aria-hidden] [ref=f1e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f1e85]:
+              - listitem [ref=f1e86]:
+                - generic [ref=f1e87]:
+                  - generic [ref=f1e89]:
+                    - button "General" [expanded] [ref=f1e90]:
+                      - generic "Collapse" [ref=f1e91]:
+                        - generic [aria-hidden] [ref=f1e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f1e94]:
+                      - link "General" [ref=f1e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - generic [ref=f1e98]
+…[truncated 4370 chars]
+THINK The click seems to have navigated to the "Edit course" page and then back to the course view, so I still can't tell whether edit mode is on. There's no "Add a block" in the snapshot and no sidebar, so edit mode may have toggled while the page stayed off. The switch might also have a different ref now, so I'll take a fresh snapshot with boxes to check.
+
+I'll try clicking the "Edit mode" switch again by its name, since the ref may have changed. Before that I'll take a fresh snapshot to see whether it shows a checked state, and wait a moment first in case the page is still updating.
+
+
+#7 CALL browser_snapshot {"target": "f1e15"}
+#7 RESULT [isError] Error: ### Error
+Error: Ref f1e15 not found in the current page snapshot. Try capturing new snapshot.
+#8 CALL browser_snapshot {}
+#8 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - generic:
+          - button "Open course index" [ref=f2e44]
+          - button "Open block drawer" [ref=f2e49]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e94]:
+              - listitem [ref=f2e95]:
+                - generic [ref=f2e96]:
+                  - generic [ref=f2e97]:
+                    - generic [ref=f2e98]:
+                      - button "General" [expanded] [ref=f2e99]:
+                        - generic "Collapse" [ref=f2e100]:
+            
+…[truncated 9142 chars]
+THINK Edit mode is on now, so I'm moving on to step 3, adding the Activity results block. I'll open the block drawer using the button at f2e49 and then pick "Add a block."
+
+
+MSG Edit mode is on. Opening the block drawer to add a block.
+#9 CALL browser_click {"target": "f2e49", "element": "Open block drawer button"}
+#10 CALL browser_snapshot {}
+#10 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-38-338Z.yml)
+#10 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - generic:
+          - button "Open course index" [ref=f2e44]
+          - button "Open block drawer" [ref=f2e49]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e94]:
+              - listitem [ref=f2e95]:
+                - generic [ref=f2e96]:
+                  - generic [ref=f2e97]:
+                    - generic [ref=f2e98]:
+                      - button "General" [expanded] [ref=f2e99]:
+                        - generic "Collapse" [ref=f2e100]:
+            
+…[truncated 9142 chars]
+THINK The block drawer doesn't seem to have opened where I can see it, so the snapshot may be missing it or the refs may be stale. I'll try clicking "Open block drawer" again using the same ref, in case the first click landed but the drawer is off-canvas.
+
+I'll target the "Open block drawer" button by its label instead of the old ref, since the ref may be stale.
+
+
+#11 CALL browser_click {"target": "button \"Open block drawer\"", "element": "Open block drawer button"}
+#12 CALL browser_wait_for {"time": 1}
+#12 RESULT [isError] Error: ### Error
+Error: "button "Open block drawer"" is not a valid target. Use a ref from the page snapshot (e.g. "e5"), a CSS selector, or a locator (e.g. "getByRole('button', { name: 'Submit' })").
+#12 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-42-139Z.yml)
+#13 CALL browser_click {"target": "f2e49", "element": "Open block drawer button"}
+#14 CALL browser_wait_for {"time": 2}
+#15 CALL browser_snapshot {}
+#15 RESULT [isError] Error: ### Error
+Error: Ref f2e49 not found in the current page snapshot. Try capturing new snapshot.
+#15 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-45-734Z.yml)
+#15 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e317]:
+      - button "Close block drawer" [active] [ref=f2e321]
+      - generic [ref=f2e325]:
+        - link "Add a block" [ref=f2e327]:
+          - /url: http://webserver/course/view.php?id=2&bui_addblock&sesskey=QQh1xlAufW
+          - generic [aria-hidden] [ref=f2e328]: +
+          - text: Add a block
+        - complementary "Blocks":
+          - heading "Blocks" [level=2] [ref=f2e329]
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text:
+…[truncated 9520 chars]
+THINK I'm clicking the "Add a block" link since the drawer is already open, then taking a snapshot to see the block-selection drawer that this page opens in Moodle 5.
+
+
+MSG The block drawer is open. Clicking "Add a block".
+#16 CALL browser_click {"target": "f2e327", "element": "Add a block link"}
+#17 CALL browser_wait_for {"time": 2}
+#17 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-50-669Z.yml)
+#17 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-49-599Z.yml)
+#18 CALL browser_snapshot {}
+#18 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - generic:
+          - button "Open course index" [ref=f2e44]
+          - button "Open block drawer" [ref=f2e49]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e94]:
+              - listitem [ref=f2e95]:
+                - generic [ref=f2e96]:
+                  - generic [ref=f2e97]:
+                    - generic [ref=f2e98]:
+                      - button "General" [expanded] [ref=f2e99]:
+                        - generic "Collapse" [ref=f2e100]:
+                     
+…[truncated 12069 chars]
+#19 CALL browser_click {"target": "f2e342", "element": "Activity results link"}
+#20 CALL browser_wait_for {"time": 2}
+#20 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-56-334Z.yml)
+#20 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-09-55-251Z.yml)
+#21 CALL browser_snapshot {}
+#21 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - generic:
+          - button "Open course index" [ref=f2e44]
+          - button "Open block drawer" [ref=f2e49]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e94]:
+              - listitem [ref=f2e95]:
+                - generic [ref=f2e96]:
+                  - generic [ref=f2e97]:
+                    - generic [ref=f2e98]:
+                      - button "General" [expanded] [ref=f2e99]:
+                        - generic "Collapse" [ref=f2e100]:
+                     
+…[truncated 14645 chars]
+THINK The block config dialog has appeared with the "Add Activity results block" settings, so I'm checking whether that form is shown as part of adding the block or only after it's placed on the page in Moodle 5.x.
+
+I'm weighing whether the block is already saved on the page or only pending until "Save changes" is clicked, since the add step might create it with default config first. Either way, the next step checks for the unconfigured text in the Activity results block, which suggests the block is probably already on the page.
+
+I'm checking whether the block is already on the page behind the open dialog, since the drawer isn't showing it in the snapshot. Moodle may already have created the block with its unconfigured placeholder text, so the next assertion could pass without clicking "Save changes."
+
+I'm wondering whether closing the dialog with Cancel could remove the block, so I'll leave it open and take another snapshot to see if the block shows up on the page.
+
+
+MSG The block's settings dialog opened. Checking whether the block is rendered on the page before deciding how to proceed.
+#22 CALL browser_wait_for {"text": "Please configure this block", "time": 5}
+#22 RESULT [isError] Error: ### Error
+TimeoutError: Timeout 5000ms exceeded.
+Call log:
+  - waiting for getByText('Please configure this block').first() to be visible
+
+THINK The page doesn't show the text I'm looking for, even though the block probably exists behind the modal dialog. Saving the config could change its state and make the message disappear, and cancelling might remove the block I just added, so I'm wary of both. I'll take another look at the snapshot first.
+
+I'm still checking whether the dialog is open and whether the block region shows up in the snapshot.
+
+
+#23 CALL browser_snapshot {"target": "f2e365"}
+#23 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- dialog [ref=f2e365]:
+  - generic [ref=f2e366]:
+    - generic [ref=f2e367]:
+      - heading "Add Activity results block" [level=2] [ref=f2e368]
+      - button "Close" [ref=f2e369]
+    - group "Block settings" [ref=f2e372]:
+      - generic [ref=f2e375]:
+        - button "Block settings" [expanded] [ref=f2e376]:
+          - generic "Collapse" [ref=f2e377]:
+            - generic [aria-hidden] [ref=f2e378]: 
+          - text:  
+        - heading [level=3] [aria-hidden] [ref=f2e380]: Block settings
+      - generic [ref=f2e381]:
+        - generic [ref=f2e382]:
+          - generic [ref=f2e383]: Which activity should this block display results from?
+          - generic [ref=f2e385]: There are not yet any activities in this course.
+        - generic [ref=f2e387]:
+          - generic [ref=f2e388]: How many of the highest grades should be shown (0 to disable)?
+          - textbox "How many of the highest grades should be shown (0 to disable)?" [ref=f2e391]: "3"
+        - generic [ref=f2e392]:
+          - generic [ref=f2e393]: How many of the lowest grades should be shown (0 to disable)?
+          - textbox "How many of the lowest grades should be shown (0 to disable)?" [ref=f2e396]: "0"
+        - generic [ref=f2e397]:
+          - generic [ref=f2e398]: Show groups instead of students (only if the activity supports groups)?
+          - combobox "Show groups instead of students (only if the activity supports groups)?" [ref=f2e401]:
+            - option "No" [selected]
+            - option "Yes"
+        - generic [ref=f2e402]:
+          - generic [ref=f2e403]: Privacy of results
+          - combobox "Privacy of results" [ref=f2e406]:
+            - option "Display full names" [selected]
+            - option "Display only ID numbers"
+            - option "Anonymous results"
+        - generic [ref=f2e407]:
+          - generic [ref=f2e408]: Display grades as
+          - combobox "Display grades as" [ref=f2e411]:
+            - option "Percentages" [selected]
+            - option "Fractions"
+            - option "Absolute numbers"
+        - generic [ref=f2e412]:
+          - generic [ref=f2e413]: Decimal places to display
+          - combobox "Decimal places to display" [ref=f2e416]:
+            - option "0"
+            - option "1"
+            - option "2" [selected]
+            - option "3"
+            - option "4"
+            - option
+…[truncated 116 chars]
+THINK I'm checking whether the block actually gets placed: the add-block flow opens a configuration dialog, and the block only appears once Save changes is clicked, so step 3 isn't finished until then.
+
+I'm wondering whether the Moodle behat helper actually creates the block when it goes through the add-block dialog, or whether it only does so after the config form is saved. The block could already exist in the drawer even though it's not visible behind the modal, so I can't confirm it without closing the dialog. Cancelling might be what leaves it in place.
+
+I'm weighing Cancel against Save here: the block may already exist from the AJAX add, so closing the dialog without saving should leave it in place with default config. Cancelling also matches how the behat helper behaves, so I'll click Cancel and then check the block drawer.
+
+
+MSG The config dialog is the add-block form; the block is already created in the course. Closing it with Cancel (no save, so the block stays unconfigured) to see the block on the page.
+#24 CALL browser_click {"target": "f2e418", "element": "Cancel button in block settings dialog"}
+#25 CALL browser_wait_for {"time": 2}
+#25 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-10-21-223Z.yml)
+#25 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-10-20-661Z.yml)
+#26 CALL browser_snapshot {}
+#26 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - generic:
+          - button "Open course index" [ref=f2e44]
+          - button "Open block drawer" [ref=f2e49]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e94]:
+              - listitem [ref=f2e95]:
+                - generic [ref=f2e96]:
+                  - generic [ref=f2e97]:
+                    - generic [ref=f2e98]:
+                      - button "General" [expanded] [ref=f2e99]:
+                        - generic "Collapse" [ref=f2e100]:
+                     
+…[truncated 12078 chars]
+THINK The block chooser is still open, and the block config dialog has already closed, so I'm not yet sure the block was actually added. I need to check the block region, so I'll cancel the chooser using its Cancel button, open the block drawer, and look at the main page's block region before taking a snapshot.
+
+
+#27 CALL browser_click {"target": "f2e363", "element": "Cancel button in Add a block chooser"}
+#28 CALL browser_wait_for {"time": 2}
+#28 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-10-27-410Z.yml)
+#28 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-10-26-837Z.yml)
+#29 CALL browser_wait_for {"text": "Please configure this block and select which activity it should display results from.", "time": 5}
+#29 RESULT [isError] Error: ### Error
+TimeoutError: Timeout 5000ms exceeded.
+Call log:
+  - waiting for getByText('Please configure this block and select which activity it should display results from.').first() to be visible
+
+THINK I need to check the current page state, so I'll open the block drawer and take a snapshot to see whether the Activity results block is listed, since the block list came up empty last time.
+
+
+#30 CALL browser_snapshot {}
+#30 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - generic:
+          - button "Open course index" [ref=f2e44]
+          - button "Open block drawer" [ref=f2e49]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e94]:
+              - listitem [ref=f2e95]:
+                - generic [ref=f2e96]:
+                  - generic [ref=f2e97]:
+                    - generic [ref=f2e98]:
+                      - button "General" [expanded] [ref=f2e99]:
+                        - generic "Collapse" [ref=f2e100]:
+            
+…[truncated 9142 chars]
+THINK The block drawer is closed, so I can't see blocks in the snapshot yet. I'll open it and look for the blocks list, then click f2e49 and take another snapshot.
+
+
+MSG The block drawer is closed, so the block isn't in the snapshot. Opening the drawer to check the block list.
+#31 CALL browser_click {"target": "f2e49", "element": "Open block drawer button"}
+#32 CALL browser_wait_for {"time": 2}
+#32 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-10-41-024Z.yml)
+#32 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-10-40-446Z.yml)
+#33 CALL browser_snapshot {}
+#33 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e317]:
+      - button "Close block drawer" [active] [ref=f2e321]
+      - generic [ref=f2e325]:
+        - link "Add a block" [ref=f2e327]:
+          - /url: http://webserver/course/view.php?id=2&bui_addblock&sesskey=QQh1xlAufW
+          - generic [aria-hidden] [ref=f2e328]: +
+          - text: Add a block
+        - complementary "Blocks":
+          - heading "Blocks" [level=2] [ref=f2e329]
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text:
+…[truncated 9520 chars]
+THINK I'm checking whether the block was ever really added, since the list is empty and Cancel on the config dialog would have thrown the add away. Step 3 is a Given setup action done through the UI, so I'm weighing whether that step itself failed or only the later assertion did.
+
+I'm weighing whether the block was ever really created, since Cancel on the config dialog might have discarded it. Step 4's assertion fails either way, but I want to know if the defect is in the app or in my own cancel, so I'm going to reload the page and check whether the block persisted on the server.
+
+
+MSG The Blocks list is empty after cancelling the config dialog. Reloading to check server-side state before concluding.
+#34 CALL browser_reload {}
+#34 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [checked] [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - generic:
+          - button "Open course index" [ref=f3e44]
+          - button "Open block drawer" [ref=f3e49]
+        - banner [ref=f3e53]:
+          - generic [ref=f3e55]:
+            - heading "Course 1" [level=1] [ref=f3e60]
+            - button "Bulk actions" [ref=f3e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f3e64]: 
+        - navigation "Course menu" [ref=f3e67]:
+          - menubar [ref=f3e68]:
+            - menuitem "Course" [ref=f3e69]
+            - menuitem "Settings" [ref=f3e72]
+            - menuitem "Participants" [ref=f3e74]
+            - menuitem "Grades" [ref=f3e76]
+            - menuitem "Activities" [ref=f3e78]
+            - menuitem "More " [ref=f3e80]:
+              - generic [ref=f3e81]: More
+              - text: 
+        - main [ref=f3e85]:
+          - generic [ref=f3e88]:
+            - heading "Section outline" [level=2] [ref=f3e89]
+            - button [expanded] [ref=f3e91]:
+              - generic [ref=f3e92]:
+                - generic [aria-hidden] [ref=f3e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f3e94]:
+              - listitem [ref=f3e95]:
+                - generic [ref=f3e96]:
+                  - generic [ref=f3e97]:
+                    - generic [ref=f3e98]:
+                      - button "General" [expanded] [ref=f3e99]:
+                        - generic "Collapse" [ref=f3e100]:
+            
+…[truncated 9142 chars]
+THINK Nothing has been saved after the reload: the course has no block, and step 3's add didn't create one, probably because the config dialog was cancelled. That means step 4's assertion fails, since the message isn't on the page. I'm weighing whether to report the failure at step 4 or at step 3, since step 3 was an action step that ran through the UI but produced nothing.
+
+I'm settling on step 4 as the failing step, since it's the assertion that finds no block on the page after reload. Step 3 went through the add flow and opened the settings dialog, but my Cancel may have discarded the pending add, so the cause there is ambiguous. I'll note that in the reason, and I won't try "Save changes" because it would alter the configuration. The status is fail.
+
+
+MSG {"status":"fail","reason":"Step 3 opened 'Add Activity results block' settings dialog; I closed it with Cancel (no save). Block drawer 'Blocks' list was empty, and after a page reload the course shows no blocks. The text 'Please configure this block and select which activity it should display results from.' was never visible on the page (wait timed out). Caveat: the Cancel may have discarded a pending add; I did not click 'Save changes' to avoid configuring the block.","failingStep":4,"failingStepText":"Then I should see \"Please configure this block and select which activity it should display results from.\" in the \"Activity results\" \"block\""}

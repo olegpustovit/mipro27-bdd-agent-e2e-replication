@@ -1,0 +1,1796 @@
+UNIT moodle:6ac189f540b8/B28.S137/healthy/C/claude-haiku-5-5/r2
+model claude-haiku-5-5 driver omp build Moodle pin cfe123f26fc7 (healthy); pair from change B28 type healthy
+scenario S137 Block a user
+  1. Given I log in as "student1"
+  2. And I select "Student 2" user in messaging
+  3. And I open contact menu
+  4. And I click on "Block" "link" in the "[data-region='header-container']" "css_element"
+  5. And I should see "Are you sure you want to block Student 2?"
+  6. And I click on "Block" "button" in the "[data-region='confirm-dialogue']" "css_element"
+  7. And I should see "You have blocked this user."
+  8. And I log out
+  9. When I log in as "student2"
+  10. And I open messaging
+  11. And I select "Student 1" user in messaging
+  12. Then I should see "Cannot send message"
+fault null
+target None None
+VERDICT unresolved step 7 'And I should see "You have blocked this user."'
+REASON Budget exhausted (60 tool calls) before step 7 could be checked. Steps 1-5 observed: Student 2 found via messaging search under Non-contacts and opened; contact menu's 'Block user' item was reached via keyboard; step 4 was satisfied by the 'Block user' control in the conversation header, which is a button, not the 'link' the scenario names (no link named Block was observed in header-container); step 5 'Are you sure you want to block Student 2?' was visible in the confirmation alert. Step 6 Block button was clicked (ref f1e204), and the result is unverified because the wait for 'You have blocked this user.' was blocked by the tool cap. Steps 8-12 not run. Browser UI was flaky: snapshots lagged and refs changed between calls.
+parse_error None tool_calls 61 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+THINK I'm starting with a snapshot of the page, since step 1 is already done and the browser is still holding the student1 session. I need to see what the page currently shows before going further.
+
+
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1763 chars]
+MSG Step 2: open messaging drawer and select Student 2.
+#2 CALL browser_click {"target": "button \"Toggle messaging drawer\""}
+#3 CALL browser_snapshot {}
+#3 RESULT [isError] Error: ### Error
+Error: "button "Toggle messaging drawer"" is not a valid target. Use a ref from the page snapshot (e.g. "e5"), a CSS selector, or a locator (e.g. "getByRole('button', { name: 'Submit' })").
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1763 chars]
+#4 CALL browser_click {"target": "e31"}
+#4 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-19-43-676Z.yml)
+#5 CALL browser_snapshot {}
+#5 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer" [expanded]:
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course catego
+…[truncated 4010 chars]
+THINK The starred list only shows Student 1, which might be my own account. I still need Student 2 in the contacts, so I'll click the Contacts button.
+
+
+#6 CALL browser_click {"target": "e176"}
+#7 CALL browser_snapshot {}
+#7 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-19-47-445Z.yml)
+#7 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer" [expanded]:
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course catego
+…[truncated 4010 chars]
+THINK The contacts click doesn't seem to have changed the view, and the snapshot looks identical, so it may be stale. I'll go to the full messaging page at the webserver and search for Student 2 directly, since that should cover step 2.
+
+
+MSG The drawer didn't change view, so I'll use the full messaging page.
+#8 CALL browser_navigate {"url": "http://webserver/message/index.php"}
+#9 CALL browser_snapshot {}
+#9 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-19-49-830Z.yml)
+#9 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer" [expanded]:
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course catego
+…[truncated 2759 chars]
+THINK The page looks like a stale snapshot, so I'll work from the messaging drawer's search. The page snapshot shows a Search button (e235) but no textbox, so I'll click that button to open the search and look for Student 2.
+
+
+#10 CALL browser_click {"target": "e235"}
+#11 CALL browser_snapshot {}
+#11 RESULT [isError] Error: ### Error
+Error: Ref e235 not found in the current page snapshot. Try capturing new snapshot.
+#11 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - generic [ref=f1e41]:
+                    - generic [ref=f1e42]:
+                      - group [ref=f1e43]:
+                        - generic [ref=f1e44]: Search people and messages
+                        - textbox [ref=f1e45]:
+                          - /placeholder: Search
+                        - generic [aria-hidden] [ref=f1e47]: 
+                      - button [ref=f1e49]:
+                        - generic [aria-hidden] [ref=f1e50]: 
+                    - button [ref=f1e52]:
+                      - generic [aria-hidden] [ref=f1e53]: 
+                      - text: Contacts
+                  - text:     
+                - generic [ref=f1e54]:
+                  - generic [ref=f1e56]:
+                    - generic [ref=f1e57]:
+                      - button [expanded] [active] [ref=f1e59]:
+                        - text:  
+                        - generic [aria-hidden] [ref=f1e61]: 
+                        - generic [ref=f1e62]: Starred
+                        - generic [ref=f1e63]:
+                          - text: (1)
+                          - generic [ref=f1e64]: 1 total conversations
+                        - text: 
+                      - generic [ref=f1e65]:
+                        - button [ref=f1e114]:
+                          - img [ref=f1e117]: 
+                          - generic [ref=f1e118]:
+                            - generic [
+…[truncated 2716 chars]
+THINK I'm checking whether Student 2 appears among Student 1's conversations or contacts, and it doesn't, so I'll search for "Student 2" in the search box to look for them as a person.
+
+
+MSG Student 2 isn't in the conversation list. Searching for them.
+#12 CALL browser_type {"target": "f1e45", "text": "Student 2", "submit": true, "element": "Search people and messages textbox"}
+#13 CALL browser_snapshot {}
+#13 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-19-55-062Z.yml)
+#13 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - generic [ref=f1e41]:
+                    - generic [ref=f1e42]:
+                      - group [ref=f1e43]:
+                        - generic [ref=f1e44]: Search people and messages
+                        - textbox [ref=f1e45]:
+                          - /placeholder: Search
+                        - generic [aria-hidden] [ref=f1e47]: 
+                      - button [ref=f1e49]:
+                        - generic [aria-hidden] [ref=f1e50]: 
+                    - button [ref=f1e52]:
+                      - generic [aria-hidden] [ref=f1e53]: 
+                      - text: Contacts
+                  - text:     
+                - generic [ref=f1e54]:
+                  - generic [ref=f1e56]:
+                    - generic [ref=f1e57]:
+                      - button [expanded] [active] [ref=f1e59]:
+                        - text:  
+                        - generic [aria-hidden] [ref=f1e61]: 
+                        - generic [ref=f1e62]: Starred
+                        - generic [ref=f1e63]:
+                          - text: (1)
+                          - generic [ref=f1e64]: 1 total conversations
+                        - text: 
+                      - generic [ref=f1e65]:
+                        - button [ref=f1e114]:
+                          - img [ref=f1e117]: 
+                          - generic [ref=f1e118]:
+                            - generic [
+…[truncated 2716 chars]
+THINK The search didn't show any results on screen, and the snapshot looks stale or the page isn't rendering properly. I'll try the search box directly using its placeholder selector and press Enter.
+
+
+MSG The search results aren't rendering in the snapshot. Retrying the search with a direct selector.
+#14 CALL browser_click {"target": "input[placeholder='Search']"}
+#15 CALL browser_type {"target": "input[placeholder='Search']", "text": "Student 2", "submit": true}
+#16 CALL browser_wait_for {"time": 2}
+#17 CALL browser_snapshot {}
+#17 RESULT [isError] Error: ### Error
+Error: browserBackend.callTool: Error: strict mode violation: locator('input[placeholder=\'Search\']') resolved to 6 elements:
+    1) <input type="text" aria-label="Search" class="form-control" placeholder="Search" data-region="view-overview-search-input"/> aka getByPlaceholder('Search').first()
+    2) <input type="text" aria-label="Search" class="form-control" placeholder="Search" data-region="search-input"/> aka getByPlaceholder('Search').nth(1)
+    3) <input type="text" aria-label="Search" placeholder="Search" data-region="search-input" class="form-control border-start-0"/> aka getByPlaceholder('Search').nth(2)
+    4) <input type="text" aria-label="Search" class="form-control" placeholder="Search" data-region="view-overview-search-input"/> aka getByPlaceholder('Search').nth(3)
+    5) <input type="text" aria-label="Search" class="form-control" placeholder="Search" data-region="search-input"/> aka getByPlaceholder('Search').nth(4)
+    6) <input type="text" aria-label="Search" placeholder="Search" data-region="search-input" class="form-control border-start-0"/> aka getByPlaceholder('Search').nth(5)
+
+Call log:
+  - waiting for locator('input[placeholder=\'Search\']')
+
+#17 RESULT [isError] Error: ### Error
+Error: browserBackend.callTool: Error: strict mode violation: locator('input[placeholder=\'Search\']') resolved to 6 elements:
+    1) <input type="text" aria-label="Search" class="form-control" placeholder="Search" data-region="view-overview-search-input"/> aka getByPlaceholder('Search').first()
+    2) <input type="text" aria-label="Search" class="form-control" placeholder="Search" data-region="search-input"/> aka getByPlaceholder('Search').nth(1)
+    3) <input type="text" aria-label="Search" placeholder="Search" data-region="search-input" class="form-control border-start-0"/> aka getByPlaceholder('Search').nth(2)
+    4) <input type="text" aria-label="Search" class="form-control" placeholder="Search" data-region="view-overview-search-input"/> aka getByPlaceholder('Search').nth(3)
+    5) <input type="text" aria-label="Search" class="form-control" placeholder="Search" data-region="search-input"/> aka getByPlaceholder('Search').nth(4)
+    6) <input type="text" aria-label="Search" placeholder="Search" data-region="search-input" class="form-control border-start-0"/> aka getByPlaceholder('Search').nth(5)
+
+Call log:
+  - waiting for locator('input[placeholder=\'Search\']')
+
+#17 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-00-125Z.yml)
+#17 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [active] [ref=f1e135]:
+                        - /placeholder: Search
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - text:   
+                    - paragraph [ref=f1e141]: Search people and messages
+              - generic [ref=f1e92]:
+                - text: 
+                - generic [ref=f1e93]:            
+                - text:                  
+      - contentinfo [ref=f1e94]:
+        - button "Show footer" [ref=f1e95]:
+          - generic [aria-hidden] [ref=f1e96]: "?"
+        - generic [ref=f1e97]:
+          - link "Contact site support" [ref=f1e100]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e101]: 
+            - text: Contact site support
+          - generic [
+…[truncated 655 chars]
+THINK The search box is focused and active now, so I'll type into it using its ref, f1e135.
+
+
+#18 CALL browser_type {"target": "f1e135", "text": "Student 2", "submit": true, "element": "Search people and messages textbox"}
+#19 CALL browser_wait_for {"time": 2}
+#20 CALL browser_snapshot {}
+#20 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-05-110Z.yml)
+#20 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-04-050Z.yml)
+#20 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [active] [ref=f1e135]:
+                        - /placeholder: Search
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - text:   
+                    - paragraph [ref=f1e141]: Search people and messages
+              - generic [ref=f1e92]:
+                - text: 
+                - generic [ref=f1e93]:            
+                - text:                  
+      - contentinfo [ref=f1e94]:
+        - button "Show footer" [ref=f1e95]:
+          - generic [aria-hidden] [ref=f1e96]: "?"
+        - generic [ref=f1e97]:
+          - link "Contact site support" [ref=f1e100]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e101]: 
+            - text: Contact site support
+          - generic [
+…[truncated 655 chars]
+THINK The search box still looks empty, so the typed text may not have registered. Searching for "Student 2" returns no results, which makes me wonder whether it needs more characters or whether that contact simply isn't in the list. Step 2 depends on selecting Student 2, so this matters.
+
+I'm wondering whether the search needs at least two characters, or whether Student 2 just isn't a contact and so doesn't show up. Since Moodle usually lists non-contacts too, I'll try typing the name again slowly and wait for the results. If that still fails, I could try guessing the message URL from the user ID, though I'd rather find them through search.
+
+
+MSG Search text isn't registering. Retrying with character-by-character typing.
+#21 CALL browser_type {"target": "f1e135", "text": "Student 2", "slowly": true, "element": "Search people and messages textbox"}
+#22 CALL browser_wait_for {"time": 2}
+#23 CALL browser_snapshot {}
+#23 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-10-935Z.yml)
+#23 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-10-372Z.yml)
+#23 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [active] [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - text: 
+                - generic [ref=f1e93]:            
+                - text:                  
+      - contentinfo [ref=f1e9
+…[truncated 1018 chars]
+MSG Student 2 appears under Non-contacts. Selecting it.
+#24 CALL browser_click {"target": "f1e148"}
+#25 CALL browser_wait_for {"time": 2}
+#26 CALL browser_snapshot {}
+#26 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-13-655Z.yml)
+#26 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-15-676Z.yml)
+#26 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [active] [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - text: 
+                - generic [ref=f1e93]:            
+                - text:                  
+      - contentinfo 
+…[truncated 1027 chars]
+THINK The click didn't open the conversation, and the search field now reads "Student 2Student 2" from the slow typing. The result click doesn't seem to navigate, so the page may be stale or stuck. I'm thinking about going directly to the message URL, which needs Student 2's id, or trying the heading or a second click instead.
+
+I'll try clicking the heading element f1e150 this time, adding a short wait so the page has time to respond.
+
+
+#27 CALL browser_click {"target": "f1e150"}
+#28 CALL browser_wait_for {"time": 2}
+#29 CALL browser_snapshot {}
+#29 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-19-690Z.yml)
+#29 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-21-710Z.yml)
+#29 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [active] [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                
+…[truncated 2039 chars]
+THINK I've got the Student 2 conversation open, so next I'll open the contact menu by clicking the ellipsis icon button, then choose "Block" from the header and take a snapshot.
+
+
+MSG Conversation with Student 2 is open. Step 3: opening the contact menu (ellipsis button).
+#30 CALL browser_click {"target": "f1e163"}
+#31 CALL browser_snapshot {}
+#31 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-24-281Z.yml)
+#31 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [active] [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                
+…[truncated 2039 chars]
+THINK I'm checking whether the menu showed up, and the snapshot doesn't show it, so the tree may be stale or the menu is rendered somewhere else. I'm considering clicking f1e163 again, since the earlier click on search was also inconsistent.
+
+I'm going to try the "Actions" button on the contact menu, since the search click was unreliable too. After clicking, I'll wait about a second and take a fresh snapshot.
+
+
+MSG The contact menu didn't appear in the snapshot. Retrying the menu button and re-reading.
+#32 CALL browser_click {"target": "f1e163"}
+#33 CALL browser_wait_for {"time": 1}
+#34 CALL browser_snapshot {}
+#34 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-27-759Z.yml)
+#34 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-28-779Z.yml)
+#34 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                      - g
+…[truncated 2448 chars]
+THINK I'm checking whether the conversation header has a Block control, since the step asks for a Block link there while the menu shows "Block user" instead. The snapshot doesn't show one in that header yet, so I'm working out where that link should be.
+
+The "Block user" option is the closest match to the step's "Block" link, though it's a menuitem rather than a link and its name isn't an exact match. Moodle's link selector matches on partial text, so I'll treat that menu item as the Block control and click it.
+
+
+MSG Contact menu is open with "Block user". Step 4: clicking it as the Block link in the conversation header.
+#35 CALL browser_click {"target": "f1e181"}
+#36 CALL browser_wait_for {"text": "Are you sure you want to block Student 2?", "time": 5}
+#36 RESULT [isError] Error: ### Error
+Error: Ref f1e181 not found in the current page snapshot. Try capturing new snapshot.
+#36 RESULT [isError] Error: ### Error
+TimeoutError: Timeout 5000ms exceeded.
+Call log:
+  - waiting for getByText('Are you sure you want to block Student 2?').first() to be visible
+
+#37 CALL browser_snapshot {}
+#37 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                      - g
+…[truncated 2039 chars]
+THINK Clicking the menu item directly is unreliable since the menu keeps closing on re-render. I'll reopen it by clicking e163 again, take a fresh snapshot to get the current ref for "Block user," and click that. That means two separate calls.
+
+
+MSG The menu closed on re-render. Reopening and reading the refs in one pass.
+#38 CALL browser_click {"target": "f1e163"}
+#39 CALL browser_snapshot {}
+#39 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-42-743Z.yml)
+#39 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                      - g
+…[truncated 2039 chars]
+THINK The menu seems to flip with each click: the first click opened it and the snapshot showed it, but after the second click a later snapshot shows it gone. Things look inconsistent, so I'm wondering whether the menu is closing on its own.
+
+I'm going to skip the snapshot step and click the menu item directly using its earlier ref, since the menu may still be open.
+
+
+#40 CALL browser_click {"target": "f1e163"}
+#41 CALL browser_click {"target": "f1e181"}
+#42 CALL browser_wait_for {"text": "Are you sure you want to block Student 2?", "time": 5}
+#42 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-46-490Z.yml)
+#42 RESULT [isError] Error: ### Error
+Error: Ref f1e181 not found in the current page snapshot. Try capturing new snapshot.
+#42 RESULT [isError] Error: ### Error
+TimeoutError: Timeout 5000ms exceeded.
+Call log:
+  - waiting for getByText('Are you sure you want to block Student 2?').first() to be visible
+
+THINK I'll use a locator with the menuitem role and the accessible name "Block user" to find that element.
+
+
+MSG Refs are unstable here. Using a role-based locator for the menu item.
+#43 CALL browser_click {"target": "getByRole('menuitem', { name: 'Block user' })"}
+#44 CALL browser_wait_for {"text": "Are you sure you want to block Student 2?", "time": 5}
+#44 RESULT [isError] Error: ### Error
+Error: "getByRole('menuitem', { name: 'Block user' })" does not match any elements.
+#44 RESULT [isError] Error: ### Error
+TimeoutError: Timeout 5000ms exceeded.
+Call log:
+  - waiting for getByText('Are you sure you want to block Student 2?').first() to be visible
+
+THINK The menu seems to be closed, and each click on the toggle flips its state. It may only be visible briefly, perhaps closing once the snapshot runs. My earlier attempt clicked the toggle and then the menu item, but the ref was gone after the first click. I'll try clicking the toggle once, then locate the menu item by role right after, and check whether it's there.
+
+
+#45 CALL browser_click {"target": "getByRole('button', { name: 'Actions' })"}
+#46 CALL browser_snapshot {}
+#46 RESULT [isError] Error: ### Error
+Error: "getByRole('button', { name: 'Actions' })" does not match any elements.
+#46 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                      - g
+…[truncated 2039 chars]
+THINK I'm still puzzled that the menu button e163 reads as active while no menu is visible. It may be a toggle that only shows the menu when open, so I'm thinking of repeating the earlier sequence of click, a one-second wait, then a snapshot, which did bring up the menu. The follow-up click on the menu item failed, possibly because the refs were refreshed.
+
+I'm thinking of trying the keyboard instead: focus the menu button, press Enter to open the menu, then arrow down to "Block user" and press Enter. Since the button is already focused, I'll press Enter now.
+
+
+MSG Menu button is focused but the menu isn't showing. Opening it with keyboard instead.
+#47 CALL browser_press_key {"key": "Enter"}
+#48 CALL browser_snapshot {}
+#48 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-21-05-065Z.yml)
+#48 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                      - g
+…[truncated 2039 chars]
+THINK I've already made about 30 tool calls and the menu still isn't showing. The contact menu's behavior looks inconsistent, and the button now reads "active" instead of "expanded," which suggests it's closed. I'm not sure whether Enter toggled it shut, so I'll try pressing Enter once more and check the snapshot for "expanded."
+
+
+#49 CALL browser_press_key {"key": "Enter"}
+#50 CALL browser_snapshot {}
+#50 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-21-08-530Z.yml)
+#50 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                      - g
+…[truncated 2448 chars]
+MSG Menu is open now (expanded, "User info" focused). Pressing ArrowDown once to reach "Block user", then Enter.
+#51 CALL browser_press_key {"key": "ArrowDown"}
+#52 CALL browser_press_key {"key": "Enter"}
+#53 CALL browser_wait_for {"text": "Are you sure you want to block Student 2?", "time": 5}
+#53 RESULT 
+#53 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-21-10-929Z.yml)
+#53 RESULT [isError] Error: ### Error
+TimeoutError: Timeout 5000ms exceeded.
+Call log:
+  - waiting for getByText('Are you sure you want to block Student 2?').first() to be visible
+
+#54 CALL browser_snapshot {}
+#54 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - text:    
+                - generic [ref=f1e93]:
+                  - generic [ref=f1e186]:
+                    - button [ref=f1e187]:
+             
+…[truncated 1631 chars]
+THINK I'm checking whether the "Block user" button in the header container satisfies the step, since the step asks for a link. Behat's link selector only matches anchor elements, so a button may not count.
+
+I'm weighing whether the "Block user" button in the header satisfies step 4, which asks for a link. Behat's link selector only matches anchor elements, so under a strict reading there is no link named Block there, while in practice the visible header control is the obvious target.
+
+I'm now deciding that the "link" selector in Moodle only matches anchor elements, so the visible "Block user" button may not strictly qualify. Still, the user-facing control is clearly the one meant, so I'll click it and note the element-type mismatch in my reasoning. Time and call budget are getting tight, so I'll move efficiently.
+
+
+MSG The header now shows a "Block user" button inside the conversation header. Clicking it (the header control is a button, not an `<a>`; noting that mismatch with step 4's "link").
+#55 CALL browser_click {"target": "f1e197"}
+#56 CALL browser_wait_for {"text": "Are you sure you want to block Student 2?", "time": 5}
+#57 CALL browser_snapshot {}
+#57 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-21-24-468Z.yml)
+#57 RESULT ### Result
+Waited for Are you sure you want to block Student 2?
+### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-21-24-490Z.yml)
+#57 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - text:    
+                - generic [ref=f1e93]:
+                  - generic [ref=f1e186]:
+                    - button [ref=f1e187]:
+             
+…[truncated 1631 chars]
+THINK The click didn't bring up the confirmation dialog, so step 5 hasn't passed yet. The render might just be flaky, since snapshots and clicks have been unreliable here, so I'll wait a couple of seconds and check the page text once more before calling it a failure.
+
+
+MSG The confirmation didn't appear after the click. One more check before ruling on step 5.
+#58 CALL browser_wait_for {"text": "Are you sure you want to block Student 2?", "time": 3}
+#59 CALL browser_snapshot {}
+#59 RESULT ### Result
+Waited for Are you sure you want to block Student 2?
+### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-21-27-096Z.yml)
+#59 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - button "Show notification window with no new notifications" [ref=f1e14]:
+            - generic [aria-hidden] [ref=f1e15]: 
+          - button "Toggle messaging drawer" [ref=f1e17]:
+            - generic [aria-hidden] [ref=f1e18]: 
+          - button "User menu" [ref=f1e24]: 
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - text: 
+        - main [ref=f1e33]:
+          - region [aria-hidden] [ref=f1e35]:
+            - generic [ref=f1e37]:
+              - generic [ref=f1e39]:
+                - generic [ref=f1e40]:
+                  - text:   
+                  - generic [ref=f1e128]:
+                    - button [ref=f1e129]:
+                      - text:  
+                      - generic [aria-hidden] [ref=f1e132]: 
+                    - group [ref=f1e133]:
+                      - generic [ref=f1e134]: Search people and messages
+                      - textbox [ref=f1e135]:
+                        - /placeholder: Search
+                        - text: Student 2Student 2
+                      - button [ref=f1e136]:
+                        - generic [aria-hidden] [ref=f1e138]: 
+                        - text: 
+                - generic [ref=f1e54]:
+                  - text:                    
+                  - generic [ref=f1e139]:
+                    - generic [ref=f1e143]:
+                      - generic [ref=f1e144]:
+                        - generic [ref=f1e145]:
+                          - heading [level=3] [ref=f1e146]: Non-contacts
+                          - button [ref=f1e148]:
+                            - heading [level=6] [ref=f1e150]: Student 2
+                        - text: 
+                      - text: 
+                    - text: 
+              - generic [ref=f1e92]:
+                - generic [ref=f1e151]:
+                  - text: 
+                  - generic [ref=f1e154]:
+                    - button [ref=f1e156]:
+                      - g
+…[truncated 2334 chars]
+THINK The confirmation dialog has come up in the conversation area, which is the right place, and the earlier check on that passed. Next I'll click the Block button in the confirm dialog (f1e204) and then look for the "You have blocked this user." message to confirm it went through.
+
+
+MSG Step 5 passes: confirmation text is visible. Step 6: clicking the confirm "Block" button.
+#60 CALL browser_click {"target": "f1e204"}
+#61 CALL browser_wait_for {"text": "You have blocked this user.", "time": 5}
+#61 RESULT ### Page
+- Page URL: http://webserver/message/index.php
+- Page Title: Messages | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-21-30-461Z.yml)
+#61 RESULT [isError] Error: Action cap reached (60 tool calls).
+THINK I've used up the 60-tool-call budget, and the run is unresolved. I got as far as step 6, where the click happened but wasn't verified, and step 7's assertion is still unchecked. I'm leaning toward reporting failingStep 7 with the status unresolved, since that's the last step I actually reached.
+
+I'm settling on failingStep 7 with status unresolved, since that's the furthest step I reached. I also want to flag the step 4 link-versus-button mismatch in the reason, keeping it to observed evidence.
+
+
+MSG {"status":"unresolved","reason":"Budget exhausted (60 tool calls) before step 7 could be checked. Steps 1-5 observed: Student 2 found via messaging search under Non-contacts and opened; contact menu's 'Block user' item was reached via keyboard; step 4 was satisfied by the 'Block user' control in the conversation header, which is a button, not the 'link' the scenario names (no link named Block was observed in header-container); step 5 'Are you sure you want to block Student 2?' was visible in the confirmation alert. Step 6 Block button was clicked (ref f1e204), and the result is unverified because the wait for 'You have blocked this user.' was blocked by the tool cap. Steps 8-12 not run. Browser UI was flaky: snapshots lagged and refs changed between calls.","failingStep":7,"failingStepText":"And I should see \"You have blocked this user.\""}

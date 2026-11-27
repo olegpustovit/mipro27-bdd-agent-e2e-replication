@@ -1,0 +1,453 @@
+UNIT pay:X4-haiku:fault-v2-1/social-like/runtime
+model claude-haiku-5-5 driver omp/18.20.2 build v2+fault type faulty
+scenario social-like 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I open transaction "1xfcAhNDZK4"
+  4. Then the transaction detail heading is visible
+  5. And the displayed like count is a number
+  6. When I record the displayed like count
+  7. And I like the transaction
+  8. Then the displayed like count is one greater and Like is disabled
+  9. When I reload the current page
+  10. Then the displayed like count is one greater and Like is disabled
+fault {"file": "src/components/TransactionDetail.tsx", "before": "onClick={() => transactionLike(transaction.id)}", "after": "onClick={() => undefined}"}
+target [8, 10] Then the displayed like count is one greater and Like is disabled
+VERDICT fail step [8, 10] 'Then the displayed like count is one greater and Like is disabled'
+REASON Signed in as Heath93 and the authenticated home showed Heath93. Navigating to /transaction/1xfcAhNDZK4 first redirected to /, and a retry loaded the detail page with heading "Transaction Detail" visible. The displayed like count was "0", a number, and was recorded as the baseline. I clicked the unnamed like button beside the count (one click, retried once after a stale ref). After a 3-second settle and a fresh snapshot the count still reads "0", not 1, and the button shows as focused/active with no disabled state exposed. Per the scenario I did not reload, so the reload-persistence Then was not reached.
+parse_error None tool_calls 19 timed_out False run_result recorded run_error None
+SOURCE ledger
+============================================================
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: about:blank
+### Snapshot
+```yaml
+
+```
+#2 CALL browser_navigate {"url": "http://localhost:3000"}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T16-56-41-267Z.yml)
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#4 CALL browser_click {"target": "e26", "element": "Continue button"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T16-56-44-318Z.yml)
+#5 CALL browser_wait_for {"text": "Heath93", "time": 10}
+#5 RESULT [isError] ### Error
+TimeoutError: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for getByText('Heath93').first() to be visible[22m
+
+#6 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#6 RESULT 
+#7 CALL browser_snapshot {}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#8 CALL browser_click {"target": "e26", "element": "Continue button"}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T16-56-57-640Z.yml)
+#9 CALL browser_wait_for {"text": "Heath93", "time": 10}
+#9 RESULT ### Result
+Waited for Heath93
+### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T16-56-57-662Z.yml)
+#10 CALL browser_snapshot {}
+#10 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Lia Rosenbaum paid Darrel Ortiz
+                  - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - 
+…[truncated 2488 chars]
+#11 CALL browser_navigate {"url": "http://localhost:3000/transaction/1xfcAhNDZK4"}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T16-56-59-367Z.yml)
+#12 CALL browser_snapshot {}
+#12 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e4]:
+  - banner [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - button "open drawer" [ref=f1e7]
+      - heading [level=1] [ref=f1e10]:
+        - link [ref=f1e11]:
+          - /url: /
+      - link "New" [ref=f1e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f1e58]:
+        - /url: /notifications
+  - generic [ref=f1e24]:
+    - generic [ref=f1e25]:
+      - generic [ref=f1e26]: T
+      - generic [ref=f1e29]:
+        - heading "Ted P" [level=6] [ref=f1e30]
+        - heading "@Heath93" [level=6] [ref=f1e31]
+    - generic [ref=f1e32]:
+      - generic [ref=f1e33]:
+        - heading "$1,509.53" [level=6] [ref=f1e34]
+        - heading "Account Balance" [level=6] [ref=f1e35]
+      - generic:
+        - separator
+      - button "Account menu" [ref=f1e37]
+      - generic:
+        - separator
+  - main [ref=f1e38]:
+    - generic [ref=f1e60]:
+      - heading "Transaction Detail" [level=2] [ref=f1e61]
+      - generic [ref=f1e62]:
+        - generic [ref=f1e72]:
+          - paragraph [ref=f1e74]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f1e76]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f1e77]: +$204.68
+      - generic [ref=f1e80]:
+        - generic [ref=f1e81]:
+          - generic [ref=f1e82]: "0"
+          - button [ref=f1e84]
+        - generic [ref=f1e92]:
+          - textbox "Write a comment..." [ref=f1e93]
+          - group [aria-hidden]
+    - paragraph [ref=f1e45]:
+      - text: Built by
+      - link [ref=f1e46]:
+        - /url: https://cypress.io
+```
+#13 CALL browser_navigate {"url": "http://localhost:3000/transaction/1xfcAhNDZK4"}
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T16-57-01-652Z.yml)
+#14 CALL browser_snapshot {}
+#14 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f2e4]:
+  - banner [ref=f2e5]:
+    - generic [ref=f2e6]:
+      - button "open drawer" [ref=f2e7]
+      - heading [level=1] [ref=f2e10]:
+        - link [ref=f2e11]:
+          - /url: /
+      - link "New" [ref=f2e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f2e58]:
+        - /url: /notifications
+  - generic [ref=f2e24]:
+    - generic [ref=f2e25]:
+      - generic [ref=f2e26]: T
+      - generic [ref=f2e29]:
+        - heading "Ted P" [level=6] [ref=f2e30]
+        - heading "@Heath93" [level=6] [ref=f2e31]
+    - generic [ref=f2e32]:
+      - generic [ref=f2e33]:
+        - heading "$1,509.53" [level=6] [ref=f2e34]
+        - heading "Account Balance" [level=6] [ref=f2e35]
+      - generic:
+        - separator
+      - button "Account menu" [ref=f2e37]
+      - generic:
+        - separator
+  - main [ref=f2e38]:
+    - generic [ref=f2e60]:
+      - heading "Transaction Detail" [level=2] [ref=f2e61]
+      - generic [ref=f2e62]:
+        - generic [ref=f2e72]:
+          - paragraph [ref=f2e74]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f2e76]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f2e77]: +$204.68
+      - generic [ref=f2e80]:
+        - generic [ref=f2e81]:
+          - generic [ref=f2e82]: "0"
+          - button [ref=f2e84]
+        - generic [ref=f2e92]:
+          - textbox "Write a comment..." [ref=f2e93]
+          - group [aria-hidden]
+    - paragraph [ref=f2e45]:
+      - text: Built by
+      - link [ref=f2e46]:
+        - /url: https://cypress.io
+```
+#15 CALL browser_click {"target": "f1e84", "element": "Like button next to count 0"}
+#15 RESULT [isError] ### Error
+Error: Ref f1e84 not found in the current page snapshot. Try capturing new snapshot.
+#16 CALL browser_snapshot {}
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f2e4]:
+  - banner [ref=f2e5]:
+    - generic [ref=f2e6]:
+      - button "open drawer" [ref=f2e7]
+      - heading [level=1] [ref=f2e10]:
+        - link [ref=f2e11]:
+          - /url: /
+      - link "New" [ref=f2e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f2e58]:
+        - /url: /notifications
+  - generic [ref=f2e24]:
+    - generic [ref=f2e25]:
+      - generic [ref=f2e26]: T
+      - generic [ref=f2e29]:
+        - heading "Ted P" [level=6] [ref=f2e30]
+        - heading "@Heath93" [level=6] [ref=f2e31]
+    - generic [ref=f2e32]:
+      - generic [ref=f2e33]:
+        - heading "$1,509.53" [level=6] [ref=f2e34]
+        - heading "Account Balance" [level=6] [ref=f2e35]
+      - generic:
+        - separator
+      - button "Account menu" [ref=f2e37]
+      - generic:
+        - separator
+  - main [ref=f2e38]:
+    - generic [ref=f2e60]:
+      - heading "Transaction Detail" [level=2] [ref=f2e61]
+      - generic [ref=f2e62]:
+        - generic [ref=f2e72]:
+          - paragraph [ref=f2e74]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f2e76]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f2e77]: +$204.68
+      - generic [ref=f2e80]:
+        - generic [ref=f2e81]:
+          - generic [ref=f2e82]: "0"
+          - button [ref=f2e84]
+        - generic [ref=f2e92]:
+          - textbox "Write a comment..." [ref=f2e93]
+          - group [aria-hidden]
+    - paragraph [ref=f2e45]:
+      - text: Built by
+      - link [ref=f2e46]:
+        - /url: https://cypress.io
+```
+#17 CALL browser_click {"target": "f2e84", "element": "Like button next to count 0"}
+#17 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T16-57-05-369Z.yml)
+#18 CALL browser_snapshot {}
+#18 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f2e4]:
+  - banner [ref=f2e5]:
+    - generic [ref=f2e6]:
+      - button "open drawer" [ref=f2e7]
+      - heading [level=1] [ref=f2e10]:
+        - link [ref=f2e11]:
+          - /url: /
+      - link "New" [ref=f2e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f2e58]:
+        - /url: /notifications
+  - generic [ref=f2e24]:
+    - generic [ref=f2e25]:
+      - generic [ref=f2e26]: T
+      - generic [ref=f2e29]:
+        - heading "Ted P" [level=6] [ref=f2e30]
+        - heading "@Heath93" [level=6] [ref=f2e31]
+    - generic [ref=f2e32]:
+      - generic [ref=f2e33]:
+        - heading "$1,509.53" [level=6] [ref=f2e34]
+        - heading "Account Balance" [level=6] [ref=f2e35]
+      - generic:
+        - separator
+      - button "Account menu" [ref=f2e37]
+      - generic:
+        - separator
+  - main [ref=f2e38]:
+    - generic [ref=f2e60]:
+      - heading "Transaction Detail" [level=2] [ref=f2e61]
+      - generic [ref=f2e62]:
+        - generic [ref=f2e72]:
+          - paragraph [ref=f2e74]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f2e76]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f2e77]: +$204.68
+      - generic [ref=f2e80]:
+        - generic [ref=f2e81]:
+          - generic [ref=f2e82]: "0"
+          - button [active] [ref=f2e84]
+        - generic [ref=f2e92]:
+          - textbox "Write a comment..." [ref=f2e93]
+          - group [aria-hidden]
+    - paragraph [ref=f2e45]:
+      - text: Built by
+      - link [ref=f2e46]:
+        - /url: https://cypress.io
+```
+#19 CALL browser_wait_for {"time": 3}
+#19 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T16-57-10-192Z.yml)
+RAWRESPONSE {"status":"fail","reason":"Signed in as Heath93 and the authenticated home showed Heath93. Navigating to /transaction/1xfcAhNDZK4 first redirected to /, and a retry loaded the detail page with heading \"Transaction Detail\" visible. The displayed like count was \"0\", a number, and was recorded as the baseline. I clicked the unnamed like button beside the count (one click, retried once after a stale ref). After a 3-second settle and a fresh snapshot the count still reads \"0\", not 1, and the button shows as focused/active with no disabled state exposed. Per the scenario I did not reload, so the reload-persistence Then was not reached.","failedAssertion":"Then the displayed like count is one greater and Like is disabled"}

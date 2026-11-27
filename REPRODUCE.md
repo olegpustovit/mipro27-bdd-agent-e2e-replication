@@ -21,6 +21,26 @@ healthy runs that did not pass by revision, and the social share of agents' v1 f
 The payment-app step-definition cost mean includes the two infrastructure-invalid runs (they started
 and exited 1 and count as failed runs in the outcomes), giving 1.48 minutes per 12-scenario suite.
 
+### Single set (v1.2.0)
+
+Since v1.2.0 the paper's numbers come from the single set: streams B, D and E under
+`followups-2026-11/`, all post hoc, `exploratory-owner-directed`, `gatePassExists: false`. See
+`README.md`, "Follow-up work, November 2026". Recompute them, also offline with the standard library:
+
+```sh
+uv run scripts/counts/single_set.py
+uv run scripts/reproduce_single_set.py
+```
+
+`single_set.py` writes `results/counts-single-set.txt` and `results/counts-single-set.json`. It exits
+with status 1 when a value differs from the output of the stream count script that first reported it,
+or when a version check fails. Use `--no-write` to leave the shipped output untouched.
+`reproduce_single_set.py` runs `single_set.py` and compares the values listed in
+`results/paper-numbers-single-set.txt` with the computed ones. It exits with status 1 on a mismatch,
+on a missing quantity, or on a value that cannot be computed. The scripts above
+(`reproduce_counts.py` and `scripts/counts/<part>.py`) check the earlier campaign, the runs of
+1-18 Nov, and are unchanged. The stream count scripts and their commands are listed per stream in `README.md`.
+
 ## 1. Recompute the results (exact, offline, about 30 s)
 
 Requires Node 24 (built-in zstd). No network, no models.
@@ -294,3 +314,36 @@ and `moodle-ledger/trials.jsonl`. Consequences:
   test the running user's home directory (`os.homedir()`) instead of a literal path, so the
   follow-up-comparison source pins for those two files no longer match.
 
+## 7. Path placeholders and checksums (v1.2.0)
+
+Release v1.2.0 applies the v1.1.0 replacements to the new files: `followups-2026-11/`,
+`scripts/counts/single_set.py` and `results/counts-single-set.*`. The script is
+`scripts/redact_paths.py`. It replaces the author's home-directory prefix with `<home>` and the
+same prefix in munged directory names with `-<home>-`. It replaces the host name of the single-set
+host with `<host>`, as v1.1.0 did for the earlier host, and any remaining user name with `<user>`.
+It works inside `.zst` files too: they are decompressed, edited and recompressed at level 19.
+The script reads these strings from the running system, so it names no person or host itself.
+`uv run scripts/redact_paths.py --check followups-2026-11 scripts results README.md REPRODUCE.md`
+exits with status 0 when none of them remains. Nothing else in the recorded data changed.
+
+- With `--account-ids`, the two provider account identifiers in Codex session headers
+  (`creator_user_id` and `creator_account_id`) were replaced by `<redacted>`, as in the adjudicator
+  sessions (section 3). This changed the Luna and Terra `events.jsonl.zst` of streams B and E-pay
+  (528 values). The same identifiers in the earlier campaign's `events.jsonl.zst` files (`data/`),
+  published in v1.1.x, are left as published.
+- The home prefix occurred only in the coded-arm records of streams B and E-pay: Cucumber stack
+  traces in `trials.jsonl.zst` and `events.jsonl.zst`, and `b-change1-faults/data/calibration-v*.jsonl`.
+- The host name occurred in the Moodle ledgers of streams D and E (`lease.host` and `env.host` in
+  `trials.jsonl`), in four stream documents, and in `single_set.py` and its output.
+  `single_set.py` now expects `<host>` and still reports 0 mismatches.
+- `provenance/redaction-v1.2.0.tsv` lists every changed file with its SHA-256 before and after
+  redaction. For `.zst` files it also gives the hashes of the decompressed content. It also lists
+  the checksum files that were rewritten: `b-change1-faults/data/SHA256SUMS`,
+  `e-single-set/pay/data/SHA256SUMS` (both hold decompressed hashes) and `d-moodle-replay/SHA256SUMS`.
+  No other file in the package pins a pre-redaction hash.
+- As in v1.1.0, the `recordSHA` stored in a redacted coded-arm trial record was computed over the
+  original record. A recomputed digest of such a record no longer matches it. The agent-arm payment
+  records are unaffected. The Moodle ledger records carry no record digest, and their event blobs
+  (content-addressed) contained none of the strings and are unchanged.
+- All stream count scripts, both trace-audit unit builders (`units.jsonl` byte-identical) and
+  `reproduce_counts.py` (191/191) give the same output before and after redaction.

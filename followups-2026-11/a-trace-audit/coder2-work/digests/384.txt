@@ -1,0 +1,1492 @@
+UNIT moodle:6ac189f540b8/B25.S125/healthy/C/gpt-5.6-terra/r1
+model gpt-5.6-terra driver codex build Moodle pin cfe123f26fc7 (healthy); pair from change B25 type healthy
+scenario S125 Students cannot delete their submissions if the submissions are allocated for assessments
+  1. And I am on the "Course1" course page logged in as teacher1
+  2. And I edit assessment form in workshop "TestWorkshop" as:
+  | id_description__idx_0_editor | Aspect1 |
+  | id_description__idx_1_editor | Aspect2 |
+  | id_description__idx_2_editor |  |
+  3. And I change phase in workshop "TestWorkshop" to "Submission phase"
+  4. And I am on the "TestWorkshop" "workshop activity" page logged in as student1
+  5. And I add a submission in workshop "TestWorkshop" as:
+  | Title | Submission1 |
+  | Submission content | Some content |
+  6. And I am on the "Course1" course page logged in as student2
+  7. And I add a submission in workshop "TestWorkshop" as:
+  | Title | Submission2 |
+  | Submission content | Some content |
+  8. And I am on the "TestWorkshop" "workshop activity" page logged in as teacher1
+  9. And I allocate submissions in workshop "TestWorkshop" as:
+  | Participant | Reviewer |
+  | Sam2 Student2 | Sam3 Student3 |
+  10. Given I am on the "TestWorkshop" "workshop activity" page logged in as student2
+  11. When I follow "Submission2"
+  12. Then I should see "Submission2"
+  13. And "Delete submission" "button" should not exist
+fault null
+target None None
+VERDICT unresolved step 5 'And I add a submission in workshop "TestWorkshop" as:
+  | Title | Submission1 |
+  | Submission content | Some content |'
+REASON Tool-call budget remaining was insufficient to complete the remaining required login, submission, allocation, and assertion steps.
+parse_error None tool_calls 53 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll run the scenario strictly through the visible Moodle UI, stopping at the first unmet action or assertion.
+#1 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#1 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-05-42-466Z.yml)
+#2 CALL browser_snapshot {"depth": 4}
+#2 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]
+        - generic [ref=f1e12]
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open course index" [ref=f1e44]
+        - banner [ref=f1e48]
+        - navigation "Course menu" [ref=f1e58]
+        - main [ref=f1e76]
+      - contentinfo [ref=f1e173]:
+        - button "Show footer" [ref=f1e174]
+        - generic [ref=f1e176]
+```
+#3 CALL browser_click {"target": "f1e44", "element": "Open course index button"}
+#3 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-05-46-595Z.yml)
+#4 CALL browser_snapshot {"depth": 6}
+#4 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e195]:
+      - generic [ref=f1e196]:
+        - generic [ref=f1e197]:
+          - link "Course1" [ref=f1e200]:
+            - /url: http://webserver/course/view.php?id=2
+          - button "Close course index" [active] [ref=f1e202]
+        - generic [ref=f1e206]:
+          - separator [ref=f1e207]
+          - button "Collapse all" [expanded] [ref=f1e208]:
+            - generic [ref=f1e209]
+            - text: 
+      - navigation [ref=f1e212]:
+        - tree [ref=f1e214]:
+          - treeitem [expanded] [selected] [ref=f1e215]:
+            - generic [ref=f1e216]
+            - group "General" [ref=f1e222]
+          - treeitem "New section" [expanded] [ref=f1e226]:
+            - generic [ref=f1e227]
+            - group "New section"
+          - treeitem "New section" [expanded] [ref=f1e233]:
+            - generic [ref=f1e234]
+            - group "New section"
+          - treeitem "New section" [expanded] [ref=f1e240]:
+            - generic [ref=f1e241]
+            - group "New section"
+          - treeitem "New section" [expanded] [ref=f1e247]:
+            - generic [ref=f1e248]
+            - group "New section"
+          - treeitem "New section" [expanded] [ref=f1e254]:
+            - generic [ref=f1e255]
+            - group "New section"
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - banner [ref=f1e48]:
+          - heading "Course1" [level=1] [ref=f1e55]
+        - navigation "Course menu" [ref=f1e58]:
+          - menubar [ref=f1e59]:
+            - menuitem "Course" [ref
+…[truncated 1260 chars]
+#5 CALL browser_snapshot {"target": "f1e85", "depth": 10}
+#5 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course1 | Acceptance test site
+### Snapshot
+```yaml
+- list [ref=f1e85]:
+  - listitem [ref=f1e86]:
+    - generic [ref=f1e87]:
+      - generic [ref=f1e89]:
+        - button "General" [expanded] [ref=f1e90]:
+          - generic "Collapse" [ref=f1e91]:
+            - generic [aria-hidden] [ref=f1e92]: 
+          - text:  
+        - heading [level=3] [ref=f1e94]:
+          - link "General" [ref=f1e95]:
+            - /url: http://webserver/course/section.php?id=111000
+      - list [ref=f1e99]:
+        - listitem [ref=f1e100]:
+          - link "TestWorkshop" [ref=f1e107]:
+            - /url: http://webserver/mod/workshop/view.php?id=109000
+  - listitem [ref=f1e108]:
+    - generic [ref=f1e109]:
+      - generic [ref=f1e111]:
+        - button "New section" [expanded] [ref=f1e112]:
+          - generic "Collapse" [ref=f1e113]:
+            - generic [aria-hidden] [ref=f1e114]: 
+          - text:  
+        - heading [level=3] [ref=f1e116]:
+          - link "New section" [ref=f1e117]:
+            - /url: http://webserver/course/section.php?id=111001
+      - generic [ref=f1e120]:
+        - list
+  - listitem [ref=f1e121]:
+    - generic [ref=f1e122]:
+      - generic [ref=f1e124]:
+        - button "New section" [expanded] [ref=f1e125]:
+          - generic "Collapse" [ref=f1e126]:
+            - generic [aria-hidden] [ref=f1e127]: 
+          - text:  
+        - heading [level=3] [ref=f1e129]:
+          - link "New section" [ref=f1e130]:
+            - /url: http://webserver/course/section.php?id=111002
+      - generic [ref=f1e133]:
+        - list
+  - listitem [ref=f1e134]:
+    - generic [ref=f1e135]:
+      - generic [ref=f1e137]:
+        - button "New section" [expanded] [ref=f1e138]:
+          - generic "Collapse" [ref=f1e139]:
+            - generic [aria-hidden] [ref=f1e140]: 
+          - text:  
+        - heading [level=3] [ref=f1e142]:
+          - link "New section" [ref=f1e143]:
+            - /url: http://webserver/course/section.php?id=111003
+      - generic [ref=f1e146]:
+        - list
+  - listitem [ref=f1e147]:
+    - generic [ref=f1e148]:
+      - generic [ref=f1e150]:
+        - button "New section" [expanded] [ref=f1e151]:
+          - generic "Collapse" [ref=f1e152]:
+            - generic [aria-hidden] [ref=f1e153]: 
+          - text:  
+        - heading [level=3] [ref=f1e155]:
+          - link "New section" [ref=f1e156]:
+            - /url: http://webserver/course/section.php
+…[truncated 517 chars]
+#6 CALL browser_click {"target": "f1e107", "element": "TestWorkshop link"}
+#6 RESULT ### Error
+TimeoutError: browserBackend.callTool: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator('aria-ref=f1e107')
+    - locator resolved to <a onclick="" class=" aalink stretched-link" href="http://webserver/mod/workshop/view.php?id=109000">…</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" data-for="section_item" id="courseindexsection4" class="courseindex-item d-flex↵                ↵                ↵                courseindex-section-title">…</div> from <div data-forceopen="0" data-close-on-resize="0" data-region="fixed-drawer" data-state="show-drawer-left" data-preference="drawer-open-index" id="theme_boost-drawers-courseindex" class="drawer drawer-left d-print-none show">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" data-for="section_item" id="courseindexsection2" class="courseindex-item d-flex↵                ↵                ↵                courseindex-section-title">…</div> from <div data-forceopen="0" data-close-on-resize="0" data-region="fixed-drawer" data-state="show-drawer-left" data-preference="drawer-open-index" id="theme_boost-drawers-courseindex" class="drawer drawer-left d-print-none show">…</div> subtree intercepts pointer events
+  2 × retrying click action
+      - waiting 100ms
+      - waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="drawerheadertop">…</div> from <div data-forceopen="0" data-close-on-resize="0" data-region="fixed-drawer" data-state="show-drawer-left" data-preference="drawer-open-index" id="theme_boost-drawers-courseindex" class="drawer drawer-left d-print-none show">…</div> subtree intercepts pointer events
+  2 × retrying click action
+      - waiting 500ms
+      - waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" data-for="section_item" id="courseindexsection4" class="courseindex-item d-flex↵                ↵                ↵            
+…[truncated 2780 chars]
+#7 CALL browser_click {"target": "f1e202", "element": "Close course index button"}
+#7 RESULT ### Error
+Error: Ref f1e202 not found in the current page snapshot. Try capturing new snapshot.
+#8 CALL browser_snapshot {"depth": 4}
+#8 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]
+        - generic [ref=f1e12]
+    - generic [ref=f1e195]:
+      - generic [ref=f1e196]:
+        - generic [ref=f1e197]
+        - generic [ref=f1e206]
+      - navigation [ref=f1e212]:
+        - tree [ref=f1e214]
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - banner [ref=f1e48]
+        - navigation "Course menu" [ref=f1e58]
+        - main [ref=f1e76]
+      - contentinfo [ref=f1e173]:
+        - button "Show footer" [ref=f1e174]
+        - generic [ref=f1e176]
+```
+#9 CALL browser_navigate {"url": "http://webserver/mod/workshop/view.php?id=109000"}
+#9 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Setup phase) | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-06-06-987Z.yml)
+#10 CALL browser_snapshot {"depth": 8}
+#10 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Setup phase) | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e48]:
+          - generic [ref=f2e49]:
+            - navigation "Breadcrumb" [ref=f2e52]:
+              - list [ref=f2e53]:
+                - listitem [ref=f2e54]
+                - listitem [ref=f2e56]
+                - listitem [ref=f2e58]
+            - heading "TestWorkshop" [level=1] [ref=f2e68]
+        - navigation "Activity menu" [ref=f2e71]:
+          - menubar [ref=f2e72]:
+            - menuitem "Workshop" [ref=f2e73]
+            - menuitem "Settings" [ref=f2e76]
+            - menuitem "Assessment form" [ref=f2e78]
+            - menuitem "Submissions allocation" [ref=f2e80]
+            - menuitem "More " [ref=f2e82]:
+              - generic [ref=f2e83]: More
+              - text: 
+        - main [ref=f2e88]:
+          - heading "Setup phase" [level=2] [ref=f2e89]
+          - generic "Setup phase" [ref=f2e90]:
+            - generic [ref=f2e91]: Workshop timeline with 5 phases
+            - link "Skip to current tasks" [ref=f2e92]:
+              - /url: "#mod_workshop-userplancurrenttasks"
+            - generic [ref=f2e93]:
+              - term [ref=f2e94]:
+                - generic [ref=f2e95]
+              - definition [ref=f2e98]:
+                - list [ref=f2e99]
+            - generic [ref=f2e116]:
+              - term [ref=f2e117]:
+                - generic [ref=f2e118]
+              - definition [ref=f2e122]:
+                - list [re
+…[truncated 2171 chars]
+#11 CALL browser_click {"target": "f2e78", "element": "Assessment form menu item"}
+#11 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-06-10-821Z.yml)
+#12 CALL browser_snapshot {"depth": 10}
+#12 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - button "Open course index" [ref=f3e44]
+        - banner [ref=f3e48]:
+          - generic [ref=f3e49]:
+            - navigation "Breadcrumb" [ref=f3e52]:
+              - list [ref=f3e53]:
+                - listitem [ref=f3e54]:
+                  - link "c1" [ref=f3e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f3e56]:
+                  - text: /
+                  - link "General" [ref=f3e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f3e58]:
+                  - text: /
+                  - link "TestWorkshop" [ref=f3e59]:
+                    - /url: http://webserver/mod/workshop/view.php?id=109000
+                - listitem [ref=f3e60]:
+                  - text: /
+                  - link "Assessment form" [ref=f3e61]:
+                    - /url: http://webserver/mod/workshop/editform.php?cmid=109000
+                - listitem [ref=f3e62]:
+                  - text: /
+                  - generic [ref=f3e63]: Editing assessment form
+            - heading "TestWorkshop" [level=1] [ref=f3e72]
+        - navigation "Activity menu" [ref=f3e75]:
+          - menubar [ref=f3e76]:
+            - menuitem "Workshop" [ref=f3e77]
+            - menuitem "Settings" [ref=f3e79]
+            - menuitem "Assessment form" [ref=f3e81]
+            - menuitem "Submissions allocation" [ref=f3e84]
+            - menuitem "More "
+…[truncated 4254 chars]
+#13 CALL browser_snapshot {"target": "f3e98", "depth": 12}
+#13 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- group "Aspect 1" [ref=f3e98]:
+  - generic [ref=f3e101]:
+    - button "Aspect 1" [expanded] [ref=f3e102]:
+      - generic "Collapse" [ref=f3e103]:
+        - generic [aria-hidden] [ref=f3e104]: 
+      - text:  
+    - heading [level=3] [aria-hidden] [ref=f3e106]: Aspect 1
+  - generic [ref=f3e107]:
+    - generic [ref=f3e108]:
+      - generic [ref=f3e109]: Description
+      - application [ref=f3e114]:
+        - generic [ref=f3e115]:
+          - generic [ref=f3e116]:
+            - menubar [ref=f3e118]:
+              - menuitem "Edit" [ref=f3e223]
+              - menuitem "View" [ref=f3e225]
+              - menuitem "Insert" [ref=f3e227]
+              - menuitem "Format" [ref=f3e229]
+              - menuitem "Tools" [ref=f3e231]
+              - menuitem "Table" [ref=f3e233]
+              - menuitem "Help" [ref=f3e235]
+            - group [ref=f3e119]:
+              - toolbar [ref=f3e237]:
+                - group "history" [ref=f3e238]:
+                  - button "Undo" [disabled] [ref=f3e239]
+                  - button "Redo" [disabled] [ref=f3e240]
+                - group "formatting" [ref=f3e241]:
+                  - button "Bold" [ref=f3e242]
+                  - button "Italic" [ref=f3e243]
+                - group "content" [ref=f3e244]:
+                  - button "Image" [ref=f3e245]
+                  - button "Multimedia" [ref=f3e246]
+                  - button "Record video" [ref=f3e247]
+                  - button "Insert H5P content" [ref=f3e248]
+                  - button "Link" [ref=f3e249]
+                  - button "Unlink" [ref=f3e250]
+                - group [ref=f3e251]:
+                  - button "Reveal or hide additional toolbar items" [ref=f3e252]
+          - iframe [ref=f3e122]:
+            - generic "Description. Rich text area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help." [ref=f4e1]:
+              - paragraph [ref=f4e2]
+        - generic [ref=f3e123]:
+          - generic [ref=f3e124]:
+            - group "Element Path" [ref=f3e253]:
+              - button "p" [ref=f3e254]
+            - generic [ref=f3e125]:
+              - button "0 words" [ref=f3e255]
+              - link "Build with TinyMCE" [ref=f3e127]:
+                - /url: https://www.tiny.cloud/powered-by-tiny?utm_campaign=poweredby&utm_source=tiny&utm_medium=referral&utm_content=v7
+                - text: 
+…[truncated 1261 chars]
+#14 CALL browser_type {"target": "f4e1", "element": "Aspect 1 description rich text editor", "text": "Aspect1"}
+#14 RESULT 
+#15 CALL browser_click {"target": "f3e164", "element": "Aspect 2 expand button"}
+#15 RESULT ### Error
+Error: Ref f3e164 not found in the current page snapshot. Try capturing new snapshot.
+#16 CALL browser_snapshot {"depth": 7}
+#16 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - button "Open course index" [ref=f3e44]
+        - banner [ref=f3e48]:
+          - generic [ref=f3e49]:
+            - navigation "Breadcrumb" [ref=f3e52]:
+              - list [ref=f3e53]
+            - heading "TestWorkshop" [level=1] [ref=f3e72]
+        - navigation "Activity menu" [ref=f3e75]:
+          - menubar [ref=f3e76]:
+            - menuitem "Workshop" [ref=f3e77]
+            - menuitem "Settings" [ref=f3e79]
+            - menuitem "Assessment form" [ref=f3e81]
+            - menuitem "Submissions allocation" [ref=f3e84]
+            - menuitem "More " [ref=f3e86]:
+              - generic [ref=f3e87]: More
+              - text: 
+        - main [ref=f3e92]:
+          - heading "Accumulative grading" [level=3] [ref=f3e93]
+          - generic [ref=f3e94]:
+            - button "Expand all" [ref=f3e96]
+            - group "Aspect 1" [ref=f3e98]:
+              - generic [ref=f3e101]
+              - generic [ref=f3e107]
+            - group "Aspect 2" [ref=f3e160]:
+              - generic [ref=f3e163]
+            - group "Aspect 3" [ref=f3e170]:
+              - generic [ref=f3e173]
+            - button "Blanks for 2 more aspects" [ref=f3e183]
+            - generic [ref=f3e188]:
+              - button "Save and continue editing" [ref=f3e191]
+              - button "Save and preview" [ref=f3e194]
+              - button "Save and close" [ref=f3e197]
+              - button "Cancel" [ref=f3e200]
+      - contentinfo [ref=f3e201]:
+    
+…[truncated 1303 chars]
+#17 CALL browser_snapshot {"target": "f3e160", "depth": 5}
+#17 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- group "Aspect 2" [ref=f3e160]:
+  - generic [ref=f3e163]:
+    - button "Aspect 2" [ref=f3e164]:
+      - text: 
+      - generic "Expand" [ref=f3e165]:
+        - generic [aria-hidden] [ref=f3e167]: 
+        - text: 
+    - heading [level=3] [aria-hidden] [ref=f3e169]: Aspect 2
+```
+#18 CALL browser_click {"target": "f3e164", "element": "Aspect 2 expand button"}
+#18 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-06-24-772Z.yml)
+#19 CALL browser_snapshot {"target": "f3e160", "depth": 10}
+#19 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- group "Aspect 2" [ref=f3e160]:
+  - generic [ref=f3e163]:
+    - button "Aspect 2" [expanded] [active] [ref=f3e164]:
+      - generic "Collapse" [ref=f3e257]:
+        - generic [aria-hidden] [ref=f3e258]: 
+      - text:  
+    - heading [level=3] [aria-hidden] [ref=f3e169]: Aspect 2
+  - generic [ref=f3e259]:
+    - generic [ref=f3e260]:
+      - generic [ref=f3e261]: Description
+      - application [ref=f3e266]:
+        - generic [ref=f3e267]:
+          - generic [ref=f3e268]:
+            - menubar [ref=f3e270]:
+              - menuitem "Edit" [ref=f3e271]
+              - menuitem "View" [ref=f3e273]
+              - menuitem "Insert" [ref=f3e275]
+              - menuitem "Format" [ref=f3e277]
+              - menuitem "Tools" [ref=f3e279]
+              - menuitem "Table" [ref=f3e281]
+              - menuitem "Help" [ref=f3e283]
+            - group [ref=f3e285]:
+              - toolbar [ref=f3e286]:
+                - group "history" [ref=f3e287]:
+                  - button "Undo" [disabled] [ref=f3e288]
+                  - button "Redo" [disabled] [ref=f3e289]
+                - group "formatting" [ref=f3e290]:
+                  - button "Bold" [ref=f3e291]
+                  - button "Italic" [ref=f3e292]
+                - group "content" [ref=f3e293]:
+                  - button "Image" [ref=f3e294]
+                  - button "Multimedia" [ref=f3e295]
+                  - button "Record video" [ref=f3e296]
+                  - button "Insert H5P content" [ref=f3e297]
+                  - button "Link" [ref=f3e298]
+                  - button "Unlink" [ref=f3e299]
+                - group [ref=f3e300]:
+                  - button "Reveal or hide additional toolbar items" [ref=f3e301]
+          - iframe [ref=f3e304]:
+            - generic "Description. Rich text area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help." [ref=f5e1]:
+              - paragraph [ref=f5e2]
+        - generic [ref=f3e305]:
+          - generic [ref=f3e306]:
+            - group "Element Path" [ref=f3e307]:
+              - button "p" [ref=f3e308]
+            - generic [ref=f3e309]:
+              - button "0 words" [ref=f3e310]
+              - link "Build with TinyMCE" [ref=f3e312]:
+                - /url: https://www.tiny.cloud/powered-by-tiny?utm_campaign=poweredby&utm_source=tiny&utm_medium=referral&utm_content=v7
+              
+…[truncated 1271 chars]
+#20 CALL browser_type {"target": "f5e1", "element": "Aspect 2 description rich text editor", "text": "Aspect2"}
+#20 RESULT 
+#21 CALL browser_snapshot {"depth": 6}
+#21 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - button "Open course index" [ref=f3e44]
+        - banner [ref=f3e48]:
+          - generic [ref=f3e49]:
+            - navigation "Breadcrumb" [ref=f3e52]
+            - heading "TestWorkshop" [level=1] [ref=f3e72]
+        - navigation "Activity menu" [ref=f3e75]:
+          - menubar [ref=f3e76]:
+            - menuitem "Workshop" [ref=f3e77]
+            - menuitem "Settings" [ref=f3e79]
+            - menuitem "Assessment form" [ref=f3e81]
+            - menuitem "Submissions allocation" [ref=f3e84]
+            - menuitem "More " [ref=f3e86]
+        - main [ref=f3e92]:
+          - heading "Accumulative grading" [level=3] [ref=f3e93]
+          - generic [ref=f3e94]:
+            - button "Expand all" [ref=f3e96]
+            - group "Aspect 1" [ref=f3e98]
+            - group "Aspect 2" [ref=f3e160]
+            - group "Aspect 3" [ref=f3e170]
+            - button "Blanks for 2 more aspects" [ref=f3e183]
+            - generic [ref=f3e188]
+      - contentinfo [ref=f3e201]:
+        - button "Show footer" [ref=f3e202]:
+          - generic [aria-hidden] [ref=f3e203]: "?"
+        - generic [ref=f3e204]:
+          - generic [ref=f3e205]:
+            - link "Documentation for this page" [ref=f3e207]:
+              - /url: https://docs.moodle.org/503/en/mod/workshop/editform
+            - link "Contact site support" [ref=f3e210]:
+              - /url: http://webserver/user/contactsitesupport.php
+          - generic [ref=f3e212]:
+            - ge
+…[truncated 302 chars]
+#22 CALL browser_snapshot {"target": "f3e188", "depth": 3}
+#22 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/editform.php?cmid=109000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f3e188]:
+  - button "Save and continue editing" [ref=f3e191]
+  - button "Save and preview" [ref=f3e194]
+  - button "Save and close" [ref=f3e197]
+  - button "Cancel" [ref=f3e200]
+```
+#23 CALL browser_click {"target": "f3e197", "element": "Save and close button"}
+#23 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Setup phase) | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-06-34-499Z.yml)
+#24 CALL browser_snapshot {"target": "f2e88", "depth": 7}
+#24 RESULT ### Error
+Error: Ref f2e88 not found in the current page snapshot. Try capturing new snapshot.
+#25 CALL browser_snapshot {"depth": 9}
+#25 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Setup phase) | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f7e1]:
+  - status
+  - generic [ref=f7e2]:
+    - link "Skip to main content" [ref=f7e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f7e4]:
+      - generic [ref=f7e5]:
+        - link "Acceptance test site" [ref=f7e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f7e9]:
+          - menuitem "Dashboard" [ref=f7e10]
+          - text: 
+        - generic [ref=f7e12]:
+          - generic [ref=f7e15]:
+            - switch "Edit mode" [ref=f7e16]
+            - generic [ref=f7e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f7e27]:
+            - generic [aria-hidden] [ref=f7e28]: 
+          - button "Toggle messaging drawer" [ref=f7e30]:
+            - generic [aria-hidden] [ref=f7e31]: 
+          - button "User menu" [ref=f7e37]: 
+    - generic [ref=f7e41]:
+      - generic [ref=f7e42]:
+        - button "Open course index" [ref=f7e44]
+        - banner [ref=f7e48]:
+          - generic [ref=f7e49]:
+            - navigation "Breadcrumb" [ref=f7e52]:
+              - list [ref=f7e53]:
+                - listitem [ref=f7e54]:
+                  - link "c1" [ref=f7e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f7e56]:
+                  - text: /
+                  - link "General" [ref=f7e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f7e58]:
+                  - text: /
+                  - generic [ref=f7e59]: TestWorkshop
+            - heading "TestWorkshop" [level=1] [ref=f7e68]
+        - navigation "Activity menu" [ref=f7e71]:
+          - menubar [ref=f7e72]:
+            - menuitem "Workshop" [ref=f7e73]
+            - menuitem "Settings" [ref=f7e76]
+            - menuitem "Assessment form" [ref=f7e78]
+            - menuitem "Submissions allocation" [ref=f7e80]
+            - menuitem "More " [ref=f7e82]:
+              - generic [ref=f7e83]: More
+              - text: 
+        - main [ref=f7e88]:
+          - heading "Setup phase" [level=2] [ref=f7e89]
+          - generic "Setup phase" [ref=f7e90]:
+            - generic [ref=f7e91]: Workshop timeline with 5 phases
+            - link "Skip to current tasks" [ref=f7e92]:
+              - /url: "#mod_workshop-userplancurrenttasks"
+            - g
+…[truncated 3801 chars]
+#26 CALL browser_click {"target": "f7e120", "element": "Switch to the submission phase link"}
+#26 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/switchphase.php?cmid=109000&phase=20
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-06-39-997Z.yml)
+#27 CALL browser_snapshot {"depth": 8}
+#27 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/switchphase.php?cmid=109000&phase=20
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f8e1]:
+  - status
+  - generic [ref=f8e2]:
+    - link "Skip to main content" [ref=f8e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - link "Acceptance test site" [ref=f8e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f8e9]:
+          - menuitem "Dashboard" [ref=f8e10]
+          - text: 
+        - generic [ref=f8e12]:
+          - generic [ref=f8e15]:
+            - switch "Edit mode" [ref=f8e16]
+            - generic [ref=f8e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f8e27]:
+            - generic [aria-hidden] [ref=f8e28]: 
+          - button "Toggle messaging drawer" [ref=f8e30]:
+            - generic [aria-hidden] [ref=f8e31]: 
+          - button "User menu" [ref=f8e37]: 
+    - generic [ref=f8e41]:
+      - generic [ref=f8e42]:
+        - button "Open course index" [ref=f8e44]
+        - banner [ref=f8e48]:
+          - generic [ref=f8e49]:
+            - navigation "Breadcrumb" [ref=f8e52]:
+              - list [ref=f8e53]:
+                - listitem [ref=f8e54]
+                - listitem [ref=f8e56]
+                - listitem [ref=f8e58]
+                - listitem [ref=f8e60]
+            - heading "TestWorkshop" [level=1] [ref=f8e70]
+        - navigation "Activity menu" [ref=f8e73]:
+          - menubar [ref=f8e74]:
+            - menuitem "Workshop" [ref=f8e75]
+            - menuitem "Settings" [ref=f8e78]
+            - menuitem "Assessment form" [ref=f8e80]
+            - menuitem "Submissions allocation" [ref=f8e82]
+            - menuitem "More " [ref=f8e84]:
+              - generic [ref=f8e85]: More
+              - text: 
+        - main [ref=f8e90]:
+          - alertdialog "Confirm":
+            - generic [ref=f8e91]:
+              - heading "Confirm" [level=4] [ref=f8e93]
+              - alert [ref=f8e94]:
+                - paragraph [ref=f8e95]
+              - generic [ref=f8e98]:
+                - button "Cancel" [ref=f8e101]
+                - button "Continue" [ref=f8e104]
+      - contentinfo [ref=f8e105]:
+        - button "Show footer" [ref=f8e106]:
+          - generic [aria-hidden] [ref=f8e107]: "?"
+        - generic [ref=f8e108]:
+          - generic [ref=f8e109]:
+            - link "Documentation for this page" [ref=f8e111]:
+       
+…[truncated 1077 chars]
+#28 CALL browser_click {"target": "f8e104", "element": "Continue confirmation button"}
+#28 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Submission phase) | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-06-44-675Z.yml)
+#29 CALL browser_snapshot {"depth": 4}
+#29 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Submission phase) | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f9e1]:
+  - status
+  - generic [ref=f9e2]:
+    - link "Skip to main content" [ref=f9e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f9e4]:
+      - generic [ref=f9e5]:
+        - link "Acceptance test site" [ref=f9e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f9e9]
+        - generic [ref=f9e12]
+    - generic [ref=f9e41]:
+      - generic [ref=f9e42]:
+        - button "Open course index" [ref=f9e44]
+        - banner [ref=f9e48]
+        - navigation "Activity menu" [ref=f9e71]
+        - main [ref=f9e88]
+      - contentinfo [ref=f9e357]:
+        - button "Show footer" [ref=f9e358]
+        - generic [ref=f9e360]
+```
+#30 CALL browser_snapshot {"target": "f9e12", "depth": 5}
+#30 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Submission phase) | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f9e12]:
+  - generic [ref=f9e15]:
+    - switch "Edit mode" [ref=f9e16]
+    - generic [ref=f9e17]: Edit mode
+  - button "Show notification window with no new notifications" [ref=f9e27]:
+    - generic [aria-hidden] [ref=f9e28]: 
+  - button "Toggle messaging drawer" [ref=f9e30]:
+    - generic [aria-hidden] [ref=f9e31]: 
+  - button "User menu" [ref=f9e37]: 
+```
+#31 CALL browser_click {"target": "f9e37", "element": "User menu button"}
+#31 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Submission phase) | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-06-51-540Z.yml)
+#32 CALL browser_snapshot {"depth": 6}
+#32 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Submission phase) | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f9e1]:
+  - status
+  - generic [ref=f9e2]:
+    - link "Skip to main content" [ref=f9e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f9e4]:
+      - generic [ref=f9e5]:
+        - link "Acceptance test site" [ref=f9e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f9e9]:
+          - menuitem "Dashboard" [ref=f9e10]
+          - text: 
+        - generic [ref=f9e12]:
+          - generic [ref=f9e15]:
+            - switch "Edit mode" [ref=f9e16]
+            - generic [ref=f9e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f9e27]:
+            - generic [aria-hidden] [ref=f9e28]: 
+          - button "Toggle messaging drawer" [ref=f9e30]:
+            - generic [aria-hidden] [ref=f9e31]: 
+          - generic [ref=f9e36]:
+            - button "User menu" [expanded] [ref=f9e37]: 
+            - menu "User" [active] [ref=f9e382]
+    - generic [ref=f9e41]:
+      - generic [ref=f9e42]:
+        - button "Open course index" [ref=f9e44]
+        - banner [ref=f9e48]:
+          - generic [ref=f9e49]:
+            - navigation "Breadcrumb" [ref=f9e52]
+            - heading "TestWorkshop" [level=1] [ref=f9e68]
+        - navigation "Activity menu" [ref=f9e71]:
+          - menubar [ref=f9e72]:
+            - menuitem "Workshop" [ref=f9e73]
+            - menuitem "Settings" [ref=f9e76]
+            - menuitem "Assessment form" [ref=f9e78]
+            - menuitem "Submissions allocation" [ref=f9e80]
+            - menuitem "More " [ref=f9e82]
+        - main [ref=f9e88]:
+          - heading "Submission phase" [level=2] [ref=f9e89]
+          - generic "Submission phase" [ref=f9e90]:
+            - generic [ref=f9e91]: Workshop timeline with 5 phases
+            - link "Skip to current tasks" [ref=f9e92]:
+              - /url: "#mod_workshop-userplancurrenttasks"
+            - generic [ref=f9e93]
+            - generic [ref=f9e113]
+            - generic [ref=f9e136]
+            - generic [ref=f9e143]
+            - generic [ref=f9e163]
+          - generic [ref=f9e171]:
+            - link "Instructions for submission" [ref=f9e173]:
+              - /url: "#"
+            - generic [ref=f9e174]: Instructions for submission 1
+          - generic [ref=f9e179]:
+            - link "Workshop submissions report" [ref=f9e181]:
+              - /u
+…[truncated 1027 chars]
+#33 CALL browser_snapshot {"target": "f9e382", "depth": 5}
+#33 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Submission phase) | Acceptance test site
+### Snapshot
+```yaml
+- menu "User" [active] [ref=f9e382]:
+  - menuitem "Profile" [ref=f9e383]
+  - menuitem "Grades" [ref=f9e384]
+  - menuitem "Calendar" [ref=f9e385]
+  - menuitem "Private files" [ref=f9e386]
+  - menuitem "Reports" [ref=f9e387]
+  - menuitem "Preferences" [ref=f9e389]
+  - menuitem "Switch role to..." [ref=f9e390]
+  - menuitem "Log out" [ref=f9e392]
+```
+#34 CALL browser_click {"target": "f9e392", "element": "Log out menu item"}
+#34 RESULT ### Page
+- Page URL: http://webserver/login/index.php
+- Page Title: Log in to the site | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-06-58-877Z.yml)
+#35 CALL browser_snapshot {"depth": 7}
+#35 RESULT ### Page
+- Page URL: http://webserver/login/index.php
+- Page Title: Log in to the site | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f10e1]:
+  - status
+  - generic [ref=f10e2]:
+    - link "Skip to main content" [ref=f10e3]:
+      - /url: "#maincontent"
+    - generic [ref=f10e5]:
+      - text: AI-generated image
+      - main [ref=f10e9]:
+        - generic [ref=f10e11]:
+          - heading "Welcome back" [level=1] [ref=f10e12]
+          - paragraph [ref=f10e13]: Log in to Acceptance test site
+          - generic [ref=f10e14]:
+            - generic [ref=f10e15]:
+              - generic [ref=f10e16]: Username or email
+              - generic [ref=f10e17]
+            - generic [ref=f10e19]:
+              - generic [ref=f10e20]: Password
+              - generic [ref=f10e21]
+            - link "Forgot password?" [ref=f10e27]:
+              - /url: http://webserver/login/forgot_password.php
+            - button "Log in" [ref=f10e29]
+          - button "Cookies notice" [ref=f10e31]
+    - contentinfo [ref=f10e32]:
+      - button "Show footer" [ref=f10e33]:
+        - generic [aria-hidden] [ref=f10e34]: "?"
+      - generic [ref=f10e35]:
+        - generic [ref=f10e36]:
+          - generic [ref=f10e37]: You are not logged in.
+          - link "Data retention summary" [ref=f10e41]:
+            - /url: http://webserver/admin/tool/dataprivacy/summary.php
+        - generic [ref=f10e43]:
+          - text: Powered by
+          - link "Moodle" [ref=f10e44]:
+            - /url: https://moodle.com
+```
+#36 CALL browser_snapshot {"target": "f10e14", "depth": 5}
+#36 RESULT ### Page
+- Page URL: http://webserver/login/index.php
+- Page Title: Log in to the site | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f10e14]:
+  - generic [ref=f10e15]:
+    - generic [ref=f10e16]: Username or email
+    - generic [ref=f10e17]:
+      - generic:
+        - generic [aria-hidden]: 
+      - textbox "Username or email" [ref=f10e18]:
+        - /placeholder: Enter your username or email
+        - text: teacher1
+  - generic [ref=f10e19]:
+    - generic [ref=f10e20]: Password
+    - generic [ref=f10e21]:
+      - generic:
+        - generic [aria-hidden]: 
+      - generic [ref=f10e22]:
+        - textbox "Password" [ref=f10e23]:
+          - /placeholder: Enter your password
+        - button "Toggle sensitive" [ref=f10e24]:
+          - generic [aria-hidden] [ref=f10e25]: 
+  - link "Forgot password?" [ref=f10e27]:
+    - /url: http://webserver/login/forgot_password.php
+  - button "Log in" [ref=f10e29]
+```
+#37 CALL browser_fill_form {"fields": [{"target": "f10e18", "element": "Username or email field", "name": "Username or email", "type": "textbox", "value": "student1"}, {"target": "f10e23", "element": "Password field", "name": "Password", "type": "textbox", "value": "student1"}]}
+#37 RESULT 
+#38 CALL browser_click {"target": "f10e29", "element": "Log in button"}
+#38 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-07-07-205Z.yml)
+#39 CALL browser_navigate {"url": "http://webserver/mod/workshop/view.php?id=109000"}
+#39 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Submission phase) | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-07-09-569Z.yml)
+#40 CALL browser_snapshot {"depth": 9}
+#40 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/view.php?id=109000
+- Page Title: TestWorkshop (Submission phase) | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f12e1]:
+  - status
+  - generic [ref=f12e2]:
+    - link "Skip to main content" [ref=f12e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f12e4]:
+      - generic [ref=f12e5]:
+        - link "Acceptance test site" [ref=f12e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f12e9]:
+          - menuitem "Dashboard" [ref=f12e10]
+          - text: 
+        - generic [ref=f12e12]:
+          - button "Show notification window with no new notifications" [ref=f12e14]:
+            - generic [aria-hidden] [ref=f12e15]: 
+          - button "Toggle messaging drawer" [ref=f12e17]:
+            - generic [aria-hidden] [ref=f12e18]: 
+          - button "User menu" [ref=f12e24]: 
+    - generic [ref=f12e28]:
+      - generic [ref=f12e29]:
+        - button "Open course index" [ref=f12e31]
+        - banner [ref=f12e35]:
+          - generic [ref=f12e36]:
+            - navigation "Breadcrumb" [ref=f12e39]:
+              - list [ref=f12e40]:
+                - listitem [ref=f12e41]:
+                  - link "c1" [ref=f12e42]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f12e43]:
+                  - text: /
+                  - link "General" [ref=f12e44]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f12e45]:
+                  - text: /
+                  - generic [ref=f12e46]: TestWorkshop
+            - heading "TestWorkshop" [level=1] [ref=f12e55]
+        - main [ref=f12e60]:
+          - button "Add submission" [ref=f12e63]
+          - heading "Submission phase" [level=2] [ref=f12e64]
+          - generic "Submission phase" [ref=f12e65]:
+            - generic [ref=f12e66]: Workshop timeline with 5 phases
+            - link "Skip to current tasks" [ref=f12e67]:
+              - /url: "#mod_workshop-userplancurrenttasks"
+            - generic [ref=f12e68]:
+              - term [ref=f12e69]:
+                - generic [ref=f12e70]: Setup phase
+              - definition [ref=f12e71]
+            - generic [ref=f12e72]:
+              - term [ref=f12e73]:
+                - generic [ref=f12e74]:
+                  - text: Submission phase
+                  - generic [ref=f12e75]
+              - definition [ref=f12e77]:
+                - list [ref=f12e78]:
+    
+…[truncated 2164 chars]
+#41 CALL browser_click {"target": "f12e63", "element": "Add submission button"}
+#41 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=&edit=on
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-07-13-664Z.yml)
+#42 CALL browser_snapshot {"depth": 10}
+#42 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=&edit=on
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f13e1]:
+  - status
+  - generic [ref=f13e2]:
+    - link "Skip to main content" [ref=f13e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f13e4]:
+      - generic [ref=f13e5]:
+        - link "Acceptance test site" [ref=f13e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f13e9]:
+          - menuitem "Dashboard" [ref=f13e10]
+          - text: 
+        - generic [ref=f13e12]:
+          - button "Show notification window with no new notifications" [ref=f13e14]:
+            - generic [aria-hidden] [ref=f13e15]: 
+          - button "Toggle messaging drawer" [ref=f13e17]:
+            - generic [aria-hidden] [ref=f13e18]: 
+          - button "User menu" [ref=f13e24]: 
+    - generic [ref=f13e28]:
+      - generic [ref=f13e29]:
+        - button "Open course index" [ref=f13e31]
+        - banner [ref=f13e35]:
+          - generic [ref=f13e36]:
+            - navigation "Breadcrumb" [ref=f13e39]:
+              - list [ref=f13e40]:
+                - listitem [ref=f13e41]:
+                  - link "c1" [ref=f13e42]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f13e43]:
+                  - text: /
+                  - link "General" [ref=f13e44]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f13e45]:
+                  - text: /
+                  - link "TestWorkshop" [ref=f13e46]:
+                    - /url: http://webserver/mod/workshop/view.php?id=109000
+                - listitem [ref=f13e47]:
+                  - text: /
+                  - link "My submission" [ref=f13e48]:
+                    - /url: http://webserver/mod/workshop/submission.php?cmid=109000&id
+                - listitem [ref=f13e49]:
+                  - text: /
+                  - generic [ref=f13e50]: Editing submission
+            - heading "TestWorkshop" [level=1] [ref=f13e59]
+        - main [ref=f13e64]:
+          - heading "My submission" [level=3] [ref=f13e65]
+          - generic [ref=f13e67]:
+            - link "Instructions for submission" [ref=f13e69]:
+              - /url: "#"
+            - generic [ref=f13e70]: Instructions for submission 1
+          - generic [ref=f13e74]:
+            - group "Submission" [ref=f13e75]:
+              - generic [ref=f13e78]:
+  
+…[truncated 2536 chars]
+#43 CALL browser_snapshot {"target": "f13e93", "depth": 8}
+#43 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=&edit=on
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f13e93]:
+  - generic [ref=f13e94]: Submission content
+  - application [ref=f13e99]:
+    - generic [ref=f13e100]:
+      - generic [ref=f13e101]:
+        - menubar [ref=f13e103]:
+          - menuitem "Edit" [ref=f13e194]
+          - menuitem "View" [ref=f13e196]
+          - menuitem "Insert" [ref=f13e198]
+          - menuitem "Format" [ref=f13e200]
+          - menuitem "Tools" [ref=f13e202]
+          - menuitem "Table" [ref=f13e204]
+          - menuitem "Help" [ref=f13e206]
+        - group [ref=f13e104]:
+          - toolbar [ref=f13e208]:
+            - group "history" [ref=f13e209]:
+              - button "Undo" [disabled] [ref=f13e210]
+              - button "Redo" [disabled] [ref=f13e211]
+            - group "formatting" [ref=f13e212]:
+              - button "Bold" [ref=f13e213]
+              - button "Italic" [ref=f13e214]
+            - group "content" [ref=f13e215]:
+              - button "Image" [ref=f13e216]
+              - button "Multimedia" [ref=f13e217]
+              - button "Record video" [ref=f13e218]
+              - button "Link" [ref=f13e219]
+              - button "Unlink" [ref=f13e220]
+            - group "view" [ref=f13e221]:
+              - button "Fullscreen" [ref=f13e222]
+            - group [ref=f13e223]:
+              - button "Reveal or hide additional toolbar items" [ref=f13e224]
+      - iframe [ref=f13e107]:
+        - generic "Submission content. Rich text area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help." [ref=f14e1]:
+          - paragraph [ref=f14e2]
+    - generic [ref=f13e108]:
+      - generic [ref=f13e109]:
+        - group "Element Path" [ref=f13e225]:
+          - button "p" [ref=f13e226]
+        - generic [ref=f13e110]:
+          - button "0 words" [ref=f13e227]
+          - link "Build with TinyMCE" [ref=f13e112]:
+            - /url: https://www.tiny.cloud/powered-by-tiny?utm_campaign=poweredby&utm_source=tiny&utm_medium=referral&utm_content=v7
+            - text: Build with
+      - separator "Press the Up and Down arrow keys to resize the editor." [ref=f13e119]
+```
+#44 CALL browser_fill_form {"fields": [{"target": "f13e92", "element": "Title field", "name": "Title", "type": "textbox", "value": "Submission1"}]}
+#44 RESULT ### Error
+Error: Ref f13e92 not found in the current page snapshot. Try capturing new snapshot.
+#45 CALL browser_snapshot {"target": "f13e75", "depth": 7}
+#45 RESULT ### Error
+Error: Ref f13e75 not found in the current page snapshot. Try capturing new snapshot.
+#46 CALL browser_snapshot {"depth": 7}
+#46 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=&edit=on
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f13e1]:
+  - status
+  - generic [ref=f13e2]:
+    - link "Skip to main content" [ref=f13e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f13e4]:
+      - generic [ref=f13e5]:
+        - link "Acceptance test site" [ref=f13e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f13e9]:
+          - menuitem "Dashboard" [ref=f13e10]
+          - text: 
+        - generic [ref=f13e12]:
+          - button "Show notification window with no new notifications" [ref=f13e14]:
+            - generic [aria-hidden] [ref=f13e15]: 
+          - button "Toggle messaging drawer" [ref=f13e17]:
+            - generic [aria-hidden] [ref=f13e18]: 
+          - button "User menu" [ref=f13e24]: 
+    - generic [ref=f13e28]:
+      - generic [ref=f13e29]:
+        - button "Open course index" [ref=f13e31]
+        - banner [ref=f13e35]:
+          - generic [ref=f13e36]:
+            - navigation "Breadcrumb" [ref=f13e39]:
+              - list [ref=f13e40]
+            - heading "TestWorkshop" [level=1] [ref=f13e59]
+        - main [ref=f13e64]:
+          - heading "My submission" [level=3] [ref=f13e65]
+          - generic [ref=f13e67]:
+            - link "Instructions for submission" [ref=f13e69]:
+              - /url: "#"
+            - generic [ref=f13e70]: Instructions for submission 1
+          - generic [ref=f13e74]:
+            - group "Submission" [ref=f13e75]:
+              - generic [ref=f13e78]
+              - generic [ref=f13e84]
+            - generic [ref=f13e166]:
+              - button "Save changes" [ref=f13e169]
+              - button "Cancel" [ref=f13e172]
+            - generic [aria-hidden] [ref=f13e173]:
+              - generic [aria-hidden] [ref=f13e174]: 
+              - text: Required
+      - contentinfo [ref=f13e175]:
+        - button "Show footer" [ref=f13e176]:
+          - generic [aria-hidden] [ref=f13e177]: "?"
+        - generic [ref=f13e178]:
+          - link "Contact site support" [ref=f13e181]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f13e182]: 
+            - text: Contact site support
+          - generic [ref=f13e183]:
+            - generic [ref=f13e185]:
+              - text: You are logged in as
+              - link "Sam1 Student1" [ref=f13e186]:
+                - /url: http://w
+…[truncated 510 chars]
+#47 CALL browser_snapshot {"target": "f13e84", "depth": 5}
+#47 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=&edit=on
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f13e84]:
+  - generic [ref=f13e85]:
+    - generic [ref=f13e86]:
+      - generic [ref=f13e87]: Title
+      - generic [aria-hidden] [ref=f13e90]: 
+    - textbox "Title" [ref=f13e92]
+  - generic [ref=f13e93]:
+    - generic [ref=f13e94]: Submission content
+    - application [ref=f13e99]:
+      - generic [ref=f13e100]:
+        - generic [ref=f13e101]:
+          - menubar [ref=f13e103]
+          - group [ref=f13e104]
+        - iframe [ref=f13e107]:
+          - generic "Submission content. Rich text area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help." [ref=f14e1]:
+            - paragraph [ref=f14e2]
+      - generic [ref=f13e108]:
+        - generic [ref=f13e109]:
+          - group "Element Path" [ref=f13e225]
+          - generic [ref=f13e110]
+        - separator "Press the Up and Down arrow keys to resize the editor." [ref=f13e119]
+  - generic [ref=f13e123]:
+    - generic [ref=f13e124]: Maximum number of submission attachments
+    - generic [ref=f13e126]: "1"
+  - generic [ref=f13e128]:
+    - paragraph [aria-hidden] [ref=f13e130]: Attachment
+    - group "Attachment" [ref=f13e132]:
+      - generic [ref=f13e134]:
+        - generic [ref=f13e135]: "Maximum file size: 200 MB, maximum number of files: 1 "
+        - generic [ref=f13e136]:
+          - generic [ref=f13e137]
+          - link "Files" [ref=f13e230]:
+            - /url: "#"
+        - text: 
+        - generic [ref=f13e158]:
+          - generic
+          - text: 
+```
+#48 CALL browser_fill_form {"fields": [{"target": "f13e92", "element": "Title field", "name": "Title", "type": "textbox", "value": "Submission1"}]}
+#48 RESULT 
+#49 CALL browser_type {"target": "f14e1", "element": "Submission content rich text editor", "text": "Some content"}
+#49 RESULT 
+#50 CALL browser_snapshot {"depth": 6}
+#50 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=&edit=on
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f13e1]:
+  - status
+  - generic [ref=f13e2]:
+    - link "Skip to main content" [ref=f13e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f13e4]:
+      - generic [ref=f13e5]:
+        - link "Acceptance test site" [ref=f13e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f13e9]:
+          - menuitem "Dashboard" [ref=f13e10]
+          - text: 
+        - generic [ref=f13e12]:
+          - button "Show notification window with no new notifications" [ref=f13e14]:
+            - generic [aria-hidden] [ref=f13e15]: 
+          - button "Toggle messaging drawer" [ref=f13e17]:
+            - generic [aria-hidden] [ref=f13e18]: 
+          - button "User menu" [ref=f13e24]: 
+    - generic [ref=f13e28]:
+      - generic [ref=f13e29]:
+        - button "Open course index" [ref=f13e31]
+        - banner [ref=f13e35]:
+          - generic [ref=f13e36]:
+            - navigation "Breadcrumb" [ref=f13e39]
+            - heading "TestWorkshop" [level=1] [ref=f13e59]
+        - main [ref=f13e64]:
+          - heading "My submission" [level=3] [ref=f13e65]
+          - generic [ref=f13e67]:
+            - link "Instructions for submission" [ref=f13e69]:
+              - /url: "#"
+            - generic [ref=f13e70]: Instructions for submission 1
+          - generic [ref=f13e74]:
+            - group "Submission" [ref=f13e75]
+            - generic [ref=f13e166]
+            - generic [aria-hidden] [ref=f13e173]
+      - contentinfo [ref=f13e175]:
+        - button "Show footer" [ref=f13e176]:
+          - generic [aria-hidden] [ref=f13e177]: "?"
+        - generic [ref=f13e178]:
+          - link "Contact site support" [ref=f13e181]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f13e182]: 
+            - text: Contact site support
+          - generic [ref=f13e183]:
+            - generic [ref=f13e185]
+            - link "Data retention summary" [ref=f13e190]:
+              - /url: http://webserver/admin/tool/dataprivacy/summary.php
+          - generic [ref=f13e192]:
+            - text: Powered by
+            - link "Moodle" [ref=f13e193]:
+              - /url: https://moodle.com
+  - text: ×     
+```
+#51 CALL browser_snapshot {"target": "f13e166", "depth": 3}
+#51 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=&edit=on
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f13e166]:
+  - button "Save changes" [ref=f13e169]
+  - button "Cancel" [ref=f13e172]
+```
+#52 CALL browser_click {"target": "f13e169", "element": "Save changes button"}
+#52 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=450000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T06-07-33-377Z.yml)
+#53 CALL browser_snapshot {"depth": 6}
+#53 RESULT ### Page
+- Page URL: http://webserver/mod/workshop/submission.php?cmid=109000&id=450000
+- Page Title: TestWorkshop | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f15e1]:
+  - status
+  - generic [ref=f15e2]:
+    - link "Skip to main content" [ref=f15e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f15e4]:
+      - generic [ref=f15e5]:
+        - link "Acceptance test site" [ref=f15e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f15e9]:
+          - menuitem "Dashboard" [ref=f15e10]
+          - text: 
+        - generic [ref=f15e12]:
+          - button "Show notification window with no new notifications" [ref=f15e14]:
+            - generic [aria-hidden] [ref=f15e15]: 
+          - button "Toggle messaging drawer" [ref=f15e17]:
+            - generic [aria-hidden] [ref=f15e18]: 
+          - button "User menu" [ref=f15e24]: 
+    - generic [ref=f15e28]:
+      - generic [ref=f15e29]:
+        - button "Open course index" [ref=f15e31]
+        - banner [ref=f15e35]:
+          - generic [ref=f15e36]:
+            - navigation "Breadcrumb" [ref=f15e39]
+            - heading "TestWorkshop" [level=1] [ref=f15e57]
+        - main [ref=f15e62]:
+          - heading "My submission" [level=3] [ref=f15e63]
+          - generic [ref=f15e65]:
+            - link "Instructions for submission" [ref=f15e67]:
+              - /url: "#"
+            - generic [ref=f15e68]: Instructions for submission 1
+          - generic [ref=f15e72]:
+            - generic [ref=f15e73]
+            - paragraph [ref=f15e84]: Some content
+          - button "Edit submission" [ref=f15e89]
+          - button "Delete submission" [ref=f15e93]
+          - link "Next" [ref=f15e99]:
+            - /url: http://webserver/r.php/course/cms/109000/next
+            - generic [aria-hidden] [ref=f15e102]: 
+            - text: 
+      - contentinfo [ref=f15e103]:
+        - button "Show footer" [ref=f15e104]:
+          - generic [aria-hidden] [ref=f15e105]: "?"
+        - generic [ref=f15e106]:
+          - link "Contact site support" [ref=f15e109]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f15e110]: 
+            - text: Contact site support
+          - generic [ref=f15e111]:
+            - generic [ref=f15e113]
+            - link "Data retention summary" [ref=f15e118]:
+              - /url: http://webserver/admin/tool/dataprivacy/summary.php
+          - generic [ref=f15e120]:
+            - text: Pow
+…[truncated 95 chars]
+MSG {"status":"unresolved","reason":"Tool-call budget remaining was insufficient to complete the remaining required login, submission, allocation, and assertion steps.","failingStep":5,"failingStepText":"And I add a submission in workshop \"TestWorkshop\" as:\n  | Title | Submission1 |\n  | Submission content | Some content |"}

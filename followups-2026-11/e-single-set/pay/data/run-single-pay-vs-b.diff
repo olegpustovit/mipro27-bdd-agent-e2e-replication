@@ -1,0 +1,33 @@
+1,7c1,8
+< // Stream B follow-up (2026-11-26): faulty builds on the change-1 (v1) interface.
+< // A copy of harness/scripts/exploratory-runner.mjs (replication commit 9c9eee2) with three changes, marked FOLLOWUP-B:
+< //  1. stages come from ./v1-fault-plan.mjs (healthy-v1-1 environment check, fault-v1-1, fault-v1-2), not exploratoryStages();
+< //  2. STUDY_ARMS (maintained|runtime) selects the arm; the maintained arm runs campaign A's frozen v1 step code
+< //     restored from STUDY_RUNTIME_RERUN_FROM (no maintenance session runs);
+< //  3. the runner's own file hashes are recorded in the frozen inputs.
+< // Everything else (trial execution, journal, ledger, invalid handling, never re-running a finished trial) is unchanged.
+---
+> // Stream E-pay follow-up (2026-11-27): payment-app cells of the single set (e-single-set/plan.md).
+> // A copy of stream B's b-change1-faults/scripts/run-v1-faults.mjs, itself harness/scripts/exploratory-runner.mjs
+> // (replication commit 9c9eee2) with three changes marked FOLLOWUP-B. Stream E changes, marked FOLLOWUP-E:
+> //  1. stages come from ./single-pay-plan.mjs (cumulative-plan stages without maintenance and v1), not v1FaultStages();
+> //  2. the stream label and the runner's own recorded file hashes name the stream E files.
+> // Stream B's changes kept: STUDY_ARMS (maintained|runtime) selects the arm; the maintained arm runs campaign A's
+> // frozen step code (v0 = the original step definitions, v2 = A's frozen v2) restored from STUDY_RUNTIME_RERUN_FROM
+> // (no maintenance session runs). Everything else is unchanged.
+16c17
+< import { v1FaultStages, followupArms } from './v1-fault-plan.mjs'; // FOLLOWUP-B
+---
+> import { singlePayStages, followupArms } from './single-pay-plan.mjs'; // FOLLOWUP-B, FOLLOWUP-E: plan module
+31c32
+< const followupFiles = ['run-v1-faults.mjs', 'v1-fault-plan.mjs'].map(name => [name, createHash('sha256').update(readFileSync(new URL('./' + name, import.meta.url))).digest('hex')]); // FOLLOWUP-B
+---
+> const followupFiles = ['run-single-pay.mjs', 'single-pay-plan.mjs'].map(name => [name, createHash('sha256').update(readFileSync(new URL('./' + name, import.meta.url))).digest('hex')]); // FOLLOWUP-B, FOLLOWUP-E: own file names
+45c46
+<   return { mode: exploratoryConfig.mode, gatePassExists: false, followup: { stream: 'b-change1-faults', arms: followupArms(), files: Object.fromEntries(followupFiles), harnessCommit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() }, // FOLLOWUP-B
+---
+>   return { mode: exploratoryConfig.mode, gatePassExists: false, followup: { stream: 'e-single-set/pay', arms: followupArms(), files: Object.fromEntries(followupFiles), harnessCommit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() }, // FOLLOWUP-B, FOLLOWUP-E: stream label
+79c80
+<   const stages = v1FaultStages(); // FOLLOWUP-B
+---
+>   const stages = singlePayStages(); // FOLLOWUP-B, FOLLOWUP-E: stage list

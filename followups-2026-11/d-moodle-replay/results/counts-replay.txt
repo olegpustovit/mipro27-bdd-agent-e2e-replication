@@ -1,0 +1,384 @@
+Stream D: replay of real Moodle interface changes. status: exploratory-owner-directed, gatePassExists: false; post-hoc analysis.
+ledger: data/ledger/trials.jsonl; trial keys with a trial-end: 256; counted: 256; excluded: 0
+pass = Behat passed / agent pass; unresolved and Behat error count as not passing (shown in brackets).
+
+## B04, B07, B15 (campaign environment, campaign scenario text)
+arm                                                             pre: pass  pre: not pass  post: pass  post: not pass  faulty: catch  paired catch  verified
+developers' step definitions before the change (A-old)                8/8        0/8 [0]         0/8         8/8 [0]        8/8 [0]           0/8       3/8
+developers' step definitions after the change (A-new)                 0/0        0/0 [0]         8/8         0/8 [0]        8/8 [0]           8/8       8/8
+browser agent Luna                                                   7/14       7/14 [0]        7/14        7/14 [0]      11/14 [0]          6/14      7/14
+browser agent Terra                                                 14/14       0/14 [0]       12/14        2/14 [0]      12/14 [0]         10/14     12/14
+browser agent Haiku                                                 11/14       3/14 [2]       12/14        2/14 [1]      14/14 [0]         12/14     14/14
+  change-attributable (pre pass -> post not pass) / post-only recovery (pre not pass -> post pass), per scenario and repetition:
+    developers' step definitions before the change (A-old)       8/8 broke, 0/8 recovered, 0/8 pass both
+    browser agent Luna                                           4/14 broke, 4/14 recovered, 3/14 pass both
+    browser agent Terra                                          2/14 broke, 0/14 recovered, 12/14 pass both
+    browser agent Haiku                                          1/14 broke, 2/14 recovered, 10/14 pass both
+
+## B27, B28 (Moodle 4.0dev, PHP 8.0 runtime; scenario text equal to the campaign's)
+arm                                                             pre: pass  pre: not pass  post: pass  post: not pass  faulty: catch  paired catch  verified
+developers' step definitions before the change (A-old)                1/2        1/2 [0]         0/2         2/2 [0]        1/1 [0]           0/1       0/1
+developers' step definitions after the change (A-new)                 0/0        0/0 [0]         1/2         1/2 [0]        1/1 [0]           0/1       0/1
+browser agent Luna                                                    0/2        2/2 [0]         2/2         0/2 [0]              -             -         -
+browser agent Terra                                                   2/2        0/2 [0]         2/2         0/2 [0]              -             -         -
+browser agent Haiku                                                   2/2        0/2 [0]         2/2         0/2 [0]              -             -         -
+  change-attributable (pre pass -> post not pass) / post-only recovery (pre not pass -> post pass), per scenario and repetition:
+    developers' step definitions before the change (A-old)       1/2 broke, 0/2 recovered, 0/2 pass both
+    browser agent Luna                                           0/2 broke, 2/2 recovered, 0/2 pass both
+    browser agent Terra                                          0/2 broke, 0/2 recovered, 2/2 pass both
+    browser agent Haiku                                          0/2 broke, 0/2 recovered, 2/2 pass both
+
+## B25, B28, B29 (Moodle 4.0dev, PHP 8.0 runtime; historical scenario text)
+arm                                                             pre: pass  pre: not pass  post: pass  post: not pass  faulty: catch  paired catch  verified
+developers' step definitions before the change (A-old)                1/4        3/4 [0]         0/4         4/4 [0]        2/2 [0]           0/2       0/2
+developers' step definitions after the change (A-new)                 0/0        0/0 [0]         1/4         3/4 [0]        2/2 [0]           1/2       1/2
+browser agent Luna                                                    0/8        8/8 [4]         0/8         8/8 [2]        2/2 [1]           0/2       0/2
+browser agent Terra                                                   2/8        6/8 [6]         2/8         6/8 [6]        2/2 [2]           0/2       0/2
+browser agent Haiku                                                   1/8        7/8 [7]         1/8         7/8 [6]        2/2 [2]           0/2       0/2
+  change-attributable (pre pass -> post not pass) / post-only recovery (pre not pass -> post pass), per scenario and repetition:
+    developers' step definitions before the change (A-old)       1/4 broke, 0/4 recovered, 0/4 pass both
+    browser agent Luna                                           0/8 broke, 0/8 recovered, 0/8 pass both
+    browser agent Terra                                          0/8 broke, 0/8 recovered, 2/8 pass both
+    browser agent Haiku                                          1/8 broke, 1/8 recovered, 0/8 pass both
+
+## Agent runs not passing, by harness flag (plan.md amendment A2; outcomes counted as above, flags only split them)
+  tier1                  Luna   healthy pre   not passing 7/14: setup-step-handed 2, tool-budget 0, unflagged 5
+  tier1                  Luna   healthy post  not passing 7/14: setup-step-handed 1, tool-budget 0, unflagged 6
+  tier1                  Luna   faulty post   not passing 11/14: setup-step-handed 2, tool-budget 0, unflagged 9
+  tier1                  Terra  healthy pre   not passing 0/14: setup-step-handed 0, tool-budget 0, unflagged 0
+  tier1                  Terra  healthy post  not passing 2/14: setup-step-handed 0, tool-budget 0, unflagged 2
+  tier1                  Terra  faulty post   not passing 12/14: setup-step-handed 4, tool-budget 0, unflagged 8
+  tier1                  Haiku  healthy pre   not passing 3/14: setup-step-handed 2, tool-budget 0, unflagged 1
+  tier1                  Haiku  healthy post  not passing 2/14: setup-step-handed 0, tool-budget 0, unflagged 2
+  tier1                  Haiku  faulty post   not passing 14/14: setup-step-handed 4, tool-budget 0, unflagged 10
+  2021-campaign-text     Luna   healthy pre   not passing 2/2: setup-step-handed 0, tool-budget 0, unflagged 2
+  2021-campaign-text     Luna   healthy post  not passing 0/2: setup-step-handed 0, tool-budget 0, unflagged 0
+  2021-campaign-text     Terra  healthy pre   not passing 0/2: setup-step-handed 0, tool-budget 0, unflagged 0
+  2021-campaign-text     Terra  healthy post  not passing 0/2: setup-step-handed 0, tool-budget 0, unflagged 0
+  2021-campaign-text     Haiku  healthy pre   not passing 0/2: setup-step-handed 0, tool-budget 0, unflagged 0
+  2021-campaign-text     Haiku  healthy post  not passing 0/2: setup-step-handed 0, tool-budget 0, unflagged 0
+  2021-historical-text   Luna   healthy pre   not passing 8/8: setup-step-handed 0, tool-budget 1, unflagged 7
+  2021-historical-text   Luna   healthy post  not passing 8/8: setup-step-handed 0, tool-budget 0, unflagged 8
+  2021-historical-text   Luna   faulty post   not passing 2/2: setup-step-handed 0, tool-budget 1, unflagged 1
+  2021-historical-text   Terra  healthy pre   not passing 6/8: setup-step-handed 0, tool-budget 1, unflagged 5
+  2021-historical-text   Terra  healthy post  not passing 6/8: setup-step-handed 0, tool-budget 2, unflagged 4
+  2021-historical-text   Terra  faulty post   not passing 2/2: setup-step-handed 0, tool-budget 1, unflagged 1
+  2021-historical-text   Haiku  healthy pre   not passing 7/8: setup-step-handed 0, tool-budget 2, unflagged 5
+  2021-historical-text   Haiku  healthy post  not passing 7/8: setup-step-handed 0, tool-budget 2, unflagged 5
+  2021-historical-text   Haiku  faulty post   not passing 2/2: setup-step-handed 0, tool-budget 1, unflagged 1
+
+## Per change, healthy post-change build: runs not passing / runs (per arm)
+  B04: A-old 3/3, A-new 0/3, Luna 4/6, Terra 2/6, Haiku 1/6
+  B07: A-old 3/3, A-new 0/3, Luna 1/4, Terra 0/4, Haiku 0/4
+  B15: A-old 2/2, A-new 0/2, Luna 2/4, Terra 0/4, Haiku 1/4
+  B25: A-old 1/1, A-new 0/1, Luna 2/2, Terra 2/2, Haiku 2/2
+  B27: A-old 1/1, A-new 0/1
+  B28: A-old 2/2, A-new 2/2, Luna 2/4, Terra 0/4, Haiku 1/4
+  B29: A-old 2/2, A-new 2/2, Luna 4/4, Terra 4/4, Haiku 4/4
+
+## Per change and arm: healthy pre not passing | healthy post not passing | faulty post catches | paired catches  (n = runs; [unresolved or Behat error])
+  B04 A-old  pre 0/3 [0]    post 3/3 [0]    faulty 3/3 [0]    paired 0/3
+  B04 A-new  pre -          post 0/3 [0]    faulty 3/3 [0]    paired 3/3
+  B04 Luna   pre 3/6 [0]    post 4/6 [0]    faulty 6/6 [0]    paired 2/6
+  B04 Terra  pre 0/6 [0]    post 2/6 [0]    faulty 6/6 [0]    paired 4/6
+  B04 Haiku  pre 0/6 [0]    post 1/6 [1]    faulty 6/6 [0]    paired 5/6
+  B07 A-old  pre 0/3 [0]    post 3/3 [0]    faulty 3/3 [0]    paired 0/3
+  B07 A-new  pre -          post 0/3 [0]    faulty 3/3 [0]    paired 3/3
+  B07 Luna   pre 2/4 [0]    post 1/4 [0]    faulty 2/4 [0]    paired 2/4
+  B07 Terra  pre 0/4 [0]    post 0/4 [0]    faulty 4/4 [0]    paired 4/4
+  B07 Haiku  pre 2/4 [2]    post 0/4 [0]    faulty 4/4 [0]    paired 4/4
+  B15 A-old  pre 0/2 [0]    post 2/2 [0]    faulty 2/2 [0]    paired 0/2
+  B15 A-new  pre -          post 0/2 [0]    faulty 2/2 [0]    paired 2/2
+  B15 Luna   pre 2/4 [0]    post 2/4 [0]    faulty 3/4 [0]    paired 2/4
+  B15 Terra  pre 0/4 [0]    post 0/4 [0]    faulty 2/4 [0]    paired 2/4
+  B15 Haiku  pre 1/4 [0]    post 1/4 [0]    faulty 4/4 [0]    paired 3/4
+  B25 A-old  pre 0/1 [0]    post 1/1 [0]    faulty 1/1 [0]    paired 0/1
+  B25 A-new  pre -          post 0/1 [0]    faulty 1/1 [0]    paired 1/1
+  B25 Luna   pre 2/2 [1]    post 2/2 [1]    faulty 2/2 [1]    paired 0/2
+  B25 Terra  pre 2/2 [2]    post 2/2 [2]    faulty 2/2 [2]    paired 0/2
+  B25 Haiku  pre 2/2 [2]    post 2/2 [2]    faulty 2/2 [2]    paired 0/2
+  B27 A-old  pre 0/1 [0]    post 1/1 [0]    faulty -          paired -
+  B27 A-new  pre -          post 0/1 [0]    faulty -          paired -
+  B28 A-old  pre 2/2 [0]    post 2/2 [0]    faulty 2/2 [0]    paired 0/2
+  B28 A-new  pre -          post 2/2 [0]    faulty 2/2 [0]    paired 0/2
+  B28 Luna   pre 4/4 [0]    post 2/4 [0]    faulty -          paired -
+  B28 Terra  pre 0/4 [0]    post 0/4 [0]    faulty -          paired -
+  B28 Haiku  pre 1/4 [1]    post 1/4 [0]    faulty -          paired -
+  B29 A-old  pre 2/2 [0]    post 2/2 [0]    faulty -          paired -
+  B29 A-new  pre -          post 2/2 [0]    faulty -          paired -
+  B29 Luna   pre 4/4 [3]    post 4/4 [1]    faulty -          paired -
+  B29 Terra  pre 4/4 [4]    post 4/4 [4]    faulty -          paired -
+  B29 Haiku  pre 4/4 [4]    post 4/4 [4]    faulty -          paired -
+
+## Resources (arm C; tokens = input incl. cache + output; minutes = sum of whole-trial wall time)
+  Luna: runs 64, tokens 22.18M (metered 64/64), mean 346.6k, minutes 46.9
+  Terra: runs 64, tokens 30.49M (metered 64/64), mean 476.5k, minutes 75.0
+  Haiku: runs 64, tokens 42.26M (metered 64/64), mean 660.4k, minutes 53.5
+  total agent tokens: 94.94M
+  unresolved agent runs that ended at the tool-call limit (>60 calls): 11/39
+
+## Excluded runs (never reached a verdict)
+
+## Audit
+  interrupted attempts: 0
+  keys with more than one attempt: 0
+  schedule stops: 0
+  studyMode values: ['exploratory-owner-directed']; gatePassExists values: ['False']
+
+## Every counted run
+  replay-d1/B04.S036/post/fault:X014/A-new/none/r1: fail failing@8 target 8 tools None
+  replay-d1/B04.S036/post/fault:X014/A-old/none/r1: fail failing@8 target 8 tools None
+  replay-d1/B04.S036/post/fault:X014/C/claude-haiku-5-5/r1: fail failing@8 target 8 tools 9
+  replay-d1/B04.S036/post/fault:X014/C/claude-haiku-5-5/r2: fail failing@8 target 8 tools 6
+  replay-d1/B04.S036/post/fault:X014/C/gpt-5.6-terra/r1: fail failing@8 target 8 tools 5
+  replay-d1/B04.S036/post/fault:X014/C/gpt-5.6-terra/r2: fail failing@8 target 8 tools 6
+  replay-d1/B04.S036/post/fault:X014/C/gpt-6-luna/r1: fail failing@8 target 8 tools 18
+  replay-d1/B04.S036/post/fault:X014/C/gpt-6-luna/r2: fail failing@6 target 8 tools 15
+  replay-d1/B04.S036/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B04.S036/post/healthy/A-old/none/r1: fail failing@8 target None tools None
+  replay-d1/B04.S036/post/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 21
+  replay-d1/B04.S036/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 20
+  replay-d1/B04.S036/post/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 15
+  replay-d1/B04.S036/post/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 16
+  replay-d1/B04.S036/post/healthy/C/gpt-6-luna/r1: fail failing@6 target None tools 14
+  replay-d1/B04.S036/post/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 14
+  replay-d1/B04.S036/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B04.S036/pre/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 22
+  replay-d1/B04.S036/pre/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 37
+  replay-d1/B04.S036/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 22
+  replay-d1/B04.S036/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 21
+  replay-d1/B04.S036/pre/healthy/C/gpt-6-luna/r1: pass failing@None target None tools 14
+  replay-d1/B04.S036/pre/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 17
+  replay-d1/B04.S037/post/fault:X014/A-new/none/r1: fail failing@15 target 15 tools None
+  replay-d1/B04.S037/post/fault:X014/A-old/none/r1: fail failing@15 target 15 tools None
+  replay-d1/B04.S037/post/fault:X014/C/claude-haiku-5-5/r1: fail failing@15 target 15 tools 25
+  replay-d1/B04.S037/post/fault:X014/C/claude-haiku-5-5/r2: fail failing@15 target 15 tools 28
+  replay-d1/B04.S037/post/fault:X014/C/gpt-5.6-terra/r1: fail failing@15 target 15 tools 23
+  replay-d1/B04.S037/post/fault:X014/C/gpt-5.6-terra/r2: fail failing@15 target 15 tools 28
+  replay-d1/B04.S037/post/fault:X014/C/gpt-6-luna/r1: fail failing@15 target 15 tools 16
+  replay-d1/B04.S037/post/fault:X014/C/gpt-6-luna/r2: fail failing@15 target 15 tools 27
+  replay-d1/B04.S037/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B04.S037/post/healthy/A-old/none/r1: fail failing@15 target None tools None
+  replay-d1/B04.S037/post/healthy/C/claude-haiku-5-5/r1: unresolved failing@None target None tools 28
+  replay-d1/B04.S037/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 24
+  replay-d1/B04.S037/post/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 28
+  replay-d1/B04.S037/post/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 29
+  replay-d1/B04.S037/post/healthy/C/gpt-6-luna/r1: fail failing@13 target None tools 19
+  replay-d1/B04.S037/post/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 22
+  replay-d1/B04.S037/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B04.S037/pre/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 26
+  replay-d1/B04.S037/pre/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 27
+  replay-d1/B04.S037/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 30
+  replay-d1/B04.S037/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 35
+  replay-d1/B04.S037/pre/healthy/C/gpt-6-luna/r1: fail failing@14 target None tools 20
+  replay-d1/B04.S037/pre/healthy/C/gpt-6-luna/r2: fail failing@9 target None tools 25
+  replay-d1/B04.S041/post/fault:X014/A-new/none/r1: fail failing@6 target 6 tools None
+  replay-d1/B04.S041/post/fault:X014/A-old/none/r1: fail failing@6 target 6 tools None
+  replay-d1/B04.S041/post/fault:X014/C/claude-haiku-5-5/r1: fail failing@6 target 6 tools 7
+  replay-d1/B04.S041/post/fault:X014/C/claude-haiku-5-5/r2: fail failing@6 target 6 tools 8
+  replay-d1/B04.S041/post/fault:X014/C/gpt-5.6-terra/r1: fail failing@6 target 6 tools 14
+  replay-d1/B04.S041/post/fault:X014/C/gpt-5.6-terra/r2: fail failing@6 target 6 tools 19
+  replay-d1/B04.S041/post/fault:X014/C/gpt-6-luna/r1: fail failing@6 target 6 tools 7
+  replay-d1/B04.S041/post/fault:X014/C/gpt-6-luna/r2: fail failing@None target 6 tools 14
+  replay-d1/B04.S041/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B04.S041/post/healthy/A-old/none/r1: fail failing@6 target None tools None
+  replay-d1/B04.S041/post/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 26
+  replay-d1/B04.S041/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 24
+  replay-d1/B04.S041/post/healthy/C/gpt-5.6-terra/r1: fail failing@11 target None tools 34
+  replay-d1/B04.S041/post/healthy/C/gpt-5.6-terra/r2: fail failing@11 target None tools 24
+  replay-d1/B04.S041/post/healthy/C/gpt-6-luna/r1: fail failing@None target None tools 11
+  replay-d1/B04.S041/post/healthy/C/gpt-6-luna/r2: fail failing@7 target None tools 6
+  replay-d1/B04.S041/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B04.S041/pre/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 25
+  replay-d1/B04.S041/pre/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 27
+  replay-d1/B04.S041/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 40
+  replay-d1/B04.S041/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 32
+  replay-d1/B04.S041/pre/healthy/C/gpt-6-luna/r1: fail failing@None target None tools 9
+  replay-d1/B04.S041/pre/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 43
+  replay-d1/B07.S025/post/fault:X011/A-new/none/r1: fail failing@13 target 13 tools None
+  replay-d1/B07.S025/post/fault:X011/A-old/none/r1: fail failing@9 target 13 tools None
+  replay-d1/B07.S025/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B07.S025/post/healthy/A-old/none/r1: fail failing@9 target None tools None
+  replay-d1/B07.S025/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B07.S028/post/fault:X010/A-new/none/r1: fail failing@4 target 4 tools None
+  replay-d1/B07.S028/post/fault:X010/A-old/none/r1: fail failing@3 target 4 tools None
+  replay-d1/B07.S028/post/fault:X010/C/claude-haiku-5-5/r1: fail failing@4 target 4 tools 25
+  replay-d1/B07.S028/post/fault:X010/C/claude-haiku-5-5/r2: fail failing@4 target 4 tools 19
+  replay-d1/B07.S028/post/fault:X010/C/gpt-5.6-terra/r1: fail failing@4 target 4 tools 32
+  replay-d1/B07.S028/post/fault:X010/C/gpt-5.6-terra/r2: fail failing@4 target 4 tools 16
+  replay-d1/B07.S028/post/fault:X010/C/gpt-6-luna/r1: fail failing@None target 4 tools 10
+  replay-d1/B07.S028/post/fault:X010/C/gpt-6-luna/r2: fail failing@4 target 4 tools 18
+  replay-d1/B07.S028/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B07.S028/post/healthy/A-old/none/r1: fail failing@3 target None tools None
+  replay-d1/B07.S028/post/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 15
+  replay-d1/B07.S028/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 20
+  replay-d1/B07.S028/post/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 20
+  replay-d1/B07.S028/post/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 29
+  replay-d1/B07.S028/post/healthy/C/gpt-6-luna/r1: pass failing@None target None tools 20
+  replay-d1/B07.S028/post/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 21
+  replay-d1/B07.S028/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B07.S028/pre/healthy/C/claude-haiku-5-5/r1: unresolved failing@5 target None tools 25
+  replay-d1/B07.S028/pre/healthy/C/claude-haiku-5-5/r2: unresolved failing@5 target None tools 26
+  replay-d1/B07.S028/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 30
+  replay-d1/B07.S028/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 22
+  replay-d1/B07.S028/pre/healthy/C/gpt-6-luna/r1: pass failing@None target None tools 19
+  replay-d1/B07.S028/pre/healthy/C/gpt-6-luna/r2: fail failing@None target None tools 11
+  replay-d1/B07.S029/post/fault:X010/A-new/none/r1: fail failing@4 target 4 tools None
+  replay-d1/B07.S029/post/fault:X010/A-old/none/r1: fail failing@3 target 4 tools None
+  replay-d1/B07.S029/post/fault:X010/C/claude-haiku-5-5/r1: fail failing@4 target 4 tools 14
+  replay-d1/B07.S029/post/fault:X010/C/claude-haiku-5-5/r2: fail failing@4 target 4 tools 17
+  replay-d1/B07.S029/post/fault:X010/C/gpt-5.6-terra/r1: fail failing@4 target 4 tools 33
+  replay-d1/B07.S029/post/fault:X010/C/gpt-5.6-terra/r2: fail failing@4 target 4 tools 27
+  replay-d1/B07.S029/post/fault:X010/C/gpt-6-luna/r1: pass failing@None target 4 tools 24
+  replay-d1/B07.S029/post/fault:X010/C/gpt-6-luna/r2: pass failing@None target 4 tools 18
+  replay-d1/B07.S029/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B07.S029/post/healthy/A-old/none/r1: fail failing@3 target None tools None
+  replay-d1/B07.S029/post/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 11
+  replay-d1/B07.S029/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 14
+  replay-d1/B07.S029/post/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 32
+  replay-d1/B07.S029/post/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 25
+  replay-d1/B07.S029/post/healthy/C/gpt-6-luna/r1: pass failing@None target None tools 17
+  replay-d1/B07.S029/post/healthy/C/gpt-6-luna/r2: fail failing@None target None tools 12
+  replay-d1/B07.S029/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B07.S029/pre/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 23
+  replay-d1/B07.S029/pre/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 23
+  replay-d1/B07.S029/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 25
+  replay-d1/B07.S029/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 20
+  replay-d1/B07.S029/pre/healthy/C/gpt-6-luna/r1: fail failing@None target None tools 9
+  replay-d1/B07.S029/pre/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 21
+  replay-d1/B15.S091/post/fault:X022/A-new/none/r1: fail failing@4 target 4 tools None
+  replay-d1/B15.S091/post/fault:X022/A-old/none/r1: fail failing@3 target 4 tools None
+  replay-d1/B15.S091/post/fault:X022/C/claude-haiku-5-5/r1: fail failing@4 target 4 tools 10
+  replay-d1/B15.S091/post/fault:X022/C/claude-haiku-5-5/r2: fail failing@4 target 4 tools 9
+  replay-d1/B15.S091/post/fault:X022/C/gpt-5.6-terra/r1: pass failing@None target 4 tools 11
+  replay-d1/B15.S091/post/fault:X022/C/gpt-5.6-terra/r2: pass failing@None target 4 tools 9
+  replay-d1/B15.S091/post/fault:X022/C/gpt-6-luna/r1: fail failing@4 target 4 tools 11
+  replay-d1/B15.S091/post/fault:X022/C/gpt-6-luna/r2: pass failing@None target 4 tools 8
+  replay-d1/B15.S091/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B15.S091/post/healthy/A-old/none/r1: fail failing@3 target None tools None
+  replay-d1/B15.S091/post/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 12
+  replay-d1/B15.S091/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 11
+  replay-d1/B15.S091/post/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 9
+  replay-d1/B15.S091/post/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 12
+  replay-d1/B15.S091/post/healthy/C/gpt-6-luna/r1: pass failing@None target None tools 9
+  replay-d1/B15.S091/post/healthy/C/gpt-6-luna/r2: fail failing@4 target None tools 11
+  replay-d1/B15.S091/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B15.S091/pre/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 11
+  replay-d1/B15.S091/pre/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 16
+  replay-d1/B15.S091/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 9
+  replay-d1/B15.S091/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 11
+  replay-d1/B15.S091/pre/healthy/C/gpt-6-luna/r1: fail failing@2 target None tools 12
+  replay-d1/B15.S091/pre/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 8
+  replay-d1/B15.S094/post/fault:X021/A-new/none/r1: fail failing@6 target 6 tools None
+  replay-d1/B15.S094/post/fault:X021/A-old/none/r1: fail failing@5 target 6 tools None
+  replay-d1/B15.S094/post/fault:X021/C/claude-haiku-5-5/r1: fail failing@6 target 6 tools 25
+  replay-d1/B15.S094/post/fault:X021/C/claude-haiku-5-5/r2: fail failing@6 target 6 tools 36
+  replay-d1/B15.S094/post/fault:X021/C/gpt-5.6-terra/r1: fail failing@6 target 6 tools 20
+  replay-d1/B15.S094/post/fault:X021/C/gpt-5.6-terra/r2: fail failing@6 target 6 tools 20
+  replay-d1/B15.S094/post/fault:X021/C/gpt-6-luna/r1: fail failing@4 target 6 tools 12
+  replay-d1/B15.S094/post/fault:X021/C/gpt-6-luna/r2: fail failing@6 target 6 tools 18
+  replay-d1/B15.S094/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B15.S094/post/healthy/A-old/none/r1: fail failing@5 target None tools None
+  replay-d1/B15.S094/post/healthy/C/claude-haiku-5-5/r1: fail failing@6 target None tools 26
+  replay-d1/B15.S094/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 29
+  replay-d1/B15.S094/post/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 15
+  replay-d1/B15.S094/post/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 19
+  replay-d1/B15.S094/post/healthy/C/gpt-6-luna/r1: fail failing@6 target None tools 16
+  replay-d1/B15.S094/post/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 18
+  replay-d1/B15.S094/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B15.S094/pre/healthy/C/claude-haiku-5-5/r1: fail failing@6 target None tools 40
+  replay-d1/B15.S094/pre/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 38
+  replay-d1/B15.S094/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 16
+  replay-d1/B15.S094/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 15
+  replay-d1/B15.S094/pre/healthy/C/gpt-6-luna/r1: fail failing@6 target None tools 22
+  replay-d1/B15.S094/pre/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 23
+  replay-d1/B25.S125/post/fault:X020/A-new/none/r1: fail failing@28 target 28 tools None
+  replay-d1/B25.S125/post/fault:X020/A-old/none/r1: fail failing@12 target 28 tools None
+  replay-d1/B25.S125/post/fault:X020/C/claude-haiku-5-5/r1: unresolved failing@None target 28 tools 58
+  replay-d1/B25.S125/post/fault:X020/C/claude-haiku-5-5/r2: unresolved failing@None target 28 tools 61
+  replay-d1/B25.S125/post/fault:X020/C/gpt-5.6-terra/r1: unresolved failing@14 target 28 tools 61
+  replay-d1/B25.S125/post/fault:X020/C/gpt-5.6-terra/r2: unresolved failing@12 target 28 tools 57
+  replay-d1/B25.S125/post/fault:X020/C/gpt-6-luna/r1: fail failing@5 target 28 tools 8
+  replay-d1/B25.S125/post/fault:X020/C/gpt-6-luna/r2: unresolved failing@None target 28 tools 61
+  replay-d1/B25.S125/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B25.S125/post/healthy/A-old/none/r1: fail failing@12 target None tools None
+  replay-d1/B25.S125/post/healthy/C/claude-haiku-5-5/r1: unresolved failing@None target None tools 61
+  replay-d1/B25.S125/post/healthy/C/claude-haiku-5-5/r2: unresolved failing@None target None tools 62
+  replay-d1/B25.S125/post/healthy/C/gpt-5.6-terra/r1: unresolved failing@None target None tools 61
+  replay-d1/B25.S125/post/healthy/C/gpt-5.6-terra/r2: unresolved failing@12 target None tools 61
+  replay-d1/B25.S125/post/healthy/C/gpt-6-luna/r1: unresolved failing@5 target None tools 8
+  replay-d1/B25.S125/post/healthy/C/gpt-6-luna/r2: fail failing@5 target None tools 9
+  replay-d1/B25.S125/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B25.S125/pre/healthy/C/claude-haiku-5-5/r1: unresolved failing@None target None tools 61
+  replay-d1/B25.S125/pre/healthy/C/claude-haiku-5-5/r2: unresolved failing@None target None tools 50
+  replay-d1/B25.S125/pre/healthy/C/gpt-5.6-terra/r1: unresolved failing@17 target None tools 61
+  replay-d1/B25.S125/pre/healthy/C/gpt-5.6-terra/r2: unresolved failing@14 target None tools 60
+  replay-d1/B25.S125/pre/healthy/C/gpt-6-luna/r1: unresolved failing@None target None tools 61
+  replay-d1/B25.S125/pre/healthy/C/gpt-6-luna/r2: fail failing@5 target None tools 7
+  replay-d1/B27.S131/post/healthy/A-new/none/r1: pass failing@None target None tools None
+  replay-d1/B27.S131/post/healthy/A-old/none/r1: fail failing@1 target None tools None
+  replay-d1/B27.S131/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B28.S134/post/fault:X025/A-new/none/r1: fail failing@5 target 8 tools None
+  replay-d1/B28.S134/post/fault:X025/A-old/none/r1: fail failing@5 target 8 tools None
+  replay-d1/B28.S134/post/healthy/A-new/none/r1: fail failing@5 target None tools None
+  replay-d1/B28.S134/post/healthy/A-old/none/r1: fail failing@5 target None tools None
+  replay-d1/B28.S134/post/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 35
+  replay-d1/B28.S134/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 18
+  replay-d1/B28.S134/post/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 16
+  replay-d1/B28.S134/post/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 15
+  replay-d1/B28.S134/post/healthy/C/gpt-6-luna/r1: pass failing@None target None tools 23
+  replay-d1/B28.S134/post/healthy/C/gpt-6-luna/r2: pass failing@None target None tools 17
+  replay-d1/B28.S134/pre/healthy/A-old/none/r1: fail failing@5 target None tools None
+  replay-d1/B28.S134/pre/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 22
+  replay-d1/B28.S134/pre/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 23
+  replay-d1/B28.S134/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 16
+  replay-d1/B28.S134/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 20
+  replay-d1/B28.S134/pre/healthy/C/gpt-6-luna/r1: fail failing@7 target None tools 22
+  replay-d1/B28.S134/pre/healthy/C/gpt-6-luna/r2: fail failing@5 target None tools 17
+  replay-d1/B28.S137/post/fault:X025/A-new/none/r1: fail failing@5 target 8 tools None
+  replay-d1/B28.S137/post/fault:X025/A-old/none/r1: fail failing@5 target 8 tools None
+  replay-d1/B28.S137/post/healthy/A-new/none/r1: fail failing@5 target None tools None
+  replay-d1/B28.S137/post/healthy/A-old/none/r1: fail failing@5 target None tools None
+  replay-d1/B28.S137/post/healthy/C/claude-haiku-5-5/r1: fail failing@5 target None tools 21
+  replay-d1/B28.S137/post/healthy/C/claude-haiku-5-5/r2: pass failing@None target None tools 33
+  replay-d1/B28.S137/post/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 46
+  replay-d1/B28.S137/post/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 42
+  replay-d1/B28.S137/post/healthy/C/gpt-6-luna/r1: fail failing@7 target None tools 14
+  replay-d1/B28.S137/post/healthy/C/gpt-6-luna/r2: fail failing@14 target None tools 32
+  replay-d1/B28.S137/pre/healthy/A-old/none/r1: fail failing@5 target None tools None
+  replay-d1/B28.S137/pre/healthy/C/claude-haiku-5-5/r1: pass failing@None target None tools 35
+  replay-d1/B28.S137/pre/healthy/C/claude-haiku-5-5/r2: unresolved failing@None target None tools 61
+  replay-d1/B28.S137/pre/healthy/C/gpt-5.6-terra/r1: pass failing@None target None tools 37
+  replay-d1/B28.S137/pre/healthy/C/gpt-5.6-terra/r2: pass failing@None target None tools 43
+  replay-d1/B28.S137/pre/healthy/C/gpt-6-luna/r1: fail failing@7 target None tools 16
+  replay-d1/B28.S137/pre/healthy/C/gpt-6-luna/r2: fail failing@5 target None tools 6
+  replay-d1/B29.S138/post/healthy/A-new/none/r1: fail failing@6 target None tools None
+  replay-d1/B29.S138/post/healthy/A-old/none/r1: fail failing@6 target None tools None
+  replay-d1/B29.S138/post/healthy/C/claude-haiku-5-5/r1: unresolved failing@6 target None tools 5
+  replay-d1/B29.S138/post/healthy/C/claude-haiku-5-5/r2: unresolved failing@6 target None tools 12
+  replay-d1/B29.S138/post/healthy/C/gpt-5.6-terra/r1: unresolved failing@6 target None tools 16
+  replay-d1/B29.S138/post/healthy/C/gpt-5.6-terra/r2: unresolved failing@6 target None tools 11
+  replay-d1/B29.S138/post/healthy/C/gpt-6-luna/r1: fail failing@6 target None tools 8
+  replay-d1/B29.S138/post/healthy/C/gpt-6-luna/r2: fail failing@6 target None tools 9
+  replay-d1/B29.S138/pre/healthy/A-old/none/r1: fail failing@6 target None tools None
+  replay-d1/B29.S138/pre/healthy/C/claude-haiku-5-5/r1: unresolved failing@6 target None tools 6
+  replay-d1/B29.S138/pre/healthy/C/claude-haiku-5-5/r2: unresolved failing@6 target None tools 11
+  replay-d1/B29.S138/pre/healthy/C/gpt-5.6-terra/r1: unresolved failing@6 target None tools 12
+  replay-d1/B29.S138/pre/healthy/C/gpt-5.6-terra/r2: unresolved failing@6 target None tools 23
+  replay-d1/B29.S138/pre/healthy/C/gpt-6-luna/r1: fail failing@6 target None tools 7
+  replay-d1/B29.S138/pre/healthy/C/gpt-6-luna/r2: unresolved failing@6 target None tools 10
+  replay-d1/B29.S139/post/healthy/A-new/none/r1: fail failing@6 target None tools None
+  replay-d1/B29.S139/post/healthy/A-old/none/r1: fail failing@6 target None tools None
+  replay-d1/B29.S139/post/healthy/C/claude-haiku-5-5/r1: unresolved failing@6 target None tools 7
+  replay-d1/B29.S139/post/healthy/C/claude-haiku-5-5/r2: unresolved failing@6 target None tools 6
+  replay-d1/B29.S139/post/healthy/C/gpt-5.6-terra/r1: unresolved failing@6 target None tools 16
+  replay-d1/B29.S139/post/healthy/C/gpt-5.6-terra/r2: unresolved failing@6 target None tools 16
+  replay-d1/B29.S139/post/healthy/C/gpt-6-luna/r1: unresolved failing@6 target None tools 10
+  replay-d1/B29.S139/post/healthy/C/gpt-6-luna/r2: fail failing@6 target None tools 17
+  replay-d1/B29.S139/pre/healthy/A-old/none/r1: fail failing@6 target None tools None
+  replay-d1/B29.S139/pre/healthy/C/claude-haiku-5-5/r1: unresolved failing@6 target None tools 6
+  replay-d1/B29.S139/pre/healthy/C/claude-haiku-5-5/r2: unresolved failing@6 target None tools 10
+  replay-d1/B29.S139/pre/healthy/C/gpt-5.6-terra/r1: unresolved failing@6 target None tools 10
+  replay-d1/B29.S139/pre/healthy/C/gpt-5.6-terra/r2: unresolved failing@6 target None tools 16
+  replay-d1/B29.S139/pre/healthy/C/gpt-6-luna/r1: unresolved failing@6 target None tools 8
+  replay-d1/B29.S139/pre/healthy/C/gpt-6-luna/r2: unresolved failing@6 target None tools 11

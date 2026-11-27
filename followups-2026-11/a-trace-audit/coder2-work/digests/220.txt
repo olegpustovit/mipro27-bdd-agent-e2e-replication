@@ -1,0 +1,265 @@
+UNIT pay:X4-opus:fault-v2-1/social-comment/runtime
+model claude-opus-5-5 driver 2.1.327 (Claude Code) build v2+fault type faulty
+scenario social-comment 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I open transaction "1xfcAhNDZK4"
+  4. Then the transaction detail heading is visible
+  5. When I add comment "Study comment"
+  6. Then comment "Study comment" is visible in the transaction's comments
+  7. When I reload the current page
+  8. Then comment "Study comment" is visible exactly once in the transaction's comments
+fault {"file": "src/components/CommentForm.tsx", "before": "transactionComment({ transactionId, ...values });", "after": "transactionComment({ transactionId, ...values, content: \"Altered comment\" });"}
+target [6] Then comment "Study comment" is visible in the transaction's comments
+VERDICT fail step [6] 'Then comment "Study comment" is visible in the transaction's comments'
+REASON After signing in as Heath93 (home shows @Heath93) and opening transaction 1xfcAhNDZK4 (heading 'Transaction Detail' visible), submitting comment 'Study comment' produced a Comments list with a single item reading 'Altered comment'; 'Study comment' did not appear within a 3s wait. The reload step was not run, so the exactly-once-after-reload check is untested.
+parse_error None tool_calls 10 timed_out False run_result recorded run_error None
+reread fail
+SOURCE ledger
+============================================================
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T18-00-15-051Z.yml)
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T18-00-20-045Z.yml)
+#5 CALL browser_snapshot {"depth": 12}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Lia Rosenbaum paid Darrel Ortiz
+                  - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - 
+…[truncated 2488 chars]
+#6 CALL browser_navigate {"url": "http://localhost:3000/transaction/1xfcAhNDZK4"}
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T18-00-22-457Z.yml)
+#7 CALL browser_snapshot {}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e4]:
+  - banner [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - button "open drawer" [ref=f1e7]
+      - heading [level=1] [ref=f1e10]:
+        - link [ref=f1e11]:
+          - /url: /
+      - link "New" [ref=f1e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f1e58]:
+        - /url: /notifications
+  - generic [ref=f1e24]:
+    - generic [ref=f1e25]:
+      - generic [ref=f1e26]: T
+      - generic [ref=f1e29]:
+        - heading "Ted P" [level=6] [ref=f1e30]
+        - heading "@Heath93" [level=6] [ref=f1e31]
+    - generic [ref=f1e32]:
+      - generic [ref=f1e33]:
+        - heading "$1,509.53" [level=6] [ref=f1e34]
+        - heading "Account Balance" [level=6] [ref=f1e35]
+      - generic:
+        - separator
+      - button "Account menu" [ref=f1e37]
+      - generic:
+        - separator
+  - main [ref=f1e38]:
+    - generic [ref=f1e60]:
+      - heading "Transaction Detail" [level=2] [ref=f1e61]
+      - generic [ref=f1e62]:
+        - generic [ref=f1e72]:
+          - paragraph [ref=f1e74]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f1e76]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f1e77]: +$204.68
+      - generic [ref=f1e80]:
+        - generic [ref=f1e81]:
+          - generic [ref=f1e82]: "0"
+          - button [ref=f1e84]
+        - generic [ref=f1e92]:
+          - textbox "Write a comment..." [ref=f1e93]
+          - group [aria-hidden]
+    - paragraph [ref=f1e45]:
+      - text: Built by
+      - link [ref=f1e46]:
+        - /url: https://cypress.io
+```
+#8 CALL browser_type {"target": "f1e93", "text": "Study comment", "submit": true}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T18-00-25-457Z.yml)
+#9 CALL browser_snapshot {"target": "main"}
+#9 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main [ref=f1e38]:
+  - generic [ref=f1e94]:
+    - heading "Transaction Detail" [level=2] [ref=f1e95]
+    - generic [ref=f1e96]:
+      - generic [ref=f1e106]:
+        - paragraph [ref=f1e108]: Ted Parisian charged Lia Rosenbaum
+        - paragraph [ref=f1e110]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+      - generic [ref=f1e111]: +$204.68
+    - generic [ref=f1e114]:
+      - generic [ref=f1e115]:
+        - generic [ref=f1e116]: "0"
+        - button [ref=f1e118]
+      - generic [ref=f1e126]:
+        - textbox "Write a comment..." [ref=f1e127]
+        - group [aria-hidden]
+    - generic [ref=f1e128]:
+      - heading "Comments" [level=2] [ref=f1e129]
+      - list [ref=f1e132]:
+        - listitem [ref=f1e133]:
+          - generic [ref=f1e134]: Altered comment
+  - paragraph [ref=f1e45]:
+    - text: Built by
+    - link [ref=f1e46]:
+      - /url: https://cypress.io
+```
+#10 CALL browser_wait_for {"text": "Study comment", "time": 3}
+#10 RESULT [isError] ### Error
+TimeoutError: Timeout 3000ms exceeded.
+Call log:
+[2m  - waiting for getByText('Study comment').first() to be visible[22m
+
+RAWRESPONSE I submitted the comment "Study comment", but the comments list showed "Altered comment" instead. "Study comment" still had not appeared after waiting 3 seconds, so the scenario fails at that step.
+
+- **Sign-in:** I signed in as Heath93, and the home page showed "@Heath93".
+- **Transaction:** I opened transaction 1xfcAhNDZK4 and the "Transaction Detail" heading was visible.
+- **Comment:** I typed "Study comment" and pressed Enter. A "Comments" section appeared with one entry, "Altered comment".
+- **Reload check:** I did not reload the page, because the rules say not to reload to make a missing result appear. The "visible exactly once after reload" check is untested.
+
+```json
+{"status":"fail","reason":"After signing in as Heath93 (home shows @Heath93) and opening transaction 1xfcAhNDZK4 (heading 'Transaction Detail' visible), submitting comment 'Study comment' produced a Comments list with a single item reading 'Altered comment'; 'Study comment' did not appear within a 3s wait. The reload step was not run, so the exactly-once-after-reload check is untested.","failedAssertion":"Then comment \"Study comment\" is visible in the transaction's comments"}
+```

@@ -1,0 +1,43 @@
+--- ../../a-trace-audit/add_codes.py	2026-11-26 21:57:33.540688802 +0000
++++ add_codes.py	2026-11-27 05:59:08.045932957 +0000
+@@ -2,10 +2,15 @@
+ # requires-python = ">=3.14"
+ # dependencies = []
+ # ///
+-"""Coder-1 helper: append coder 1's codes to codes-coder1.jsonl from tab-separated lines on stdin.
++"""Coder helper: append coder N's codes to coderN-work/codes-coderN.jsonl from tab-separated lines on stdin.
++FOLLOWUP-E-TA: copy of followups-2026-11/a-trace-audit/add_codes.py; changes marked FOLLOWUP-E-TA (--coder N, output path,
++payment short-id prefix).
++
++  uv run followups-2026-11/e-single-set/trace-audit/add_codes.py --coder N [--prefix pay:pay-Luna:] < codes.tsv
+ 
+ Columns: unit  code  confidence  pointer  evidence  [note]
+-- unit: a full unit_id, or a short id that --prefix completes (payment: '<stage>/<case>' -> 'pay:<set>:<stage>/<case>/runtime').
++- unit: a full unit_id, or a short id that --prefix completes (payment: '<stage>/<case>' -> 'pay:<set>:<stage>/<case>/runtime',
++  e.g. --prefix pay:pay-Luna: and 'fault-v0-1/bank-create').
+ - pointer / evidence '@hit': take the last matching symptom line in a payment trace (trace_view.SYMPTOM) and its call
+   number. The coder still chooses the code for each unit; this only copies the quoted text exactly from the trace.
+ It refuses unknown units, codes of the wrong family, re-coding a unit, and empty evidence.
+@@ -22,7 +27,7 @@
+ 
+ FAULTY = {'CORRECT', 'WRONG-REASON', 'UNCLEAR'}
+ HEALTHY = {'AGENT-ERROR', 'ENVIRONMENT', 'SCENARIO-AMBIGUOUS', 'APP-BEHAVIOUR'}
+-OUT = HERE / 'codes-coder1.jsonl'
++OUT = None  # FOLLOWUP-E-TA: set from --coder: HERE / 'coder<N>-work' / 'codes-coder<N>.jsonl'
+ 
+ 
+ def last_hit(u, needle=None):
+@@ -59,8 +64,12 @@
+ 
+ def main():
+     ap = argparse.ArgumentParser()
+-    ap.add_argument('--prefix', default='', help="e.g. 'pay:B:' (short payment ids get '/runtime' appended)")
++    ap.add_argument('--prefix', default='', help="e.g. 'pay:pay-Luna:' (short payment ids get '/runtime' appended)")
++    ap.add_argument('--coder', type=int, choices=(1, 2, 3), required=True)  # FOLLOWUP-E-TA
+     a = ap.parse_args()
++    global OUT
++    assert (HERE / 'UNITS_READY').exists(), 'UNITS_READY is missing: the unit set is not final yet'  # FOLLOWUP-E-TA
++    OUT = HERE / f'coder{a.coder}-work' / f'codes-coder{a.coder}.jsonl'  # FOLLOWUP-E-TA
+     units = {u['unit_id']: u for u in tv.units()}
+     done = set()
+     if OUT.exists():

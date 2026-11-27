@@ -1,0 +1,375 @@
+UNIT pay:E:fault-v2-2/profile-name/runtime
+model gpt-6.2-sol driver codex-cli 0.169.0 build v2+fault type faulty
+scenario profile-name 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I change my "First Name" to "Study"
+  4. Then my "First Name" field is "Study"
+  5. And my displayed full name contains "Study"
+  6. When I reload the current page
+  7. Then my "First Name" field is "Study"
+fault {"file": "src/components/UserSettingsForm.tsx", "before": "updateUser({ id: userProfile.id, ...values });", "after": "updateUser({ id: userProfile.id, ...values, firstName: userProfile.firstName });"}
+target [5] And my displayed full name contains "Study"
+VERDICT fail step [5] 'And my displayed full name contains "Study"'
+REASON The authenticated home showed @Heath93. After selecting Apply changes, the First Name field showed Study, but the displayed account name remained Ted P. The scenario stopped at that assertion before the reload check.
+parse_error None tool_calls 15 timed_out False run_result recorded run_error None
+SOURCE ledger
+============================================================
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-49-37-085Z.yml)
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"name": "Username", "target": "e16", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "e19", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26", "element": "Continue sign-in button"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-49-46-087Z.yml)
+#5 CALL browser_snapshot {"depth": 5}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#6 CALL browser_click {"target": "e86", "element": "Account menu"}
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-49-51-351Z.yml)
+#7 CALL browser_snapshot {"depth": 5}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded] [active]
+        - list:
+          - generic
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#8 CALL browser_snapshot {"target": "e456"}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- list:
+  - generic:
+    - link "Home":
+      - /url: /
+    - link "My Account":
+      - /url: /user/settings
+    - link "Bank Accounts":
+      - /url: /bankaccounts
+    - link "Notifications":
+      - /url: /notifications
+```
+#9 CALL browser_click {"target": "e464", "element": "My Account link"}
+#9 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-49-56-968Z.yml)
+#10 CALL browser_snapshot {}
+#10 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded]
+        - list:
+          - generic:
+            - link "Home":
+              - /url: /
+            - link "My Account" [active]:
+              - /url: /user/settings
+            - link "Bank Accounts":
+              - /url: /bankaccounts
+            - link "Notifications":
+              - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - heading "User Settings" [level=2]
+      - generic:
+        - generic:
+          - textbox "First Name": Ted
+          - group [aria-hidden]
+        - generic:
+          - textbox "Last Name": Parisian
+          - group [aria-hidden]
+        - generic:
+          - textbox "Email": Santos.Runte65@gmail.com
+          - group [aria-hidden]
+        - generic:
+          - textbox "Phone Number": 398-225-9900
+          - group [aria-hidden]
+        - button "Apply changes"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#11 CALL browser_type {"target": "e583", "element": "First Name field", "text": "Study"}
+#11 RESULT 
+#12 CALL browser_click {"target": "e595", "element": "Apply changes profile save control"}
+#12 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-50-05-280Z.yml)
+#13 CALL browser_snapshot {}
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded]
+        - list:
+          - generic:
+            - link "Home":
+              - /url: /
+            - link "My Account":
+              - /url: /user/settings
+            - link "Bank Accounts":
+              - /url: /bankaccounts
+            - link "Notifications":
+              - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - heading "User Settings" [level=2]
+      - generic:
+        - generic:
+          - textbox "First Name": Study
+          - group [aria-hidden]
+        - generic:
+          - textbox "Last Name": Parisian
+          - group [aria-hidden]
+        - generic:
+          - textbox "Email": Santos.Runte65@gmail.com
+          - group [aria-hidden]
+        - generic:
+          - textbox "Phone Number": 398-225-9900
+          - group [aria-hidden]
+        - button "Apply changes" [active]
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#14 CALL browser_wait_for {"text": "Study P", "time": 5}
+#14 RESULT [isError] ### Error
+TimeoutError: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for getByText('Study P').first() to be visible[22m
+
+#15 CALL browser_snapshot {"target": "e78"}
+#15 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - heading "Ted P" [level=6]
+  - heading "@Heath93" [level=6]
+```
+RAWRESPONSE {"status":"fail","reason":"The authenticated home showed @Heath93. After selecting Apply changes, the First Name field showed Study, but the displayed account name remained Ted P. The scenario stopped at that assertion before the reload check.","failedAssertion":"And my displayed full name contains \"Study\""}

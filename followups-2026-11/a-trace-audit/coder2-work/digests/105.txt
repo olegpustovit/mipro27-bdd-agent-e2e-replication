@@ -1,0 +1,726 @@
+UNIT pay:C:fault-v2-2/bank-create/runtime
+model gpt-5.6-terra driver codex-cli 0.159.3 (REPRODUCE.md) build v2+fault type faulty
+scenario bank-create 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I add bank "Study Credit Union" with routing "987654321" and account "123456789"
+  4. Then bank "Study Credit Union" is visible exactly once
+  5. When I reload the current page
+  6. Then bank "Study Credit Union" is visible exactly once
+fault {"file": "src/components/BankAccountForm.tsx", "before": "createBankAccount({ ...values, userId });", "after": "createBankAccount({ ...values, userId, bankName: \"Altered Bank\" });"}
+target [4, 6] Then bank "Study Credit Union" is visible exactly once
+VERDICT fail step [4, 6] 'bank "Study Credit Union" is visible exactly once'
+REASON After creating the requested bank, the Bank Accounts list showed “Altered Bank” rather than “Study Credit Union”.
+parse_error None tool_calls 22 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+MSG I’ll run the bank-account workflow entirely through the visible UI and verify both the initial display and persistence after reload.
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-00-05-808Z.yml)
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"name": "Username", "target": "e16", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "e19", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26", "element": "Continue sign-in"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-00-14-891Z.yml)
+#5 CALL browser_snapshot {}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Lia Rosenbaum paid Darrel Ortiz
+                  - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - 
+…[truncated 2488 chars]
+#6 CALL browser_click {"target": "e49", "element": "open navigation drawer"}
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-00-17-507Z.yml)
+#7 CALL browser_snapshot {}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer" [active]
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Lia Rosenbaum paid Darrel Ortiz
+                  - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$100.62"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+               
+…[truncated 2136 chars]
+#8 CALL browser_click {"target": "e86", "element": "Account menu"}
+#8 RESULT ### Error
+Error: Ref e86 not found in the current page snapshot. Try capturing new snapshot.
+#9 CALL browser_snapshot {"boxes": true, "depth": 4}
+#9 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [box=0,0,864,600]:
+  - banner [box=0,0,800,112]:
+    - generic [box=0,0,800,64]:
+      - button "open drawer" [active] [box=12,10,45,45]
+      - heading [level=1] [box=57,18,581,28]:
+        - link [box=230,22,235,20]:
+          - /url: /
+      - link "New" [box=638,13,93,38]:
+        - /url: /transaction/new
+      - link "8" [box=731,10,45,45]:
+        - /url: /notifications
+    - tablist [box=0,64,800,48]:
+      - tab "Everyone" [selected] [box=234,64,95,48]
+      - tab "People I know" [box=330,64,126,48]
+      - tab "My activity" [box=456,64,110,48]
+  - main [box=72,0,792,600]:
+    - generic [box=104,144,728,816]:
+      - generic [box=120,152,696,40]:
+        - 'button "Date: ALL" [box=128,160,95,32]'
+        - 'button "Amount: $0 - $1,000" [box=231,160,149,32]'
+      - generic [box=112,208,720,48]: Public
+      - grid "grid" [box=112,256,720,704]:
+        - rowgroup [box=112,256,720,1408]
+    - paragraph [box=192,1042,552,18]:
+      - text: Built by
+      - link [box=459,1043,60,14]:
+        - /url: https://cypress.io
+```
+#10 CALL browser_press_key {"key": "Tab"}
+#10 RESULT 
+#11 CALL browser_snapshot {"boxes": true, "depth": 5}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [box=0,0,864,600]:
+  - banner [box=0,0,800,112]:
+    - generic [box=0,0,800,64]:
+      - button "open drawer" [box=12,10,45,45]
+      - heading [level=1] [box=57,18,581,28]:
+        - link [active] [box=230,22,235,20]:
+          - /url: /
+      - link "New" [box=638,13,93,38]:
+        - /url: /transaction/new
+      - link "8" [box=731,10,45,45]:
+        - /url: /notifications
+    - tablist [box=0,64,800,48]:
+      - tab "Everyone" [selected] [box=234,64,95,48]
+      - tab "People I know" [box=330,64,126,48]
+      - tab "My activity" [box=456,64,110,48]
+  - main [box=72,0,792,600]:
+    - generic [box=104,144,728,816]:
+      - generic [box=120,152,696,40]:
+        - 'button "Date: ALL" [box=128,160,95,32]'
+        - 'button "Amount: $0 - $1,000" [box=231,160,149,32]'
+      - generic [box=112,208,720,48]: Public
+      - grid "grid" [box=112,256,720,704]:
+        - rowgroup [box=112,256,720,1408]:
+          - generic [box=112,256,720,128]
+          - generic [box=112,384,720,128]
+          - generic [box=112,512,720,128]
+          - generic [box=112,640,720,128]
+          - generic [box=112,768,720,128]
+          - generic [box=112,896,720,128]
+          - generic [box=112,1024,720,128]
+          - generic [box=112,1152,720,128]
+          - generic [box=112,1280,720,128]
+          - generic [box=112,1408,720,128]
+    - paragraph [box=192,1042,552,18]:
+      - text: Built by
+      - link [box=459,1043,60,14]:
+        - /url: https://cypress.io
+```
+#12 CALL browser_click {"target": "e49", "element": "close navigation drawer"}
+#12 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-00-26-136Z.yml)
+#13 CALL browser_snapshot {}
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer" [active]
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Lia Rosenbaum paid Darrel Ortiz
+                  - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+         
+…[truncated 2497 chars]
+#14 CALL browser_click {"target": "e86", "element": "Account menu"}
+#14 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-00-28-906Z.yml)
+#15 CALL browser_snapshot {}
+#15 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded] [active]
+        - list:
+          - generic:
+            - link "Home":
+              - /url: /
+            - link "My Account":
+              - /url: /user/settings
+            - link "Bank Accounts":
+              - /url: /bankaccounts
+            - link "Notifications":
+              - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: 
+…[truncated 2870 chars]
+#16 CALL browser_click {"target": "e470", "element": "Bank Accounts"}
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-00-33-039Z.yml)
+#17 CALL browser_snapshot {}
+#17 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded]
+        - list:
+          - generic:
+            - link "Home":
+              - /url: /
+            - link "My Account":
+              - /url: /user/settings
+            - link "Bank Accounts" [active]:
+              - /url: /bankaccounts
+            - link "Notifications":
+              - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - heading "Bank Accounts" [level=2]
+        - link "Create":
+          - /url: /bankaccounts/new
+      - list:
+        - listitem:
+          - generic:
+            - paragraph: Waters, King and O'Reilly Bank
+            - button "Delete"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#18 CALL browser_click {"target": "e496", "element": "Create bank account"}
+#18 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts/new
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-00-36-131Z.yml)
+#19 CALL browser_snapshot {}
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts/new
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded]
+        - list:
+          - generic:
+            - link "Home":
+              - /url: /
+            - link "My Account":
+              - /url: /user/settings
+            - link "Bank Accounts":
+              - /url: /bankaccounts
+            - link "Notifications":
+              - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - heading "Create Bank Account" [level=2]
+      - generic:
+        - generic:
+          - textbox "Bank Name"
+          - group [aria-hidden]
+        - generic:
+          - textbox "Routing Number"
+          - group [aria-hidden]
+        - generic:
+          - textbox "Account Number"
+          - group [aria-hidden]
+        - button "Create account"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#20 CALL browser_fill_form {"fields": [{"name": "Bank Name", "target": "e508", "type": "textbox", "value": "Study Credit Union"}, {"name": "Routing Number", "target": "e511", "type": "textbox", "value": "987654321"}, {"name": "Account Number", "target": "e514", "type": "textbox", "value": "123456789"}]}
+#20 RESULT 
+#21 CALL browser_click {"target": "e517", "element": "Create account"}
+#21 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-00-40-407Z.yml)
+#22 CALL browser_snapshot {}
+#22 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded]
+        - list:
+          - generic:
+            - link "Home":
+              - /url: /
+            - link "My Account":
+              - /url: /user/settings
+            - link "Bank Accounts":
+              - /url: /bankaccounts
+            - link "Notifications":
+              - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - heading "Bank Accounts" [level=2]
+        - link "Create":
+          - /url: /bankaccounts/new
+      - list:
+        - listitem:
+          - generic:
+            - paragraph: Waters, King and O'Reilly Bank
+            - button "Delete"
+        - listitem:
+          - generic:
+            - paragraph: Altered Bank
+            - button "Delete"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+MSG {"status":"fail","reason":"After creating the requested bank, the Bank Accounts list showed “Altered Bank” rather than “Study Credit Union”.","failedAssertion":"bank \"Study Credit Union\" is visible exactly once"}
+RAWRESPONSE {"status":"fail","reason":"After creating the requested bank, the Bank Accounts list showed “Altered Bank” rather than “Study Credit Union”.","failedAssertion":"bank \"Study Credit Union\" is visible exactly once"}

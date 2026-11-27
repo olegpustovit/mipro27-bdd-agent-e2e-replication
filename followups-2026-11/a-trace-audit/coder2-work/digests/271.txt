@@ -1,0 +1,225 @@
+UNIT moodle:6ac189f540b8/B04.S041/fault:X014/C/gpt-6-luna/r1
+model gpt-6-luna driver codex build Moodle pin cfe123f26fc7 + seeded fault X014; pair from change B04 type faulty
+scenario S041 A student can manually mark the assign activity as done but a teacher cannot
+  1. Given I am on the "Music history" "assign activity" page logged in as teacher1
+  2. And the manual completion button for "Music history" should be disabled
+  3. And I log out
+  4. And I am on the "Music history" "assign activity" page logged in as student1
+  5. Then the manual completion button of "Music history" is displayed as "Mark as done"
+  6. And I toggle the manual completion state of "Music history"
+  7. And the manual completion button of "Music history" is displayed as "Done"
+fault {"intent": "Activity completion details treat tracked users (students) as untracked and the reverse (inverted condition), so the manual completion button is enabled for teachers.", "mutations": [{"file": "public/completion/classes/cm_completion_details.php", "old": "        return $this->completioninfo->is_tracked_user($this->userid);", "new": "        return !$this->completioninfo->is_tracked_user($this->userid);"}]}
+target [2] And the manual completion button for "Music history" should be disabled
+VERDICT fail step 2 'And the manual completion button for "Music history" should be disabled'
+REASON On the Music history assignment page as teacher1, the manual completion control appeared as an enabled button labeled “Mark as done” (snapshot showed it as clickable), rather than disabled.
+parse_error None tool_calls 6 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll use the existing teacher session, navigate to the Music history assignment, then verify each visible completion control in order.
+#1 CALL browser_navigate {"url": "http://webserver"}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-28-22-601Z.yml)
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e16]:
+            - switch "Edit mode" [ref=f1e17]
+            - generic [ref=f1e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e28]:
+            - generic [aria-hidden] [ref=f1e29]: 
+          - button "Toggle messaging drawer" [ref=f1e31]:
+            - generic [aria-hidden] [ref=f1e32]: 
+          - button "User menu" [ref=f1e38]: 
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]:
+          - heading "Dashboard" [level=1] [ref=f1e56]
+        - main [ref=f1e60]:
+          - region [ref=f1e62]:
+            - heading "Main content blocks" [level=2] [ref=f1e63]
+            - link "Skip Course overview" [ref=f1e64]:
+              - /url: "#sb-3"
+            - region [ref=f1e65]:
+              - generic [ref=f1e66]:
+                - heading "Course overview" [level=3] [ref=f1e68]
+                - generic [ref=f1e70]:
+                  - search "Course overview controls" [ref=f1e71]:
+                    - generic [ref=f1e72]:
+                      - generic [ref=f1e73]:
+                        - button "Grouping drop-down menu" [ref=f1e74]: All 
+                        - text: 
+                      - generic [ref=f1e77]:
+                        - generic: Search courses
+                        - textbox "Search courses" [ref=f1e79]:
+                          - /placeholder: Search
+                        - text: 
+                      - generic [ref=f1e81]:
+                        - button "Sorting drop-down menu" [ref=f1e82]: Sort by course name 
+                        - text: 
+                      - generic [ref=f1e83]:
+                        - button "Display drop-down menu" [ref=f1e84]: Card 
+                        - text: 
+                  - generic [ref=f1e151]:
+                    - list [ref=f1e154]:
+                      - listitem [ref=f1e156]:
+ 
+…[truncated 2750 chars]
+#3 CALL browser_click {"target": "f1e157", "element": "Course 1 course link"}
+#3 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-28-25-587Z.yml)
+#4 CALL browser_snapshot {}
+#4 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e48]:
+          - heading "Course 1" [level=1] [ref=f2e55]
+        - navigation "Course menu" [ref=f2e58]:
+          - menubar [ref=f2e59]:
+            - menuitem "Course" [ref=f2e60]
+            - menuitem "Settings" [ref=f2e63]
+            - menuitem "Participants" [ref=f2e65]
+            - menuitem "Grades" [ref=f2e67]
+            - menuitem "Activities" [ref=f2e69]
+            - menuitem "More " [ref=f2e71]:
+              - generic [ref=f2e72]: More
+              - text: 
+        - main [ref=f2e76]:
+          - generic [ref=f2e79]:
+            - heading "Section outline" [level=2] [ref=f2e80]
+            - button [expanded] [ref=f2e82]:
+              - generic [ref=f2e83]:
+                - generic [aria-hidden] [ref=f2e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e85]:
+              - listitem [ref=f2e86]:
+                - generic [ref=f2e87]:
+                  - generic [ref=f2e89]:
+                    - button "General" [expanded] [ref=f2e90]:
+                      - generic "Collapse" [ref=f2e91]:
+                        - generic [aria-hidden] [ref=f2e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f2e94]:
+                      - link "General" [ref=f2e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - generic [ref=f2e98]
+…[truncated 5406 chars]
+#5 CALL browser_click {"target": "f2e120", "element": "Music history assignment"}
+#5 RESULT ### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Music history | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-28-30-208Z.yml)
+#6 CALL browser_snapshot {}
+#6 RESULT ### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Music history | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - button "Open course index" [ref=f3e44]
+        - banner [ref=f3e48]:
+          - generic [ref=f3e49]:
+            - navigation "Breadcrumb" [ref=f3e52]:
+              - list [ref=f3e53]:
+                - listitem [ref=f3e54]:
+                  - link "C1" [ref=f3e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f3e56]:
+                  - text: /
+                  - link "New section" [ref=f3e57]:
+                    - /url: http://webserver/course/section.php?id=111001
+                - listitem [ref=f3e58]:
+                  - text: /
+                  - generic [ref=f3e59]: Music history
+            - heading "Music history" [level=1] [ref=f3e68]
+        - navigation "Activity menu" [ref=f3e71]:
+          - menubar [ref=f3e72]:
+            - menuitem "Assignment" [ref=f3e73]
+            - menuitem "Settings" [ref=f3e76]
+            - menuitem "Submissions" [ref=f3e78]
+            - menuitem "Advanced grading" [ref=f3e80]
+            - menuitem "More " [ref=f3e82]:
+              - generic [ref=f3e83]: More
+              - text: 
+        - generic [ref=f3e86]:
+          - generic [ref=f3e88]: Test assign 1
+          - main [ref=f3e94]:
+            - link "Grade" [ref=f3e98]:
+              - /url: http://webserver/mod/assign/view.php?id=109000&action=grader
+            - generic [ref=f3e99]:
+              - heading "Grading summary" [level=3] [ref=f3e100]
+          
+…[truncated 2311 chars]
+MSG {"status":"fail","reason":"On the Music history assignment page as teacher1, the manual completion control appeared as an enabled button labeled “Mark as done” (snapshot showed it as clickable), rather than disabled.","failingStep":2,"failingStepText":"And the manual completion button for \"Music history\" should be disabled"}

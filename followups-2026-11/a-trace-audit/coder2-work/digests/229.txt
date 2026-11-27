@@ -1,0 +1,150 @@
+UNIT pay:X4-opus:fault-v2-1/auth-login/runtime
+model claude-opus-5-5 driver 2.1.327 (Claude Code) build v2+fault type faulty
+scenario auth-login 
+  1. Given I open the sign-in page
+  2. Then the sign-in heading is visible
+  3. When I sign in as "Heath93" with password "s3cret"
+  4. Then the authenticated home identifies "Heath93"
+  5. And the authenticated home route is "/" or "/public"
+fault {"file": "src/components/SignInForm.tsx", "before": "signInPending(values);", "after": "signInPending({ ...values, password: \"controlled-invalid-password\" });"}
+target [4] Then the authenticated home identifies "Heath93"
+VERDICT fail step [4] 'Then the authenticated home identifies "Heath93"'
+REASON Sign-in page loaded with 'Sign in' heading. Signing in as Heath93/s3cret was attempted twice (form fill + Continue click, then typed input + Enter); both times the app showed the alert 'Username or password is invalid' and stayed on /signin, so the authenticated home never appeared.
+parse_error None tool_calls 8 timed_out False run_result recorded run_error None
+reread fail
+SOURCE ledger
+============================================================
+#1 CALL browser_navigate {"url": "http://localhost:3000/signin"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T18-04-39-812Z.yml)
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T18-04-44-380Z.yml)
+#5 CALL browser_snapshot {}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - alert:
+      - generic: Username or password is invalid
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#6 CALL browser_type {"target": "e63", "text": "Heath93"}
+#6 RESULT 
+#7 CALL browser_type {"target": "e66", "text": "s3cret", "submit": true}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T18-04-49-606Z.yml)
+#8 CALL browser_snapshot {}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - alert:
+      - generic: Username or password is invalid
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+RAWRESPONSE The scenario failed: signing in as Heath93 with password s3cret did not work.
+
+- **Passed:** The sign-in page at `/signin` loaded and showed the "Sign in" heading.
+- **Failed:** Both attempts to sign in were rejected with the alert "Username or password is invalid", and the page stayed on `/signin`. On the first attempt I filled both fields and clicked Continue. On the second I typed each value into its field and pressed Enter, to rule out a problem with how the form was filled.
+- **Not reached:** Because sign-in failed, I couldn't check the route assertion ("/" or "/public").
+
+```json
+{"status":"fail","reason":"Sign-in page loaded with 'Sign in' heading. Signing in as Heath93/s3cret was attempted twice (form fill + Continue click, then typed input + Enter); both times the app showed the alert 'Username or password is invalid' and stayed on /signin, so the authenticated home never appeared.","failedAssertion":"Then the authenticated home identifies \"Heath93\""}
+```

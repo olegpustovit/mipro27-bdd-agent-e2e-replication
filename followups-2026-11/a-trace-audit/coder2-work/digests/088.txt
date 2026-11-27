@@ -1,0 +1,1295 @@
+UNIT pay:C:healthy-v2-2/social-comment/runtime
+model gpt-5.6-terra driver codex-cli 0.159.3 (REPRODUCE.md) build v2 type healthy
+scenario social-comment 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I open transaction "1xfcAhNDZK4"
+  4. Then the transaction detail heading is visible
+  5. When I add comment "Study comment"
+  6. Then comment "Study comment" is visible in the transaction's comments
+  7. When I reload the current page
+  8. Then comment "Study comment" is visible exactly once in the transaction's comments
+fault null
+target None None
+VERDICT fail step [4] 'Then the transaction detail heading is visible'
+REASON After selecting a visible transaction entry, the UI opened /transaction/Ux5WoyfZ0f2C rather than transaction 1xfcAhNDZK4; the required transaction could not be opened through the visible UI.
+parse_error None tool_calls 47 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+MSG I’ll run the scenario strictly through the visible browser UI, including the required persistence check.
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-30-24-615Z.yml)
+#2 CALL browser_snapshot {"depth": 5}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"name": "Username", "target": "e16", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "e19", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26", "element": "Continue sign-in button"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-30-28-570Z.yml)
+#5 CALL browser_snapshot {"depth": 5}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#6 CALL browser_snapshot {"target": "e109", "depth": 6}
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- grid "grid":
+  - rowgroup:
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$307.99"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$312.31"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$86.07"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum paid Darrel Ortiz
+            - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+            - generic
+          - generic: "-$100.62"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$480.65"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: +$42.36
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum paid Ted Parisian
+            - paragraph: "Payment: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: "-$494.92"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian charged Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: +$204.68
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: +$43.23
+      - separator
+  
+…[truncated 263 chars]
+#7 CALL browser_click {"target": "e109", "element": "transaction activity feed"}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/Ux5WoyfZ0f2C
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-30-32-833Z.yml)
+#8 CALL browser_navigate_back {}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-30-34-610Z.yml)
+#9 CALL browser_press_key {"key": "PageDown"}
+#9 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+#10 CALL browser_snapshot {"target": "e109", "depth": 5}
+#10 RESULT ### Error
+Error: Ref e109 not found in the current page snapshot. Try capturing new snapshot.
+#11 CALL browser_snapshot {"depth": 4}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#12 CALL browser_snapshot {"target": "e543", "depth": 6}
+#12 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- grid "grid":
+  - rowgroup:
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$307.99"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$312.31"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$86.07"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum paid Darrel Ortiz
+            - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+            - generic
+          - generic: "-$100.62"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$480.65"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: +$42.36
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum paid Ted Parisian
+            - paragraph: "Payment: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: "-$494.92"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian charged Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: +$204.68
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: +$43.23
+      - separator
+  
+…[truncated 263 chars]
+#13 CALL browser_click {"target": "e496", "element": "My activity feed tab"}
+#13 RESULT ### Error
+Error: Ref e496 not found in the current page snapshot. Try capturing new snapshot.
+#14 CALL browser_snapshot {"depth": 3}
+#14 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic
+    - generic:
+      - generic
+      - generic
+      - button "Account menu"
+      - generic
+  - main:
+    - generic:
+      - generic
+      - generic: Public
+      - grid "grid"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#15 CALL browser_click {"target": "e496", "element": "My activity feed tab"}
+#15 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-30-44-801Z.yml)
+#16 CALL browser_snapshot {"depth": 5}
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "People I know"
+      - tab "My activity" [active] [selected]
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Personal
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#17 CALL browser_snapshot {"target": "e892", "depth": 6}
+#17 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- grid "grid":
+  - rowgroup:
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: +$42.36
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian paid Kristian Bradtke
+            - paragraph: "Payment: uBmeaz5pX to GjWovtg2hr"
+            - generic
+          - generic: "-$370.77"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Kristian Bradtke paid Ted Parisian
+            - paragraph: "Payment: GjWovtg2hr to uBmeaz5pX"
+            - generic
+          - generic: "-$250.66"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Kristian Bradtke paid Ted Parisian
+            - paragraph: "Payment: GjWovtg2hr to uBmeaz5pX"
+            - generic
+          - generic: "-$66.32"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Kristian Bradtke paid Ted Parisian
+            - paragraph: "Payment: GjWovtg2hr to uBmeaz5pX"
+            - generic
+          - generic: "-$395.32"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian paid Ruthie Prosacco
+            - paragraph: "Payment: uBmeaz5pX to M1ty1gR8B3"
+            - generic
+          - generic: "-$424.08"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian paid Ruthie Prosacco
+            - paragraph: "Payment: uBmeaz5pX to M1ty1gR8B3"
+            - generic
+          - generic: "-$204.12"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Kristian Bradtke
+            - paragraph: "Request: GjWovtg2hr to uBmeaz5pX"
+            - generic
+          - generic: +$36.56
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Ruthie Prosacco
+            - paragraph: "Request: M1ty1gR8B3 to uBmeaz5pX"
+            - generic
+          - generic: +$4
+…[truncated 292 chars]
+#18 CALL browser_press_key {"key": "End"}
+#18 RESULT 
+#19 CALL browser_snapshot {"depth": 5}
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "People I know"
+      - tab "My activity" [active] [selected]
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Personal
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#20 CALL browser_click {"target": "e890", "element": "Personal feed label"}
+#20 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-30-53-569Z.yml)
+#21 CALL browser_press_key {"key": "PageDown"}
+#21 RESULT 
+#22 CALL browser_snapshot {"depth": 4}
+#22 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "People I know"
+      - tab "My activity" [selected]
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Personal
+      - grid "grid":
+        - rowgroup
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#23 CALL browser_snapshot {"depth": 2, "boxes": true}
+#23 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [box=-200,0,1032,600]:
+  - banner [box=40,0,560,112]:
+    - generic [box=40,0,560,64]
+    - tablist [box=40,64,560,48]
+  - generic [box=-200,0,240,600]:
+    - generic [box=-200,0,239,80]
+    - generic [box=-200,80,239,117]
+  - main [box=40,0,792,600]:
+    - generic [box=72,-316,728,816]
+    - paragraph [box=160,582,552,18]
+```
+#24 CALL browser_press_key {"key": "PageDown"}
+#24 RESULT 
+#25 CALL browser_snapshot {"target": "e892", "depth": 6}
+#25 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- grid "grid":
+  - rowgroup:
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+            - generic
+          - generic: +$42.36
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian paid Kristian Bradtke
+            - paragraph: "Payment: uBmeaz5pX to GjWovtg2hr"
+            - generic
+          - generic: "-$370.77"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Kristian Bradtke paid Ted Parisian
+            - paragraph: "Payment: GjWovtg2hr to uBmeaz5pX"
+            - generic
+          - generic: "-$250.66"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Kristian Bradtke paid Ted Parisian
+            - paragraph: "Payment: GjWovtg2hr to uBmeaz5pX"
+            - generic
+          - generic: "-$66.32"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Kristian Bradtke paid Ted Parisian
+            - paragraph: "Payment: GjWovtg2hr to uBmeaz5pX"
+            - generic
+          - generic: "-$395.32"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian paid Ruthie Prosacco
+            - paragraph: "Payment: uBmeaz5pX to M1ty1gR8B3"
+            - generic
+          - generic: "-$424.08"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian paid Ruthie Prosacco
+            - paragraph: "Payment: uBmeaz5pX to M1ty1gR8B3"
+            - generic
+          - generic: "-$204.12"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Kristian Bradtke
+            - paragraph: "Request: GjWovtg2hr to uBmeaz5pX"
+            - generic
+          - generic: +$36.56
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Ted Parisian requested Ruthie Prosacco
+            - paragraph: "Request: M1ty1gR8B3 to uBmeaz5pX"
+            - generic
+          - generic: +$4
+…[truncated 292 chars]
+#26 CALL browser_snapshot {"depth": 3}
+#26 RESULT ### Page
+- Page URL: http://localhost:3000/personal
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "People I know"
+      - tab "My activity" [selected]
+  - generic:
+    - generic:
+      - generic: T
+      - generic
+    - generic:
+      - generic
+      - generic
+      - button "Account menu"
+      - generic
+  - main:
+    - generic:
+      - generic
+      - generic: Personal
+      - grid "grid"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#27 CALL browser_click {"target": "e495", "element": "People I know contacts feed tab"}
+#27 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-31-03-927Z.yml)
+#28 CALL browser_snapshot {"depth": 5}
+#28 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "People I know" [active] [selected]
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Contacts
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#29 CALL browser_snapshot {"target": "e1241", "depth": 6}
+#29 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- grid "grid":
+  - rowgroup:
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$307.99"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$312.31"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$86.07"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum paid Darrel Ortiz
+            - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+            - generic
+          - generic: "-$100.62"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: "-$480.65"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz requested Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to _XblMqbuoP"
+            - generic
+          - generic: +$356.58
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum requested Darrel Ortiz
+            - paragraph: "Request: _XblMqbuoP to WHjJ4qR2R2"
+            - generic
+          - generic: +$76.99
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum paid Darrel Ortiz
+            - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+            - generic
+          - generic: "-$141.20"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum paid Darrel Ortiz
+            - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+            - generic
+          - generic: "-$283.19"
+      - 
+…[truncated 279 chars]
+#30 CALL browser_click {"target": "e1239", "element": "Contacts feed label"}
+#30 RESULT ### Error
+Error: Ref e1239 not found in the current page snapshot. Try capturing new snapshot.
+#31 CALL browser_snapshot {"depth": 4}
+#31 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "People I know" [active] [selected]
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Contacts
+      - grid "grid":
+        - rowgroup
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#32 CALL browser_click {"target": "e1239", "element": "Contacts feed label"}
+#32 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-31-09-574Z.yml)
+#33 CALL browser_press_key {"key": "PageDown"}
+#33 RESULT 
+#34 CALL browser_press_key {"key": "PageDown"}
+#34 RESULT 
+#35 CALL browser_press_key {"key": "PageDown"}
+#35 RESULT 
+#36 CALL browser_snapshot {"depth": 5, "boxes": true}
+#36 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [box=-200,0,1032,600]:
+  - banner [box=40,0,560,112]:
+    - generic [box=40,0,560,64]:
+      - button "open drawer" [box=52,10,45,45]
+      - heading [level=1] [box=97,18,341,28]:
+        - link [box=150,22,235,20]:
+          - /url: /
+      - link "New" [box=438,13,93,38]:
+        - /url: /transaction/new
+      - link "8" [box=531,10,45,45]:
+        - /url: /notifications
+    - tablist [box=40,64,560,48]:
+      - tab "Everyone" [box=154,64,95,48]
+      - tab "People I know" [selected] [box=250,64,126,48]
+      - tab "My activity" [box=376,64,110,48]
+  - generic [box=-200,0,240,600]:
+    - generic [box=-200,0,239,80]:
+      - generic [box=-184,20,56,40]: T
+      - generic [box=-113,16,58,48]:
+        - heading "Ted P" [level=6] [box=-113,16,58,25]
+        - heading "@Heath93" [level=6] [box=-113,41,58,19]
+    - generic [box=-200,80,239,117]:
+      - generic [box=-184,96,94,52]:
+        - heading "$1,509.53" [level=6] [box=-184,96,94,28]
+        - heading "Account Balance" [level=6] [box=-184,124,94,19]
+      - generic [box=23,121,0,1]:
+        - separator [box=23,121,0,1]
+      - button "Account menu" [box=-184,148,114,33]
+      - generic [box=-24,164,0,1]:
+        - separator [box=-24,164,0,1]
+  - main [box=40,0,792,600]:
+    - generic [box=72,-316,728,816]:
+      - generic [box=88,-308,696,40]:
+        - 'button "Date: ALL" [box=96,-300,95,32]'
+        - 'button "Amount: $0 - $1,000" [box=199,-300,149,32]'
+      - generic [box=80,0,720,48]: Contacts
+      - grid "grid" [box=80,-204,720,704]:
+        - rowgroup [box=80,-204,720,1408]:
+          - generic [box=80,-204,720,128]
+          - generic [box=80,-76,720,128]
+          - generic [box=80,52,720,128]
+          - generic [box=80,180,720,128]
+          - generic [box=80,308,720,128]
+          - generic [box=80,436,720,128]
+          - generic [box=80,564,720,128]
+          - generic [box=80,692,720,128]
+          - generic [box=80,820,720,128]
+          - generic [box=80,948,720,128]
+    - paragraph [box=160,582,552,18]:
+      - text: Built by
+      - link [box=427,583,60,14]:
+        - /url: https://cypress.io
+```
+#37 CALL browser_press_key {"key": "Tab"}
+#37 RESULT 
+#38 CALL browser_press_key {"key": "Tab"}
+#38 RESULT 
+#39 CALL browser_click {"target": "e1309", "element": "visible transaction row"}
+#39 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/Ux5WoyfZ0f2C
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-31-21-443Z.yml)
+#40 CALL browser_navigate_back {}
+#40 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-31-25-671Z.yml)
+#41 CALL browser_snapshot {"target": "e1241", "depth": 4, "boxes": true}
+#41 RESULT ### Error
+Error: Ref e1241 not found in the current page snapshot. Try capturing new snapshot.
+#42 CALL browser_snapshot {"depth": 6, "boxes": true}
+#42 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [box=0,0,1032,600]:
+  - banner [box=240,0,560,112]:
+    - generic [box=240,0,560,64]:
+      - button "open drawer" [box=252,10,45,45]
+      - heading [level=1] [box=297,18,341,28]:
+        - link [box=350,22,235,20]:
+          - /url: /
+      - link "New" [box=638,13,93,38]:
+        - /url: /transaction/new
+      - link "8" [box=731,10,45,45]:
+        - /url: /notifications
+    - tablist [box=240,64,560,48]:
+      - tab "Everyone" [selected] [box=354,64,95,48]
+      - tab "People I know" [box=450,64,126,48]
+      - tab "My activity" [box=576,64,110,48]
+  - generic [box=0,0,240,600]:
+    - generic [box=0,0,239,80]:
+      - generic [box=16,20,56,40]: T
+      - generic [box=87,16,58,48]:
+        - heading "Ted P" [level=6] [box=87,16,58,25]
+        - heading "@Heath93" [level=6] [box=87,41,58,19]
+    - generic [box=0,80,239,117]:
+      - generic [box=16,96,94,52]:
+        - heading "$1,509.53" [level=6] [box=16,96,94,28]
+        - heading "Account Balance" [level=6] [box=16,124,94,19]
+      - generic [box=223,121,0,1]:
+        - separator [box=223,121,0,1]
+      - button "Account menu" [box=16,148,114,33]
+      - generic [box=176,164,0,1]:
+        - separator [box=176,164,0,1]
+  - main [box=240,0,792,600]:
+    - generic [box=272,-316,728,816]:
+      - generic [box=288,-308,696,40]:
+        - 'button "Date: ALL" [box=296,-300,95,32]'
+        - 'button "Amount: $0 - $1,000" [box=399,-300,149,32]'
+      - generic [box=280,0,720,48]: Contacts
+      - grid "grid" [box=280,-204,720,704]:
+        - rowgroup [box=280,-204,720,1408]:
+          - generic [box=280,-204,720,128]:
+            - listitem [box=280,-204,720,105]
+            - separator [box=280,-99,720,1]
+          - generic [box=280,-76,720,128]:
+            - listitem [box=280,-76,720,105]
+            - separator [box=280,29,720,1]
+          - generic [box=280,52,720,128]:
+            - listitem [box=280,52,720,105]
+            - separator [box=280,157,720,1]
+          - generic [box=280,180,720,128]:
+            - listitem [box=280,180,720,105]
+            - separator [box=280,285,720,1]
+          - generic [box=280,308,720,128]:
+            - listitem [box=280,308,720,105]
+            - separator [box=280,413,720,1]
+          - generic [box=280,436,720,128]:
+            - listitem [box=280,436,720,105]
+            - separator [box=280,541,720,1]
+          - generic [box=280,564,720,128]
+…[truncated 621 chars]
+#43 CALL browser_click {"target": "e1729", "element": "third visible transaction entry"}
+#43 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/Ux5WoyfZ0f2C
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-31-31-271Z.yml)
+#44 CALL browser_navigate_back {}
+#44 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-31-34-073Z.yml)
+#45 CALL browser_snapshot {"depth": 3}
+#45 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic
+    - generic:
+      - generic
+      - generic
+      - button "Account menu"
+      - generic
+  - main:
+    - generic:
+      - generic
+      - generic: Contacts
+      - grid "grid"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#46 CALL browser_click {"target": "e49", "element": "open navigation drawer button"}
+#46 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T15-31-36-573Z.yml)
+#47 CALL browser_snapshot {"depth": 5}
+#47 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer" [active]
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Contacts
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+MSG {"status":"fail","reason":"After selecting a visible transaction entry, the UI opened /transaction/Ux5WoyfZ0f2C rather than transaction 1xfcAhNDZK4; the required transaction could not be opened through the visible UI.","failedAssertion":"Then the transaction detail heading is visible"}
+RAWRESPONSE {"status":"fail","reason":"After selecting a visible transaction entry, the UI opened /transaction/Ux5WoyfZ0f2C rather than transaction 1xfcAhNDZK4; the required transaction could not be opened through the visible UI.","failedAssertion":"Then the transaction detail heading is visible"}

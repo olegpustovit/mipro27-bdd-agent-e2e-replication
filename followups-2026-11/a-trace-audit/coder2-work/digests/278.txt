@@ -1,0 +1,432 @@
+UNIT moodle:6ac189f540b8/B07.S028/healthy/C/gpt-6-luna/r1
+model gpt-6-luna driver codex build Moodle pin cfe123f26fc7 (healthy); pair from change B07 type healthy
+scenario S028 Information does not display when not enabled
+  1. And I log in as "admin"
+  2. When the following config values are set as admin:
+  | searchbannerenable | 0 |
+  | searchbanner | The search currently only finds frog-related content; we hope to fix it soon. |
+  3. And I search for "toads" using the header global search box
+  4. Then I should not see "The search currently only finds frog-related content"
+  5. And ".notifywarning" "css_element" should not exist
+fault null
+target None None
+VERDICT fail step 2 'And the following config values are set as admin:
+  | searchbannerenable | 0 |
+  | searchbanner | The search currently only finds frog-related content; we hope to fix it soon. |'
+REASON At step 2, I could not locate a UI control for either `searchbannerenable` or `searchbanner`. The admin pages I opened showed general settings and Appearance settings, with no matching controls. I stopped before searching or changing anything.
+parse_error None tool_calls 15 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll use the existing admin session and follow the steps in order, stopping at the first UI action or assertion that fails.
+#1 CALL browser_navigate {"url": "http://webserver"}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-37-42-701Z.yml)
+#2 CALL browser_snapshot {"depth": 5}
+#2 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "More " [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e14]
+          - generic [ref=f1e24]
+          - button "Show notification window with no new notifications" [ref=f1e36]
+          - button "Toggle messaging drawer" [ref=f1e39]
+          - button "User menu" [ref=f1e46]: 
+    - generic [ref=f1e50]:
+      - generic [ref=f1e51]:
+        - button "Open block drawer" [ref=f1e53]
+        - banner [ref=f1e57]:
+          - heading "Dashboard" [level=1] [ref=f1e64]
+        - main [ref=f1e68]:
+          - region "Main content blocks" [ref=f1e70]
+      - contentinfo [ref=f1e115]:
+        - button "Show footer" [ref=f1e116]:
+          - generic [aria-hidden] [ref=f1e117]: "?"
+        - generic [ref=f1e118]:
+          - generic [ref=f1e119]
+          - generic [ref=f1e130]
+          - generic [ref=f1e138]
+        - generic [ref=f1e143]:
+          - link "Purge all caches" [ref=f1e145]:
+            - /url: http://webserver/admin/purgecaches.php?confirm=1&sesskey=SpwmmdgCm7&returnurl=%2Fmy%2Findex.php
+          - generic [ref=f1e147]
+```
+#3 CALL browser_click {"target": "f1e10", "element": "More navigation menu"}
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-37-46-119Z.yml)
+#4 CALL browser_snapshot {"depth": 6}
+#4 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "More " [expanded] [active] [ref=f1e10]:
+            - generic [ref=f1e12]: More
+            - text: 
+          - menu "More " [ref=f1e153]:
+            - menuitem " Dashboard" [ref=f1e154]
+            - menuitem "Site administration" [ref=f1e155]
+        - generic [ref=f1e13]:
+          - generic [ref=f1e14]:
+            - text: 
+            - search "Site-wide search" [ref=f1e15]
+          - generic [ref=f1e24]:
+            - switch "Edit mode" [ref=f1e25]
+            - generic [ref=f1e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e36]:
+            - generic [aria-hidden] [ref=f1e37]: 
+          - button "Toggle messaging drawer" [ref=f1e39]:
+            - generic [aria-hidden] [ref=f1e40]: 
+          - button "User menu" [ref=f1e46]: 
+    - generic [ref=f1e50]:
+      - generic [ref=f1e51]:
+        - button "Open block drawer" [ref=f1e53]
+        - banner [ref=f1e57]:
+          - heading "Dashboard" [level=1] [ref=f1e64]
+        - main [ref=f1e68]:
+          - region "Main content blocks" [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e73]
+            - link "Skip Timeline" [ref=f1e92]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e93]
+      - contentinfo [ref=f1e115]:
+        - button "Show footer" [ref=f1e116]:
+          - generic [aria-hidden] [ref=f1e117]: "?"
+        - generic [ref=f1e118]:
+          - generic [ref=f1e119]:
+            - link "Documentation for this page" [ref=f1e121]:
+              - /url: https://docs.moodle.org/503/en/dashboard
+            - link "Services and support Opens in new window" [ref=f1e124]:
+              - /url: https://moodle.com/help/?utm_source=CTA-banner&utm_medium=platform&utm_campaign=name~Moodle4+cat~lms+mp~no
+            - link "Contact site support" [ref=f1e128]:
+              - /url: http://webserver/user/contactsitesuppo
+…[truncated 697 chars]
+#5 CALL browser_click {"target": "f1e155", "element": "Site administration menu item"}
+#5 RESULT ### Page
+- Page URL: http://webserver/admin/search.php
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-37-49-833Z.yml)
+#6 CALL browser_snapshot {"depth": 6}
+#6 RESULT ### Page
+- Page URL: http://webserver/admin/search.php
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "More " [ref=f2e10]:
+            - generic [ref=f2e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f2e13]:
+          - generic [ref=f2e14]:
+            - text: 
+            - search "Site-wide search" [ref=f2e15]
+          - generic [ref=f2e24]:
+            - switch "Edit mode" [ref=f2e25]
+            - generic [ref=f2e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e36]:
+            - generic [aria-hidden] [ref=f2e37]: 
+          - button "Toggle messaging drawer" [ref=f2e39]:
+            - generic [aria-hidden] [ref=f2e40]: 
+          - button "User menu" [ref=f2e46]: 
+    - generic [ref=f2e50]:
+      - generic [ref=f2e51]:
+        - banner [ref=f2e52]:
+          - generic [ref=f2e54]:
+            - heading "Site administration" [level=1] [ref=f2e59]
+            - generic [ref=f2e64]
+        - navigation "Site administration menu" [ref=f2e72]:
+          - tablist [ref=f2e73]:
+            - tab "General" [selected] [ref=f2e74]
+            - tab "Users" [ref=f2e76]
+            - tab "Courses" [ref=f2e78]
+            - tab "Grades" [ref=f2e80]
+            - tab "Plugins" [ref=f2e82]
+            - tab "Appearance" [ref=f2e84]
+            - tab "More " [ref=f2e86]
+        - main [ref=f2e91]:
+          - generic [ref=f2e95]:
+            - list [ref=f2e99]
+            - separator [ref=f2e110]
+            - generic [ref=f2e111]
+            - separator [ref=f2e121]
+            - generic [ref=f2e122]
+            - separator [ref=f2e140]
+            - generic [ref=f2e141]
+            - separator [ref=f2e155]
+            - generic [ref=f2e156]
+            - separator [ref=f2e168]
+            - generic [ref=f2e169]
+            - separator [ref=f2e179]
+            - generic [ref=f2e180]
+            - separator [ref=f2e188]
+            - generic [ref=f2e189]
+            - separator [ref=f2e197]
+            - generic [ref=f2e198]
+            - separator [ref=f2e210]
+            - generic [ref=f2e211]
+        
+…[truncated 1636 chars]
+#7 CALL browser_snapshot {"depth": 10, "target": "f2e91"}
+#7 RESULT ### Page
+- Page URL: http://webserver/admin/search.php
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- main [ref=f2e91]:
+  - generic [ref=f2e95]:
+    - list [ref=f2e99]:
+      - listitem [ref=f2e100]:
+        - link "Notifications" [ref=f2e101]:
+          - /url: http://webserver/admin/index.php
+      - listitem [ref=f2e102]:
+        - link "Registration" [ref=f2e103]:
+          - /url: http://webserver/admin/registration/index.php
+      - listitem [ref=f2e104]:
+        - link "Feedback settings" [ref=f2e105]:
+          - /url: http://webserver/admin/settings.php?section=userfeedback
+      - listitem [ref=f2e106]:
+        - link "Advanced features" [ref=f2e107]:
+          - /url: http://webserver/admin/settings.php?section=optionalsubsystems
+      - listitem [ref=f2e108]:
+        - link "Site admin presets" [ref=f2e109]:
+          - /url: http://webserver/admin/tool/admin_presets/index.php
+    - separator [ref=f2e110]
+    - generic [ref=f2e111]:
+      - heading [level=4] [ref=f2e113]:
+        - link "AI" [ref=f2e114]:
+          - /url: http://webserver/admin/category.php?category=ai
+      - list [ref=f2e116]:
+        - listitem [ref=f2e117]:
+          - link "AI providers" [ref=f2e118]:
+            - /url: http://webserver/admin/settings.php?section=aiprovider
+        - listitem [ref=f2e119]:
+          - link "AI placements" [ref=f2e120]:
+            - /url: http://webserver/admin/settings.php?section=aiplacement
+    - separator [ref=f2e121]
+    - generic [ref=f2e122]:
+      - heading [level=4] [ref=f2e124]:
+        - link "Competencies" [ref=f2e125]:
+          - /url: http://webserver/admin/category.php?category=competencies
+      - list [ref=f2e127]:
+        - listitem [ref=f2e128]:
+          - link "Competencies settings" [ref=f2e129]:
+            - /url: http://webserver/admin/settings.php?section=competencysettings
+        - listitem [ref=f2e130]:
+          - link "Migrate frameworks" [ref=f2e131]:
+            - /url: http://webserver/admin/tool/lpmigrate/frameworks.php
+        - listitem [ref=f2e132]:
+          - link "Import competency framework" [ref=f2e133]:
+            - /url: http://webserver/admin/tool/lpimportcsv/index.php
+        - listitem [ref=f2e134]:
+          - link "Export competency framework" [ref=f2e135]:
+            - /url: http://webserver/admin/tool/lpimportcsv/export.php
+        - listitem [ref=f2e136]:
+          - link "Competency frameworks" [ref=f2e137]:
+            - /url: http://webserver/
+…[truncated 6507 chars]
+#8 CALL browser_click {"target": "f2e84", "element": "Appearance tab"}
+#8 RESULT ### Error
+Error: Ref f2e84 not found in the current page snapshot. Try capturing new snapshot.
+#9 CALL browser_snapshot {"depth": 4}
+#9 RESULT ### Page
+- Page URL: http://webserver/admin/search.php
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]
+        - generic [ref=f2e13]
+    - generic [ref=f2e50]:
+      - generic [ref=f2e51]:
+        - banner [ref=f2e52]
+        - navigation "Site administration menu" [ref=f2e72]
+        - main [ref=f2e91]
+      - contentinfo [ref=f2e265]:
+        - button "Show footer" [ref=f2e266]
+        - generic [ref=f2e268]
+        - generic [ref=f2e293]
+```
+#10 CALL browser_snapshot {"target": "f2e72", "depth": 3}
+#10 RESULT ### Page
+- Page URL: http://webserver/admin/search.php
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- navigation "Site administration menu" [ref=f2e72]:
+  - tablist [ref=f2e73]:
+    - tab "General" [selected] [ref=f2e74]
+    - tab "Users" [ref=f2e76]
+    - tab "Courses" [ref=f2e78]
+    - tab "Grades" [ref=f2e80]
+    - tab "Plugins" [ref=f2e82]
+    - tab "Appearance" [ref=f2e84]
+    - tab "More " [ref=f2e86]:
+      - generic [ref=f2e87]: More
+      - text: 
+```
+#11 CALL browser_click {"target": "f2e84", "element": "Appearance tab"}
+#11 RESULT ### Page
+- Page URL: http://webserver/admin/search.php#linkappearance
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-38-00-154Z.yml)
+#12 CALL browser_snapshot {"depth": 5}
+#12 RESULT ### Page
+- Page URL: http://webserver/admin/search.php#linkappearance
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "More " [ref=f2e10]
+          - text: 
+        - generic [ref=f2e13]:
+          - generic [ref=f2e14]
+          - generic [ref=f2e24]
+          - button "Show notification window with no new notifications" [ref=f2e36]
+          - button "Toggle messaging drawer" [ref=f2e39]
+          - button "User menu" [ref=f2e46]: 
+    - generic [ref=f2e50]:
+      - generic [ref=f2e51]:
+        - banner [ref=f2e52]:
+          - generic [ref=f2e54]
+        - navigation "Site administration menu" [ref=f2e72]:
+          - tablist [ref=f2e73]
+        - main [ref=f2e91]:
+          - tabpanel [ref=f2e299]
+      - contentinfo [ref=f2e265]:
+        - button "Show footer" [ref=f2e266]:
+          - generic [aria-hidden] [ref=f2e267]: "?"
+        - generic [ref=f2e268]:
+          - generic [ref=f2e269]
+          - generic [ref=f2e280]
+          - generic [ref=f2e288]
+        - generic [ref=f2e293]:
+          - link "Purge all caches" [ref=f2e295]:
+            - /url: http://webserver/admin/purgecaches.php?confirm=1&sesskey=SpwmmdgCm7&returnurl=%2Fadmin%2Fsearch.php%3Fquery
+          - generic [ref=f2e297]
+```
+#13 CALL browser_snapshot {"target": "f2e299", "depth": 8}
+#13 RESULT ### Page
+- Page URL: http://webserver/admin/search.php#linkappearance
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- tabpanel [ref=f2e299]:
+  - generic [ref=f2e301]:
+    - heading "Appearance" [level=4] [ref=f2e303]
+    - list [ref=f2e305]:
+      - listitem [ref=f2e306]:
+        - link "Logos" [ref=f2e307]:
+          - /url: http://webserver/admin/settings.php?section=logos
+      - listitem [ref=f2e308]:
+        - link "Course card colours" [ref=f2e309]:
+          - /url: http://webserver/admin/settings.php?section=coursecolors
+      - listitem [ref=f2e310]:
+        - link "Calendar" [ref=f2e311]:
+          - /url: http://webserver/admin/settings.php?section=calendar
+      - listitem [ref=f2e312]:
+        - link "Blog" [ref=f2e313]:
+          - /url: http://webserver/admin/settings.php?section=blog
+      - listitem [ref=f2e314]:
+        - link "Navigation" [ref=f2e315]:
+          - /url: http://webserver/admin/settings.php?section=navigation
+      - listitem [ref=f2e316]:
+        - link "HTML settings" [ref=f2e317]:
+          - /url: http://webserver/admin/settings.php?section=htmlsettings
+      - listitem [ref=f2e318]:
+        - link "Moodle Docs" [ref=f2e319]:
+          - /url: http://webserver/admin/settings.php?section=documentation
+      - listitem [ref=f2e320]:
+        - link "Default Dashboard page" [ref=f2e321]:
+          - /url: http://webserver/my/indexsys.php
+      - listitem [ref=f2e322]:
+        - link "Default profile page" [ref=f2e323]:
+          - /url: http://webserver/user/profilesys.php
+      - listitem [ref=f2e324]:
+        - link "Courses" [ref=f2e325]:
+          - /url: http://webserver/admin/settings.php?section=coursecontact
+      - listitem [ref=f2e326]:
+        - link "AJAX and Javascript" [ref=f2e327]:
+          - /url: http://webserver/admin/settings.php?section=ajax
+      - listitem [ref=f2e328]:
+        - link "Manage tags" [ref=f2e329]:
+          - /url: http://webserver/tag/manage.php
+      - listitem [ref=f2e330]:
+        - link "Additional HTML" [ref=f2e331]:
+          - /url: http://webserver/admin/settings.php?section=additionalhtml
+      - listitem [ref=f2e332]:
+        - link "Templates" [ref=f2e333]:
+          - /url: http://webserver/admin/settings.php?section=templates
+      - listitem [ref=f2e334]:
+        - link "Advanced theme settings" [ref=f2e335]:
+          - /url: http://webserver/admin/settings.php?section=themesettingsadvanced
+      - listitem [ref=f2e336]:
+        - lin
+…[truncated 230 chars]
+#14 CALL browser_click {"target": "f2e82", "element": "Plugins tab"}
+#14 RESULT ### Error
+Error: Ref f2e82 not found in the current page snapshot. Try capturing new snapshot.
+#15 CALL browser_snapshot {"target": "f2e72", "depth": 3}
+#15 RESULT ### Error
+Error: Ref f2e72 not found in the current page snapshot. Try capturing new snapshot.
+MSG {"status":"fail","reason":"At step 2, I could not locate a UI control for either `searchbannerenable` or `searchbanner`. The admin pages I opened showed general settings and Appearance settings, with no matching controls. I stopped before searching or changing anything.","failingStep":2,"failingStepText":"And the following config values are set as admin:\n  | searchbannerenable | 0 |\n  | searchbanner | The search currently only finds frog-related content; we hope to fix it soon. |"}

@@ -1,0 +1,449 @@
+UNIT pay:E:fault-v2-2/bank-delete/runtime
+model gpt-6.2-sol driver codex-cli 0.169.0 build v2+fault type faulty
+scenario bank-delete 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I delete bank "Waters, King and O'Reilly Bank"
+  4. Then bank "Waters, King and O'Reilly Bank" is visibly marked deleted
+  5. When I reload the current page
+  6. Then bank "Waters, King and O'Reilly Bank" is visibly marked deleted
+fault {"file": "src/components/BankAccountItem.tsx", "before": "deleteBankAccount({ id: bankAccount.id });", "after": "void bankAccount.id;"}
+target [4, 6] Then bank "Waters, King and O'Reilly Bank" is visibly marked deleted
+VERDICT fail step [4, 6] 'Then bank "Waters, King and O'Reilly Bank" is visibly marked deleted'
+REASON The authenticated home displayed @Heath93. After clicking Confirm deletion, the bank row on /bankaccounts still showed its original name and a Delete button, with no visible deleted marker.
+parse_error None tool_calls 16 timed_out False run_result recorded run_error None
+SOURCE ledger
+============================================================
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-52-25-977Z.yml)
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"name": "Username", "target": "e16", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "e19", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26", "element": "Continue sign-in button"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-52-34-710Z.yml)
+#5 CALL browser_snapshot {"depth": 5}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - button "Account menu"
+      - generic:
+        - separator
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#6 CALL browser_click {"target": "e86", "element": "Account menu"}
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-52-39-771Z.yml)
+#7 CALL browser_snapshot {"depth": 5}
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "People I know"
+      - tab "My activity"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded] [active]
+        - list:
+          - generic
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+          - generic
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#8 CALL browser_snapshot {"target": "e456"}
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- list:
+  - generic:
+    - link "Home":
+      - /url: /
+    - link "My Account":
+      - /url: /user/settings
+    - link "Bank Accounts":
+      - /url: /bankaccounts
+    - link "Notifications":
+      - /url: /notifications
+```
+#9 CALL browser_click {"target": "e470", "element": "Bank Accounts link"}
+#9 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-52-48-088Z.yml)
+#10 CALL browser_snapshot {}
+#10 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded]
+        - list:
+          - generic:
+            - link "Home":
+              - /url: /
+            - link "My Account":
+              - /url: /user/settings
+            - link "Bank Accounts" [active]:
+              - /url: /bankaccounts
+            - link "Notifications":
+              - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - heading "Bank Accounts" [level=2]
+        - link "Create":
+          - /url: /bankaccounts/new
+      - list:
+        - listitem:
+          - generic:
+            - paragraph: Waters, King and O'Reilly Bank
+            - button "Delete"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#11 CALL browser_click {"target": "e503", "element": "Delete for Waters, King and O'Reilly Bank"}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-52-51-853Z.yml)
+#12 CALL browser_snapshot {}
+#12 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - generic:
+    - banner:
+      - generic:
+        - button
+        - heading [level=1]:
+          - link:
+            - /url: /
+        - link:
+          - /url: /transaction/new
+          - text: New
+        - link:
+          - /url: /notifications
+          - generic: "8"
+    - generic:
+      - generic:
+        - generic: T
+        - generic:
+          - heading [level=6]: Ted P
+          - heading [level=6]: "@Heath93"
+      - generic:
+        - generic:
+          - heading [level=6]: $1,509.53
+          - heading [level=6]: Account Balance
+        - generic:
+          - button [expanded]: Account menu
+          - list:
+            - generic:
+              - link:
+                - /url: /
+                - generic: Home
+              - link:
+                - /url: /user/settings
+                - generic: My Account
+              - link:
+                - /url: /bankaccounts
+                - generic: Bank Accounts
+              - link:
+                - /url: /notifications
+                - generic: Notifications
+        - list:
+          - button:
+            - generic: Logout
+    - main:
+      - generic:
+        - generic:
+          - heading [level=2]: Bank Accounts
+          - link:
+            - /url: /bankaccounts/new
+            - text: Create
+        - list:
+          - listitem:
+            - generic:
+              - paragraph: Waters, King and O'Reilly Bank
+              - button: Delete
+      - paragraph:
+        - text: Built by
+        - link:
+          - /url: https://cypress.io
+  - dialog:
+    - heading "Delete Waters, King and O'Reilly Bank?" [level=2]
+    - generic:
+      - button "Cancel"
+      - button "Confirm deletion"
+```
+#13 CALL browser_click {"target": "e526", "element": "Confirm deletion"}
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-18T13-52-56-485Z.yml)
+#14 CALL browser_snapshot {}
+#14 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - generic:
+        - button "Account menu" [expanded]
+        - list:
+          - generic:
+            - link "Home":
+              - /url: /
+            - link "My Account":
+              - /url: /user/settings
+            - link "Bank Accounts":
+              - /url: /bankaccounts
+            - link "Notifications":
+              - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - heading "Bank Accounts" [level=2]
+        - link "Create":
+          - /url: /bankaccounts/new
+      - list:
+        - listitem:
+          - generic:
+            - paragraph: Waters, King and O'Reilly Bank
+            - button "Delete" [active]
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+#15 CALL browser_wait_for {"text": "Waters, King and O'Reilly Bank (Deleted)", "time": 8}
+#15 RESULT [isError] ### Error
+TimeoutError: Timeout 8000ms exceeded.
+Call log:
+[2m  - waiting for getByText('Waters, King and O\'Reilly Bank (Deleted)').first() to be visible[22m
+
+#16 CALL browser_snapshot {"target": "e87"}
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/bankaccounts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - generic:
+      - heading "Bank Accounts" [level=2]
+      - link "Create":
+        - /url: /bankaccounts/new
+    - list:
+      - listitem:
+        - generic:
+          - paragraph: Waters, King and O'Reilly Bank
+          - button "Delete" [active]
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+RAWRESPONSE {"status":"fail","reason":"The authenticated home displayed @Heath93. After clicking Confirm deletion, the bank row on /bankaccounts still showed its original name and a Delete button, with no visible deleted marker.","failedAssertion":"Then bank \"Waters, King and O'Reilly Bank\" is visibly marked deleted"}

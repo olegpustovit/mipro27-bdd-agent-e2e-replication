@@ -1,0 +1,19 @@
+--- ../../a-trace-audit/agreement/consensus.py	2026-11-26 22:14:30.023570297 +0000
++++ agreement/consensus.py	2026-11-27 05:59:08.046536646 +0000
+@@ -1,13 +1,14 @@
+ # /// script
+ # requires-python = ">=3.11"
+ # ///
+-"""Majority and unanimous codes across the three trace-audit coders, plus a coarse agent / not-agent split."""
++"""FOLLOWUP-E-TA: copy of followups-2026-11/a-trace-audit/agreement/consensus.py; only the codes-file paths changed (coderN-work/codes-coderN.jsonl).
++Majority and unanimous codes across the three trace-audit coders, plus a coarse agent / not-agent split."""
+ import json, collections
+ from pathlib import Path
+ b = Path(__file__).resolve().parent.parent
+ u = {json.loads(l)["unit_id"]: json.loads(l) for l in open(b/"units.jsonl")}
+ c = [{json.loads(l)["unit_id"]: json.loads(l)["code"] for l in open(f) if l.strip()}
+-     for f in (b/"codes-coder1.jsonl", b/"codes-coder2.jsonl", b/"coder3-work/codes-coder3.jsonl")]
++     for f in (b/f"coder{n}-work/codes-coder{n}.jsonl" for n in (1, 2, 3))]  # FOLLOWUP-E-TA
+ def maj(i):
+     k = collections.Counter(x[i] for x in c).most_common()
+     return k[0][0] if k[0][1] >= 2 else "NO-MAJORITY"

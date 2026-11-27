@@ -1,0 +1,163 @@
+UNIT moodle:6ac189f540b8/B29.S138/fault:X026/C/gpt-6-luna/r2
+model gpt-6-luna driver codex build Moodle pin cfe123f26fc7 + seeded fault X026; pair from change B29 type faulty
+scenario S138 Teachers can not access system level content bank
+  1. And I log in as "teacher1"
+  2. Given I turn editing mode on
+  3. And the following config values are set as admin:
+  | unaddableblocks |  | theme_boost |
+  4. And I add the "Navigation" block if not present
+  5. When I expand "Site pages" node
+  6. Then I should not see "Content bank"
+fault {"intent": "Navigation tree: the Content bank node is added for users WITHOUT the content bank access capability and left out for users with it (inverted condition).", "mutations": [{"file": "public/lib/classes/navigation/global_navigation.php", "old": "            if (has_capability('moodle/contentbank:access', $context)) {\n                $url = new url('/contentbank/index.php', $params);", "new": "            if (!has_capability('moodle/contentbank:access', $context)) {\n                $url = new url('/contentbank/index.php', $params);"}]}
+target [6] Then I should not see "Content bank"
+VERDICT fail step 3 'And the following config values are set as admin:
+  | unaddableblocks |  | theme_boost |'
+REASON Step 2 succeeded: editing mode is on. Step 3 could not be performed because it requires setting an admin configuration value, and the instructions prohibit modifying data through admin tools.
+parse_error None tool_calls 5 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll use the existing teacher1 browser session and follow the visible Moodle UI steps in order. Step 3 is an admin configuration action, so I’ll only proceed if the UI exposes a normal path for it; I won’t use admin tools or inspect hidden state.
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1758 chars]
+#2 CALL browser_click {"target": "ref=e17", "element": "Edit mode switch"}
+#2 RESULT ### Error
+Error: browserBackend.callTool: Unknown engine "ref" while parsing selector ref=e17
+#3 CALL browser_click {"target": "Edit mode", "element": "Edit mode switch"}
+#3 RESULT ### Error
+Error: "Edit mode" does not match any elements.
+#4 CALL browser_click {"target": "[role=switch]", "element": "Edit mode switch"}
+#4 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-55-389Z.yml)
+#5 CALL browser_snapshot {}
+#5 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e16]:
+            - switch "Edit mode" [checked] [ref=f1e17]
+            - generic [ref=f1e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e28]:
+            - generic [aria-hidden] [ref=f1e29]: 
+          - button "Toggle messaging drawer" [ref=f1e31]:
+            - generic [aria-hidden] [ref=f1e32]: 
+          - button "User menu" [ref=f1e38]: 
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]:
+          - generic [ref=f1e50]:
+            - button "Reset page to default" [ref=f1e55]
+            - heading "Dashboard" [level=1] [ref=f1e61]
+        - main [ref=f1e65]:
+          - link "Add a block" [ref=f1e68]:
+            - /url: http://webserver/my/index.php?bui_addblock&sesskey=1LkPs98VXV&bui_blockregion=content
+            - generic [aria-hidden] [ref=f1e69]: +
+            - text: Add a block
+          - region [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region [ref=f1e73]:
+              - generic [ref=f1e74]:
+                - generic [ref=f1e75]:
+                  - heading "Course overview" [level=3] [ref=f1e76]
+                  - menubar [ref=f1e78]:
+                    - generic [ref=f1e79]:
+                      - menuitem "Move Course overview block" [ref=f1e81]:
+                        - generic [aria-hidden] [ref=f1e82]: 
+                      - generic [ref=f1e84]:
+                        - menuitem "Actions menu" [ref=f1e85]:
+                          - generic [aria-hidden] [ref=f1e86]: 
+                        - text:   
+                - generic [ref=f1e89]:
+                  - search "Course overview controls" [ref=f1e90]:
+                    - generic [ref=f1e91]:
+                      - generic [ref=f1e9
+…[truncated 4035 chars]
+MSG {"status":"fail","reason":"Step 2 succeeded: editing mode is on. Step 3 could not be performed because it requires setting an admin configuration value, and the instructions prohibit modifying data through admin tools.","failingStep":3,"failingStepText":"And the following config values are set as admin:\n  | unaddableblocks |  | theme_boost |"}

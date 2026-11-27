@@ -1,0 +1,17 @@
+M059	CORRECT	high	@re	@re:[^\n]*Are you sure you want to block Teacher 1\?[^\n]*	teacher (cannot be blocked) gets the block confirmation instead of "You can't block Teacher 1"; cited
+M060	CORRECT	high	@re	@re:[^\n]*Are you sure you want to block Teacher 1\?[^\n]*	confirmation instead of refusal; cited
+M061	CORRECT	high	@re	@re:[^\n]*Are you sure you want to block Teacher 1\?[^\n]*	confirmation instead of refusal; cited
+M062	CORRECT	high	@re	@re:[^\n]*Are you sure you want to block Teacher 1\?[^\n]*	confirmation instead of refusal; cited
+M063	CORRECT	medium	@re	@re:[^\n]*Are you sure you want to block Teacher 1\?[^\n]*	confirmation dialog shown (#17); verdict cites "confirming with the Block button" and missing refusal text; agent went one step further and confirmed
+M064	WRONG-REASON	high	@reason	@reason	failed at step 2: could not find Teacher 1 in messaging; never reached Block
+M065	AGENT-ERROR	medium	@reason	@reason	agent batched actions with stale refs ("Ref ... not found in the current page snapshot") and re-navigated repeatedly; stopped unresolved at step 2 after 28 of 60 calls; other runs found Teacher 1 via messaging search
+M066	AGENT-ERROR	medium	trace blob, result of tool call #19 browser_snapshot {"depth": 8}	tool result: - textbox "Search" [active] [ref=f1e274]: Teacher 1	search was submitted; results area below is cut off by depth-8 snapshots (empty generic nodes), agent read it as loading and stopped at 19 calls; other runs got the user with a deeper snapshot or wait_for
+M067	WRONG-REASON	high	@reason	@reason	failed at step 2: Student 2 not found via messaging search; never reached Block
+M068	WRONG-REASON	high	@reason	@reason	failed at step 2: Student 2 not found; never reached Block
+M069	CORRECT	high	@re	@re:[^\n]*You can't block Student 2[^\n]*	blockable student told they cannot be blocked; cited
+M070	CORRECT	high	@re	@re:[^\n]*You can't block Student 2[^\n]*	blockable student told they cannot be blocked; cited
+M071	WRONG-REASON	high	@reason	@reason	failed at step 2: search control disappeared, no Student 2 selected
+M072	WRONG-REASON	high	@reason	@reason	failed at step 4 on control wording ("Block user" button in profile panel, no "Block" link); never clicked Block, faulty message not shown
+M073	AGENT-ERROR	medium	trace blob, result of tool call #19 browser_snapshot	tool result: - paragraph [ref=f1e141]: Search people and messages	search text typed but results pane still shows the empty-state prompt: the agent pressed Enter instead of the visible Perform search button and concluded "no results"; other runs found Student 2 by clicking Perform search
+M074	AGENT-ERROR	high	@re	@re:- paragraph \[ref=f2e305\]: Cannot send messages	page shows "Cannot send messages", which contains the asserted "Cannot send message"; agent required an exact match
+M075	AGENT-ERROR	medium	trace blob, result of tool call #14 browser_snapshot {"depth": 8}	tool result: - textbox "Search" [active] [ref=e234]: Student 2	search performed but results read from shallow snapshots (depth 6/8); agent concluded no user and stopped at 19 calls; other runs found Student 2

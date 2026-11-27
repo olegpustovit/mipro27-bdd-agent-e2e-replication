@@ -1,0 +1,660 @@
+UNIT pay:D:healthy-v0-1/profile-name/runtime
+model claude-haiku-5-5 driver omp 18.14.0 (REPRODUCE.md) build v0 type healthy
+scenario profile-name 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I change my "First Name" to "Study"
+  4. Then my "First Name" field is "Study"
+  5. And my displayed full name contains "Study"
+  6. When I reload the current page
+  7. Then my "First Name" field is "Study"
+fault null
+target None None
+VERDICT fail step [5] 'And my displayed full name contains "Study"'
+REASON Signed in as Heath93 (home shows Ted P / @Heath93). On My Account, set First Name to 'Study' and clicked Save. The First Name field reads 'Study', but the sidebar displayed name still reads 'Ted P' after about 5 seconds of waiting. No reload was performed, per the scenario.
+parse_error None tool_calls 24 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+THINK I'll start by checking the browser at localhost:3000.
+
+
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-12-52-824Z.yml)
+#2 RESULT ### Page
+- Page URL: about:blank
+### Snapshot
+```yaml
+
+```
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#4 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#5 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#6 CALL browser_snapshot {}
+#6 RESULT 
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-12-55-749Z.yml)
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The form fill doesn't seem to have registered since the snapshot shows empty fields and we're still on the signin page after clicking. Let me wait and take another snapshot to check.
+
+
+#7 CALL browser_wait_for {"time": 2}
+#8 CALL browser_snapshot {}
+#8 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-12-59-770Z.yml)
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+MSG The fields are filled but the click did not sign in. Retrying the Sign In button.
+#9 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#10 CALL browser_wait_for {"time": 2}
+#11 CALL browser_snapshot {}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-13-04-389Z.yml)
+#11 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-13-03-188Z.yml)
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The URL flickered from signin to / and back, suggesting the login attempt might be failing silently since there's no visible error message. It could be the session isn't valid or the user doesn't actually exist in the seed data—I'll try signing in again and snapshot immediately to catch what's happening.
+
+
+#12 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#13 CALL browser_snapshot {}
+#13 RESULT [isError] Error: ### Error
+Error: Ref e26 not found in the current page snapshot. Try capturing new snapshot.
+#13 RESULT [isError] MCP failure
+server: study
+tool: browser_snapshot
+transport: http
+stage: send
+failure: reset
+retryable: no
+message: ECONNRESET: The socket connection was closed unexpectedly.
+code: ECONNRESET
+next: The connection was lost after the request was sent, so it may already have run; check its effect before retrying.
+#14 CALL browser_snapshot {}
+#14 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK I'm confirmed as Ted P with handle @Heath93 now. Next I need to change the First Name to "Study" via My Account settings, so I'll click the My Account link in the drawer.
+
+
+MSG Signed in; home shows @Heath93. Opening My Account.
+#15 CALL browser_click {"target": "e96", "element": "My Account link"}
+#16 CALL browser_wait_for {"time": 2}
+#17 CALL browser_snapshot {}
+#17 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-13-12-868Z.yml)
+#17 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-13-12-192Z.yml)
+#17 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK That's strange - the URL briefly flashed to /user/settings before redirecting back to /. The app must be redirecting somewhere. Let me try opening the drawer and clicking My Account again, this time taking a snapshot right away to catch it.
+
+
+MSG The settings route bounced back to `/`. Retrying the My Account link once.
+#18 CALL browser_click {"target": "e96", "element": "My Account link"}
+#18 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-13-15-590Z.yml)
+#19 CALL browser_snapshot {}
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account" [active]:
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - heading "User Settings" [level=2]
+      - generic:
+        - generic:
+          - textbox "First Name": Ted
+          - group [aria-hidden]
+        - generic:
+          - textbox "Last Name": Parisian
+          - group [aria-hidden]
+        - generic:
+          - textbox "Email": Santos.Runte65@gmail.com
+          - group [aria-hidden]
+        - generic:
+          - textbox "Phone Number": 398-225-9900
+          - group [aria-hidden]
+        - button "Save"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK Now I need to update the First Name field to "Study" by filling in that input, then click the Save control to confirm the change.
+
+
+MSG Settings form loaded. Setting First Name to "Study" and saving.
+#20 CALL browser_fill_form {"fields": [{"target": "e584", "name": "First Name", "type": "textbox", "value": "Study"}]}
+#21 CALL browser_click {"target": "e596", "element": "Save control"}
+#21 RESULT 
+#21 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-13-19-322Z.yml)
+#22 CALL browser_wait_for {"time": 2}
+#23 CALL browser_snapshot {}
+#23 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-13-22-501Z.yml)
+#23 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - heading "User Settings" [level=2]
+      - generic:
+        - generic:
+          - textbox "First Name" [active]: Study
+          - group [aria-hidden]
+        - generic:
+          - textbox "Last Name": Parisian
+          - group [aria-hidden]
+        - generic:
+          - textbox "Email": Santos.Runte65@gmail.com
+          - group [aria-hidden]
+        - generic:
+          - textbox "Phone Number": 398-225-9900
+          - group [aria-hidden]
+        - button "Save"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK The sidebar still shows "Ted P" instead of reflecting the updated name, so the assertion that the displayed full name contains "Study" fails since the spec forbids reloading to force the expected state. The first assertion about the First Name field passed, but this second one is where the failure actually occurs.
+
+
+MSG First Name field shows "Study" but the sidebar still reads "Ted P". Checking once more without reloading to see if it updates late.
+#24 CALL browser_wait_for {"time": 3}
+#25 CALL browser_snapshot {}
+#25 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-13-28-776Z.yml)
+#25 RESULT ### Page
+- Page URL: http://localhost:3000/user/settings
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - heading "User Settings" [level=2]
+      - generic:
+        - generic:
+          - textbox "First Name" [active]: Study
+          - group [aria-hidden]
+        - generic:
+          - textbox "Last Name": Parisian
+          - group [aria-hidden]
+        - generic:
+          - textbox "Email": Santos.Runte65@gmail.com
+          - group [aria-hidden]
+        - generic:
+          - textbox "Phone Number": 398-225-9900
+          - group [aria-hidden]
+        - button "Save"
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK That assertion checking the displayed full name for "Study" is failing, and since I can't reload, I should stop here and just output the JSON result.
+
+
+MSG {"status":"fail","reason":"Signed in as Heath93 (home shows Ted P / @Heath93). On My Account, set First Name to 'Study' and clicked Save. The First Name field reads 'Study', but the sidebar displayed name still reads 'Ted P' after about 5 seconds of waiting. No reload was performed, per the scenario.","failedAssertion":"And my displayed full name contains \"Study\""}
+RAWRESPONSE {"status":"fail","reason":"Signed in as Heath93 (home shows Ted P / @Heath93). On My Account, set First Name to 'Study' and clicked Save. The First Name field reads 'Study', but the sidebar displayed name still reads 'Ted P' after about 5 seconds of waiting. No reload was performed, per the scenario.","failedAssertion":"And my displayed full name contains \"Study\""}

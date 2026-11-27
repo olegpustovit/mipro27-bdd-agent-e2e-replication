@@ -1,0 +1,1217 @@
+UNIT moodle:6ac189f540b8/B04.S037/fault:X014/C/claude-haiku-5-5/r2
+model claude-haiku-5-5 driver omp build Moodle pin cfe123f26fc7 + seeded fault X014; pair from change B04 type faulty
+scenario S037 Completion condition displaying setting can be disabled at course level
+  1. Given I log in as "teacher1"
+  2. And I am on "Course 1" course homepage with editing mode on
+  3. And I navigate to "Settings" in current page administration
+  4. When I set the following fields to these values:
+  | Show activity completion conditions | No |
+  5. And I click on "Save and display" "button"
+  6. And there should be no completion information shown for "Test choice auto"
+  7. And I follow "Test choice auto"
+  8. Then "Test choice auto" should have the "Make a choice" completion condition
+  9. And I am on "Course 1" course homepage
+  10. And the manual completion button for "Test choice manual" should not exist
+  11. And I follow "Test choice manual"
+  12. And the manual completion button for "Test choice manual" should be disabled
+fault {"intent": "Activity completion details treat tracked users (students) as untracked and the reverse (inverted condition), so the manual completion button is enabled for teachers.", "mutations": [{"file": "public/completion/classes/cm_completion_details.php", "old": "        return $this->completioninfo->is_tracked_user($this->userid);", "new": "        return !$this->completioninfo->is_tracked_user($this->userid);"}]}
+target [12] And the manual completion button for "Test choice manual" should be disabled
+VERDICT fail step 12 'And the manual completion button for "Test choice manual" should be disabled'
+REASON Steps 1-11 passed in the UI. Course settings re-open with 'Show activity completion conditions' = No, and the Course 1 homepage shows no completion requirements for 'Test choice auto' or a 'Mark as done' button for 'Test choice manual'. Step 12 failed: on http://webserver/mod/choice/view.php?id=109000 the 'Mark as done' button ('Mark Test choice manual as done') is present with no disabled state in the snapshot.
+parse_error None tool_calls 38 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+THINK I'm taking a snapshot first to see what the browser currently shows, since the session for teacher1 is already open and step 1 is done.
+
+
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1763 chars]
+THINK I'm logged in as Teacher 1 now, and the next step is to open the Course 1 homepage (id=2) and turn on Edit mode with the switch at e17.
+
+
+#2 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-16-784Z.yml)
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1763 chars]
+THINK The page navigation reported a course page, but the snapshot still shows the /my/ dashboard, so this could be a redirect or a stale snapshot. I'll take a fresh snapshot to see which it is.
+
+
+#4 CALL browser_snapshot {}
+#4 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open course index" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Course 1" [level=1] [ref=f1e55]
+        - navigation "Course menu" [ref=f1e58]:
+          - menubar [ref=f1e59]:
+            - menuitem "Course" [ref=f1e60]
+            - menuitem "Settings" [ref=f1e63]
+            - menuitem "Participants" [ref=f1e65]
+            - menuitem "Grades" [ref=f1e67]
+            - menuitem "Activities" [ref=f1e69]
+            - menuitem "More " [ref=f1e71]:
+              - generic [ref=f1e72]: More
+              - text: 
+        - main [ref=f1e76]:
+          - generic [ref=f1e79]:
+            - heading "Section outline" [level=2] [ref=f1e80]
+            - button [expanded] [ref=f1e82]:
+              - generic [ref=f1e83]:
+                - generic [aria-hidden] [ref=f1e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f1e85]:
+              - listitem [ref=f1e86]:
+                - generic [ref=f1e87]:
+                  - generic [ref=f1e89]:
+                    - button "General" [expanded] [ref=f1e90]:
+                      - generic "Collapse" [ref=f1e91]:
+                        - generic [aria-hidden] [ref=f1e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f1e94]:
+                      - link "General" [ref=f1e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - list [ref=f1e99]:
+ 
+…[truncated 5062 chars]
+THINK Edit mode looks like it's off, since the course page shows no editing controls like "Add an activity." Step 2 needs it on, so I'll click the Edit mode switch first. Step 3 is opening Settings from the course menu afterward.
+
+
+#5 CALL browser_click {"target": "f1e16"}
+#6 CALL browser_snapshot {"boxes": false}
+#6 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-21-867Z.yml)
+#6 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [checked] [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - generic:
+          - button "Open course index" [ref=f2e44]
+          - button "Open block drawer" [ref=f2e49]
+        - banner [ref=f2e53]:
+          - generic [ref=f2e55]:
+            - heading "Course 1" [level=1] [ref=f2e60]
+            - button "Bulk actions" [ref=f2e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f2e64]: 
+        - navigation "Course menu" [ref=f2e67]:
+          - menubar [ref=f2e68]:
+            - menuitem "Course" [ref=f2e69]
+            - menuitem "Settings" [ref=f2e72]
+            - menuitem "Participants" [ref=f2e74]
+            - menuitem "Grades" [ref=f2e76]
+            - menuitem "Activities" [ref=f2e78]
+            - menuitem "More " [ref=f2e80]:
+              - generic [ref=f2e81]: More
+              - text: 
+        - main [ref=f2e85]:
+          - generic [ref=f2e88]:
+            - heading "Section outline" [level=2] [ref=f2e89]
+            - button [expanded] [ref=f2e91]:
+              - generic [ref=f2e92]:
+                - generic [aria-hidden] [ref=f2e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e94]:
+              - listitem [ref=f2e95]:
+                - generic [ref=f2e96]:
+                  - generic [ref=f2e97]:
+                    - generic [ref=f2e98]:
+                      - button "General" [expanded] [ref=f2e99]:
+                        - generic "Collapse" [ref=f2e100]:
+            
+…[truncated 11245 chars]
+THINK I'm turning on edit mode, and the next step is to click the Settings menu item (e72).
+
+
+#7 CALL browser_click {"target": "f2e72"}
+#7 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-24-247Z.yml)
+#8 CALL browser_snapshot {}
+#8 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [checked] [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - generic:
+          - button "Open course index" [ref=f3e44]
+          - button "Open block drawer" [ref=f3e49]
+        - banner [ref=f3e53]:
+          - heading "Course 1" [level=1] [ref=f3e60]
+        - navigation "Course menu" [ref=f3e63]:
+          - menubar [ref=f3e64]:
+            - menuitem "Course" [ref=f3e65]
+            - menuitem "Settings" [ref=f3e67]
+            - menuitem "Participants" [ref=f3e70]
+            - menuitem "Grades" [ref=f3e72]
+            - menuitem "Activities" [ref=f3e74]
+            - menuitem "More " [ref=f3e76]:
+              - generic [ref=f3e77]: More
+              - text: 
+        - main [ref=f3e81]:
+          - heading "Edit course settings" [level=2] [ref=f3e83]
+          - generic [ref=f3e84]:
+            - button "Expand all" [ref=f3e86]
+            - group "General" [ref=f3e88]:
+              - generic [ref=f3e91]:
+                - button "General" [expanded] [ref=f3e92]:
+                  - generic "Collapse" [ref=f3e93]:
+                    - generic [aria-hidden] [ref=f3e94]: 
+                  - text:  
+                - heading [level=3] [aria-hidden] [ref=f3e96]: General
+              - generic [ref=f3e97]:
+                - generic [ref=f3e98]:
+                  - generic [ref=f3e99]:
+                    - generic [ref=f3e100]: Course full name
+                    - generic [ref=f3e101]:
+                      - generic [aria-hidden] [ref=f3e103]: 
+                
+…[truncated 38936 chars]
+THINK The completion tracking group is collapsed, so I'll expand it first. After that I need to locate the "Show activity completion conditions" field and click its button.
+
+
+#9 CALL browser_click {"target": "f3e311"}
+#10 CALL browser_snapshot {"target": "f3e307"}
+#10 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-27-917Z.yml)
+#10 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- group "Completion tracking" [ref=f3e307]:
+  - generic [ref=f3e310]:
+    - button "Completion tracking" [expanded] [active] [ref=f3e311]:
+      - generic "Collapse" [ref=f3e373]:
+        - generic [aria-hidden] [ref=f3e374]: 
+      - text:  
+    - heading [level=3] [aria-hidden] [ref=f3e316]: Completion tracking
+  - generic [ref=f3e375]:
+    - generic [ref=f3e376]:
+      - generic [ref=f3e377]:
+        - generic [ref=f3e378]: Enable completion tracking
+        - button "Help" [ref=f3e380]:
+          - img "Help with Enable completion tracking" [ref=f3e381]: 
+      - combobox "Enable completion tracking" [ref=f3e383]:
+        - option "No"
+        - option "Yes" [selected]
+    - generic [ref=f3e384]:
+      - generic [ref=f3e385]:
+        - generic [ref=f3e386]: Show activity completion conditions
+        - button "Help" [ref=f3e388]:
+          - img "Help with Show activity completion conditions" [ref=f3e389]: 
+      - combobox "Show activity completion conditions" [ref=f3e391]:
+        - option "No"
+        - option "Yes" [selected]
+```
+#11 CALL browser_select_option {"target": "f3e391", "values": ["No"], "element": "Show activity completion conditions"}
+#12 CALL browser_click {"target": "f3e345", "element": "Save and display"}
+#12 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-30-089Z.yml)
+#12 RESULT [isError] Error: ### Error
+Error: Ref f3e345 not found in the current page snapshot. Try capturing new snapshot.
+THINK I'm wondering whether the select action triggered a page navigation, so I'll take a fresh snapshot to get updated element refs.
+
+
+#13 CALL browser_snapshot {"target": "f3e384"}
+#13 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f3e384]:
+  - generic [ref=f3e385]:
+    - generic [ref=f3e386]: Show activity completion conditions
+    - button "Help" [ref=f3e388]:
+      - img "Help with Show activity completion conditions" [ref=f3e389]: 
+  - combobox "Show activity completion conditions" [ref=f3e391]:
+    - option "No" [selected]
+    - option "Yes"
+```
+#14 CALL browser_snapshot {}
+#14 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [checked] [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - generic:
+          - button "Open course index" [ref=f3e44]
+          - button "Open block drawer" [ref=f3e49]
+        - banner [ref=f3e53]:
+          - heading "Course 1" [level=1] [ref=f3e60]
+        - navigation "Course menu" [ref=f3e63]:
+          - menubar [ref=f3e64]:
+            - menuitem "Course" [ref=f3e65]
+            - menuitem "Settings" [ref=f3e67]
+            - menuitem "Participants" [ref=f3e70]
+            - menuitem "Grades" [ref=f3e72]
+            - menuitem "Activities" [ref=f3e74]
+            - menuitem "More " [ref=f3e76]:
+              - generic [ref=f3e77]: More
+              - text: 
+        - main [ref=f3e81]:
+          - heading "Edit course settings" [level=2] [ref=f3e83]
+          - generic [ref=f3e84]:
+            - button "Expand all" [ref=f3e86]
+            - group "General" [ref=f3e88]:
+              - generic [ref=f3e91]:
+                - button "General" [expanded] [ref=f3e92]:
+                  - generic "Collapse" [ref=f3e93]:
+                    - generic [aria-hidden] [ref=f3e94]: 
+                  - text:  
+                - heading [level=3] [aria-hidden] [ref=f3e96]: General
+              - generic [ref=f3e97]:
+                - generic [ref=f3e98]:
+                  - generic [ref=f3e99]:
+                    - generic [ref=f3e100]: Course full name
+                    - generic [ref=f3e101]:
+                      - generic [aria-hidden] [ref=f3e103]: 
+                      - b
+…[truncated 39836 chars]
+MSG Selection is "No". Saving now.
+#15 CALL browser_click {"target": "f3e345", "element": "Save and display"}
+#16 CALL browser_snapshot {}
+#16 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-35-389Z.yml)
+#16 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [checked] [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - generic:
+          - button "Open course index" [ref=f3e44]
+          - button "Open block drawer" [ref=f3e49]
+        - banner [ref=f3e53]:
+          - heading "Course 1" [level=1] [ref=f3e60]
+        - navigation "Course menu" [ref=f3e63]:
+          - menubar [ref=f3e64]:
+            - menuitem "Course" [ref=f3e65]
+            - menuitem "Settings" [ref=f3e67]
+            - menuitem "Participants" [ref=f3e70]
+            - menuitem "Grades" [ref=f3e72]
+            - menuitem "Activities" [ref=f3e74]
+            - menuitem "More " [ref=f3e76]:
+              - generic [ref=f3e77]: More
+              - text: 
+        - main [ref=f3e81]:
+          - heading "Edit course settings" [level=2] [ref=f3e83]
+          - generic [ref=f3e84]:
+            - button "Expand all" [ref=f3e86]
+            - group "General" [ref=f3e88]:
+              - generic [ref=f3e91]:
+                - button "General" [expanded] [ref=f3e92]:
+                  - generic "Collapse" [ref=f3e93]:
+                    - generic [aria-hidden] [ref=f3e94]: 
+                  - text:  
+                - heading [level=3] [aria-hidden] [ref=f3e96]: General
+              - generic [ref=f3e97]:
+                - generic [ref=f3e98]:
+                  - generic [ref=f3e99]:
+                    - generic [ref=f3e100]: Course full name
+                    - generic [ref=f3e101]:
+                      - generic [aria-hidden] [ref=f3e103]: 
+                      - b
+…[truncated 39836 chars]
+THINK The click took me to course/view.php?id=2, but the snapshot still shows the edit form, with completion conditions set to "No." That doesn't quite add up, so I'm wondering whether the save redirected to the course page and the snapshot is just stale.
+
+I'll navigate to the course page and take a fresh snapshot to confirm whether the save actually landed there. I also need to check whether the "Completion requirements" info for the test choice appears after saving, since it was there while editing.
+
+
+#17 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#18 CALL browser_snapshot {}
+#18 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-39-824Z.yml)
+#18 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [checked] [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - generic:
+          - button "Open course index" [ref=f4e44]
+          - button "Open block drawer" [ref=f4e49]
+        - banner [ref=f4e53]:
+          - generic [ref=f4e55]:
+            - heading "Course 1" [level=1] [ref=f4e60]
+            - button "Bulk actions" [ref=f4e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f4e64]: 
+        - navigation "Course menu" [ref=f4e67]:
+          - menubar [ref=f4e68]:
+            - menuitem "Course" [ref=f4e69]
+            - menuitem "Settings" [ref=f4e72]
+            - menuitem "Participants" [ref=f4e74]
+            - menuitem "Grades" [ref=f4e76]
+            - menuitem "Activities" [ref=f4e78]
+            - menuitem "More " [ref=f4e80]:
+              - generic [ref=f4e81]: More
+              - text: 
+        - main [ref=f4e85]:
+          - generic [ref=f4e88]:
+            - heading "Section outline" [level=2] [ref=f4e89]
+            - button [expanded] [ref=f4e91]:
+              - generic [ref=f4e92]:
+                - generic [aria-hidden] [ref=f4e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f4e94]:
+              - listitem [ref=f4e95]:
+                - generic [ref=f4e96]:
+                  - generic [ref=f4e97]:
+                    - generic [ref=f4e98]:
+                      - button "General" [expanded] [ref=f4e99]:
+                        - generic "Collapse" [ref=f4e100]:
+            
+…[truncated 10898 chars]
+THINK I've confirmed that "Test choice auto" shows no completion info, and the manual one no longer has a "Mark as done" button. Next I'll follow the "Test choice auto" link and check the activity page for its "Make a choice" completion condition.
+
+I'm weighing whether the activity page would show the "Make a choice" condition at all, since completion details are hidden when show conditions is off. Still, the step reads as an assertion, so I'll see what the page actually displays.
+
+
+#19 CALL browser_click {"target": "f4e157", "element": "Test choice auto link"}
+#20 CALL browser_wait_for {"time": 2}
+#20 RESULT [isError] Error: ### Error
+Error: Ref f4e157 not found in the current page snapshot. Try capturing new snapshot.
+#20 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-44-850Z.yml)
+THINK I'll target the link by its text, using a unique selector built from its href (the choice view URL with id 109001).
+
+
+#21 CALL browser_click {"target": "a[href=\"http://webserver/mod/choice/view.php?id=109001\"]", "element": "Test choice auto link"}
+#21 RESULT [isError] Error: ### Error
+Error: browserBackend.callTool: Error: strict mode violation: locator('a[href="http://webserver/mod/choice/view.php?id=109001"]') resolved to 3 elements:
+    1) <a tabindex="-1" data-for="cm_name" class="courseindex-link text-truncate" href="http://webserver/mod/choice/view.php?id=109001">↵                                Test choice auto…</a> aka locator('#course-index-cm-109001').getByText('Test choice auto')
+    2) <a onclick="" class=" aalink stretched-link" href="http://webserver/mod/choice/view.php?id=109001">…</a> aka getByRole('link', { name: 'Test choice auto' })
+    3) <a tabindex="-1" role="menuitem" data-action="permalink" class="dropdown-item permalink menu-action" href="http://webserver/mod/choice/view.php?id=109001">…</a> aka locator('#action-menu-3-menu a').filter({ hasText: 'Permalink' })
+
+Call log:
+  - waiting for locator('a[href="http://webserver/mod/choice/view.php?id=109001"]')
+
+#22 CALL browser_click {"target": "a.aalink.stretched-link[href=\"http://webserver/mod/choice/view.php?id=109001\"]", "element": "Test choice auto link"}
+#23 CALL browser_snapshot {}
+#23 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109001
+- Page Title: Test choice auto | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-49-443Z.yml)
+#23 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f5e1]:
+  - status
+  - generic [ref=f5e2]:
+    - link "Skip to main content" [ref=f5e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - link "Acceptance test site" [ref=f5e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f5e9]:
+          - menuitem "Dashboard" [ref=f5e10]
+          - text: 
+        - generic [ref=f5e12]:
+          - generic [ref=f5e15]:
+            - switch "Edit mode" [checked] [ref=f5e16]
+            - generic [ref=f5e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f5e27]:
+            - generic [aria-hidden] [ref=f5e28]: 
+          - button "Toggle messaging drawer" [ref=f5e30]:
+            - generic [aria-hidden] [ref=f5e31]: 
+          - button "User menu" [ref=f5e37]: 
+    - generic [ref=f5e41]:
+      - generic [ref=f5e42]:
+        - generic:
+          - button "Open course index" [ref=f5e44]
+          - button "Open block drawer" [ref=f5e49]
+        - banner [ref=f5e53]:
+          - generic [ref=f5e55]:
+            - heading "Course 1" [level=1] [ref=f5e60]
+            - button "Bulk actions" [ref=f5e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f5e64]: 
+        - navigation "Course menu" [ref=f5e67]:
+          - menubar [ref=f5e68]:
+            - menuitem "Course" [ref=f5e69]
+            - menuitem "Settings" [ref=f5e72]
+            - menuitem "Participants" [ref=f5e74]
+            - menuitem "Grades" [ref=f5e76]
+            - menuitem "Activities" [ref=f5e78]
+            - menuitem "More " [ref=f5e80]:
+              - generic [ref=f5e81]: More
+              - text: 
+        - main [ref=f5e85]:
+          - generic [ref=f5e88]:
+            - heading "Section outline" [level=2] [ref=f5e89]
+            - button [expanded] [ref=f5e91]:
+              - generic [ref=f5e92]:
+                - generic [aria-hidden] [ref=f5e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f5e94]:
+              - listitem [ref=f5e95]:
+                - generic [ref=f5e96]:
+                  - generic [ref=f5e97]:
+                    - generic [ref=f5e98]:
+                      - button "General" [expanded] [ref=f5e99]:
+                        - generic "Collapse" [ref=f5e100]:
+            
+…[truncated 10898 chars]
+THINK The page URL is inconsistent: the click result points to the choice view, but the snapshot shows the course page, so the snapshot may be lagging. I'll take a fresh snapshot of the current page, since the snapshot tool sometimes returns a stale view, and try again.
+
+
+#24 CALL browser_snapshot {}
+#24 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109001
+- Page Title: Test choice auto | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f6e1]:
+  - status
+  - generic [ref=f6e2]:
+    - link "Skip to main content" [ref=f6e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - link "Acceptance test site" [ref=f6e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f6e9]:
+          - menuitem "Dashboard" [ref=f6e10]
+          - text: 
+        - generic [ref=f6e12]:
+          - generic [ref=f6e15]:
+            - switch "Edit mode" [checked] [ref=f6e16]
+            - generic [ref=f6e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f6e27]:
+            - generic [aria-hidden] [ref=f6e28]: 
+          - button "Toggle messaging drawer" [ref=f6e30]:
+            - generic [aria-hidden] [ref=f6e31]: 
+          - button "User menu" [ref=f6e37]: 
+    - generic [ref=f6e41]:
+      - generic [ref=f6e42]:
+        - generic:
+          - button "Open course index" [ref=f6e44]
+          - button "Open block drawer" [ref=f6e49]
+        - banner [ref=f6e53]:
+          - generic [ref=f6e54]:
+            - navigation "Breadcrumb" [ref=f6e57]:
+              - list [ref=f6e58]:
+                - listitem [ref=f6e59]:
+                  - link "C1" [ref=f6e60]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f6e61]:
+                  - text: /
+                  - link "General" [ref=f6e62]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f6e63]:
+                  - text: /
+                  - generic [ref=f6e64]: Test choice auto
+            - generic [ref=f6e72]:
+              - generic [ref=f6e73]: Choice
+              - heading "Test choice auto" [level=1] [ref=f6e74]
+        - navigation "Activity menu" [ref=f6e77]:
+          - menubar [ref=f6e78]:
+            - menuitem "Choice" [ref=f6e79]
+            - menuitem "Settings" [ref=f6e82]
+            - menuitem "Responses" [ref=f6e84]
+            - menuitem "More " [ref=f6e86]:
+              - generic [ref=f6e87]: More
+              - text: 
+        - generic [ref=f6e90]:
+          - generic [ref=f6e94]:
+            - generic [ref=f6e95]: Test choice 2
+            - region "Completion requirements for Test choice auto" [ref=f6e98]:
+              - strong [ref=f6e100]: "Compl
+…[truncated 2948 chars]
+THINK I've confirmed the Test choice auto completion requirement shows "To do: Make a choice" as expected. Next I'll head back to the Course 1 homepage and check that the manual test has no completion button there, since the earlier snapshot already showed none.
+
+Step 12 needs the manual completion button to be disabled, but the activity page has no completion button at all, so I'm going to check the course page for that.
+
+
+#25 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#26 CALL browser_snapshot {}
+#26 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-52-55-333Z.yml)
+#26 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109001
+- Page Title: Test choice auto | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f6e1]:
+  - status
+  - generic [ref=f6e2]:
+    - link "Skip to main content" [ref=f6e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - link "Acceptance test site" [ref=f6e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f6e9]:
+          - menuitem "Dashboard" [ref=f6e10]
+          - text: 
+        - generic [ref=f6e12]:
+          - generic [ref=f6e15]:
+            - switch "Edit mode" [checked] [ref=f6e16]
+            - generic [ref=f6e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f6e27]:
+            - generic [aria-hidden] [ref=f6e28]: 
+          - button "Toggle messaging drawer" [ref=f6e30]:
+            - generic [aria-hidden] [ref=f6e31]: 
+          - button "User menu" [ref=f6e37]: 
+    - generic [ref=f6e41]:
+      - generic [ref=f6e42]:
+        - generic:
+          - button "Open course index" [ref=f6e44]
+          - button "Open block drawer" [ref=f6e49]
+        - banner [ref=f6e53]:
+          - generic [ref=f6e54]:
+            - navigation "Breadcrumb" [ref=f6e57]:
+              - list [ref=f6e58]:
+                - listitem [ref=f6e59]:
+                  - link "C1" [ref=f6e60]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f6e61]:
+                  - text: /
+                  - link "General" [ref=f6e62]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f6e63]:
+                  - text: /
+                  - generic [ref=f6e64]: Test choice auto
+            - generic [ref=f6e72]:
+              - generic [ref=f6e73]: Choice
+              - heading "Test choice auto" [level=1] [ref=f6e74]
+        - navigation "Activity menu" [ref=f6e77]:
+          - menubar [ref=f6e78]:
+            - menuitem "Choice" [ref=f6e79]
+            - menuitem "Settings" [ref=f6e82]
+            - menuitem "Responses" [ref=f6e84]
+            - menuitem "More " [ref=f6e86]:
+              - generic [ref=f6e87]: More
+              - text: 
+        - generic [ref=f6e90]:
+          - generic [ref=f6e94]:
+            - generic [ref=f6e95]: Test choice 2
+            - region "Completion requirements for Test choice auto" [ref=f6e98]:
+              - strong [ref=f6e100]: "Compl
+…[truncated 2948 chars]
+THINK I'm puzzled that the navigation to course/view.php?id=2 reported "edit title" while the snapshot shows the choice page, so I suspect the snapshot is stale. The activity page shows "Completion requirements for Test choice auto: To do: Make a choice," which conflicts with step 6's expectation of no completion info on the course page. Step 6 is checked on the course page, though, so I need to look at the course page snapshot again.
+
+The completion icons on the course page look ambiguous, so I can't tell from them whether completion is still on. Both activity pages still show completion requirements, which shouldn't happen if the "No" setting had saved. I'm now wondering whether that save actually persisted, even though the edit form appeared to show No afterward.
+
+I'm checking whether the save actually persisted, since the activity pages still show completion requirements, which shouldn't happen with the setting at No. Moodle only shows that region when course-level completion conditions are on, so I'll open the course settings directly to confirm the field's value.
+
+I'm checking the course page for the "Test choice auto" row again. The post-save snapshot shows only completion icons and no "Completion requirements" region, unlike the earlier pre-change view, so step 6 may pass there. The activity pages still show completion requirements, though, which doesn't fit with the setting at No.
+
+I'm weighing whether the activity page's completion requirements contradict the course page,
+…[truncated 1188 chars]
+#27 CALL browser_navigate {"url": "http://webserver/course/edit.php?id=2"}
+#28 CALL browser_snapshot {}
+#28 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-53-07-570Z.yml)
+#28 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f7e1]:
+  - status
+  - generic [ref=f7e2]:
+    - link "Skip to main content" [ref=f7e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f7e4]:
+      - generic [ref=f7e5]:
+        - link "Acceptance test site" [ref=f7e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f7e9]:
+          - menuitem "Dashboard" [ref=f7e10]
+          - text: 
+        - generic [ref=f7e12]:
+          - generic [ref=f7e15]:
+            - switch "Edit mode" [checked] [ref=f7e16]
+            - generic [ref=f7e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f7e27]:
+            - generic [aria-hidden] [ref=f7e28]: 
+          - button "Toggle messaging drawer" [ref=f7e30]:
+            - generic [aria-hidden] [ref=f7e31]: 
+          - button "User menu" [ref=f7e37]: 
+    - generic [ref=f7e41]:
+      - generic [ref=f7e42]:
+        - generic:
+          - button "Open course index" [ref=f7e44]
+          - button "Open block drawer" [ref=f7e49]
+        - banner [ref=f7e53]:
+          - generic [ref=f7e55]:
+            - heading "Course 1" [level=1] [ref=f7e60]
+            - button "Bulk actions" [ref=f7e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f7e64]: 
+        - navigation "Course menu" [ref=f7e67]:
+          - menubar [ref=f7e68]:
+            - menuitem "Course" [ref=f7e69]
+            - menuitem "Settings" [ref=f7e72]
+            - menuitem "Participants" [ref=f7e74]
+            - menuitem "Grades" [ref=f7e76]
+            - menuitem "Activities" [ref=f7e78]
+            - menuitem "More " [ref=f7e80]:
+              - generic [ref=f7e81]: More
+              - text: 
+        - main [ref=f7e85]:
+          - generic [ref=f7e88]:
+            - heading "Section outline" [level=2] [ref=f7e89]
+            - button [expanded] [ref=f7e91]:
+              - generic [ref=f7e92]:
+                - generic [aria-hidden] [ref=f7e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f7e94]:
+              - listitem [ref=f7e95]:
+                - generic [ref=f7e96]:
+                  - generic [ref=f7e97]:
+                    - generic [ref=f7e98]:
+                      - button "General" [expanded] [ref=f7e99]:
+                        - generic "Collapse" [ref=f7e100]:
+            
+…[truncated 10898 chars]
+THINK The browser's snapshot seems to be lagging a navigation behind, so the page I'm seeing may not match where I actually am. I've used about 27 calls and the evidence is conflicting. The activity page did show a fresh snapshot with the matching URL reading "To do: Make a choice" under completion requirements, which suggests the completion conditions are still in place, so I'm leaning toward that reading.
+
+I'm wondering whether the save of "No" actually went through, since the course page after the change no longer shows the completion region. The edit form reappearing with "No" could just be a validation re-render rather than proof of a saved value. To settle it, I'll reload the edit page after a short wait and check the completion field directly.
+
+
+#29 CALL browser_wait_for {"time": 1}
+#30 CALL browser_snapshot {}
+#30 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-53-13-576Z.yml)
+#30 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f8e1]:
+  - status
+  - generic [ref=f8e2]:
+    - link "Skip to main content" [ref=f8e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - link "Acceptance test site" [ref=f8e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f8e9]:
+          - menuitem "Dashboard" [ref=f8e10]
+          - text: 
+        - generic [ref=f8e12]:
+          - generic [ref=f8e15]:
+            - switch "Edit mode" [checked] [ref=f8e16]
+            - generic [ref=f8e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f8e27]:
+            - generic [aria-hidden] [ref=f8e28]: 
+          - button "Toggle messaging drawer" [ref=f8e30]:
+            - generic [aria-hidden] [ref=f8e31]: 
+          - button "User menu" [ref=f8e37]: 
+    - generic [ref=f8e41]:
+      - generic [ref=f8e42]:
+        - generic:
+          - button "Open course index" [ref=f8e44]
+          - button "Open block drawer" [ref=f8e49]
+        - banner [ref=f8e53]:
+          - heading "Course 1" [level=1] [ref=f8e60]
+        - navigation "Course menu" [ref=f8e63]:
+          - menubar [ref=f8e64]:
+            - menuitem "Course" [ref=f8e65]
+            - menuitem "Settings" [ref=f8e67]
+            - menuitem "Participants" [ref=f8e70]
+            - menuitem "Grades" [ref=f8e72]
+            - menuitem "Activities" [ref=f8e74]
+            - menuitem "More " [ref=f8e76]:
+              - generic [ref=f8e77]: More
+              - text: 
+        - main [ref=f8e81]:
+          - heading "Edit course settings" [level=2] [ref=f8e83]
+          - generic [ref=f8e84]:
+            - button "Expand all" [ref=f8e86]
+            - group "General" [ref=f8e88]:
+              - generic [ref=f8e91]:
+                - button "General" [expanded] [ref=f8e92]:
+                  - generic "Collapse" [ref=f8e93]:
+                    - generic [aria-hidden] [ref=f8e94]: 
+                  - text:  
+                - heading [level=3] [aria-hidden] [ref=f8e96]: General
+              - generic [ref=f8e97]:
+                - generic [ref=f8e98]:
+                  - generic [ref=f8e99]:
+                    - generic [ref=f8e100]: Course full name
+                    - generic [ref=f8e101]:
+                      - generic [aria-hidden] [ref=f8e103]: 
+                
+…[truncated 38936 chars]
+THINK The edit page has its Completion tracking group collapsed, so I can't see the value yet. Expanding it takes two calls, clicking f8e294 and then taking a snapshot, and I have about 31 calls left. It's worth it, since that's what will show whether the setting actually persisted.
+
+
+#31 CALL browser_click {"target": "f8e294", "element": "Completion tracking group button"}
+#32 CALL browser_wait_for {"time": 1}
+#32 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-53-17-209Z.yml)
+#32 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-53-16-581Z.yml)
+#33 CALL browser_snapshot {"target": "f8e290"}
+#33 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- group "Completion tracking" [ref=f8e290]:
+  - generic [ref=f8e293]:
+    - button "Completion tracking" [expanded] [active] [ref=f8e294]:
+      - generic "Collapse" [ref=f8e376]:
+        - generic [aria-hidden] [ref=f8e377]: 
+      - text:  
+    - heading [level=3] [aria-hidden] [ref=f8e299]: Completion tracking
+  - generic [ref=f8e378]:
+    - generic [ref=f8e379]:
+      - generic [ref=f8e380]:
+        - generic [ref=f8e381]: Enable completion tracking
+        - button "Help" [ref=f8e383]:
+          - img "Help with Enable completion tracking" [ref=f8e384]: 
+      - combobox "Enable completion tracking" [ref=f8e386]:
+        - option "No"
+        - option "Yes" [selected]
+    - generic [ref=f8e387]:
+      - generic [ref=f8e388]:
+        - generic [ref=f8e389]: Show activity completion conditions
+        - button "Help" [ref=f8e391]:
+          - img "Help with Show activity completion conditions" [ref=f8e392]: 
+      - combobox "Show activity completion conditions" [ref=f8e394]:
+        - option "No" [selected]
+        - option "Yes"
+```
+THINK I just confirmed the fresh edit page shows completion conditions set to No, so the save did persist. Yet the activity page still displayed completion requirements, which seems contradictory. I'm wondering whether Moodle 5.x decides what to show based on the course-level setting, and I'll check that against the snapshot evidence.
+
+Now I'm checking the course page after the save, and it shows no completion requirements region. Before, the course view showed "To do" for the auto item, so step 6 passes there. Step 8 on the activity page still showed the "Make a choice" condition, which matches what I observed.
+
+I'm checking the manual completion button on the activity page next, since the course page hid it as expected when showcompletionconditions is No. I'll click through to the activity from the course page to see what it shows.
+
+I'll load the course page fresh and wait for it to settle before taking a snapshot, since the earlier navigate-then-snapshot gave stale results. Then I'll find the manual activity link by its href and click it.
+
+
+#34 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#35 CALL browser_wait_for {"time": 2}
+#35 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-53-24-863Z.yml)
+#35 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-53-26-903Z.yml)
+#36 CALL browser_click {"target": "a.aalink.stretched-link[href=\"http://webserver/mod/choice/view.php?id=109000\"]", "element": "Test choice manual link"}
+#36 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109000
+- Page Title: Test choice manual | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-53-28-647Z.yml)
+#37 CALL browser_wait_for {"time": 1}
+#38 CALL browser_snapshot {}
+#38 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109000
+- Page Title: Test choice manual | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-53-30-733Z.yml)
+#38 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109000
+- Page Title: Test choice manual | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f10e1]:
+  - status
+  - generic [ref=f10e2]:
+    - link "Skip to main content" [ref=f10e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f10e4]:
+      - generic [ref=f10e5]:
+        - link "Acceptance test site" [ref=f10e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f10e9]:
+          - menuitem "Dashboard" [ref=f10e10]
+          - text: 
+        - generic [ref=f10e12]:
+          - generic [ref=f10e15]:
+            - switch "Edit mode" [checked] [ref=f10e16]
+            - generic [ref=f10e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f10e27]:
+            - generic [aria-hidden] [ref=f10e28]: 
+          - button "Toggle messaging drawer" [ref=f10e30]:
+            - generic [aria-hidden] [ref=f10e31]: 
+          - button "User menu" [ref=f10e37]: 
+    - generic [ref=f10e41]:
+      - generic [ref=f10e42]:
+        - generic:
+          - button "Open course index" [ref=f10e44]
+          - button "Open block drawer" [ref=f10e49]
+        - banner [ref=f10e53]:
+          - generic [ref=f10e54]:
+            - navigation "Breadcrumb" [ref=f10e57]:
+              - list [ref=f10e58]:
+                - listitem [ref=f10e59]:
+                  - link "C1" [ref=f10e60]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f10e61]:
+                  - text: /
+                  - link "General" [ref=f10e62]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f10e63]:
+                  - text: /
+                  - generic [ref=f10e64]: Test choice manual
+            - generic [ref=f10e72]:
+              - generic [ref=f10e73]: Choice
+              - heading "Test choice manual" [level=1] [ref=f10e74]
+        - navigation "Activity menu" [ref=f10e77]:
+          - menubar [ref=f10e78]:
+            - menuitem "Choice" [ref=f10e79]
+            - menuitem "Settings" [ref=f10e82]
+            - menuitem "Responses" [ref=f10e84]
+            - menuitem "More " [ref=f10e86]:
+              - generic [ref=f10e87]: More
+              - text: 
+        - generic [ref=f10e90]:
+          - generic [ref=f10e92]: Test choice 1
+          - main [ref=f10e97]:
+            - alert [ref=f10e99]:
+              - text: The results of this act
+…[truncated 2494 chars]
+THINK I'm checking step 12: the "Mark as done" button for the manual choice test should be disabled, but the snapshot shows it enabled with no disabled marker, so that step fails. Step 10 already passed, since the course page had no "Mark as done" button at all.
+
+The step 12 snapshot still shows the button enabled, so it fails. I'll record the observed evidence concisely in the JSON reason.
+
+
+MSG {"status":"fail","reason":"Steps 1-11 passed in the UI. Course settings re-open with 'Show activity completion conditions' = No, and the Course 1 homepage shows no completion requirements for 'Test choice auto' or a 'Mark as done' button for 'Test choice manual'. Step 12 failed: on http://webserver/mod/choice/view.php?id=109000 the 'Mark as done' button ('Mark Test choice manual as done') is present with no disabled state in the snapshot.","failingStep":12,"failingStepText":"And the manual completion button for \"Test choice manual\" should be disabled"}

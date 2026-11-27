@@ -1,0 +1,548 @@
+UNIT moodle:6ac189f540b8/B28.S134/fault:X025/C/gpt-6-luna/r2
+model gpt-6-luna driver codex build Moodle pin cfe123f26fc7 + seeded fault X025; pair from change B28 type faulty
+scenario S134 Unable to block a user
+  1. Given I log in as "student1"
+  2. And I select "Teacher 1" user in messaging
+  3. And I open contact menu
+  4. When I click on "Block" "link" in the "[data-region='header-container']" "css_element"
+  5. Then I should see "You can't block Teacher 1"
+fault {"intent": "Messaging drawer: the flag 'this user could message me even if I blocked them' is inverted (wrong condition in get_member_info), so users who cannot be blocked get the block confirmation and users who can be blocked are told they cannot be.", "mutations": [{"file": "public/message/classes/helper.php", "old": "                $data->canmessageevenifblocked = !$data->isdeleted && $canmessageifblocked;", "new": "                $data->canmessageevenifblocked = !$data->isdeleted && !$canmessageifblocked;"}]}
+target [5] Then I should see "You can't block Teacher 1"
+VERDICT fail step 2 'And I select "Teacher 1" user in messaging'
+REASON The messaging Contacts panel shows “No contacts.” Searching for “Teacher 1” did not show a selectable user, so I could not complete step 2.
+parse_error None tool_calls 17 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll use the existing student1 session and follow the messaging steps in order, checking the visible UI at each step.
+#1 CALL browser_navigate {"url": "http://webserver"}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-46-48-362Z.yml)
+#2 CALL browser_snapshot {"depth": 5}
+#2 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - navigation [ref=f1e9]:
+          - menubar [ref=f1e10]
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]
+          - button "Show notification window with no new notifications" [ref=f1e27]
+          - button "Toggle messaging drawer" [ref=f1e30]
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open block drawer" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Dashboard" [level=1] [ref=f1e55]
+        - main [ref=f1e59]:
+          - region "Main content blocks" [ref=f1e61]
+      - contentinfo [ref=f1e109]:
+        - button "Show footer" [ref=f1e110]:
+          - generic [aria-hidden] [ref=f1e111]: "?"
+        - generic [ref=f1e112]:
+          - link "Contact site support" [ref=f1e115]:
+            - /url: http://webserver/user/contactsitesupport.php
+          - generic [ref=f1e117]
+          - generic [ref=f1e126]
+```
+#3 CALL browser_click {"target": "f1e30", "element": "Toggle messaging drawer"}
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-46-51-504Z.yml)
+#4 CALL browser_snapshot {"depth": 7}
+#4 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - navigation [ref=f1e9]:
+          - menubar [ref=f1e10]:
+            - menuitem "Dashboard" [ref=f1e11]
+            - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [expanded] [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open block drawer" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Dashboard" [level=1] [ref=f1e55]
+        - main [ref=f1e59]:
+          - region "Main content blocks" [ref=f1e61]:
+            - heading "Main content blocks" [level=2] [ref=f1e62]
+            - link "Skip Course overview" [ref=f1e63]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e64]:
+              - generic [ref=f1e65]
+            - link "Skip Timeline" [ref=f1e104]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e105]:
+              - heading "Timeline" [level=3] [ref=f1e108]
+      - contentinfo [ref=f1e109]:
+        - button "Show footer" [ref=f1e110]:
+          - generic [aria-hidden] [ref=f1e111]: "?"
+        - generic [ref=f1e112]:
+          - link "Contact site support" [ref=f1e115]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e116]: 
+            - text: Contact site support
+          - generic [ref=f1e117]:
+            - generic [ref=f1e119]:
+              - text: You are logged in as
+              - link "Student 1" [ref=f1e120]:
+                - /url: http://webserver/user/profile.php?id=4
+              - text: (
+              - link "Log out" [ref=f1e121]:
+                - /url: http://webserver/login/logout.php?sesskey=WHnZTNUekP
+              - text: )
+            - link "Data retention summary
+…[truncated 1627 chars]
+#5 CALL browser_click {"target": "f1e162", "element": "Search people and messages field"}
+#5 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-46-54-968Z.yml)
+#6 CALL browser_snapshot {"depth": 8}
+#6 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - navigation [ref=f1e9]:
+          - menubar [ref=f1e10]:
+            - menuitem "Dashboard" [ref=f1e11]
+            - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [expanded] [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open block drawer" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Dashboard" [level=1] [ref=f1e55]
+        - main [ref=f1e59]:
+          - region "Main content blocks" [ref=f1e61]:
+            - heading "Main content blocks" [level=2] [ref=f1e62]
+            - link "Skip Course overview" [ref=f1e63]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e64]:
+              - generic [ref=f1e65]:
+                - heading "Course overview" [level=3] [ref=f1e67]
+                - generic [ref=f1e69]
+            - link "Skip Timeline" [ref=f1e104]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e105]:
+              - heading "Timeline" [level=3] [ref=f1e108]
+      - contentinfo [ref=f1e109]:
+        - button "Show footer" [ref=f1e110]:
+          - generic [aria-hidden] [ref=f1e111]: "?"
+        - generic [ref=f1e112]:
+          - link "Contact site support" [ref=f1e115]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e116]: 
+            - text: Contact site support
+          - generic [ref=f1e117]:
+            - generic [ref=f1e119]:
+              - text: You are logged in as
+              - link "Student 1" [ref=f1e120]:
+                - /url: http://webserver/user/profile.php?id=4
+              - text: (
+              - link "Log out" [ref=f1e121]:
+                - /url: http://webserv
+…[truncated 1441 chars]
+#7 CALL browser_type {"target": "f1e229", "text": "Teacher 1"}
+#7 RESULT 
+#8 CALL browser_press_key {"key": "Enter"}
+#8 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-46-59-618Z.yml)
+#9 CALL browser_snapshot {"depth": 8}
+#9 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - navigation [ref=f1e9]:
+          - menubar [ref=f1e10]:
+            - menuitem "Dashboard" [ref=f1e11]
+            - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [expanded] [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open block drawer" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Dashboard" [level=1] [ref=f1e55]
+        - main [ref=f1e59]:
+          - region "Main content blocks" [ref=f1e61]:
+            - heading "Main content blocks" [level=2] [ref=f1e62]
+            - link "Skip Course overview" [ref=f1e63]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e64]:
+              - generic [ref=f1e65]:
+                - heading "Course overview" [level=3] [ref=f1e67]
+                - generic [ref=f1e69]
+            - link "Skip Timeline" [ref=f1e104]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e105]:
+              - heading "Timeline" [level=3] [ref=f1e108]
+      - contentinfo [ref=f1e109]:
+        - button "Show footer" [ref=f1e110]:
+          - generic [aria-hidden] [ref=f1e111]: "?"
+        - generic [ref=f1e112]:
+          - link "Contact site support" [ref=f1e115]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e116]: 
+            - text: Contact site support
+          - generic [ref=f1e117]:
+            - generic [ref=f1e119]:
+              - text: You are logged in as
+              - link "Student 1" [ref=f1e120]:
+                - /url: http://webserver/user/profile.php?id=4
+              - text: (
+              - link "Log out" [ref=f1e121]:
+                - /url: http://webserv
+…[truncated 1549 chars]
+#10 CALL browser_wait_for {"time": 2}
+#10 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-03-881Z.yml)
+#11 CALL browser_snapshot {"depth": 8}
+#11 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - navigation [ref=f1e9]:
+          - menubar [ref=f1e10]:
+            - menuitem "Dashboard" [ref=f1e11]
+            - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [expanded] [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open block drawer" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Dashboard" [level=1] [ref=f1e55]
+        - main [ref=f1e59]:
+          - region "Main content blocks" [ref=f1e61]:
+            - heading "Main content blocks" [level=2] [ref=f1e62]
+            - link "Skip Course overview" [ref=f1e63]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e64]:
+              - generic [ref=f1e65]:
+                - heading "Course overview" [level=3] [ref=f1e67]
+                - generic [ref=f1e69]
+            - link "Skip Timeline" [ref=f1e104]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e105]:
+              - heading "Timeline" [level=3] [ref=f1e108]
+      - contentinfo [ref=f1e109]:
+        - button "Show footer" [ref=f1e110]:
+          - generic [aria-hidden] [ref=f1e111]: "?"
+        - generic [ref=f1e112]:
+          - link "Contact site support" [ref=f1e115]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e116]: 
+            - text: Contact site support
+          - generic [ref=f1e117]:
+            - generic [ref=f1e119]:
+              - text: You are logged in as
+              - link "Student 1" [ref=f1e120]:
+                - /url: http://webserver/user/profile.php?id=4
+              - text: (
+              - link "Log out" [ref=f1e121]:
+                - /url: http://webserv
+…[truncated 1549 chars]
+#12 CALL browser_click {"target": "f1e230", "element": "Perform search"}
+#12 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-07-096Z.yml)
+#13 CALL browser_snapshot {"depth": 8}
+#13 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - navigation [ref=f1e9]:
+          - menubar [ref=f1e10]:
+            - menuitem "Dashboard" [ref=f1e11]
+            - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [expanded] [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open block drawer" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Dashboard" [level=1] [ref=f1e55]
+        - main [ref=f1e59]:
+          - region "Main content blocks" [ref=f1e61]:
+            - heading "Main content blocks" [level=2] [ref=f1e62]
+            - link "Skip Course overview" [ref=f1e63]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e64]:
+              - generic [ref=f1e65]:
+                - heading "Course overview" [level=3] [ref=f1e67]
+                - generic [ref=f1e69]
+            - link "Skip Timeline" [ref=f1e104]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e105]:
+              - heading "Timeline" [level=3] [ref=f1e108]
+      - contentinfo [ref=f1e109]:
+        - button "Show footer" [ref=f1e110]:
+          - generic [aria-hidden] [ref=f1e111]: "?"
+        - generic [ref=f1e112]:
+          - link "Contact site support" [ref=f1e115]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e116]: 
+            - text: Contact site support
+          - generic [ref=f1e117]:
+            - generic [ref=f1e119]:
+              - text: You are logged in as
+              - link "Student 1" [ref=f1e120]:
+                - /url: http://webserver/user/profile.php?id=4
+              - text: (
+              - link "Log out" [ref=f1e121]:
+                - /url: http://webserv
+…[truncated 1549 chars]
+#14 CALL browser_click {"target": "f1e223", "element": "Back to Messages overview"}
+#14 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-10-481Z.yml)
+#15 CALL browser_snapshot {"depth": 7}
+#15 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - navigation [ref=f1e9]:
+          - menubar [ref=f1e10]:
+            - menuitem "Dashboard" [ref=f1e11]
+            - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [expanded] [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open block drawer" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Dashboard" [level=1] [ref=f1e55]
+        - main [ref=f1e59]:
+          - region "Main content blocks" [ref=f1e61]:
+            - heading "Main content blocks" [level=2] [ref=f1e62]
+            - link "Skip Course overview" [ref=f1e63]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e64]:
+              - generic [ref=f1e65]
+            - link "Skip Timeline" [ref=f1e104]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e105]:
+              - heading "Timeline" [level=3] [ref=f1e108]
+      - contentinfo [ref=f1e109]:
+        - button "Show footer" [ref=f1e110]:
+          - generic [aria-hidden] [ref=f1e111]: "?"
+        - generic [ref=f1e112]:
+          - link "Contact site support" [ref=f1e115]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e116]: 
+            - text: Contact site support
+          - generic [ref=f1e117]:
+            - generic [ref=f1e119]:
+              - text: You are logged in as
+              - link "Student 1" [ref=f1e120]:
+                - /url: http://webserver/user/profile.php?id=4
+              - text: (
+              - link "Log out" [ref=f1e121]:
+                - /url: http://webserver/login/logout.php?sesskey=WHnZTNUekP
+              - text: )
+            - link "Data retention summary
+…[truncated 1618 chars]
+#16 CALL browser_click {"target": "f1e171", "element": "Contacts"}
+#16 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-13-948Z.yml)
+#17 CALL browser_snapshot {"depth": 8}
+#17 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - navigation [ref=f1e9]:
+          - menubar [ref=f1e10]:
+            - menuitem "Dashboard" [ref=f1e11]
+            - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [expanded] [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open block drawer" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Dashboard" [level=1] [ref=f1e55]
+        - main [ref=f1e59]:
+          - region "Main content blocks" [ref=f1e61]:
+            - heading "Main content blocks" [level=2] [ref=f1e62]
+            - link "Skip Course overview" [ref=f1e63]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e64]:
+              - generic [ref=f1e65]:
+                - heading "Course overview" [level=3] [ref=f1e67]
+                - generic [ref=f1e69]
+            - link "Skip Timeline" [ref=f1e104]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e105]:
+              - heading "Timeline" [level=3] [ref=f1e108]
+      - contentinfo [ref=f1e109]:
+        - button "Show footer" [ref=f1e110]:
+          - generic [aria-hidden] [ref=f1e111]: "?"
+        - generic [ref=f1e112]:
+          - link "Contact site support" [ref=f1e115]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e116]: 
+            - text: Contact site support
+          - generic [ref=f1e117]:
+            - generic [ref=f1e119]:
+              - text: You are logged in as
+              - link "Student 1" [ref=f1e120]:
+                - /url: http://webserver/user/profile.php?id=4
+              - text: (
+              - link "Log out" [ref=f1e121]:
+                - /url: http://webserv
+…[truncated 1639 chars]
+MSG {"status":"fail","reason":"The messaging Contacts panel shows “No contacts.” Searching for “Teacher 1” did not show a selectable user, so I could not complete step 2.","failingStep":2,"failingStepText":"And I select \"Teacher 1\" user in messaging"}

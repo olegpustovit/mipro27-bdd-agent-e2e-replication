@@ -5,8 +5,15 @@ executable: maintained step definitions, and an LLM browser agent that interpret
 unchanged scenario on every run. It holds the study code, every recorded execution and
 automated grade, the derived reports, and scripts that recompute every count in the paper.
 
-Version 1.1.4. Changes are listed under [Changes in v1.1.4](#changes-in-v114), [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
+Version 1.2.0. Changes are listed under [Changes in v1.2.0](#changes-in-v120), [Changes in v1.1.4](#changes-in-v114), [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
 All results are exploratory; see `AGENTS.md` and `REPRODUCE.md` for the run status.
+
+Since v1.2.0 the paper's numbers come from one consistent set of runs, the **single set**
+(streams B, D and E in [Follow-up work, November 2026](#follow-up-work-november-2026)): one host,
+replication harness 9c9eee2, Codex CLI 0.169.0 and omp 18.20.2, run 26-27 Nov 2026. The campaigns of
+1-18 Nov 2026 stay in the package unchanged as the **earlier campaign**: payment-app campaigns A-D
+(1 Nov), the Moodle campaign (16 Nov), the follow-up comparison in `experiment-4/` and the payment-app
+follow-ups E (Sol) and F (Opus via omp) in `moodle-ledger/runs/` (18 Nov). The single set is post hoc.
 
 ## Quick start: recompute the paper's counts
 
@@ -18,14 +25,31 @@ No network access, no models, about 10 seconds.
 uv run scripts/reproduce_counts.py
 ```
 
-The script prints one table per study part and compares each value with the number stated
-in the paper. A difference is printed as `MISMATCH`, listed on stderr, and the script exits
+The script checks the earlier campaign. It prints one table per study part and compares each
+value with the number that the earlier paper version (release v1.1.4) stated. A difference is printed as `MISMATCH`, listed on stderr, and the script exits
 with status 1. Values are never adjusted to match. The output of this release is in
 `results/counts-v1.1.4.txt`: all 191 stated values match; 14 rows are informational (no
 stated value).
 
 Each part can also be run alone: `uv run scripts/counts/<part>.py` with `payment`, `matched`,
 `opus_reparse`, `followups`, `moodle`, `verified`, `maintenance`, or `cost`.
+
+Their output has not changed since v1.1.4.
+
+The single set has its own count script and release check (Python 3.14 standard library, offline):
+
+```sh
+uv run scripts/counts/single_set.py         # writes results/counts-single-set.txt and .json
+uv run scripts/reproduce_single_set.py      # compares with results/paper-numbers-single-set.txt
+```
+
+`single_set.py` recomputes every single-set value from the recorded runs with the paper's rules
+(reusing `payment.py`, `verified.py` and the stream count scripts). It checks each value against the
+output of the stream script that first reported it, and checks that the single-set campaigns share
+host, harness commit, tool versions and verdict parser. It exits with status 1 on any difference.
+`reproduce_single_set.py` compares the values the paper states, listed in
+`results/paper-numbers-single-set.txt`, with the computed ones. It fails on a mismatch, on a missing
+quantity, or on a value that cannot be computed.
 
 ## Scoring rules used by the count scripts
 
@@ -99,22 +123,176 @@ Cost (`scripts/counts/cost.py`)
 | `experiment-4/` | Follow-up comparison: four configurations x 36 runs, both automated grade files, the manifest, the 12 re-read Opus verdicts (`campaign-experiment4-opus-verdict-v2`), and `source-pins/` with the prompt contract the comparison pinned. |
 | `moodle-ledger/` | Moodle measurement ledger (`trials.jsonl`, `tasks.jsonl`, content-addressed `blobs/`) and the Cypress follow-up runs under `runs/`. |
 | `clock-recovery/` | Re-evaluated follow-up traces and their grades. |
-| `results/` | Derived reports. `counts-v1.1.4.txt` is the output of `scripts/reproduce_counts.py`. |
+| `followups-2026-11/` | Follow-up work of November 2026 (streams A-E, all post hoc); see [Follow-up work, November 2026](#follow-up-work-november-2026). |
+| `results/` | Derived reports. `counts-v1.1.4.txt` is the output of `scripts/reproduce_counts.py` (earlier campaign); `counts-single-set.txt` and `.json` are the output of `scripts/counts/single_set.py`; `paper-numbers-single-set.txt` lists the single-set values the paper states. |
 | `scripts/` | Study and analysis code (Node 24) and the count scripts (`reproduce_counts.py`, `counts/`). |
 | `study/`, `adapters/`, `manifests/`, `docker/` | Scenarios, step definitions, plans, Moodle adapter, case manifests and patches, Moodle Behat configuration. |
 | `provenance/` | How runs were launched and graded: adjudicator prompts and sessions, second-grader verdicts, orchestration scripts. |
 | `ui/`, `deploy/`, `docs/` | Local trace console, its service file, and ledger contracts. |
 
 Checksums: `RELEASE.SHA256SUMS` (every file), `experiment-4/EXECUTION.SHA256SUMS`,
-`followups.SHA256SUMS`, `clock-recovery/SHA256SUMS`, `results/moodle.SHA256SUMS`, and
-`data/SHA256SUMS` (decompressed campaign files). Verify with
-`sha256sum --quiet -c RELEASE.SHA256SUMS`.
+`followups.SHA256SUMS` (the 18 Nov follow-up runs in `moodle-ledger/runs/` and, since v1.2.0, every
+file under `followups-2026-11/`), `clock-recovery/SHA256SUMS`, `results/moodle.SHA256SUMS`, and
+`data/SHA256SUMS` (decompressed campaign files). The streams' own checksum files are described in
+their READMEs. Verify with `sha256sum --quiet -c RELEASE.SHA256SUMS` and
+`sha256sum --quiet -c followups.SHA256SUMS`.
+
+## Follow-up work, November 2026
+
+Folder `followups-2026-11/`. The shared rules for all streams are in `followups-2026-11/BRIEF.md`.
+Every stream is **post hoc**: it was decided after the earlier campaign. Every new run has status
+`exploratory-owner-directed` and `gatePassExists: false`: it was run on the owner's direction
+without an Evidence gate pass (see `AGENTS.md`). No run was retried for a better outcome, and no run
+was excluded without a stated reason. Each stream's README reports its limitations and what went wrong.
+
+**Single set.** Streams B, D and E make up the single set from which the paper's numbers now come.
+They ran on one host, replication harness 9c9eee2 (this repository at v1.1.4), Codex CLI 0.169.0
+(`gpt-6-luna` and `gpt-5.6-terra`, medium effort), omp 18.20.2 (`claude-haiku-5-5`, medium thinking),
+Node v24.22.1, Playwright 1.65.0-alpha-2026-10-30, @playwright/mcp 0.0.84 and bubblewrap 0.9.0,
+on 26-27 Nov 2026. The host is x86_64 under WSL2; its name is replaced by `<host>` in the package.
+The earlier campaign ran on another host, with Codex CLI 0.159.3 and omp 18.14.0.
+Two points about stream D: its 2021 Moodle changes ran on a second Moodle runtime (PHP 8.0,
+PostgreSQL 13), and its trial records do not record the CLI versions. The CLI versions for D come
+from its plan and report, and `single_set.py` reports them as not found in the records.
+
+Count scripts are run from the package root with `uv` and read only recorded data: no models, no network.
+To re-run measured cells you need the harness at 9c9eee2 (tag v1.1.4) and the stream's launcher. The
+outcomes of a re-run will differ (see `REPRODUCE.md`, section 2). The harness clones that the streams used
+(`followups-2026-11/*/harness/`) are not shipped.
+
+### A. Trace audit of the earlier campaign's browser-agent failures (`a-trace-audit/`)
+
+- **What it is.** It asks whether the recorded trace supports each browser-agent failure that the
+  earlier campaign's counts score: catches and false alarms, with `unresolved` counted as fail. There
+  are 386 units, from payment-app campaigns B-D, the follow-up comparison, follow-ups E and F, and
+  Moodle arm C. The coding rule (`coding-rule.md`) was written before any unit was coded.
+- **Coders.** Coder 1 (the Claude agent that ran the stream) did not read any grader output.
+  Codes from coders 1, 2 and 3 are in `codes-coder1.jsonl`, `codes-coder2.jsonl` and
+  `coder3-work/codes-coder3.jsonl`, with their working files in `coder2-work/` and `coder3-work/`.
+  Agreement and consensus are in `agreement/`.
+- **Reproduce.**
+  ```sh
+  uv run followups-2026-11/a-trace-audit/build_units.py --moodle-src <Moodle checkout at cfe123f2>   # needs Node 24, npm ci
+  uv run followups-2026-11/a-trace-audit/summarize.py               # = results-coder1.txt
+  uv run followups-2026-11/a-trace-audit/agreement/agreement.py     # = agreement/agreement.txt
+  uv run followups-2026-11/a-trace-audit/agreement/consensus.py     # = agreement/consensus.txt
+  ```
+  The builder asserts that the units reproduce the paper's catch and false-alarm counts.
+- **Post hoc.** The whole audit. No runs, no model calls, no changes to data.
+
+### B. Seeded faults after change 1 (`b-change1-faults/`; part of the single set)
+
+- **What it is.** It runs the 12 payment-app faults on the change-1 (v1) interface, which had no
+  faulty-build runs before. There are four campaigns (`campaign-g-20261126-v1faults-{coded,luna,terra,haiku}`)
+  of 36 runs each, 144 in total. Each campaign has a fresh healthy-v1 run, then fault-v1-1 and fault-v1-2.
+  The coded arm uses campaign A's frozen v1 step definitions; no update session was run.
+  A static check and a model-free calibration confirm that every v1 faulty build breaks its target check.
+- **Data and scripts.**
+  - Data: `data/campaigns/` (trials and events zstd-compressed, journal), `data/calibration-v{0,1,2}.jsonl`
+    and `data/fault-build-static-check.jsonl`. `data/SHA256SUMS` holds hashes of the decompressed files.
+  - Runner, plan and launcher: `scripts/`.
+  - Counts: `results/counts.txt` and `results/counts.json`.
+- **Reproduce.** `uv run followups-2026-11/b-change1-faults/scripts/count_v1_faults.py`
+  (rewrites `results/counts.*`; the output is identical to the shipped files).
+- **Post hoc.** The whole stream, including the fresh healthy-v1 runs and the split of the coded arm
+  by healthy-v1 outcome. In the single set, the fresh healthy-v1-1 run is the v1 pairing partner.
+  Stream B's README also reports pairing with the earlier campaign's 1 Nov partner.
+
+### C. Moodle case selection funnel and seeded faults (`c-moodle-selection/`)
+
+- **What it is.** A count of how the 16 Moodle cases were selected from 47 mined interface changes,
+  with the dropout and its reason at each stage (`funnel.md`). It also gives the types and visibility
+  of the seeded faults in both applications (`faults.md`).
+- **Data and scripts.** It reads only existing records: `manifests/moodle.yaml` and `results/moodle-*`.
+  The script is `selection_counts.py`, with output in `selection-counts.txt`.
+- **Reproduce.** `uv run followups-2026-11/c-moodle-selection/selection_counts.py`. It re-implements
+  the case selection and stops if it does not reproduce the 16 campaign cases exactly.
+- **Post hoc.** The whole analysis. The fault types were coded by one coder; there was no second coder.
+
+### D. Replay of real Moodle interface changes (`d-moodle-replay/`; part of the single set)
+
+- **What it is.** For seven of the eight selected Moodle changes, it builds the Moodle commits just
+  before and just after the change. The developers' step definitions from before (A-old) and after
+  (A-new) the change, and the three browser agents, then run on these builds, healthy and with the
+  seeded faults. There are 256 measured trial records: 64 Behat and 192 agent runs. B34 could not
+  be run, because its scenarios did not exist before the change. The plan and its amendments A1 and A2
+  were written before any measured run (`plan.md`, with hashes in `data/plan.sha256-at-A*`).
+  The report is `results/report.md`.
+- **Data and scripts.**
+  - Data: `data/ledger/` (trial ledger and agent event blobs), `data/smoke-ledger/` (technical smoke
+    checks, not measured), `data/patches/` and `data/builds.jsonl`.
+  - Also: `feasibility/` and `logs/`. Scripts are in `scripts/`.
+  - Checksums: `SHA256SUMS`, and `data/patches/SHA256SUMS`, whose paths are relative to
+    `d-moodle-replay/`.
+- **Reproduce.** `uv run followups-2026-11/d-moodle-replay/scripts/count_replay.py`
+  (= `results/counts-replay.txt`).
+- **Post hoc.** The whole stream. The post-hoc diagnostic on B28's fix commit (`data/diagnostics.jsonl`)
+  is not part of the counts. The stream's tokens exceeded the planned cap of 95M by 0.45M, because the
+  smoke-check tokens were not counted by the guard (see the report).
+
+### E. Single set of runs, with its trace audit (`e-single-set/`)
+
+- **What it is.** The cells the single set still needed, run on stream B's setup. `plan.md` was fixed
+  before any measured run.
+  - Payment app (`pay/`): v0 and v2 healthy and faulty stages for the coded arm and the three agents.
+    Four campaigns (`campaign-h-20261127-single-*`) of 96 runs each, 384 runs in total; the v1 cells are
+    stream B's. The coded arm uses campaign A's frozen v0 and v2 step code.
+  - Moodle (`moodle/`): the 16 Nov campaign's arms A and C on the same 16 cases. That is 200 trials:
+    32 developer step-definition runs and 168 agent runs. Arm B (LLM-updated step definitions) was not run.
+  - Trace audit (`trace-audit/`): stream A's question and unchanged coding rule, applied to the single
+    set's browser-agent runs that its counts score as not passing (363 units: 244 payment, 119 Moodle).
+    Three coders coded every unit independently: two Claude Code sessions with Claude Opus 5.5 and one
+    Codex CLI session with gpt-6.2-sol, all at high effort (see `trace-audit/README.md`, "Coders"). Each worked
+    in its own `coderN-work/` folder (codes in
+    `coderN-work/codes-coderN.jsonl`, with its instructions in `CODER.md` and its working files).
+    Pairwise agreement and the majority consensus are in `results/agreement-consensus.txt`, and
+    `single_set.py` section 7 recounts them. The builder and coding aids are stream A's, with the
+    changes diffed in `diffs/`.
+- **Data and scripts.**
+  - Payment app: `pay/data/campaigns/` (with `pay/data/SHA256SUMS`, hashes of the decompressed files).
+  - Moodle: `moodle/data/ledger/` and `moodle/data/smoke-ledger/`.
+  - Runners, launchers and count scripts are in each part's `scripts/`, with outputs in `results/`.
+  - Trace audit: `trace-audit/units.jsonl` with `units.SHA256SUMS`.
+- **Reproduce.**
+  ```sh
+  uv run followups-2026-11/e-single-set/pay/scripts/count_pay.py         # = pay/results/counts.*
+  uv run followups-2026-11/e-single-set/moodle/scripts/count_moodle.py   # = moodle/results/counts.txt
+  uv run followups-2026-11/e-single-set/trace-audit/build_units.py --moodle-expected 'Luna=25,23;Terra=26,7;Haiku=27,11'
+  uv run followups-2026-11/e-single-set/trace-audit/summarize.py coder1-work/codes-coder1.jsonl   # path relative to trace-audit/; also coder2, coder3
+  { uv run followups-2026-11/e-single-set/trace-audit/agreement/agreement.py
+    uv run followups-2026-11/e-single-set/trace-audit/agreement/consensus.py; }   # = trace-audit/results/agreement-consensus.txt
+  uv run scripts/counts/single_set.py         # all single-set values (streams B, D, E)
+  uv run scripts/reproduce_single_set.py      # values the paper states
+  ```
+  The unit builder needs Node 24, `npm ci` and the Moodle checkout at `cfe123f2`. It asserts that the
+  units equal the count scripts' catches and false alarms.
+- **Post hoc.** The whole stream: the single set was decided after the earlier campaign, and so was
+  the trace audit of it. The payment and Moodle cells ran without amendments to the plan.
 
 ## Other analyses
 
 The Node analyses that produced the derived reports (`npm run analyze`, the Moodle report,
 the follow-up-comparison summary), the re-run procedure for each campaign and the local trace
 console are described in `REPRODUCE.md`. They need Node 24 and `npm ci`.
+
+## Changes in v1.2.0
+
+- New: `followups-2026-11/`, the follow-up work of November 2026 (streams A-E, all post hoc, run
+  without a gate pass). See [Follow-up work, November 2026](#follow-up-work-november-2026).
+- The paper's numbers now come from the single set: streams B, D and E. The campaigns of 1-18 Nov are
+  kept unchanged as the earlier campaign, and `scripts/reproduce_counts.py` still checks them
+  (191/191, output unchanged).
+- New: `scripts/counts/single_set.py` and `scripts/reproduce_single_set.py`, with their output
+  `results/counts-single-set.txt` and `.json`, and the list of stated values
+  `results/paper-numbers-single-set.txt`.
+- New: `scripts/redact_paths.py`. In the new files the home-directory prefix was replaced by `<home>`
+  and the host name by `<host>`, also inside compressed files, as in v1.1.0. The provider account
+  identifiers in the new Codex session headers were replaced by `<redacted>`, as was done in v1.1.0
+  for the adjudicator sessions. The streams' checksum
+  files were updated to match. Pre- and post-redaction hashes are listed in
+  `provenance/redaction-v1.2.0.tsv`; see `REPRODUCE.md`, section 7.
+- `.gitignore` excludes the streams' local harness clones and the ledgers' empty per-trial lock files.
+- `followups.SHA256SUMS` now also covers `followups-2026-11/`.
 
 ## Changes in v1.1.4
 

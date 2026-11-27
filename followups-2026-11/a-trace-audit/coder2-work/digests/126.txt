@@ -1,0 +1,627 @@
+UNIT pay:D:fault-v0-1/feed-personal/runtime
+model claude-haiku-5-5 driver omp 18.14.0 (REPRODUCE.md) build v0+fault type faulty
+scenario feed-personal 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I select the "Mine" feed using its visible control
+  4. Then the "Personal" feed at "/personal" contains transactions
+fault {"file": "src/components/TransactionNavTabs.tsx", "before": "to=\"/personal\" data-test=\"nav-personal-tab\"", "after": "to=\"/contacts\" data-test=\"nav-personal-tab\""}
+target [4] Then the "Personal" feed at "/personal" contains transactions
+VERDICT fail step [4] 'Then the "Personal" feed at "/personal" contains transactions'
+REASON Signed in as Heath93 (home shows @Heath93). Selecting the visible 'Mine' tab (retried once) leaves the URL at /contacts, not /personal, and the pane heading reads 'Contacts'. Rows populate after ~3s, but they are Darrel Ortiz/Lia Rosenbaum transactions, none involving Ted Parisian/@Heath93 (the signed-in account). The Personal feed route /personal was never reached.
+parse_error None tool_calls 21 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+THINK I should navigate to localhost:3000 first before taking a browser snapshot.
+
+
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-24-094Z.yml)
+#2 RESULT ### Page
+- Page URL: about:blank
+### Snapshot
+```yaml
+
+```
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#4 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#5 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#6 CALL browser_snapshot {}
+#6 RESULT 
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-27-006Z.yml)
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The fields look empty in the snapshot even though I filled them before clicking—maybe the snapshot just doesn't display values. I'm still on /signin, so let me wait and take another snapshot to check.
+
+
+#7 CALL browser_wait_for {"time": 2}
+#8 CALL browser_snapshot {}
+#8 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-31-272Z.yml)
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+MSG Fields are filled but the click didn't submit. Clicking Sign In again.
+#9 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#10 CALL browser_wait_for {"time": 3}
+#11 CALL browser_snapshot {}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-36-961Z.yml)
+#11 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-35-758Z.yml)
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The URL flickered to "/" then went back to /signin, which suggests either a redirect loop or a failed sign-in attempt. I'll avoid reloading and just wait, then snapshot again to check for error text, though nothing's showing yet.
+
+
+#12 CALL browser_wait_for {"time": 3}
+#13 CALL browser_snapshot {}
+#13 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-42-407Z.yml)
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK Home page confirms the signed-in user as @Heath93, so that assertion passes. Next I need to click the "Mine" tab and verify it navigates to /personal with transactions displayed there.
+
+
+MSG Signed in; home shows @Heath93. Selecting the Mine tab.
+#14 CALL browser_click {"target": "e73", "element": "Mine feed tab"}
+#15 CALL browser_wait_for {"time": 3}
+#16 CALL browser_snapshot {}
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-49-216Z.yml)
+#16 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-48-063Z.yml)
+#16 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK Clicking "Mine" actually navigated to /contacts instead of filtering my own transactions, which looks like a defect — the Mine tab seems wired to the contacts route rather than my own feed.
+
+
+MSG The click landed on /contacts, then the page returned to / with Everyone still selected. Retrying the Mine tab once to see whether the selection sticks.
+#17 CALL browser_click {"target": "e73", "element": "Mine feed tab"}
+#18 CALL browser_wait_for {"time": 3}
+#19 CALL browser_snapshot {"depth": 6}
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-57-485Z.yml)
+#19 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-32-56-827Z.yml)
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone"
+      - tab "Friends"
+      - tab "Mine" [active] [selected]
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Contacts
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+          - generic:
+            - listitem
+            - separator
+    - paragraph:
+      - text: Built by
+      - link:
+        - /url: https://cypress.io
+```
+THINK I'm seeing the "Mine" tab selected with URL /contacts showing an empty "Contacts" heading, but the test expected the "Personal" feed at /personal to contain transactions instead—so this assertion is clearly failing.
+
+
+MSG Mine is now selected, but the URL is /contacts and the pane is labeled "Contacts" with empty rows. Checking once more after a wait in case rows are still loading.
+#20 CALL browser_wait_for {"time": 3}
+#21 CALL browser_snapshot {"target": "e509"}
+#21 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-33-03-430Z.yml)
+#21 RESULT ### Page
+- Page URL: http://localhost:3000/contacts
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- grid "grid":
+  - rowgroup:
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic:
+              - paragraph: "0"
+              - paragraph: "0"
+          - generic: "-$307.99"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic:
+              - paragraph: "0"
+              - paragraph: "1"
+          - generic: "-$312.31"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic:
+              - paragraph: "0"
+              - paragraph: "0"
+          - generic: "-$86.07"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum paid Darrel Ortiz
+            - paragraph: "Payment: WHjJ4qR2R2 to _XblMqbuoP"
+            - generic:
+              - paragraph: "0"
+              - paragraph: "0"
+          - generic: "-$100.62"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz paid Lia Rosenbaum
+            - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+            - generic:
+              - paragraph: "0"
+              - paragraph: "0"
+          - generic: "-$480.65"
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Darrel Ortiz requested Lia Rosenbaum
+            - paragraph: "Request: WHjJ4qR2R2 to _XblMqbuoP"
+            - generic:
+              - paragraph: "0"
+              - paragraph: "0"
+          - generic: +$356.58
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+            - paragraph: Lia Rosenbaum requested Darrel Ortiz
+            - paragraph: "Request: _XblMqbuoP to WHjJ4qR2R2"
+            - generic:
+              - paragraph: "0"
+              - paragraph: "0"
+          - generic: +$76.99
+      - separator
+    - generic:
+      - listitem:
+        - generic:
+          - generic:
+  
+…[truncated 909 chars]
+THINK I'm noticing the rows on the Mine tab show transactions from Darrel Ortiz and Lia Rosenbaum, not the logged-in user Ted Parisian (@Heath93), which seems worth double-checking against expectations.
+
+The actual assertion requires the "Personal" feed to appear at the route "/personal", but I'm seeing "/contacts" instead — that's a route mismatch, so this should be marked as a fail.
+
+
+MSG {"status":"fail","reason":"Signed in as Heath93 (home shows @Heath93). Selecting the visible 'Mine' tab (retried once) leaves the URL at /contacts, not /personal, and the pane heading reads 'Contacts'. Rows populate after ~3s, but they are Darrel Ortiz/Lia Rosenbaum transactions, none involving Ted Parisian/@Heath93 (the signed-in account). The Personal feed route /personal was never reached.","failedAssertion":"Then the \"Personal\" feed at \"/personal\" contains transactions"}
+RAWRESPONSE {"status":"fail","reason":"Signed in as Heath93 (home shows @Heath93). Selecting the visible 'Mine' tab (retried once) leaves the URL at /contacts, not /personal, and the pane heading reads 'Contacts'. Rows populate after ~3s, but they are Darrel Ortiz/Lia Rosenbaum transactions, none involving Ted Parisian/@Heath93 (the signed-in account). The Personal feed route /personal was never reached.","failedAssertion":"Then the \"Personal\" feed at \"/personal\" contains transactions"}

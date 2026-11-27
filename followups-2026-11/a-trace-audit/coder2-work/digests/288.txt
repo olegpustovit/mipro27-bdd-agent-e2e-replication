@@ -1,0 +1,498 @@
+UNIT moodle:6ac189f540b8/B28.S137/healthy/C/gpt-6-luna/r2
+model gpt-6-luna driver codex build Moodle pin cfe123f26fc7 (healthy); pair from change B28 type healthy
+scenario S137 Block a user
+  1. Given I log in as "student1"
+  2. And I select "Student 2" user in messaging
+  3. And I open contact menu
+  4. And I click on "Block" "link" in the "[data-region='header-container']" "css_element"
+  5. And I should see "Are you sure you want to block Student 2?"
+  6. And I click on "Block" "button" in the "[data-region='confirm-dialogue']" "css_element"
+  7. And I should see "You have blocked this user."
+  8. And I log out
+  9. When I log in as "student2"
+  10. And I open messaging
+  11. And I select "Student 1" user in messaging
+  12. Then I should see "Cannot send message"
+fault null
+target None None
+VERDICT fail step 4 'And I click on "Block" "link" in the "[data-region='header-container']" "css_element"'
+REASON The contact actions menu opened, but it contains a “Block user” menuitem, not a visible “Block” link in the header container. The requested click could not be performed.
+parse_error None tool_calls 16 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll carry out the scenario in the existing browser session and stop at the first step that fails.
+#1 CALL browser_snapshot {"depth": 5}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic
+          - button "Show notification window with no new notifications"
+          - button "Toggle messaging drawer"
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region "Main content blocks"
+      - contentinfo:
+        - button "Show footer":
+          - generic [aria-hidden]: "?"
+        - generic:
+          - link "Contact site support":
+            - /url: http://webserver/user/contactsitesupport.php
+          - generic
+          - generic
+```
+#2 CALL browser_click {"target": "e31", "element": "Toggle messaging drawer"}
+#2 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-33-997Z.yml)
+#3 CALL browser_snapshot {"depth": 6}
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer" [expanded]:
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region "Main content blocks":
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region "Course overview"
+            - link "Skip Timeline":
+              - /url: "#sb-4"
+            - region "Timeline"
+      - contentinfo:
+        - button "Show footer":
+          - generic [aria-hidden]: "?"
+        - generic:
+          - link "Contact site support":
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden]: 
+            - text: Contact site support
+          - generic:
+            - generic
+            - link "Data retention summary":
+              - /url: http://webserver/admin/tool/dataprivacy/summary.php
+          - generic:
+            - text: Powered by
+            - link "Moodle":
+              - /url: https://moodle.com
+    - dialog:
+      - region:
+        - heading "Messaging" [level=2]
+        - link "Close" [active]:
+          - /url: "#"
+          - generic [aria-hidden]: 
+        - generic:
+          - text:    
+          - generic:
+            - generic
+            - button "Contacts"
+          - text:        
+        - generic:
+          - text:            
+          - generic:
+            - generic
+            - generic
+            - generic
+          - text:   
+        - generic:
+          - text:                  
+          - link "See all":
+            - /url: http://webserver/message/index.php
+```
+#4 CALL browser_wait_for {"time": 2}
+#4 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-38-304Z.yml)
+#5 CALL browser_snapshot {"depth": 8, "target": "e158"}
+#5 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- dialog:
+  - region:
+    - heading "Messaging" [level=2]
+    - link "Close" [active]:
+      - /url: "#"
+      - generic [aria-hidden]: 
+    - generic:
+      - text:    
+      - generic:
+        - generic:
+          - group "Search people and messages":
+            - textbox "Search"
+            - generic [aria-hidden]: 
+          - button "Settings":
+            - generic [aria-hidden]: 
+        - button "Contacts":
+          - generic [aria-hidden]: 
+          - text: Contacts
+      - text:        
+    - generic:
+      - text:            
+      - generic:
+        - generic:
+          - button "Starred 1 total conversations" [expanded]:
+            - text:  
+            - generic [aria-hidden]: 
+            - generic: Starred
+            - generic "1 total conversations": (1)
+            - text: 
+          - generic "Starred () 1 total conversations":
+            - button "Online Student 1":
+              - img "Online": 
+              - generic:
+                - generic
+                - paragraph
+              - generic:
+                - generic [aria-hidden]: 
+                - text: 
+            - text: 
+        - generic:
+          - button "Group 0 total conversations":
+            - generic:
+              - generic [aria-hidden]: 
+              - text: 
+            - text: 
+            - generic: Group
+            - generic "0 total conversations": (0)
+            - text: 
+          - text: 
+        - generic:
+          - button "Private 0 total conversations":
+            - generic:
+              - generic [aria-hidden]: 
+              - text: 
+            - text: 
+            - generic: Private
+            - generic "0 total conversations": (0)
+            - text: 
+          - text: 
+      - text:   
+    - generic:
+      - text:                  
+      - link "See all":
+        - /url: http://webserver/message/index.php
+```
+#6 CALL browser_type {"target": "e169", "text": "Student 2"}
+#6 RESULT 
+#7 CALL browser_snapshot {"depth": 8, "target": "e158"}
+#7 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- dialog:
+  - region:
+    - heading "Messaging" [level=2]
+    - link "Close":
+      - /url: "#"
+      - generic [aria-hidden]: 
+    - generic:
+      - text:    
+      - generic:
+        - generic:
+          - group "Search people and messages":
+            - textbox "Search" [active]: Student 2
+            - generic [aria-hidden]: 
+          - button "Settings":
+            - generic [aria-hidden]: 
+        - button "Contacts":
+          - generic [aria-hidden]: 
+          - text: Contacts
+      - text:        
+    - generic:
+      - text:            
+      - generic:
+        - generic:
+          - button "Starred 1 total conversations" [expanded]:
+            - text:  
+            - generic [aria-hidden]: 
+            - generic: Starred
+            - generic "1 total conversations": (1)
+            - text: 
+          - generic "Starred () 1 total conversations":
+            - button "Online Student 1":
+              - img "Online": 
+              - generic:
+                - generic
+                - paragraph
+              - generic:
+                - generic [aria-hidden]: 
+                - text: 
+            - text: 
+        - generic:
+          - button "Group 0 total conversations":
+            - generic:
+              - generic [aria-hidden]: 
+              - text: 
+            - text: 
+            - generic: Group
+            - generic "0 total conversations": (0)
+            - text: 
+          - text: 
+        - generic:
+          - button "Private 0 total conversations":
+            - generic:
+              - generic [aria-hidden]: 
+              - text: 
+            - text: 
+            - generic: Private
+            - generic "0 total conversations": (0)
+            - text: 
+          - text: 
+      - text:   
+    - generic:
+      - text:                  
+      - link "See all":
+        - /url: http://webserver/message/index.php
+```
+#8 CALL browser_press_key {"key": "Enter"}
+#8 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-47-314Z.yml)
+#9 CALL browser_snapshot {"depth": 8, "target": "e158"}
+#9 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- dialog:
+  - region:
+    - heading "Messaging" [level=2]
+    - link "Close":
+      - /url: "#"
+      - generic [aria-hidden]: 
+    - generic:
+      - text:       
+      - generic:
+        - button "Back to Messages overview":
+          - generic:
+            - generic [aria-hidden]: 
+            - text: 
+          - text: 
+        - group "Search people and messages":
+          - textbox "Search" [active]
+          - button "Perform search":
+            - generic [aria-hidden]: 
+            - text: 
+      - text:   
+    - generic:
+      - text:                                
+      - generic:
+        - text:   
+        - paragraph: Search people and messages
+    - generic:                  
+```
+#10 CALL browser_type {"target": "e234", "text": "Student 2"}
+#10 RESULT 
+#11 CALL browser_click {"target": "e235"}
+#11 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-52-035Z.yml)
+#12 CALL browser_snapshot {"depth": 9, "target": "e158"}
+#12 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- dialog:
+  - region:
+    - heading "Messaging" [level=2]
+    - link "Close":
+      - /url: "#"
+      - generic [aria-hidden]: 
+    - generic:
+      - text:       
+      - generic:
+        - button "Back to Messages overview":
+          - generic:
+            - generic [aria-hidden]: 
+            - text: 
+          - text: 
+        - group "Search people and messages":
+          - textbox "Search" [active]: Student 2
+          - button "Perform search":
+            - generic [aria-hidden]: 
+            - text: 
+      - text:   
+    - generic:
+      - text:                                
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - heading "Non-contacts" [level=3]
+              - button "Student 2":
+                - heading "Student 2" [level=6]
+            - generic: 
+          - text: 
+        - text: 
+    - generic:                  
+```
+#13 CALL browser_click {"target": "e247", "element": "Student 2 search result"}
+#13 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-55-613Z.yml)
+#14 CALL browser_snapshot {"depth": 8, "target": "e158"}
+#14 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- dialog:
+  - region:
+    - heading "Messaging" [level=2]
+    - link "Close":
+      - /url: "#"
+      - generic [aria-hidden]: 
+    - generic:
+      - text:    
+      - generic:
+        - button:
+          - generic:
+            - generic [aria-hidden]: 
+            - text: 
+          - text: 
+        - button "Student 2":
+          - generic:
+            - strong: Student 2
+            - text:  
+        - button "Conversation actions menu":
+          - generic [aria-hidden]: 
+      - text:           
+    - generic:
+      - text:  
+      - generic:
+        - log: 
+        - text:         
+      - text:                       
+    - generic:
+      - generic:
+        - textbox "Write a message..."
+        - generic:
+          - text:           
+          - button "Toggle emoji picker":
+            - generic [aria-hidden]: 
+          - button "Send message":
+            - generic [aria-hidden]: 
+            - text: 
+      - text:    
+```
+#15 CALL browser_click {"target": "e266"}
+#15 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-47-58-494Z.yml)
+#16 CALL browser_snapshot {"depth": 7, "target": "e158"}
+#16 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- dialog:
+  - region:
+    - heading "Messaging" [level=2]
+    - link "Close":
+      - /url: "#"
+      - generic [aria-hidden]: 
+    - generic:
+      - text:    
+      - generic:
+        - button:
+          - generic:
+            - generic [aria-hidden]: 
+            - text: 
+          - text: 
+        - button "Student 2":
+          - generic:
+            - strong: Student 2
+            - text:  
+        - generic:
+          - button "Conversation actions menu" [expanded] [active]:
+            - generic [aria-hidden]: 
+          - menu "Conversation actions menu":
+            - menuitem "User info"
+            - menuitem "Block user"
+            - menuitem "Mute"
+            - menuitem "Delete conversation"
+            - menuitem "Add to contacts"
+      - text:           
+    - generic:
+      - text:  
+      - generic:
+        - log: 
+        - text:         
+      - text:                       
+    - generic:
+      - generic:
+        - textbox "Write a message..."
+        - generic:
+          - text:           
+          - button "Toggle emoji picker":
+            - generic [aria-hidden]: 
+          - button "Send message":
+            - generic [aria-hidden]: 
+            - text: 
+      - text:    
+```
+MSG {"status":"fail","reason":"The contact actions menu opened, but it contains a “Block user” menuitem, not a visible “Block” link in the header container. The requested click could not be performed.","failingStep":4,"failingStepText":"And I click on \"Block\" \"link\" in the \"[data-region='header-container']\" \"css_element\""}

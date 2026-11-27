@@ -1,0 +1,909 @@
+UNIT moodle:6ac189f540b8/B07.S029/fault:X010/C/gpt-5.6-terra/r2
+model gpt-5.6-terra driver codex build Moodle pin cfe123f26fc7 + seeded fault X010; pair from change B07 type faulty
+scenario S029 Information does not display when left blank
+  1. And I log in as "admin"
+  2. When the following config values are set as admin:
+  | searchbannerenable | 1 |
+  | searchbanner |  |
+  3. And I search for "toads" using the header global search box
+  4. Then ".notifywarning" "css_element" should not exist
+fault {"intent": "The search information banner shows when either the switch or the text is set (wrong condition: && became ||).", "mutations": [{"file": "public/search/index.php", "old": "if ($CFG->searchbannerenable && $CFG->searchbanner) {", "new": "if ($CFG->searchbannerenable || $CFG->searchbanner) {"}]}
+target [4] Then ".notifywarning" "css_element" should not exist
+VERDICT fail step 4 'Then ".notifywarning" "css_element" should not exist'
+REASON After searching for "toads", the Global search page showed an empty dismissible warning alert above the "No results" alert.
+parse_error None tool_calls 27 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll use the existing admin browser session, change only the specified settings through Moodle’s UI, then run the global search and check for the warning.
+#1 CALL browser_navigate {"url": "http://webserver/"}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-04-605Z.yml)
+#2 CALL browser_snapshot {"depth": 4}
+#2 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]
+        - generic [ref=f1e13]
+    - generic [ref=f1e50]:
+      - generic [ref=f1e51]:
+        - button "Open block drawer" [ref=f1e53]
+        - banner [ref=f1e57]
+        - main [ref=f1e68]
+      - contentinfo [ref=f1e119]:
+        - button "Show footer" [ref=f1e120]
+        - generic [ref=f1e122]
+        - generic [ref=f1e147]
+```
+#3 CALL browser_snapshot {"depth": 10}
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "More " [ref=f1e10]:
+            - generic [ref=f1e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e14]:
+            - text: 
+            - search "Site-wide search" [ref=f1e15]:
+              - generic [ref=f1e16]: Search
+              - generic [ref=f1e17]:
+                - button "Perform search" [ref=f1e18]:
+                  - generic [aria-hidden] [ref=f1e19]: 
+                - textbox "Search" [ref=f1e21]
+                - text: 
+          - generic [ref=f1e24]:
+            - switch "Edit mode" [ref=f1e25]
+            - generic [ref=f1e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e36]:
+            - generic [aria-hidden] [ref=f1e37]: 
+          - button "Toggle messaging drawer" [ref=f1e39]:
+            - generic [aria-hidden] [ref=f1e40]: 
+          - button "User menu" [ref=f1e46]: 
+    - generic [ref=f1e50]:
+      - generic [ref=f1e51]:
+        - button "Open block drawer" [ref=f1e53]
+        - banner [ref=f1e57]:
+          - heading "Dashboard" [level=1] [ref=f1e64]
+        - main [ref=f1e68]:
+          - region [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e73]:
+              - generic [ref=f1e74]:
+                - heading "Course overview" [level=3] [ref=f1e76]
+                - generic [ref=f1e80]:
+                  - heading "Create your first course" [level=4] [ref=f1e81]
+                  - paragraph [ref=f1e82]:
+                    - text: Need help getting started? Check out the
+                    - link "Moodle documentation" [ref=f1e83]:
+                      - /url: https://docs.moodle.org?lang=en
+                    - text: or take your first steps with our
+                    - link "Quickstart guide" [ref=f1e84]:
+                      - /url: https://moodle.academy/coursequickstart?lang=en
+    
+…[truncated 2787 chars]
+#4 CALL browser_click {"target": "f1e46", "element": "User menu"}
+#4 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-10-059Z.yml)
+#5 CALL browser_snapshot {"depth": 7}
+#5 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "More " [ref=f1e10]:
+            - generic [ref=f1e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e14]:
+            - text: 
+            - search "Site-wide search" [ref=f1e15]:
+              - generic [ref=f1e16]: Search
+              - generic [ref=f1e17]
+          - generic [ref=f1e24]:
+            - switch "Edit mode" [ref=f1e25]
+            - generic [ref=f1e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e36]:
+            - generic [aria-hidden] [ref=f1e37]: 
+          - button "Toggle messaging drawer" [ref=f1e39]:
+            - generic [aria-hidden] [ref=f1e40]: 
+          - generic [ref=f1e45]:
+            - button "User menu" [expanded] [ref=f1e46]: 
+            - menu "User" [active] [ref=f1e156]:
+              - menuitem "Profile" [ref=f1e157]
+              - menuitem "Grades" [ref=f1e158]
+              - menuitem "Calendar" [ref=f1e159]
+              - menuitem "Private files" [ref=f1e160]
+              - menuitem "Reports" [ref=f1e161]
+              - menuitem "Preferences" [ref=f1e163]
+              - menuitem "Switch role to..." [ref=f1e164]
+              - menuitem "Log out" [ref=f1e166]
+    - generic [ref=f1e50]:
+      - generic [ref=f1e51]:
+        - button "Open block drawer" [ref=f1e53]
+        - banner [ref=f1e57]:
+          - heading "Dashboard" [level=1] [ref=f1e64]
+        - main [ref=f1e68]:
+          - region "Main content blocks" [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e73]:
+              - generic [ref=f1e74]
+            - link "Skip Timeline" [ref=f1e92]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e93]:
+              - generic [ref=f1e94]
+      - contentinfo [ref=f1e119]:
+        - button "Show footer" [ref=f1e120]:
+          - generic [aria-hidden] [ref=f1e121]: "?"
+       
+…[truncated 2005 chars]
+#6 CALL browser_click {"target": "f1e10", "element": "More navigation menu"}
+#6 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-13-995Z.yml)
+#7 CALL browser_snapshot {"depth": 6}
+#7 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "More " [expanded] [active] [ref=f1e10]:
+            - generic [ref=f1e12]: More
+            - text: 
+          - menu "More " [ref=f1e167]:
+            - menuitem " Dashboard" [ref=f1e168]
+            - menuitem "Site administration" [ref=f1e169]
+        - generic [ref=f1e13]:
+          - generic [ref=f1e14]:
+            - text: 
+            - search "Site-wide search" [ref=f1e15]
+          - generic [ref=f1e24]:
+            - switch "Edit mode" [ref=f1e25]
+            - generic [ref=f1e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e36]:
+            - generic [aria-hidden] [ref=f1e37]: 
+          - button "Toggle messaging drawer" [ref=f1e39]:
+            - generic [aria-hidden] [ref=f1e40]: 
+          - button "User menu" [ref=f1e46]: 
+    - generic [ref=f1e50]:
+      - generic [ref=f1e51]:
+        - button "Open block drawer" [ref=f1e53]
+        - banner [ref=f1e57]:
+          - heading "Dashboard" [level=1] [ref=f1e64]
+        - main [ref=f1e68]:
+          - region "Main content blocks" [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e73]
+            - link "Skip Timeline" [ref=f1e92]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e93]
+      - contentinfo [ref=f1e119]:
+        - button "Show footer" [ref=f1e120]:
+          - generic [aria-hidden] [ref=f1e121]: "?"
+        - generic [ref=f1e122]:
+          - generic [ref=f1e123]:
+            - link "Documentation for this page" [ref=f1e125]:
+              - /url: https://docs.moodle.org/503/en/dashboard
+            - link "Services and support Opens in new window" [ref=f1e128]:
+              - /url: https://moodle.com/help/?utm_source=CTA-banner&utm_medium=platform&utm_campaign=name~Moodle4+cat~lms+mp~no
+            - link "Contact site support" [ref=f1e132]:
+              - /url: http://webserver/user/contactsitesuppo
+…[truncated 697 chars]
+#8 CALL browser_click {"target": "f1e169", "element": "Site administration"}
+#8 RESULT ### Page
+- Page URL: http://webserver/admin/search.php
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-17-585Z.yml)
+#9 CALL browser_snapshot {"depth": 10}
+#9 RESULT ### Page
+- Page URL: http://webserver/admin/search.php
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "More " [ref=f2e10]:
+            - generic [ref=f2e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f2e13]:
+          - generic [ref=f2e14]:
+            - text: 
+            - search "Site-wide search" [ref=f2e15]:
+              - generic [ref=f2e16]: Search
+              - generic [ref=f2e17]:
+                - button "Perform search" [ref=f2e18]:
+                  - generic [aria-hidden] [ref=f2e19]: 
+                - textbox "Search" [ref=f2e21]
+                - text: 
+          - generic [ref=f2e24]:
+            - switch "Edit mode" [ref=f2e25]
+            - generic [ref=f2e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e36]:
+            - generic [aria-hidden] [ref=f2e37]: 
+          - button "Toggle messaging drawer" [ref=f2e39]:
+            - generic [aria-hidden] [ref=f2e40]: 
+          - button "User menu" [ref=f2e46]: 
+    - generic [ref=f2e50]:
+      - generic [ref=f2e51]:
+        - banner [ref=f2e52]:
+          - generic [ref=f2e54]:
+            - heading "Site administration" [level=1] [ref=f2e59]
+            - generic [ref=f2e64]:
+              - textbox "Search" [ref=f2e65]
+              - generic: Search
+              - button "Search" [ref=f2e67]:
+                - generic [aria-hidden] [ref=f2e68]: 
+        - navigation "Site administration menu" [ref=f2e72]:
+          - tablist [ref=f2e73]:
+            - tab "General" [selected] [ref=f2e74]
+            - tab "Users" [ref=f2e76]
+            - tab "Courses" [ref=f2e78]
+            - tab "Grades" [ref=f2e80]
+            - tab "Plugins" [ref=f2e82]
+            - tab "Appearance" [ref=f2e84]
+            - tab "More " [ref=f2e86]:
+              - generic [ref=f2e87]: More
+              - text: 
+        - main [ref=f2e91]:
+          - tabpanel [ref=f2e94]:
+            - generic [ref=f2e95]:
+              - list [ref=f2e99]:
+                - listitem [ref=f2e100]:
+                  - link "Notifications" [ref=f2e101]:
+         
+…[truncated 12835 chars]
+#10 CALL browser_type {"target": "f2e65", "element": "Site administration search", "text": "searchbannerenable", "submit": true}
+#10 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbannerenable
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-21-995Z.yml)
+#11 CALL browser_snapshot {"depth": 8}
+#11 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbannerenable
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "More " [ref=f3e10]:
+            - generic [ref=f3e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f3e13]:
+          - generic [ref=f3e14]:
+            - text: 
+            - search "Site-wide search" [ref=f3e15]:
+              - generic [ref=f3e16]: Search
+              - generic [ref=f3e17]:
+                - button "Perform search" [ref=f3e18]
+                - textbox "Search" [ref=f3e21]
+                - text: 
+          - generic [ref=f3e24]:
+            - switch "Edit mode" [ref=f3e25]
+            - generic [ref=f3e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e36]:
+            - generic [aria-hidden] [ref=f3e37]: 
+          - button "Toggle messaging drawer" [ref=f3e39]:
+            - generic [aria-hidden] [ref=f3e40]: 
+          - button "User menu" [ref=f3e46]: 
+    - generic [ref=f3e50]:
+      - generic [ref=f3e51]:
+        - banner [ref=f3e52]:
+          - generic [ref=f3e54]:
+            - heading "Site administration" [level=1] [ref=f3e59]
+            - generic [ref=f3e64]:
+              - textbox "Search" [ref=f3e65]: searchbannerenable
+              - generic: Search
+              - button "Search" [ref=f3e67]:
+                - generic [aria-hidden] [ref=f3e68]: 
+        - navigation "Site administration menu" [ref=f3e72]:
+          - menubar [ref=f3e73]:
+            - menuitem "General" [ref=f3e74]
+            - menuitem "Users" [ref=f3e77]
+            - menuitem "Courses" [ref=f3e79]
+            - menuitem "Grades" [ref=f3e81]
+            - menuitem "Plugins" [ref=f3e83]
+            - menuitem "Appearance" [ref=f3e85]
+            - menuitem "More " [ref=f3e87]:
+              - generic [ref=f3e88]: More
+              - text: 
+        - main [ref=f3e92]:
+          - separator [ref=f3e94]
+          - group [ref=f3e96]:
+            - heading "Search results" [level=2] [ref=f3e98]
+            - heading "Manage global search" [level=3] [ref=f3e99]:
+   
+…[truncated 2732 chars]
+#12 CALL browser_snapshot {"target": "f3e106", "depth": 6}
+#12 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbannerenable
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- group [ref=f3e106]:
+  - generic [ref=f3e108]:
+    - generic [ref=f3e109]:
+      - generic [ref=f3e110]: Display search information
+      - generic [ref=f3e111]: searchbannerenable
+    - generic [ref=f3e112]:
+      - checkbox "Display search information" [ref=f3e114]
+      - generic [ref=f3e115]: "Default: No"
+      - paragraph [ref=f3e117]: If enabled, the text below will be displayed at the top of the search screen for all users. This can be used to inform users when search engine maintenance is being carried out.
+```
+#13 CALL browser_fill_form {"fields": [{"target": "f3e114", "element": "Display search information", "name": "searchbannerenable", "type": "checkbox", "value": "true"}]}
+#13 RESULT 
+#14 CALL browser_click {"target": "f3e120", "element": "Save changes"}
+#14 RESULT ### Error
+Error: Ref f3e120 not found in the current page snapshot. Try capturing new snapshot.
+#15 CALL browser_snapshot {"depth": 7}
+#15 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbannerenable
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "More " [ref=f3e10]:
+            - generic [ref=f3e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f3e13]:
+          - generic [ref=f3e14]:
+            - text: 
+            - search "Site-wide search" [ref=f3e15]:
+              - generic [ref=f3e16]: Search
+              - generic [ref=f3e17]
+          - generic [ref=f3e24]:
+            - switch "Edit mode" [ref=f3e25]
+            - generic [ref=f3e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e36]:
+            - generic [aria-hidden] [ref=f3e37]: 
+          - button "Toggle messaging drawer" [ref=f3e39]:
+            - generic [aria-hidden] [ref=f3e40]: 
+          - button "User menu" [ref=f3e46]: 
+    - generic [ref=f3e50]:
+      - generic [ref=f3e51]:
+        - banner [ref=f3e52]:
+          - generic [ref=f3e54]:
+            - heading "Site administration" [level=1] [ref=f3e59]
+            - generic [ref=f3e64]:
+              - textbox "Search" [ref=f3e65]: searchbannerenable
+              - generic: Search
+              - button "Search" [ref=f3e67]
+        - navigation "Site administration menu" [ref=f3e72]:
+          - menubar [ref=f3e73]:
+            - menuitem "General" [ref=f3e74]
+            - menuitem "Users" [ref=f3e77]
+            - menuitem "Courses" [ref=f3e79]
+            - menuitem "Grades" [ref=f3e81]
+            - menuitem "Plugins" [ref=f3e83]
+            - menuitem "Appearance" [ref=f3e85]
+            - menuitem "More " [ref=f3e87]:
+              - generic [ref=f3e88]: More
+              - text: 
+        - main [ref=f3e92]:
+          - separator [ref=f3e94]
+          - group [ref=f3e96]:
+            - heading "Search results" [level=2] [ref=f3e98]
+            - heading "Manage global search" [level=3] [ref=f3e99]:
+              - link "Manage global search" [ref=f3e100]:
+                - /url: http://webserver/admin/settings.php?section=manageglobalsearch
+            - list "Page path" [ref=f3e101]:
+      
+…[truncated 2503 chars]
+#16 CALL browser_click {"target": "f3e120", "element": "Save changes"}
+#16 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbannerenable
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-35-651Z.yml)
+#17 CALL browser_snapshot {"depth": 8}
+#17 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbannerenable
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "More " [ref=f4e10]:
+            - generic [ref=f4e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f4e13]:
+          - generic [ref=f4e14]:
+            - text: 
+            - search "Site-wide search" [ref=f4e15]:
+              - generic [ref=f4e16]: Search
+              - generic [ref=f4e17]:
+                - button "Perform search" [ref=f4e18]
+                - textbox "Search" [ref=f4e21]
+                - text: 
+          - generic [ref=f4e24]:
+            - switch "Edit mode" [ref=f4e25]
+            - generic [ref=f4e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e36]:
+            - generic [aria-hidden] [ref=f4e37]: 
+          - button "Toggle messaging drawer" [ref=f4e39]:
+            - generic [aria-hidden] [ref=f4e40]: 
+          - button "User menu" [ref=f4e46]: 
+    - generic [ref=f4e50]:
+      - generic [ref=f4e51]:
+        - banner [ref=f4e52]:
+          - generic [ref=f4e54]:
+            - heading "Site administration" [level=1] [ref=f4e59]
+            - generic [ref=f4e64]:
+              - textbox "Search" [ref=f4e65]: searchbannerenable
+              - generic: Search
+              - button "Search" [ref=f4e67]:
+                - generic [aria-hidden] [ref=f4e68]: 
+        - navigation "Site administration menu" [ref=f4e72]:
+          - menubar [ref=f4e73]:
+            - menuitem "General" [ref=f4e74]
+            - menuitem "Users" [ref=f4e77]
+            - menuitem "Courses" [ref=f4e79]
+            - menuitem "Grades" [ref=f4e81]
+            - menuitem "Plugins" [ref=f4e83]
+            - menuitem "Appearance" [ref=f4e85]
+            - menuitem "More " [ref=f4e87]:
+              - generic [ref=f4e88]: More
+              - text: 
+        - generic [ref=f4e91]:
+          - alert [ref=f4e93]:
+            - text: Changes saved
+            - button "Dismiss this notification" [ref=f4e94]
+          - main [ref=f4e96]:
+            - separator [ref=f4e98]
+  
+…[truncated 2843 chars]
+#18 CALL browser_type {"target": "f4e65", "element": "Site administration search", "text": "searchbanner", "submit": true}
+#18 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-40-386Z.yml)
+#19 CALL browser_snapshot {"depth": 8}
+#19 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f5e1]:
+  - status
+  - generic [ref=f5e2]:
+    - link "Skip to main content" [ref=f5e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - link "Acceptance test site" [ref=f5e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f5e9]:
+          - menuitem "More " [ref=f5e10]:
+            - generic [ref=f5e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f5e13]:
+          - generic [ref=f5e14]:
+            - text: 
+            - search "Site-wide search" [ref=f5e15]:
+              - generic [ref=f5e16]: Search
+              - generic [ref=f5e17]:
+                - button "Perform search" [ref=f5e18]
+                - textbox "Search" [ref=f5e21]
+                - text: 
+          - generic [ref=f5e24]:
+            - switch "Edit mode" [ref=f5e25]
+            - generic [ref=f5e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f5e36]:
+            - generic [aria-hidden] [ref=f5e37]: 
+          - button "Toggle messaging drawer" [ref=f5e39]:
+            - generic [aria-hidden] [ref=f5e40]: 
+          - button "User menu" [ref=f5e46]: 
+    - generic [ref=f5e50]:
+      - generic [ref=f5e51]:
+        - banner [ref=f5e52]:
+          - generic [ref=f5e54]:
+            - heading "Site administration" [level=1] [ref=f5e59]
+            - generic [ref=f5e64]:
+              - textbox "Search" [ref=f5e65]: searchbanner
+              - generic: Search
+              - button "Search" [ref=f5e67]:
+                - generic [aria-hidden] [ref=f5e68]: 
+        - navigation "Site administration menu" [ref=f5e72]:
+          - menubar [ref=f5e73]:
+            - menuitem "General" [ref=f5e74]
+            - menuitem "Users" [ref=f5e77]
+            - menuitem "Courses" [ref=f5e79]
+            - menuitem "Grades" [ref=f5e81]
+            - menuitem "Plugins" [ref=f5e83]
+            - menuitem "Appearance" [ref=f5e85]
+            - menuitem "More " [ref=f5e87]:
+              - generic [ref=f5e88]: More
+              - text: 
+        - main [ref=f5e92]:
+          - separator [ref=f5e94]
+          - group [ref=f5e96]:
+            - heading "Search results" [level=2] [ref=f5e98]
+            - heading "Manage global search" [level=3] [ref=f5e99]:
+              -
+…[truncated 2830 chars]
+#20 CALL browser_snapshot {"target": "f5e106", "depth": 6}
+#20 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- group [ref=f5e106]:
+  - generic [ref=f5e108]:
+    - generic [ref=f5e109]:
+      - generic [ref=f5e110]: Display search information
+      - generic [ref=f5e111]: searchbannerenable
+    - generic [ref=f5e112]:
+      - checkbox "Display search information" [checked] [ref=f5e114]
+      - generic [ref=f5e115]: "Default: No"
+      - paragraph [ref=f5e117]: If enabled, the text below will be displayed at the top of the search screen for all users. This can be used to inform users when search engine maintenance is being carried out.
+  - generic [ref=f5e119]:
+    - generic [ref=f5e120]:
+      - generic [ref=f5e121]: Search information
+      - generic [ref=f5e122]: searchbanner
+    - generic [ref=f5e123]:
+      - application [ref=f5e125]:
+        - generic [ref=f5e126]:
+          - generic [ref=f5e127]:
+            - menubar [ref=f5e129]
+            - group [ref=f5e130]
+          - iframe [ref=f5e133]:
+            - generic "Search information. Rich text area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help." [ref=f6e1]:
+              - paragraph [ref=f6e2]
+        - generic [ref=f5e134]:
+          - generic [ref=f5e135]:
+            - group "Element Path" [ref=f5e216]
+            - generic [ref=f5e136]
+          - separator "Press the Up and Down arrow keys to resize the editor." [ref=f5e145]
+      - generic [ref=f5e149]: "Default: Empty"
+```
+#21 CALL browser_click {"target": "f5e152", "element": "Save changes"}
+#21 RESULT ### Error
+Error: Ref f5e152 not found in the current page snapshot. Try capturing new snapshot.
+#22 CALL browser_snapshot {"depth": 7}
+#22 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f5e1]:
+  - status
+  - generic [ref=f5e2]:
+    - link "Skip to main content" [ref=f5e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - link "Acceptance test site" [ref=f5e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f5e9]:
+          - menuitem "More " [ref=f5e10]:
+            - generic [ref=f5e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f5e13]:
+          - generic [ref=f5e14]:
+            - text: 
+            - search "Site-wide search" [ref=f5e15]:
+              - generic [ref=f5e16]: Search
+              - generic [ref=f5e17]
+          - generic [ref=f5e24]:
+            - switch "Edit mode" [ref=f5e25]
+            - generic [ref=f5e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f5e36]:
+            - generic [aria-hidden] [ref=f5e37]: 
+          - button "Toggle messaging drawer" [ref=f5e39]:
+            - generic [aria-hidden] [ref=f5e40]: 
+          - button "User menu" [ref=f5e46]: 
+    - generic [ref=f5e50]:
+      - generic [ref=f5e51]:
+        - banner [ref=f5e52]:
+          - generic [ref=f5e54]:
+            - heading "Site administration" [level=1] [ref=f5e59]
+            - generic [ref=f5e64]:
+              - textbox "Search" [ref=f5e65]: searchbanner
+              - generic: Search
+              - button "Search" [ref=f5e67]
+        - navigation "Site administration menu" [ref=f5e72]:
+          - menubar [ref=f5e73]:
+            - menuitem "General" [ref=f5e74]
+            - menuitem "Users" [ref=f5e77]
+            - menuitem "Courses" [ref=f5e79]
+            - menuitem "Grades" [ref=f5e81]
+            - menuitem "Plugins" [ref=f5e83]
+            - menuitem "Appearance" [ref=f5e85]
+            - menuitem "More " [ref=f5e87]:
+              - generic [ref=f5e88]: More
+              - text: 
+        - main [ref=f5e92]:
+          - separator [ref=f5e94]
+          - group [ref=f5e96]:
+            - heading "Search results" [level=2] [ref=f5e98]
+            - heading "Manage global search" [level=3] [ref=f5e99]:
+              - link "Manage global search" [ref=f5e100]:
+                - /url: http://webserver/admin/settings.php?section=manageglobalsearch
+            - list "Page path" [ref=f5e101]:
+         
+…[truncated 2531 chars]
+#23 CALL browser_click {"target": "f5e152", "element": "Save changes"}
+#23 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-51-832Z.yml)
+#24 CALL browser_snapshot {"depth": 5}
+#24 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f7e1]:
+  - status
+  - generic [ref=f7e2]:
+    - link "Skip to main content" [ref=f7e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f7e4]:
+      - generic [ref=f7e5]:
+        - link "Acceptance test site" [ref=f7e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f7e9]:
+          - menuitem "More " [ref=f7e10]
+          - text: 
+        - generic [ref=f7e13]:
+          - generic [ref=f7e14]
+          - generic [ref=f7e24]
+          - button "Show notification window with no new notifications" [ref=f7e36]
+          - button "Toggle messaging drawer" [ref=f7e39]
+          - button "User menu" [ref=f7e46]: 
+    - generic [ref=f7e50]:
+      - generic [ref=f7e51]:
+        - banner [ref=f7e52]:
+          - generic [ref=f7e54]
+        - navigation "Site administration menu" [ref=f7e72]:
+          - menubar [ref=f7e73]
+        - main [ref=f7e92]:
+          - separator [ref=f7e94]
+          - group [ref=f7e96]
+      - contentinfo [ref=f7e129]:
+        - button "Show footer" [ref=f7e130]:
+          - generic [aria-hidden] [ref=f7e131]: "?"
+        - generic [ref=f7e132]:
+          - generic [ref=f7e133]
+          - generic [ref=f7e144]
+          - generic [ref=f7e152]
+        - generic [ref=f7e157]:
+          - link "Purge all caches" [ref=f7e159]:
+            - /url: http://webserver/admin/purgecaches.php?confirm=1&sesskey=LfNyiVqlJx&returnurl=%2Fadmin%2Fsearch.php%3Fquery%3Dsearchbanner
+          - generic [ref=f7e161]
+```
+#25 CALL browser_snapshot {"depth": 8}
+#25 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f7e1]:
+  - status
+  - generic [ref=f7e2]:
+    - link "Skip to main content" [ref=f7e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f7e4]:
+      - generic [ref=f7e5]:
+        - link "Acceptance test site" [ref=f7e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f7e9]:
+          - menuitem "More " [ref=f7e10]:
+            - generic [ref=f7e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f7e13]:
+          - generic [ref=f7e14]:
+            - text: 
+            - search "Site-wide search" [ref=f7e15]:
+              - generic [ref=f7e16]: Search
+              - generic [ref=f7e17]:
+                - button "Perform search" [ref=f7e18]
+                - textbox "Search" [ref=f7e21]
+                - text: 
+          - generic [ref=f7e24]:
+            - switch "Edit mode" [ref=f7e25]
+            - generic [ref=f7e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f7e36]:
+            - generic [aria-hidden] [ref=f7e37]: 
+          - button "Toggle messaging drawer" [ref=f7e39]:
+            - generic [aria-hidden] [ref=f7e40]: 
+          - button "User menu" [ref=f7e46]: 
+    - generic [ref=f7e50]:
+      - generic [ref=f7e51]:
+        - banner [ref=f7e52]:
+          - generic [ref=f7e54]:
+            - heading "Site administration" [level=1] [ref=f7e59]
+            - generic [ref=f7e64]:
+              - textbox "Search" [ref=f7e65]: searchbanner
+              - generic: Search
+              - button "Search" [ref=f7e67]:
+                - generic [aria-hidden] [ref=f7e68]: 
+        - navigation "Site administration menu" [ref=f7e72]:
+          - menubar [ref=f7e73]:
+            - menuitem "General" [ref=f7e74]
+            - menuitem "Users" [ref=f7e77]
+            - menuitem "Courses" [ref=f7e79]
+            - menuitem "Grades" [ref=f7e81]
+            - menuitem "Plugins" [ref=f7e83]
+            - menuitem "Appearance" [ref=f7e85]
+            - menuitem "More " [ref=f7e87]:
+              - generic [ref=f7e88]: More
+              - text: 
+        - main [ref=f7e92]:
+          - separator [ref=f7e94]
+          - group [ref=f7e96]:
+            - heading "Search results" [level=2] [ref=f7e98]
+            - heading "Manage global search" [level=3] [ref=f7e99]:
+              -
+…[truncated 2830 chars]
+#26 CALL browser_type {"target": "f7e21", "element": "Header global search box", "text": "toads", "submit": true}
+#26 RESULT ### Page
+- Page URL: http://webserver/search/index.php?context=1&q=toads
+- Page Title: Global search | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-20-58-265Z.yml)
+#27 CALL browser_snapshot {"depth": 10}
+#27 RESULT ### Page
+- Page URL: http://webserver/search/index.php?context=1&q=toads
+- Page Title: Global search | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f9e1]:
+  - status
+  - generic [ref=f9e2]:
+    - link "Skip to main content" [ref=f9e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f9e4]:
+      - generic [ref=f9e5]:
+        - link "Acceptance test site" [ref=f9e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f9e9]:
+          - menuitem "More " [ref=f9e10]:
+            - generic [ref=f9e11]: More
+            - text: 
+        - generic [ref=f9e12]:
+          - generic [ref=f9e13]:
+            - text: 
+            - search "Site-wide search" [ref=f9e14]:
+              - generic [ref=f9e15]: Search
+              - generic [ref=f9e16]:
+                - button "Perform search" [ref=f9e17]:
+                  - generic [aria-hidden] [ref=f9e18]: 
+                - textbox "Search" [ref=f9e20]
+                - text: 
+          - generic [ref=f9e23]:
+            - switch "Edit mode" [ref=f9e24]
+            - generic [ref=f9e25]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f9e35]:
+            - generic [aria-hidden] [ref=f9e36]: 
+          - button "Toggle messaging drawer" [ref=f9e38]:
+            - generic [aria-hidden] [ref=f9e39]: 
+          - button "User menu" [ref=f9e45]: 
+    - generic [ref=f9e49]:
+      - generic [ref=f9e50]:
+        - banner [ref=f9e51]:
+          - heading "Global search" [level=1] [ref=f9e58]
+        - main [ref=f9e62]:
+          - alert [ref=f9e64]:
+            - button "Dismiss this notification" [ref=f9e65]
+          - alert [ref=f9e67]:
+            - text: No results
+            - button "Dismiss this notification" [ref=f9e68]
+          - generic [ref=f9e70]:
+            - button "Expand all" [ref=f9e72]
+            - group "Search" [ref=f9e74]:
+              - generic [ref=f9e77]:
+                - button "Search" [expanded] [ref=f9e78]:
+                  - generic "Collapse" [ref=f9e79]:
+                    - generic [aria-hidden] [ref=f9e80]: 
+                  - text:  
+                - heading [level=3] [aria-hidden] [ref=f9e82]: Search
+              - generic [ref=f9e84]:
+                - generic [ref=f9e85]:
+                  - generic [ref=f9e86]: Enter your search query
+                  - generic [ref=f9e87]:
+                    - generic [aria-hidden] [ref=f9e89]: 
+                    - button "Help" [ref=
+…[truncated 2835 chars]
+MSG {"status":"fail","reason":"After searching for \"toads\", the Global search page showed an empty dismissible warning alert above the \"No results\" alert.","failingStep":4,"failingStepText":"Then \".notifywarning\" \"css_element\" should not exist"}

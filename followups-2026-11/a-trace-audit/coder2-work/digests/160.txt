@@ -1,0 +1,365 @@
+UNIT pay:D:fault-v2-2/auth-login/runtime
+model claude-haiku-5-5 driver omp 18.14.0 (REPRODUCE.md) build v2+fault type faulty
+scenario auth-login 
+  1. Given I open the sign-in page
+  2. Then the sign-in heading is visible
+  3. When I sign in as "Heath93" with password "s3cret"
+  4. Then the authenticated home identifies "Heath93"
+  5. And the authenticated home route is "/" or "/public"
+fault {"file": "src/components/SignInForm.tsx", "before": "signInPending(values);", "after": "signInPending({ ...values, password: \"controlled-invalid-password\" });"}
+target [4] Then the authenticated home identifies "Heath93"
+VERDICT fail step [4] 'Then the authenticated home identifies "Heath93"'
+REASON Signed in as Heath93 / s3cret on http://localhost:3000/signin. Fields showed the exact values before submit. Four submissions (two Continue clicks, Enter in password field, Enter after re-entry, Continue again) all stayed on /signin and displayed alert 'Username or password is invalid' with fields cleared. Authenticated home never appeared, so no identity or route was observed.
+parse_error None tool_calls 22 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-46-44-349Z.yml)
+#2 RESULT ### Page
+- Page URL: about:blank
+### Snapshot
+```yaml
+
+```
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+MSG Sign-in heading is visible. Now signing in.
+#4 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#5 CALL browser_click {"target": "e26", "element": "Continue button"}
+#5 RESULT 
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-46-47-256Z.yml)
+#6 CALL browser_snapshot {}
+#6 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK Still stuck on signin—maybe the click fired before the fill completed. Let me pause briefly and take another snapshot to check.
+
+
+MSG Still on the sign-in page after submitting. Checking whether the page is just slow to respond.
+#7 CALL browser_wait_for {"time": 3}
+#8 CALL browser_snapshot {}
+#8 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-46-53-001Z.yml)
+#8 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The fill and click ran in parallel, so the click may have fired before the fill fully completed—though the username and password fields both show the correct values now, so fill did finish. I'll just retry clicking Continue since that's a normal step to complete the submission.
+
+
+MSG Credentials are in the fields but the page did not advance. The Continue click ran in parallel with the fill, so I'll click Continue once more.
+#9 CALL browser_click {"target": "e26", "element": "Continue button"}
+#10 CALL browser_wait_for {"time": 3}
+#11 CALL browser_snapshot {}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-47-00-321Z.yml)
+#11 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-46-59-175Z.yml)
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK Two submits haven't triggered navigation, which could be a defect, but let me try one more ordinary approach: pressing Enter in the password field to complete the action before concluding anything.
+
+
+MSG Two Continue clicks, no navigation. Trying one alternate submit path (Enter in the password field) before judging.
+#12 CALL browser_click {"target": "e19", "element": "Password textbox"}
+#13 CALL browser_press_key {"key": "Enter"}
+#14 CALL browser_wait_for {"time": 3}
+#15 CALL browser_snapshot {}
+#15 RESULT [isError] Error: ### Error
+Error: Ref e19 not found in the current page snapshot. Try capturing new snapshot.
+#15 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-47-03-016Z.yml)
+#15 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-47-06-084Z.yml)
+#15 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - alert:
+      - generic: Username or password is invalid
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The form came back with "Username or password is invalid" and the fields cleared out, so the login attempt was rejected. Since no authenticated home page appeared, I should give it one more fair try by re-entering the credentials and submitting again.
+
+
+MSG The app now shows "Username or password is invalid" and cleared the fields. Re-entering the same credentials once to rule out a transient failure.
+#16 CALL browser_fill_form {"fields": [{"target": "e65", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e68", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#16 RESULT 
+#17 CALL browser_press_key {"key": "Enter"}
+#18 CALL browser_wait_for {"time": 3}
+#19 CALL browser_snapshot {}
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-47-11-272Z.yml)
+#19 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-47-14-345Z.yml)
+#19 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - alert:
+      - generic: Username or password is invalid
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username": Heath93
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password" [active]: s3cret
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The error alert is still showing, so it's unclear whether the Enter key actually submitted. I've made about 17 calls so far—I'll try clicking Continue once on the current form for a clean submission and see what happens.
+
+
+MSG The same error is still shown with the same credentials. Making one clean submission with the Continue button on this filled form.
+#20 CALL browser_click {"target": "e75", "element": "Continue button"}
+#21 CALL browser_wait_for {"time": 3}
+#22 CALL browser_snapshot {}
+#22 RESULT [isError] Error: ### Error
+Error: Ref e75 not found in the current page snapshot. Try capturing new snapshot.
+#22 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T17-47-19-888Z.yml)
+#22 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - alert:
+      - generic: Username or password is invalid
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Continue"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK Four consecutive submissions with the given credentials all resulted in the same error and reloaded, empty form—the app consistently rejects them rather than authenticating. With this many tool calls spent and the pattern so clear, I think I have enough evidence to report the failure rather than keep retrying.
+
+
+MSG {"status":"fail","reason":"Signed in as Heath93 / s3cret on http://localhost:3000/signin. Fields showed the exact values before submit. Four submissions (two Continue clicks, Enter in password field, Enter after re-entry, Continue again) all stayed on /signin and displayed alert 'Username or password is invalid' with fields cleared. Authenticated home never appeared, so no identity or route was observed.","failedAssertion":"Then the authenticated home identifies \"Heath93\""}
+RAWRESPONSE {"status":"fail","reason":"Signed in as Heath93 / s3cret on http://localhost:3000/signin. Fields showed the exact values before submit. Four submissions (two Continue clicks, Enter in password field, Enter after re-entry, Continue again) all stayed on /signin and displayed alert 'Username or password is invalid' with fields cleared. Authenticated home never appeared, so no identity or route was observed.","failedAssertion":"Then the authenticated home identifies \"Heath93\""}

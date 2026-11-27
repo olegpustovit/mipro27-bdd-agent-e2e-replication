@@ -1,0 +1,43 @@
+Stream D: replay of real Moodle interface changes. status: exploratory-owner-directed, gatePassExists: false; post-hoc analysis.
+ledger: data/smoke-ledger/trials.jsonl; trial keys with a trial-end: 5; counted: 5; excluded: 0
+pass = Behat passed / agent pass; unresolved and Behat error count as not passing (shown in brackets).
+
+## B04, B07, B15 (campaign environment, campaign scenario text)
+arm                                                             pre: pass  pre: not pass  post: pass  post: not pass  faulty: catch  paired catch  verified
+developers' step definitions before the change (A-old)                2/2        0/2 [0]         0/0         0/0 [0]              -             -         -
+browser agent Luna                                                    1/2        1/2 [0]         0/0         0/0 [0]              -             -         -
+  change-attributable (pre pass -> post not pass) / post-only recovery (pre not pass -> post pass), per scenario and repetition:
+
+## B25, B28, B29 (Moodle 4.0dev, PHP 8.0 runtime; historical scenario text)
+arm                                                             pre: pass  pre: not pass  post: pass  post: not pass  faulty: catch  paired catch  verified
+developers' step definitions before the change (A-old)                1/1        0/1 [0]         0/0         0/0 [0]              -             -         -
+  change-attributable (pre pass -> post not pass) / post-only recovery (pre not pass -> post pass), per scenario and repetition:
+
+## Agent runs not passing, by harness flag (plan.md amendment A2; outcomes counted as above, flags only split them)
+  tier1                  Luna   healthy pre   not passing 1/2: setup-step-handed 0, tool-budget 0, unflagged 1
+
+## Per change, healthy post-change build: runs not passing / runs (per arm)
+  B15: 
+  B25: 
+
+## Resources (arm C; tokens = input incl. cache + output; minutes = sum of whole-trial wall time)
+  Luna: runs 2, tokens 0.51M (metered 2/2), mean 254.0k, minutes 1.2
+  Terra: runs 0, tokens 0.00M (metered 0/0), mean 0.0k, minutes 0.0
+  Haiku: runs 0, tokens 0.00M (metered 0/0), mean 0.0k, minutes 0.0
+  total agent tokens: 0.51M
+  unresolved agent runs that ended at the tool-call limit (>60 calls): 0/0
+
+## Excluded runs (never reached a verdict)
+
+## Audit
+  interrupted attempts: 0
+  keys with more than one attempt: 0
+  schedule stops: 0
+  studyMode values: ['exploratory-owner-directed']; gatePassExists values: ['False']
+
+## Every counted run
+  replay-d1/B15.S091/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B15.S091/pre/healthy/C/gpt-6-luna/r1: pass failing@None target None tools 8
+  replay-d1/B15.S094/pre/healthy/A-old/none/r1: pass failing@None target None tools None
+  replay-d1/B15.S094/pre/healthy/C/gpt-6-luna/r1: fail failing@6 target None tools 18
+  replay-d1/B25.S125/pre/healthy/A-old/none/r1: pass failing@None target None tools None

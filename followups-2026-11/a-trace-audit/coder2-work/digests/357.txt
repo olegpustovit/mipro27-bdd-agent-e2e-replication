@@ -1,0 +1,1522 @@
+UNIT moodle:6ac189f540b8/B34.S154/healthy/C/claude-haiku-5-5/r2
+model claude-haiku-5-5 driver omp build Moodle pin cfe123f26fc7 (healthy); pair from change B34 type healthy
+scenario S154 Marking guide options and frequently used comment are added to marking guide
+  1. And I am on the "Course 1" course page logged in as teacher1
+  2. And I go to "Assign 1" advanced grading definition page
+  3. And I set the following fields to these values:
+  | Name | Marking guide 1 |
+  4. Given I define the following marking guide:
+  | Criterion name | Description for students | Description for markers | Maximum score |
+  | Criteria 1 | Criteria 1 description for student | Criteria 1 description for marker | 50 |
+  | Criteria 2 | Criteria 2 description for student | Criteria 2 description for marker | 50 |
+  5. And I define the following frequently used comments:
+  | Comment 1 |
+  | Comment 2 |
+  6. And I set the following fields to these values:
+  | Show guide definition to students | 1 |
+  | Show marks per criterion to students | 0 |
+  7. When I press "Save as draft"
+  8. And I go to "Assign 1" advanced grading definition page
+  9. Then I should see "Comment 1"
+  10. And I should see "Comment 2"
+  11. And the field "Show guide definition to students" matches value "1"
+  12. And the field "Show marks per criterion to students" matches value "0"
+fault null
+target None None
+VERDICT unresolved step 4 'Given I define the following marking guide:'
+REASON Tool-call budget (60) exhausted at step 4. Steps 1-3 done: reached Course 1, opened Assign 1 advanced grading, defined a new marking guide, and the Name field shows 'Marking guide 1'. Step 4 is incomplete: Criteria 1 has name 'Criteria 1', marker description 'Criteria 1 description for marker' and max score 50, but its student description is still empty (last Tab/type was not confirmed). Criteria 2 has only its student description set; its name, marker description and max score are unset. Steps 5-12 were never executed, so no verdict on the comments or the 'Show guide definition'/'Show marks per criterion' settings.
+parse_error None tool_calls 63 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+THINK I'm already logged in as teacher1, so the next step is to get to the Course 1 page. I don't know its URL, so I'll take a snapshot first to see where I am.
+
+
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1768 chars]
+#2 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-30-20-589Z.yml)
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1768 chars]
+THINK The navigation reported the course page, yet the snapshot still shows the dashboard at /my/, so the page load may not have finished. I'll take a fresh snapshot of the course page and look for the Assign 1 link from there.
+
+
+#4 CALL browser_snapshot {}
+#4 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open course index" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Course 1" [level=1] [ref=f1e55]
+        - navigation "Course menu" [ref=f1e58]:
+          - menubar [ref=f1e59]:
+            - menuitem "Course" [ref=f1e60]
+            - menuitem "Settings" [ref=f1e63]
+            - menuitem "Participants" [ref=f1e65]
+            - menuitem "Grades" [ref=f1e67]
+            - menuitem "Activities" [ref=f1e69]
+            - menuitem "More " [ref=f1e71]:
+              - generic [ref=f1e72]: More
+              - text: 
+        - main [ref=f1e76]:
+          - generic [ref=f1e79]:
+            - heading "Section outline" [level=2] [ref=f1e80]
+            - button [expanded] [ref=f1e82]:
+              - generic [ref=f1e83]:
+                - generic [aria-hidden] [ref=f1e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f1e85]:
+              - listitem [ref=f1e86]:
+                - generic [ref=f1e87]:
+                  - generic [ref=f1e89]:
+                    - button "General" [expanded] [ref=f1e90]:
+                      - generic "Collapse" [ref=f1e91]:
+                        - generic [aria-hidden] [ref=f1e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f1e94]:
+                      - link "General" [ref=f1e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - list [ref=f1e99]:
+ 
+…[truncated 4687 chars]
+THINK I'm looking for the advanced grading setup for assignment 1 (cmid 109000). The grading definition page needs an areaid I don't have yet, so I'll check the assignment's settings page and look for the "Advanced grading" link there.
+
+I'm checking whether the Advanced grading link is under Assignment administration in the secondary navigation of the assign view page, since the settings form doesn't seem to have it. I'll open the view page and take a look.
+
+
+#5 CALL browser_navigate {"url": "http://webserver/mod/assign/view.php?id=109000"}
+#6 CALL browser_snapshot {}
+#6 RESULT ### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Assign 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-30-26-865Z.yml)
+#6 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open course index" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Course 1" [level=1] [ref=f1e55]
+        - navigation "Course menu" [ref=f1e58]:
+          - menubar [ref=f1e59]:
+            - menuitem "Course" [ref=f1e60]
+            - menuitem "Settings" [ref=f1e63]
+            - menuitem "Participants" [ref=f1e65]
+            - menuitem "Grades" [ref=f1e67]
+            - menuitem "Activities" [ref=f1e69]
+            - menuitem "More " [ref=f1e71]:
+              - generic [ref=f1e72]: More
+              - text: 
+        - main [ref=f1e76]:
+          - generic [ref=f1e79]:
+            - heading "Section outline" [level=2] [ref=f1e80]
+            - button [expanded] [ref=f1e82]:
+              - generic [ref=f1e83]:
+                - generic [aria-hidden] [ref=f1e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f1e85]:
+              - listitem [ref=f1e86]:
+                - generic [ref=f1e87]:
+                  - generic [ref=f1e89]:
+                    - button "General" [expanded] [ref=f1e90]:
+                      - generic "Collapse" [ref=f1e91]:
+                        - generic [aria-hidden] [ref=f1e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f1e94]:
+                      - link "General" [ref=f1e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - list [ref=f1e99]:
+ 
+…[truncated 4687 chars]
+THINK I need an updated snapshot of the assign page, since the current one appears to be a step behind the last navigation. I'll take a fresh one.
+
+
+#7 CALL browser_snapshot {}
+#7 RESULT ### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Assign 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e48]:
+          - generic [ref=f2e49]:
+            - navigation "Breadcrumb" [ref=f2e52]:
+              - list [ref=f2e53]:
+                - listitem [ref=f2e54]:
+                  - link "C1" [ref=f2e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f2e56]:
+                  - text: /
+                  - link "General" [ref=f2e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f2e58]:
+                  - text: /
+                  - generic [ref=f2e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f2e68]
+        - navigation "Activity menu" [ref=f2e71]:
+          - menubar [ref=f2e72]:
+            - menuitem "Assignment" [ref=f2e73]
+            - menuitem "Settings" [ref=f2e76]
+            - menuitem "Submissions" [ref=f2e78]
+            - menuitem "Advanced grading" [ref=f2e80]
+            - menuitem "More " [ref=f2e82]:
+              - generic [ref=f2e83]: More
+              - text: 
+        - generic [ref=f2e86]:
+          - generic [ref=f2e88]: Test assign 1
+          - main [ref=f2e94]:
+            - link "Grade" [ref=f2e98]:
+              - /url: http://webserver/mod/assign/view.php?id=109000&action=grader
+            - generic [ref=f2e99]:
+              - heading "Grading summary" [level=3] [ref=f2e100]
+              - table [ref=f2
+…[truncated 1917 chars]
+#8 CALL browser_click {"target": "f2e80"}
+#8 RESULT ### Page
+- Page URL: http://webserver/grade/grading/manage.php?contextid=14&component=mod_assign&area=submissions
+- Page Title: Advanced grading | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-30-30-390Z.yml)
+#9 CALL browser_snapshot {}
+#9 RESULT ### Page
+- Page URL: http://webserver/grade/grading/manage.php?contextid=14&component=mod_assign&area=submissions
+- Page Title: Advanced grading | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - button "Open course index" [ref=f3e44]
+        - banner [ref=f3e48]:
+          - generic [ref=f3e49]:
+            - navigation "Breadcrumb" [ref=f3e52]:
+              - list [ref=f3e53]:
+                - listitem [ref=f3e54]:
+                  - link "C1" [ref=f3e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f3e56]:
+                  - text: /
+                  - link "General" [ref=f3e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f3e58]:
+                  - text: /
+                  - generic [ref=f3e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f3e68]
+        - navigation "Activity menu" [ref=f3e71]:
+          - menubar [ref=f3e72]:
+            - menuitem "Assignment" [ref=f3e73]
+            - menuitem "Settings" [ref=f3e75]
+            - menuitem "Submissions" [ref=f3e77]
+            - menuitem "Advanced grading" [ref=f3e79]
+            - menuitem "More " [ref=f3e82]:
+              - generic [ref=f3e83]: More
+              - text: 
+        - main [ref=f3e88]:
+          - heading "Advanced grading" [level=2] [ref=f3e89]
+          - generic [ref=f3e91]:
+            - generic [ref=f3e92]: Change active grading method to
+            - button "Help" [ref=f3e93]:
+              - img "Help with Grading method" [ref=f3e94]: 
+            - comb
+…[truncated 2224 chars]
+THINK Step 3 is about filling in the fields on the define page, starting with the Name set to "Marking guide 1." I already finished step 2, which took me to the define-a-new-form page, and next I'll click "Define new grading form from scratch."
+
+
+#10 CALL browser_click {"target": "f3e97"}
+#10 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-30-34-187Z.yml)
+#11 CALL browser_snapshot {}
+#11 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+            
+…[truncated 4951 chars]
+THINK I'll set the Name textbox to "Marking guide 1" first. Step 4 needs the criteria editor, so I'll click "Add criterion" to open it, and I think typing the name and clicking "Add criterion" can go together, then I'll take a snapshot to get the refs.
+
+
+#12 CALL browser_type {"target": "f4e101", "text": "Marking guide 1", "element": "Name textbox"}
+#13 CALL browser_click {"target": "f4e160"}
+#14 CALL browser_snapshot {}
+#14 RESULT 
+#14 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-30-38-723Z.yml)
+#14 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+            
+…[truncated 6360 chars]
+THINK The snapshot might be a step behind, since it may still show the page from before my last click. TinyMCE does appear to be loaded now. I'm not sure the criterion add actually produced a row, and the Name textbox shows no value, so I'll take a fresh snapshot before going further.
+
+
+#15 CALL browser_snapshot {"target": "f4e139"}
+#15 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e256]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Click to edit criterion name Description for students Click to edit Description for Markers Click to edit Maximum score Click to edit" [ref=f4e143]:
+        - generic [ref=f4e144]: Click to edit criterion name
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Click to edit
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e262]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Criterion name Description for students Click to edit Description for Markers Click to edit Maximum score Click to edit" [ref=f4e268]:
+        - textbox "Criterion name" [ref=f4e270]
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Click to edit
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK I'm looking at the table rows now: one row (f4e256) reads as a new, unedited criterion with Delete and Move down options, and another (f4e262) is in edit mode. I'm wondering whether the first "Add criterion" click produced both rows, and whether the original header row f4e141 got replaced.
+
+I'm checking whether the table has the right rows, since the header row from before seems to be gone and two criterion rows are showing instead. I'll take a fresh snapshot to see the layout clearly, then fill in the criterion name.
+
+
+#16 CALL browser_type {"target": "f4e270", "text": "Criteria 1", "element": "Criterion name textbox"}
+#17 CALL browser_click {"target": "f4e271"}
+#17 RESULT [isError] Error: ### Error
+Error: Ref f4e270 not found in the current page snapshot. Try capturing new snapshot.
+#17 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-30-45-779Z.yml)
+#18 CALL browser_snapshot {}
+#18 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 7408 chars]
+THINK There are now two criterion rows, and the first is an unedited template with the "Click to edit criterion name" placeholder. I'm wondering whether the page starts with that blank row already, since my Add criterion click would then have created the second one.
+
+I'm wondering whether the first snapshot's single row was a hidden template that my Add criterion click cloned, leaving a blank criterion row alongside the new one. The text entry for "Criteria 1" didn't land, so the new row is still unnamed, and I'd guess that blank row could fail validation on save.
+
+I'm checking whether the duplicate rows are real or just a snapshot artifact, since the refs keep changing between snapshots. The simplest way to settle it is a fresh snapshot of just the criteria table to count the rows.
+
+
+#19 CALL browser_snapshot {"target": "f4e139"}
+#19 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e256]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Click to edit criterion name Description for students Click to edit Description for Markers Click to edit Maximum score Click to edit" [ref=f4e143]:
+        - generic [ref=f4e144]: Click to edit criterion name
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Click to edit
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e283]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Description for Markers Click to edit Maximum score Click to edit" [ref=f4e284]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - textbox "Description for students" [active] [ref=f4e287]
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK I'm checking which rows actually exist on the form: f4e256 is blank and untouched from the first Add click, and I'm wondering whether f4e283 came from my click on f4e160 or whether Moodle's guide already starts with a default blank criterion.
+
+I'm working out which rows are really on the form, and the next step is to fill the blank first row as Criteria 1 and the second as Criteria 2. I still need to find the right cell to click for the name, since the row's name cell differs from the one I first thought of.
+
+I'm going to type the description for row 2 into its student-description box, then click the markers field for that row so the first edit saves. After that I'll take a fresh snapshot, since the refs may have moved.
+
+
+#20 CALL browser_type {"target": "f4e287", "text": "Criteria 2 description for student", "element": "Description for students textbox (row 2)"}
+#20 RESULT 
+#21 CALL browser_click {"target": "f4e275", "element": "Description for Markers of row 2"}
+#22 CALL browser_snapshot {"target": "f4e139"}
+#22 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-00-508Z.yml)
+#22 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e256]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Click to edit criterion name Description for students Click to edit Description for Markers Click to edit Maximum score Click to edit" [ref=f4e143]:
+        - generic [ref=f4e144]: Click to edit criterion name
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Click to edit
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e288]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e289]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - textbox "Description for students" [active] [ref=f4e287]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK Row 2 is still open for editing, so my click on the markers description probably landed on a non-responsive label while the textbox was active. I'll try blurring the field by clicking the row 1 name, "Click to edit criterion name," which should close row 2 and open row 1.
+
+Then I'll take a snapshot to check how row 1 looks once its name editor is open.
+
+
+#23 CALL browser_click {"target": "f4e144", "element": "Click to edit criterion name (row 1)"}
+#24 CALL browser_snapshot {"target": "f4e139"}
+#24 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-04-477Z.yml)
+#24 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e256]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Click to edit criterion name Description for students Click to edit Description for Markers Click to edit Maximum score Click to edit" [ref=f4e143]:
+        - generic [ref=f4e144]: Click to edit criterion name
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Click to edit
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e290]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Maximum score Click to edit" [ref=f4e291]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - textbox "Description for Markers" [active] [ref=f4e292]
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK I'm noticing the snapshots are lagging a step behind, so the row 2 markers editor that opened is from the earlier click. The description textbox f4e292 for row 2 is active and still empty, so I'll type the criteria description into it, then click f4e144 for row 1's name and take a snapshot after a brief wait.
+
+The row 1 name click may already have gone through, since the snapshot is lagging, so this is a risky step. I'll type into the description box f4e292 first, then click f4e144, wait a second, and take two snapshots.
+
+
+#25 CALL browser_type {"target": "f4e292", "text": "Criteria 2 description for marker", "element": "Description for Markers textbox (row 2)"}
+#25 RESULT [isError] Error: ### Error
+Error: Ref f4e292 not found in the current page snapshot. Try capturing new snapshot.
+#26 CALL browser_snapshot {}
+#26 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 7425 chars]
+THINK I've got row 1's active criterion name box (f4e295) empty, and row 2's student description is already set. I'll type "Criteria 1" into the empty box next, since the page looks stable enough. Given the lag and the shifting refs, I'll take one action and then re-snapshot the table each time, keeping an eye on my budget of roughly 20 calls used so far.
+
+I still have a long list of remaining steps for this table: the rest of row 1, all of row 2, two comments, the checkboxes, saving, navigating, and verifying. That's roughly 25 more calls, so it's tight, and I'll try to batch where I can.
+
+
+#27 CALL browser_type {"target": "f4e295", "text": "Criteria 1", "element": "Criterion name textbox (row 1)"}
+#28 CALL browser_snapshot {"target": "f4e139"}
+#28 RESULT 
+#28 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e293]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criterion name Description for students Click to edit Description for Markers Click to edit Maximum score Click to edit" [ref=f4e294]:
+        - textbox "Criterion name" [active] [ref=f4e295]
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Click to edit
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK The textbox still looks empty in the snapshot, though the type call reported success. The snapshot may be stale or reflect the DOM from before the typing. I'll take a fresh snapshot to see whether the text actually landed.
+
+
+#29 CALL browser_snapshot {"target": "f4e139"}
+#29 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e293]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criterion name Description for students Click to edit Description for Markers Click to edit Maximum score Click to edit" [ref=f4e294]:
+        - textbox "Criterion name" [active] [ref=f4e295]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Click to edit
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK The row 1 name is still in edit mode, so I'm clicking the row 1 student description field next, which should blur the name and save it. I'll wait a second and take a snapshot after that. Row 2's name editor would also blur the current field, so I'm handling those one at a time.
+
+
+#30 CALL browser_click {"target": "f4e147", "element": "Description for students (row 1)"}
+#31 CALL browser_wait_for {"time": 1}
+#32 CALL browser_snapshot {"target": "f4e139"}
+#32 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-18-834Z.yml)
+#32 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-18-254Z.yml)
+#32 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e293]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criterion name Description for students Click to edit Description for Markers Click to edit Maximum score Click to edit" [ref=f4e294]:
+        - textbox "Criterion name" [active] [ref=f4e295]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Click to edit
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK I'm checking why clicking the "Description for students" label on row 1 didn't open an editor, since the same kind of click worked on row 2. The snapshot still shows the name textbox active, so I'm wondering whether an open editor is blocking the click on this non-editable label.
+
+Row 2 worked when I clicked the label directly, so the blocking is probably the open name textbox absorbing this click as a blur. I'll click elsewhere neutrally first to close it, then click the row 1 description label again to open the editor.
+
+
+#33 CALL browser_click {"target": "f4e147", "element": "Description for students (row 1)"}
+#34 CALL browser_snapshot {"target": "f4e139"}
+#34 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-23-393Z.yml)
+#34 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e298]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Description for Markers Click to edit Maximum score Click to edit" [ref=f4e299]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - textbox "Description for students" [active] [ref=f4e300]
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Click to edit
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK The clicks seem to blur the field first and then need a second click to open it, so each field takes two clicks. I'm weighing whether Tab or Enter could save the inline text edit instead, but I'm not sure either works. For now I'll keep the two-click pattern and batch the steps: type into f4e300, then click the markers label f4e151 to blur it, and do the second click next.
+
+I'll do the blur click on f4e151, take a snapshot, and then click it again to open the field.
+
+
+#35 CALL browser_type {"target": "f4e300", "text": "Criteria 1 description for student", "element": "Description for students textbox (row 1)"}
+#36 CALL browser_click {"target": "f4e151", "element": "Description for Markers label (row 1)"}
+#36 RESULT [isError] Error: ### Error
+Error: Ref f4e300 not found in the current page snapshot. Try capturing new snapshot.
+#36 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-27-077Z.yml)
+THINK The type action failed because the element ref went stale when the page re-rendered, so I need to re-fetch a fresh snapshot each time rather than reuse old refs. I'll take a new snapshot now.
+
+
+#37 CALL browser_snapshot {"target": "f4e139"}
+#37 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e301]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Click to edit Description for Markers Maximum score Click to edit" [ref=f4e302]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - textbox "Description for Markers" [active] [ref=f4e303]
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK The student description entry didn't take, since that field still shows "Click to edit." The markers textbox is now active, so I'll type the criteria description there next, then take a fresh snapshot. I've used about 27 calls and there's a lot left, so I need to move faster.
+
+I'll type the criteria description into the markers textbox and then take a fresh snapshot to get the updated refs.
+
+
+#38 CALL browser_type {"target": "f4e303", "text": "Criteria 1 description for marker", "element": "Description for Markers textbox (row 1)"}
+#39 CALL browser_snapshot {"target": "f4e139"}
+#39 RESULT 
+#39 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e301]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Click to edit Description for Markers Maximum score Click to edit" [ref=f4e302]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - textbox "Description for Markers" [active] [ref=f4e303]
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK The snapshot is stale again and still shows an empty textbox, but the last typed value probably went in. The earlier evidence suggests the Markers click did open the editor, just late. I'll be systematic and click the max score label f4e155 next.
+
+I'm clicking the maximum score label f4e155 in row 1, then waiting a second before taking another snapshot.
+
+
+#40 CALL browser_click {"target": "f4e155", "element": "Maximum score label (row 1)"}
+#41 CALL browser_wait_for {"time": 1}
+#42 CALL browser_snapshot {"target": "f4e139"}
+#42 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-36-706Z.yml)
+#42 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-36-112Z.yml)
+#42 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e304]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Click to edit Description for Markers Criteria 1 description for marker Maximum score Click to edit" [ref=f4e305]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - textbox "Description for Markers" [active] [ref=f4e303]: Criteria 1 description for marker
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: Click to edit
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK The label clicks aren't registering, so I'm wondering if the textbox is sitting over them, or whether I should click the "Click to edit" element for the max score instead. The student description label worked on the first try in row 2, which makes this stranger. I'm also considering pressing Tab or Enter to blur the field rather than clicking.
+
+I'll press Tab to blur the field, since that should fire Moodle's save on blur, and then take a snapshot to check the result.
+
+
+#43 CALL browser_press_key {"key": "Tab"}
+#44 CALL browser_wait_for {"time": 1}
+#45 CALL browser_snapshot {"target": "f4e139"}
+#45 RESULT 
+#45 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-40-872Z.yml)
+#45 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e306]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Click to edit Description for Markers Criteria 1 description for marker Maximum score" [ref=f4e307]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Criteria 1 description for marker
+        - generic [ref=f4e155]: Maximum score
+        - textbox "Maximum score" [ref=f4e308]
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [active] [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK Tab moves focus from the name field through the description fields to the maximum score box, so I'll type "50" there and tab on, which should send focus to the Move up button.
+
+The student description in row 1 is still blank, so I'll go back and fill that in by clicking once the max score is set. For now I'm typing 50 into the maximum score field and tabbing past it to take a snapshot.
+
+
+#46 CALL browser_type {"target": "f4e308", "text": "50", "element": "Maximum score textbox (row 1)"}
+#47 CALL browser_press_key {"key": "Tab"}
+#48 CALL browser_snapshot {"target": "f4e139"}
+#48 RESULT 
+#48 RESULT 
+#48 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e306]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Click to edit Description for Markers Criteria 1 description for marker Maximum score" [ref=f4e307]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Criteria 1 description for marker
+        - generic [ref=f4e155]: Maximum score
+        - textbox "Maximum score" [ref=f4e308]
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [active] [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK I'm checking whether the Maximum score field saved: the snapshot still lists it, and focus has moved to Row 2's "Delete criterion" button, so Tab may have committed the value. I'll confirm "50" shows in Row 1 before moving on. Row 1's student description and Row 2 still need filling in.
+
+Row 1's student description is next: I'll click its "Click to edit" control, since that worked earlier when no editor was open, and then take a snapshot to confirm the editor appeared. After that, Row 2's name, marker and max score, the two frequently used comments, and the checkboxes still need attention, with "Show marks per criterion to students" to be unchecked before saving as draft.
+
+
+#49 CALL browser_click {"target": "f4e147", "element": "Description for students (row 1)"}
+#50 CALL browser_snapshot {"target": "f4e139"}
+#50 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-48-806Z.yml)
+#50 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e309]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Click to edit Description for Markers Criteria 1 description for marker Maximum score 50" [ref=f4e310]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Criteria 1 description for marker
+        - generic [ref=f4e155]: Maximum score
+        - textbox "Maximum score" [active] [ref=f4e308]: "50"
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK The max score field still looks like it's in edit mode, even though focus has moved to the row 2 Delete button, so the snapshot may be lagging. I'm at about 35 of 60 tool calls, with roughly 20 steps left to finish the row 1 description, row 2 fields, comments, checkbox, save, navigation, and verification, which is doable but tight. Now I'm turning to row 1.
+
+I'll click the row 1 student description again, since that should blur the max score editor, and then take a snapshot.
+
+
+#51 CALL browser_click {"target": "f4e147", "element": "Description for students (row 1)"}
+#52 CALL browser_snapshot {"target": "f4e139"}
+#52 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-52-435Z.yml)
+#52 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e311]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Description for Markers Criteria 1 description for marker Maximum score 50" [ref=f4e312]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - textbox "Description for students" [active] [ref=f4e300]
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Criteria 1 description for marker
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: "50"
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+#53 CALL browser_type {"target": "f4e300", "text": "Criteria 1 description for student", "element": "Description for students textbox (row 1)"}
+#54 CALL browser_press_key {"key": "Tab"}
+#55 CALL browser_wait_for {"time": 1}
+#56 CALL browser_snapshot {"target": "f4e139"}
+#56 RESULT [isError] Error: ### Error
+Error: Ref f4e300 not found in the current page snapshot. Try capturing new snapshot.
+#56 RESULT 
+#56 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-31-55-538Z.yml)
+#56 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e313]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Click to edit Description for Markers Criteria 1 description for marker Maximum score 50" [ref=f4e314]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - generic [ref=f4e148]: Click to edit
+        - generic [ref=f4e151]: Description for Markers
+        - textbox "Description for Markers" [active] [ref=f4e303]: Criteria 1 description for marker
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: "50"
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK Focus has come back to the markers textbox, and the student description still reads "Click to edit," so the earlier typing never landed there. Tabbing past it committed it empty and moved focus on to the marker description. Tab order works for getting around, but the text has to go into whichever box is actually active.
+
+I'm going to press Shift+Tab to move back to the student description, which should open its editor the same way Tab opened the marker one. Once it's active I'll type into whatever textbox has focus, using a fresh reference.
+
+
+#57 CALL browser_press_key {"key": "Shift+Tab"}
+#58 CALL browser_wait_for {"time": 1}
+#59 CALL browser_snapshot {"target": "f4e139"}
+#59 RESULT 
+#59 RESULT ### Result
+Waited for 1 seconds
+### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-32-00-543Z.yml)
+#59 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- table [ref=f4e139]:
+  - rowgroup [ref=f4e140]:
+    - row [ref=f4e315]:
+      - cell [ref=f4e257]:
+        - button "Delete criterion" [ref=f4e259]
+        - button "Move down" [ref=f4e261]
+      - cell "Criteria 1 Description for students Description for Markers Criteria 1 description for marker Maximum score 50" [ref=f4e316]:
+        - generic [ref=f4e144]: Criteria 1
+        - generic [ref=f4e147]: Description for students
+        - textbox "Description for students" [active] [ref=f4e300]
+        - generic [ref=f4e151]: Description for Markers
+        - generic [ref=f4e152]: Criteria 1 description for marker
+        - generic [ref=f4e155]: Maximum score
+        - generic [ref=f4e156]: "50"
+    - row [ref=f4e296]:
+      - cell [ref=f4e263]:
+        - button "Move up" [ref=f4e265]
+        - button "Delete criterion" [ref=f4e267]
+      - cell "Click to edit criterion name Description for students Criteria 2 description for student Description for Markers Click to edit Maximum score Click to edit" [ref=f4e297]:
+        - generic [ref=f4e269]: Click to edit criterion name
+        - generic [ref=f4e271]: Description for students
+        - generic [ref=f4e272]: Criteria 2 description for student
+        - generic [ref=f4e275]: Description for Markers
+        - generic [ref=f4e276]: Click to edit
+        - generic [ref=f4e279]: Maximum score
+        - generic [ref=f4e280]: Click to edit
+```
+THINK The description textbox is active now, so I'll type into it, press Tab, wait, and then take a snapshot. The ref f4e300 still matches the current snapshot, so it's safe to use.
+
+
+#60 CALL browser_type {"target": "f4e300", "text": "Criteria 1 description for student", "element": "Description for students textbox (row 1)"}
+#61 CALL browser_press_key {"key": "Tab"}
+#62 CALL browser_wait_for {"time": 1}
+#63 CALL browser_snapshot {"target": "f4e139"}
+#63 RESULT [isError] Error: Action cap reached (60 tool calls).
+#63 RESULT 
+#63 RESULT [isError] Error: Action cap reached (60 tool calls).
+#63 RESULT [isError] Error: Action cap reached (60 tool calls).
+THINK I've run out of budget before the task was finished, so the status is unresolved. I got as far as step 4, defining the marking guide. Steps 1 to 3 are done, and I confirmed the name "Marking guide 1" in the textbox. Step 4 is only partly filled in: criterion 1's student description is partway there, while criterion 2's marker, max score, and name are still missing.
+
+
+MSG {"status":"unresolved","reason":"Tool-call budget (60) exhausted at step 4. Steps 1-3 done: reached Course 1, opened Assign 1 advanced grading, defined a new marking guide, and the Name field shows 'Marking guide 1'. Step 4 is incomplete: Criteria 1 has name 'Criteria 1', marker description 'Criteria 1 description for marker' and max score 50, but its student description is still empty (last Tab/type was not confirmed). Criteria 2 has only its student description set; its name, marker description and max score are unset. Steps 5-12 were never executed, so no verdict on the comments or the 'Show guide definition'/'Show marks per criterion' settings.","failingStep":4,"failingStepText":"Given I define the following marking guide:"}

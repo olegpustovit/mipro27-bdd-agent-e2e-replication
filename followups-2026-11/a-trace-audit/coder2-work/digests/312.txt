@@ -1,0 +1,934 @@
+UNIT moodle:6ac189f540b8/B04.S037/fault:X014/C/gpt-5.6-terra/r1
+model gpt-5.6-terra driver codex build Moodle pin cfe123f26fc7 + seeded fault X014; pair from change B04 type faulty
+scenario S037 Completion condition displaying setting can be disabled at course level
+  1. Given I log in as "teacher1"
+  2. And I am on "Course 1" course homepage with editing mode on
+  3. And I navigate to "Settings" in current page administration
+  4. When I set the following fields to these values:
+  | Show activity completion conditions | No |
+  5. And I click on "Save and display" "button"
+  6. And there should be no completion information shown for "Test choice auto"
+  7. And I follow "Test choice auto"
+  8. Then "Test choice auto" should have the "Make a choice" completion condition
+  9. And I am on "Course 1" course homepage
+  10. And the manual completion button for "Test choice manual" should not exist
+  11. And I follow "Test choice manual"
+  12. And the manual completion button for "Test choice manual" should be disabled
+fault {"intent": "Activity completion details treat tracked users (students) as untracked and the reverse (inverted condition), so the manual completion button is enabled for teachers.", "mutations": [{"file": "public/completion/classes/cm_completion_details.php", "old": "        return $this->completioninfo->is_tracked_user($this->userid);", "new": "        return !$this->completioninfo->is_tracked_user($this->userid);"}]}
+target [12] And the manual completion button for "Test choice manual" should be disabled
+VERDICT fail step 12 'And the manual completion button for "Test choice manual" should be disabled'
+REASON The page shows an enabled "Mark Test choice manual as done" button.
+parse_error None tool_calls 27 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll run the scenario strictly through the visible Moodle interface and stop on the first unmet step.
+#1 CALL browser_navigate {"url": "http://webserver"}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-01-30-871Z.yml)
+#2 CALL browser_snapshot {"depth": 4}
+#2 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]
+        - generic [ref=f1e13]
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]
+        - main [ref=f1e60]
+      - contentinfo [ref=f1e128]:
+        - button "Show footer" [ref=f1e129]
+        - generic [ref=f1e131]
+```
+#3 CALL browser_snapshot {"depth": 8}
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e16]:
+            - switch "Edit mode" [ref=f1e17]
+            - generic [ref=f1e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e28]:
+            - generic [aria-hidden] [ref=f1e29]: 
+          - button "Toggle messaging drawer" [ref=f1e31]:
+            - generic [aria-hidden] [ref=f1e32]: 
+          - button "User menu" [ref=f1e38]: 
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]:
+          - heading "Dashboard" [level=1] [ref=f1e56]
+        - main [ref=f1e60]:
+          - region "Main content blocks" [ref=f1e62]:
+            - heading "Main content blocks" [level=2] [ref=f1e63]
+            - link "Skip Course overview" [ref=f1e64]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f1e65]:
+              - generic [ref=f1e66]:
+                - heading "Course overview" [level=3] [ref=f1e68]
+                - generic [ref=f1e70]
+            - link "Skip Timeline" [ref=f1e105]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f1e106]:
+              - generic [ref=f1e107]:
+                - heading "Timeline" [level=3] [ref=f1e109]
+                - generic [ref=f1e112]
+      - contentinfo [ref=f1e128]:
+        - button "Show footer" [ref=f1e129]:
+          - generic [aria-hidden] [ref=f1e130]: "?"
+        - generic [ref=f1e131]:
+          - link "Contact site support" [ref=f1e134]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f1e135]: 
+            - text: Contact site support
+          - generic [ref=f1e136]:
+            - generic [ref=f1e138]:
+              - text: You are logged in as
+              - link "Teacher 1" [ref=f1e139]:
+                - /url: http://webserver/user/profile.php?id=3
+              - text: (
+              - link "Log out" [ref=f1e140]:
+ 
+…[truncated 383 chars]
+#4 CALL browser_click {"target": "f1e10", "element": "Dashboard menu"}
+#4 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-01-36-949Z.yml)
+#5 CALL browser_snapshot {"depth": 6}
+#5 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e13]:
+          - generic [ref=f2e16]:
+            - switch "Edit mode" [ref=f2e17]
+            - generic [ref=f2e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e28]:
+            - generic [aria-hidden] [ref=f2e29]: 
+          - button "Toggle messaging drawer" [ref=f2e31]:
+            - generic [aria-hidden] [ref=f2e32]: 
+          - button "User menu" [ref=f2e38]: 
+    - generic [ref=f2e42]:
+      - generic [ref=f2e43]:
+        - button "Open block drawer" [ref=f2e45]
+        - banner [ref=f2e49]:
+          - heading "Dashboard" [level=1] [ref=f2e56]
+        - main [ref=f2e60]:
+          - region "Main content blocks" [ref=f2e62]:
+            - heading "Main content blocks" [level=2] [ref=f2e63]
+            - link "Skip Course overview" [ref=f2e64]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f2e65]
+            - link "Skip Timeline" [ref=f2e89]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f2e90]
+      - contentinfo [ref=f2e116]:
+        - button "Show footer" [ref=f2e117]:
+          - generic [aria-hidden] [ref=f2e118]: "?"
+        - generic [ref=f2e119]:
+          - link "Contact site support" [ref=f2e122]:
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden] [ref=f2e123]: 
+            - text: Contact site support
+          - generic [ref=f2e124]:
+            - generic [ref=f2e126]
+            - link "Data retention summary" [ref=f2e131]:
+              - /url: http://webserver/admin/tool/dataprivacy/summary.php
+          - generic [ref=f2e133]:
+            - text: Powered by
+            - link "Moodle" [ref=f2e134]:
+              - /url: https://moodle.com
+```
+#6 CALL browser_snapshot {"depth": 10}
+#6 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e13]:
+          - generic [ref=f2e16]:
+            - switch "Edit mode" [ref=f2e17]
+            - generic [ref=f2e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e28]:
+            - generic [aria-hidden] [ref=f2e29]: 
+          - button "Toggle messaging drawer" [ref=f2e31]:
+            - generic [aria-hidden] [ref=f2e32]: 
+          - button "User menu" [ref=f2e38]: 
+    - generic [ref=f2e42]:
+      - generic [ref=f2e43]:
+        - button "Open block drawer" [ref=f2e45]
+        - banner [ref=f2e49]:
+          - heading "Dashboard" [level=1] [ref=f2e56]
+        - main [ref=f2e60]:
+          - region [ref=f2e62]:
+            - heading "Main content blocks" [level=2] [ref=f2e63]
+            - link "Skip Course overview" [ref=f2e64]:
+              - /url: "#sb-3"
+            - region "Course overview" [ref=f2e65]:
+              - generic [ref=f2e66]:
+                - heading "Course overview" [level=3] [ref=f2e68]
+                - generic [ref=f2e70]:
+                  - search "Course overview controls" [ref=f2e71]:
+                    - generic [ref=f2e72]
+                  - generic [ref=f2e87]:
+                    - list [ref=f2e136]
+                    - generic:    
+            - link "Skip Timeline" [ref=f2e89]:
+              - /url: "#sb-4"
+            - region "Timeline" [ref=f2e90]:
+              - generic [ref=f2e91]:
+                - heading "Timeline" [level=3] [ref=f2e93]
+                - generic [ref=f2e96]:
+                  - generic [ref=f2e98]:
+                    - generic [ref=f2e100]
+                    - generic [ref=f2e103]
+                    - search [ref=f2e108]
+                  - paragraph [ref=f2e115]: No activities require action
+      - contentinfo [ref=f2e116]:
+        - button "Show footer" [ref=f2e117]:
+          - generic [aria-hidden] [ref=f2e118]: "?"
+        - generic [ref=f2e119]:
+          - link "Contact site support" [ref=f2e122]:
+     
+…[truncated 829 chars]
+#7 CALL browser_snapshot {"target": "f2e65", "depth": 10}
+#7 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- region [ref=f2e65]:
+  - generic [ref=f2e66]:
+    - heading "Course overview" [level=3] [ref=f2e68]
+    - generic [ref=f2e70]:
+      - search "Course overview controls" [ref=f2e71]:
+        - generic [ref=f2e72]:
+          - generic [ref=f2e73]:
+            - button "Grouping drop-down menu" [ref=f2e74]: All 
+            - text: 
+          - generic [ref=f2e77]:
+            - generic: Search courses
+            - textbox "Search courses" [ref=f2e79]:
+              - /placeholder: Search
+            - text: 
+          - generic [ref=f2e81]:
+            - button "Sorting drop-down menu" [ref=f2e82]: Sort by course name 
+            - text: 
+          - generic [ref=f2e83]:
+            - button "Display drop-down menu" [ref=f2e84]: Card 
+            - text: 
+      - generic [ref=f2e87]:
+        - list [ref=f2e136]:
+          - listitem [ref=f2e138]:
+            - link "Course 1" [ref=f2e139]:
+              - /url: http://webserver/course/view.php?id=2
+            - generic [ref=f2e144]:
+              - link "Course name Course 1" [ref=f2e145]:
+                - /url: http://webserver/course/view.php?id=2
+                - generic: 
+                - generic [ref=f2e146]: Course name
+                - generic "Course 1" [ref=f2e147]
+              - generic [ref=f2e149]:
+                - generic [ref=f2e150]: Course category
+                - generic [ref=f2e151]: Category 1
+            - button "Actions for course Course 1" [ref=f2e155]:
+              - generic [aria-hidden] [ref=f2e156]: 
+        - generic:    
+```
+#8 CALL browser_click {"target": "f2e139", "element": "Course 1 link"}
+#8 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-01-45-887Z.yml)
+#9 CALL browser_snapshot {"depth": 8}
+#9 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - button "Open course index" [ref=f3e44]
+        - banner [ref=f3e48]:
+          - heading "Course 1" [level=1] [ref=f3e55]
+        - navigation "Course menu" [ref=f3e58]:
+          - menubar [ref=f3e59]:
+            - menuitem "Course" [ref=f3e60]
+            - menuitem "Settings" [ref=f3e63]
+            - menuitem "Participants" [ref=f3e65]
+            - menuitem "Grades" [ref=f3e67]
+            - menuitem "Activities" [ref=f3e69]
+            - menuitem "More " [ref=f3e71]:
+              - generic [ref=f3e72]: More
+              - text: 
+        - main [ref=f3e76]:
+          - generic [ref=f3e79]:
+            - heading "Section outline" [level=2] [ref=f3e80]
+            - button "Collapse all" [expanded] [ref=f3e82]:
+              - generic [ref=f3e83]:
+                - generic [aria-hidden] [ref=f3e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f3e85]:
+              - listitem [ref=f3e86]:
+                - generic [ref=f3e87]
+              - listitem [ref=f3e126]:
+                - generic [ref=f3e127]
+              - listitem [ref=f3e139]:
+                - generic [ref=f3e140]
+              - listitem [ref=f3e152]:
+                - generic [ref=f3e153]
+              - listitem [ref=f3e165]:
+                - generic [ref=f3e166]
+              - listitem [ref=f3e178]:
+                - generic [ref=f3e179]
+      - contentinfo [ref=f3e191]:
+        - button "Show footer" [ref=f3e19
+…[truncated 1257 chars]
+#10 CALL browser_click {"target": "f3e16", "element": "Edit mode switch"}
+#10 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-01-50-372Z.yml)
+#11 CALL browser_click {"target": "f3e63", "element": "Settings course administration menu item"}
+#11 RESULT ### Error
+Error: Ref f3e63 not found in the current page snapshot. Try capturing new snapshot.
+#12 CALL browser_snapshot {"depth": 6}
+#12 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [checked] [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - generic:
+          - button "Open course index" [ref=f4e44]
+          - button "Open block drawer" [ref=f4e49]
+        - banner [ref=f4e53]:
+          - generic [ref=f4e55]:
+            - heading "Course 1" [level=1] [ref=f4e60]
+            - button "Bulk actions" [ref=f4e63]
+        - navigation "Course menu" [ref=f4e67]:
+          - menubar [ref=f4e68]:
+            - menuitem "Course" [ref=f4e69]
+            - menuitem "Settings" [ref=f4e72]
+            - menuitem "Participants" [ref=f4e74]
+            - menuitem "Grades" [ref=f4e76]
+            - menuitem "Activities" [ref=f4e78]
+            - menuitem "More " [ref=f4e80]
+        - main [ref=f4e85]:
+          - generic [ref=f4e88]:
+            - heading "Section outline" [level=2] [ref=f4e89]
+            - button "Collapse all" [expanded] [ref=f4e91]
+            - list [ref=f4e94]
+            - link "Add section" [ref=f4e355]:
+              - /url: http://webserver/course/format/update.php?courseid=2&sesskey=adg6SNTsjj&action=section_add&returnurl=%2Fcourse%2Fview.php%3Fid%3D2&returnsectionid=111005&returnoptions%5Bpagesectionid%5D=0
+      - contentinfo [ref=f4e358]:
+        - button "Show footer" [ref=f4e359]:
+          - generic [aria-hidden] [ref=f4e360]: "?"
+        - generic [ref=f4e361]:
+          - generic [ref=f4e362]:
+            - link "Documentation for this page" [ref=f4e364]:
+              - /url: https://docs.moodle.org/503/en/course/view/topics
+   
+…[truncated 472 chars]
+#13 CALL browser_click {"target": "f4e72", "element": "Settings course administration menu item"}
+#13 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-01-56-689Z.yml)
+#14 CALL browser_snapshot {"depth": 10}
+#14 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f5e1]:
+  - status
+  - generic [ref=f5e2]:
+    - link "Skip to main content" [ref=f5e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - link "Acceptance test site" [ref=f5e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f5e9]:
+          - menuitem "Dashboard" [ref=f5e10]
+          - text: 
+        - generic [ref=f5e12]:
+          - generic [ref=f5e15]:
+            - switch "Edit mode" [checked] [ref=f5e16]
+            - generic [ref=f5e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f5e27]:
+            - generic [aria-hidden] [ref=f5e28]: 
+          - button "Toggle messaging drawer" [ref=f5e30]:
+            - generic [aria-hidden] [ref=f5e31]: 
+          - button "User menu" [ref=f5e37]: 
+    - generic [ref=f5e41]:
+      - generic [ref=f5e42]:
+        - generic:
+          - button "Open course index" [ref=f5e44]
+          - button "Open block drawer" [ref=f5e49]
+        - banner [ref=f5e53]:
+          - heading "Course 1" [level=1] [ref=f5e60]
+        - navigation "Course menu" [ref=f5e63]:
+          - menubar [ref=f5e64]:
+            - menuitem "Course" [ref=f5e65]
+            - menuitem "Settings" [ref=f5e67]
+            - menuitem "Participants" [ref=f5e70]
+            - menuitem "Grades" [ref=f5e72]
+            - menuitem "Activities" [ref=f5e74]
+            - menuitem "More " [ref=f5e76]:
+              - generic [ref=f5e77]: More
+              - text: 
+        - main [ref=f5e81]:
+          - heading "Edit course settings" [level=2] [ref=f5e83]
+          - generic [ref=f5e84]:
+            - button "Expand all" [ref=f5e86]
+            - group "General" [ref=f5e88]:
+              - generic [ref=f5e91]:
+                - button "General" [expanded] [ref=f5e92]:
+                  - generic "Collapse" [ref=f5e93]:
+                    - generic [aria-hidden] [ref=f5e94]: 
+                  - text:  
+                - heading [level=3] [aria-hidden] [ref=f5e96]: General
+              - generic [ref=f5e97]:
+                - generic [ref=f5e98]:
+                  - generic [ref=f5e99]:
+                    - generic [ref=f5e100]: Course full name
+                    - generic [ref=f5e101]
+                  - textbox "Course full name" [ref=f5e107]: Course 1
+         
+…[truncated 10666 chars]
+#15 CALL browser_click {"target": "f5e311", "element": "Completion tracking section"}
+#15 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-02-00-651Z.yml)
+#16 CALL browser_snapshot {"depth": 5}
+#16 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f5e1]:
+  - status
+  - generic [ref=f5e2]:
+    - link "Skip to main content" [ref=f5e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - link "Acceptance test site" [ref=f5e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f5e9]:
+          - menuitem "Dashboard" [ref=f5e10]
+          - text: 
+        - generic [ref=f5e12]:
+          - generic [ref=f5e15]
+          - button "Show notification window with no new notifications" [ref=f5e27]
+          - button "Toggle messaging drawer" [ref=f5e30]
+          - button "User menu" [ref=f5e37]: 
+    - generic [ref=f5e41]:
+      - generic [ref=f5e42]:
+        - generic:
+          - button "Open course index" [ref=f5e44]
+          - button "Open block drawer" [ref=f5e49]
+        - banner [ref=f5e53]:
+          - heading "Course 1" [level=1] [ref=f5e60]
+        - navigation "Course menu" [ref=f5e63]:
+          - menubar [ref=f5e64]
+        - main [ref=f5e81]:
+          - heading "Edit course settings" [level=2] [ref=f5e83]
+          - generic [ref=f5e84]
+      - contentinfo [ref=f5e351]:
+        - button "Show footer" [ref=f5e352]:
+          - generic [aria-hidden] [ref=f5e353]: "?"
+        - generic [ref=f5e354]:
+          - generic [ref=f5e355]
+          - generic [ref=f5e362]
+          - generic [ref=f5e371]
+  - text: ×     
+```
+#17 CALL browser_snapshot {"target": "f5e307", "depth": 8}
+#17 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+```yaml
+- group "Completion tracking" [ref=f5e307]:
+  - generic [ref=f5e310]:
+    - button "Completion tracking" [expanded] [active] [ref=f5e311]:
+      - generic "Collapse" [ref=f5e373]:
+        - generic [aria-hidden] [ref=f5e374]: 
+      - text:  
+    - heading [level=3] [aria-hidden] [ref=f5e316]: Completion tracking
+  - generic [ref=f5e375]:
+    - generic [ref=f5e376]:
+      - generic [ref=f5e377]:
+        - generic [ref=f5e378]: Enable completion tracking
+        - button "Help" [ref=f5e380]:
+          - img "Help with Enable completion tracking" [ref=f5e381]: 
+      - combobox "Enable completion tracking" [ref=f5e383]:
+        - option "No"
+        - option "Yes" [selected]
+    - generic [ref=f5e384]:
+      - generic [ref=f5e385]:
+        - generic [ref=f5e386]: Show activity completion conditions
+        - button "Help" [ref=f5e388]:
+          - img "Help with Show activity completion conditions" [ref=f5e389]: 
+      - combobox "Show activity completion conditions" [ref=f5e391]:
+        - option "No"
+        - option "Yes" [selected]
+```
+#18 CALL browser_select_option {"target": "f5e391", "element": "Show activity completion conditions field", "values": ["No"]}
+#18 RESULT ### Page
+- Page URL: http://webserver/course/edit.php?id=2
+- Page Title: Edit course settings | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-02-06-748Z.yml)
+#19 CALL browser_click {"target": "f5e345", "element": "Save and display button"}
+#19 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-02-09-246Z.yml)
+#20 CALL browser_snapshot {"depth": 10}
+#20 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f6e1]:
+  - status
+  - generic [ref=f6e2]:
+    - link "Skip to main content" [ref=f6e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - link "Acceptance test site" [ref=f6e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f6e9]:
+          - menuitem "Dashboard" [ref=f6e10]
+          - text: 
+        - generic [ref=f6e12]:
+          - generic [ref=f6e15]:
+            - switch "Edit mode" [checked] [ref=f6e16]
+            - generic [ref=f6e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f6e27]:
+            - generic [aria-hidden] [ref=f6e28]: 
+          - button "Toggle messaging drawer" [ref=f6e30]:
+            - generic [aria-hidden] [ref=f6e31]: 
+          - button "User menu" [ref=f6e37]: 
+    - generic [ref=f6e41]:
+      - generic [ref=f6e42]:
+        - generic:
+          - button "Open course index" [ref=f6e44]
+          - button "Open block drawer" [ref=f6e49]
+        - banner [ref=f6e53]:
+          - generic [ref=f6e55]:
+            - heading "Course 1" [level=1] [ref=f6e60]
+            - button "Bulk actions" [ref=f6e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f6e64]: 
+        - navigation "Course menu" [ref=f6e67]:
+          - menubar [ref=f6e68]:
+            - menuitem "Course" [ref=f6e69]
+            - menuitem "Settings" [ref=f6e72]
+            - menuitem "Participants" [ref=f6e74]
+            - menuitem "Grades" [ref=f6e76]
+            - menuitem "Activities" [ref=f6e78]
+            - menuitem "More " [ref=f6e80]:
+              - generic [ref=f6e81]: More
+              - text: 
+        - main [ref=f6e85]:
+          - generic [ref=f6e88]:
+            - heading "Section outline" [level=2] [ref=f6e89]
+            - button "Collapse all" [expanded] [ref=f6e91]:
+              - generic [ref=f6e92]:
+                - generic [aria-hidden] [ref=f6e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f6e94]:
+              - listitem [ref=f6e95]:
+                - generic [ref=f6e96]:
+                  - generic [ref=f6e97]:
+                    - generic [ref=f6e98]
+                    - generic [ref=f6e112]
+                  - generic [ref=f6e118]:
+                    - list [ref=f6e11
+…[truncated 3319 chars]
+#21 CALL browser_snapshot {"target": "f6e94", "depth": 15}
+#21 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- list [ref=f6e94]:
+  - listitem [ref=f6e95]:
+    - generic [ref=f6e96]:
+      - generic [ref=f6e97]:
+        - generic [ref=f6e98]:
+          - button "General" [expanded] [ref=f6e99]:
+            - generic "Collapse" [ref=f6e100]:
+              - generic [aria-hidden] [ref=f6e101]: 
+            - text:  
+          - heading [level=3] [ref=f6e103]:
+            - link [ref=f6e105]:
+              - /url: "#"
+              - text: General
+              - img "Edit section name" [ref=f6e107]: 
+        - generic [ref=f6e112]:
+          - button "Edit" [ref=f6e113]:
+            - generic [aria-hidden] [ref=f6e114]: 
+          - text:   
+      - generic [ref=f6e118]:
+        - list [ref=f6e119]:
+          - listitem [ref=f6e120]:
+            - separator [ref=f6e122]
+            - generic [ref=f6e124]:
+              - img "Choice icon" [ref=f6e126]
+              - generic [ref=f6e130]:
+                - link "Test choice manual" [ref=f6e131]:
+                  - /url: http://webserver/mod/choice/view.php?id=109000
+                - link [ref=f6e132]:
+                  - /url: "#"
+                  - img "Edit title" [ref=f6e134]: 
+              - generic [ref=f6e135]:      
+              - generic [ref=f6e142]:
+                - button "Edit" [ref=f6e143]:
+                  - generic [aria-hidden] [ref=f6e144]: 
+                - text:                
+          - listitem [ref=f6e146]:
+            - separator [ref=f6e148]
+            - generic [ref=f6e150]:
+              - img "Choice icon" [ref=f6e152]
+              - generic [ref=f6e156]:
+                - link "Test choice auto" [ref=f6e157]:
+                  - /url: http://webserver/mod/choice/view.php?id=109001
+                - link [ref=f6e158]:
+                  - /url: "#"
+                  - img "Edit title" [ref=f6e160]: 
+              - generic [ref=f6e161]:      
+              - generic [ref=f6e168]:
+                - button "Edit" [ref=f6e169]:
+                  - generic [aria-hidden] [ref=f6e170]: 
+                - text:                
+        - generic [ref=f6e172]:
+          - separator [ref=f6e173]
+          - generic [ref=f6e175]:
+            - button "Insert content in section 'General'" [ref=f6e176]:
+              - generic [aria-hidden] [ref=f6e178]: +
+              - text: Add content
+          
+…[truncated 4947 chars]
+#22 CALL browser_click {"target": "f6e157", "element": "Test choice auto link"}
+#22 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109001
+- Page Title: Test choice auto | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-02-16-556Z.yml)
+#23 CALL browser_snapshot {"depth": 12}
+#23 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109001
+- Page Title: Test choice auto | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f7e1]:
+  - status
+  - generic [ref=f7e2]:
+    - link "Skip to main content" [ref=f7e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f7e4]:
+      - generic [ref=f7e5]:
+        - link "Acceptance test site" [ref=f7e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f7e9]:
+          - menuitem "Dashboard" [ref=f7e10]
+          - text: 
+        - generic [ref=f7e12]:
+          - generic [ref=f7e15]:
+            - switch "Edit mode" [checked] [ref=f7e16]
+            - generic [ref=f7e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f7e27]:
+            - generic [aria-hidden] [ref=f7e28]: 
+          - button "Toggle messaging drawer" [ref=f7e30]:
+            - generic [aria-hidden] [ref=f7e31]: 
+          - button "User menu" [ref=f7e37]: 
+    - generic [ref=f7e41]:
+      - generic [ref=f7e42]:
+        - generic:
+          - button "Open course index" [ref=f7e44]
+          - button "Open block drawer" [ref=f7e49]
+        - banner [ref=f7e53]:
+          - generic [ref=f7e54]:
+            - navigation "Breadcrumb" [ref=f7e57]:
+              - list [ref=f7e58]:
+                - listitem [ref=f7e59]:
+                  - link "C1" [ref=f7e60]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f7e61]:
+                  - text: /
+                  - link "General" [ref=f7e62]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f7e63]:
+                  - text: /
+                  - generic [ref=f7e64]: Test choice auto
+            - generic [ref=f7e72]:
+              - generic [ref=f7e73]: Choice
+              - heading "Test choice auto" [level=1] [ref=f7e74]
+        - navigation "Activity menu" [ref=f7e77]:
+          - menubar [ref=f7e78]:
+            - menuitem "Choice" [ref=f7e79]
+            - menuitem "Settings" [ref=f7e82]
+            - menuitem "Responses" [ref=f7e84]
+            - menuitem "More " [ref=f7e86]:
+              - generic [ref=f7e87]: More
+              - text: 
+        - generic [ref=f7e90]:
+          - generic [ref=f7e94]:
+            - generic [ref=f7e95]: Test choice 2
+            - region "Completion requirements for Test choice auto" [ref=f7e98]:
+              - strong [ref=f7e100]: "Compl
+…[truncated 2948 chars]
+#24 CALL browser_click {"target": "f7e60", "element": "Course 1 breadcrumb link"}
+#24 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-02-21-261Z.yml)
+#25 CALL browser_snapshot {"depth": 15}
+#25 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Edit course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f8e1]:
+  - status
+  - generic [ref=f8e2]:
+    - link "Skip to main content" [ref=f8e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - link "Acceptance test site" [ref=f8e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f8e9]:
+          - menuitem "Dashboard" [ref=f8e10]
+          - text: 
+        - generic [ref=f8e12]:
+          - generic [ref=f8e15]:
+            - switch "Edit mode" [checked] [ref=f8e16]
+            - generic [ref=f8e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f8e27]:
+            - generic [aria-hidden] [ref=f8e28]: 
+          - button "Toggle messaging drawer" [ref=f8e30]:
+            - generic [aria-hidden] [ref=f8e31]: 
+          - button "User menu" [ref=f8e37]: 
+    - generic [ref=f8e41]:
+      - generic [ref=f8e42]:
+        - generic:
+          - button "Open course index" [ref=f8e44]
+          - button "Open block drawer" [ref=f8e49]
+        - banner [ref=f8e53]:
+          - generic [ref=f8e55]:
+            - heading "Course 1" [level=1] [ref=f8e60]
+            - button "Bulk actions" [ref=f8e63]:
+              - text: Bulk actions
+              - generic [aria-hidden] [ref=f8e64]: 
+        - navigation "Course menu" [ref=f8e67]:
+          - menubar [ref=f8e68]:
+            - menuitem "Course" [ref=f8e69]
+            - menuitem "Settings" [ref=f8e72]
+            - menuitem "Participants" [ref=f8e74]
+            - menuitem "Grades" [ref=f8e76]
+            - menuitem "Activities" [ref=f8e78]
+            - menuitem "More " [ref=f8e80]:
+              - generic [ref=f8e81]: More
+              - text: 
+        - main [ref=f8e85]:
+          - generic [ref=f8e88]:
+            - heading "Section outline" [level=2] [ref=f8e89]
+            - button [expanded] [ref=f8e91]:
+              - generic [ref=f8e92]:
+                - generic [aria-hidden] [ref=f8e93]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f8e94]:
+              - listitem [ref=f8e95]:
+                - generic [ref=f8e96]:
+                  - generic [ref=f8e97]:
+                    - generic [ref=f8e98]:
+                      - button "General" [expanded] [ref=f8e99]:
+                        - generic "Collapse" [ref=f8e100]:
+            
+…[truncated 11300 chars]
+#26 CALL browser_click {"target": "f8e131", "element": "Test choice manual link"}
+#26 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109000
+- Page Title: Test choice manual | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-02-27-397Z.yml)
+#27 CALL browser_snapshot {"depth": 14}
+#27 RESULT ### Page
+- Page URL: http://webserver/mod/choice/view.php?id=109000
+- Page Title: Test choice manual | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f9e1]:
+  - status
+  - generic [ref=f9e2]:
+    - link "Skip to main content" [ref=f9e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f9e4]:
+      - generic [ref=f9e5]:
+        - link "Acceptance test site" [ref=f9e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f9e9]:
+          - menuitem "Dashboard" [ref=f9e10]
+          - text: 
+        - generic [ref=f9e12]:
+          - generic [ref=f9e15]:
+            - switch "Edit mode" [checked] [ref=f9e16]
+            - generic [ref=f9e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f9e27]:
+            - generic [aria-hidden] [ref=f9e28]: 
+          - button "Toggle messaging drawer" [ref=f9e30]:
+            - generic [aria-hidden] [ref=f9e31]: 
+          - button "User menu" [ref=f9e37]: 
+    - generic [ref=f9e41]:
+      - generic [ref=f9e42]:
+        - generic:
+          - button "Open course index" [ref=f9e44]
+          - button "Open block drawer" [ref=f9e49]
+        - banner [ref=f9e53]:
+          - generic [ref=f9e54]:
+            - navigation "Breadcrumb" [ref=f9e57]:
+              - list [ref=f9e58]:
+                - listitem [ref=f9e59]:
+                  - link "C1" [ref=f9e60]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f9e61]:
+                  - text: /
+                  - link "General" [ref=f9e62]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f9e63]:
+                  - text: /
+                  - generic [ref=f9e64]: Test choice manual
+            - generic [ref=f9e72]:
+              - generic [ref=f9e73]: Choice
+              - heading "Test choice manual" [level=1] [ref=f9e74]
+        - navigation "Activity menu" [ref=f9e77]:
+          - menubar [ref=f9e78]:
+            - menuitem "Choice" [ref=f9e79]
+            - menuitem "Settings" [ref=f9e82]
+            - menuitem "Responses" [ref=f9e84]
+            - menuitem "More " [ref=f9e86]:
+              - generic [ref=f9e87]: More
+              - text: 
+        - generic [ref=f9e90]:
+          - generic [ref=f9e92]: Test choice 1
+          - main [ref=f9e97]:
+            - alert [ref=f9e99]:
+              - text: The results of this activity will not be published after you answer.
+…[truncated 2413 chars]
+MSG {"status":"fail","reason":"The page shows an enabled \"Mark Test choice manual as done\" button.","failingStep":12,"failingStepText":"And the manual completion button for \"Test choice manual\" should be disabled"}

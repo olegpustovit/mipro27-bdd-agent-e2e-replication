@@ -1,0 +1,56 @@
+0a1,8
+> // Stream E-pay follow-up (2026-11-27): payment-app cells of the single set (e-single-set/plan.md).
+> // A copy of stream B's b-change1-faults/scripts/run-v1-faults.mjs, itself harness/scripts/exploratory-runner.mjs
+> // (replication commit 9c9eee2) with three changes marked FOLLOWUP-B. Stream E changes, marked FOLLOWUP-E:
+> //  1. stages come from ./single-pay-plan.mjs (cumulative-plan stages without maintenance and v1), not v1FaultStages();
+> //  2. the stream label and the runner's own recorded file hashes name the stream E files.
+> // Stream B's changes kept: STUDY_ARMS (maintained|runtime) selects the arm; the maintained arm runs campaign A's
+> // frozen step code (v0 = the original step definitions, v2 = A's frozen v2) restored from STUDY_RUNTIME_RERUN_FROM
+> // (no maintenance session runs). Everything else is unchanged.
+8,20c16,29
+< import { exploratoryConfig, exploratoryStages } from '../study/exploratory-plan.mjs';
+< import { sourcePins, appPins, samePins } from './campaign-guard.mjs';
+< import { runMaintenance, runTrial } from './cumulative-runner.mjs';
+< import { createMaintenanceState } from './maintenance.mjs';
+< import { acquireLock, reset } from './fixture.mjs';
+< import { bounded } from './deadlines.mjs';
+< import { environmentFingerprint, fixtureProvenance } from './environment.mjs';
+< import { dataDir, ledgerPaths, ensureDirs } from './ledger/paths.mjs';
+< import { requireDeadline } from '../study/campaign-config.mjs';
+< import { blockedOrder, planTrials, startTrial, endTrial, reconcileEnded } from './ledger/trials.mjs';
+< import { trialKey } from './ledger/keys.mjs';
+< import { requestedModel } from './codex-boundary.mjs';
+< import { loadDriver, driverNameForModel } from './drivers/index.mjs';
+---
+> import { exploratoryConfig, exploratoryStages } from '../harness/study/exploratory-plan.mjs';
+> import { singlePayStages, followupArms } from './single-pay-plan.mjs'; // FOLLOWUP-B, FOLLOWUP-E: plan module
+> import { sourcePins, appPins, samePins } from '../harness/scripts/campaign-guard.mjs';
+> import { runMaintenance, runTrial } from '../harness/scripts/cumulative-runner.mjs';
+> import { createMaintenanceState } from '../harness/scripts/maintenance.mjs';
+> import { acquireLock, reset } from '../harness/scripts/fixture.mjs';
+> import { bounded } from '../harness/scripts/deadlines.mjs';
+> import { environmentFingerprint, fixtureProvenance } from '../harness/scripts/environment.mjs';
+> import { dataDir, ledgerPaths, ensureDirs } from '../harness/scripts/ledger/paths.mjs';
+> import { requireDeadline } from '../harness/study/campaign-config.mjs';
+> import { blockedOrder, planTrials, startTrial, endTrial, reconcileEnded } from '../harness/scripts/ledger/trials.mjs';
+> import { trialKey } from '../harness/scripts/ledger/keys.mjs';
+> import { requestedModel } from '../harness/scripts/codex-boundary.mjs';
+> import { loadDriver, driverNameForModel } from '../harness/scripts/drivers/index.mjs';
+22c31,32
+< const root = fileURLToPath(new URL('../', import.meta.url));
+---
+> const root = fileURLToPath(new URL('../harness/', import.meta.url)); // FOLLOWUP-B: harness checkout
+> const followupFiles = ['run-single-pay.mjs', 'single-pay-plan.mjs'].map(name => [name, createHash('sha256').update(readFileSync(new URL('./' + name, import.meta.url))).digest('hex')]); // FOLLOWUP-B, FOLLOWUP-E: own file names
+36c46,47
+<   return { mode: exploratoryConfig.mode, gatePassExists: false, config: { ...exploratoryConfig, executions, ...(invalidGuard ? { invalidGuard } : {}) }, runtimeStages, runtimeSource, ...(comparisonManifestSHA ? { comparisonManifestSHA } : {}), sourcePins: sourcePins(), appPins: appPins(),
+---
+>   return { mode: exploratoryConfig.mode, gatePassExists: false, followup: { stream: 'e-single-set/pay', arms: followupArms(), files: Object.fromEntries(followupFiles), harnessCommit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() }, // FOLLOWUP-B, FOLLOWUP-E: stream label
+>     config: { ...exploratoryConfig, executions, ...(invalidGuard ? { invalidGuard } : {}) }, runtimeStages, runtimeSource, ...(comparisonManifestSHA ? { comparisonManifestSHA } : {}), sourcePins: sourcePins(), appPins: appPins(),
+69c80
+<   const stages = exploratoryStages();
+---
+>   const stages = singlePayStages(); // FOLLOWUP-B, FOLLOWUP-E: stage list
+90c101
+<     (!rerunFrom || (t.arm === 'runtime' && (!runtimeStages || runtimeStages.includes(stage.id)))));
+---
+>     (!rerunFrom || (followupArms().includes(t.arm) && (!runtimeStages || runtimeStages.includes(stage.id))))); // FOLLOWUP-B: arm selection

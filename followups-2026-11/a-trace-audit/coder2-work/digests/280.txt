@@ -1,0 +1,192 @@
+UNIT moodle:6ac189f540b8/B07.S028/fault:X010/C/gpt-6-luna/r1
+model gpt-6-luna driver codex build Moodle pin cfe123f26fc7 + seeded fault X010; pair from change B07 type faulty
+scenario S028 Information does not display when not enabled
+  1. And I log in as "admin"
+  2. When the following config values are set as admin:
+  | searchbannerenable | 0 |
+  | searchbanner | The search currently only finds frog-related content; we hope to fix it soon. |
+  3. And I search for "toads" using the header global search box
+  4. Then I should not see "The search currently only finds frog-related content"
+  5. And ".notifywarning" "css_element" should not exist
+fault {"intent": "The search information banner shows when either the switch or the text is set (wrong condition: && became ||).", "mutations": [{"file": "public/search/index.php", "old": "if ($CFG->searchbannerenable && $CFG->searchbanner) {", "new": "if ($CFG->searchbannerenable || $CFG->searchbanner) {"}]}
+target [4] Then I should not see "The search currently only finds frog-related content"
+VERDICT fail step 2 'And the following config values are set as admin:
+  | searchbannerenable | 0 |
+  | searchbanner | The search currently only finds frog-related content; we hope to fix it soon. |'
+REASON At step 2, the admin settings page exposed the two requested fields, but I could not enter the banner text in its rich text editor through the browser UI. I did not save changes or proceed to search.
+parse_error None tool_calls 8 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll use the existing admin session and perform the configuration and search through the visible Moodle UI, stopping at the first failed step.
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "More ":
+            - generic: More
+            - text: 
+          - text: 
+        - generic:
+          - generic:
+            - text: 
+            - search "Site-wide search":
+              - generic: Search
+              - generic:
+                - button "Perform search":
+                  - generic [aria-hidden]: 
+                - textbox "Search"
+                - text: 
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - heading "Create your first course" [level=4]
+                  - paragraph:
+                    - text: Need help getting started? Check out the
+                    - link "Moodle documentation":
+                      - /url: https://docs.moodle.org?lang=en
+                    - text: or take your first steps with our
+                    - link "Quickstart guide":
+                      - /url: https://moodle.academy/coursequickstart?lang=en
+                    - text: .
+                  - generic:
+                    - button "Manage course categories"
+                    - button "Create course"
+            - link "Skip Timeline":
+              - /url: "#sb-4"
+            - region:
+              - generic:
+                - heading "Timeline" [level=3]
+                - generic:
+                  - generic:
+                    - generic:
+                      - 'button "Next 30 days: filter timeline by date"': Next 30 days 
+                      -
+…[truncated 2084 chars]
+#2 CALL browser_click {"target": "ref=e10", "element": "More navigation menu"}
+#2 RESULT ### Error
+Error: browserBackend.callTool: Unknown engine "ref" while parsing selector ref=e10
+#3 CALL browser_click {"target": "More", "element": "More menu"}
+#3 RESULT ### Error
+Error: "More" does not match any elements.
+#4 CALL browser_navigate {"url": "http://webserver/admin/search.php?query=searchbanner"}
+#4 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-40-14-080Z.yml)
+#5 CALL browser_snapshot {}
+#5 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "More " [ref=f1e10]:
+            - generic [ref=f1e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e14]:
+            - text: 
+            - search "Site-wide search" [ref=f1e15]:
+              - generic [ref=f1e16]: Search
+              - generic [ref=f1e17]:
+                - button "Perform search" [ref=f1e18]:
+                  - generic [aria-hidden] [ref=f1e19]: 
+                - textbox "Search" [ref=f1e21]
+                - text: 
+          - generic [ref=f1e24]:
+            - switch "Edit mode" [ref=f1e25]
+            - generic [ref=f1e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e36]:
+            - generic [aria-hidden] [ref=f1e37]: 
+          - button "Toggle messaging drawer" [ref=f1e39]:
+            - generic [aria-hidden] [ref=f1e40]: 
+          - button "User menu" [ref=f1e46]: 
+    - generic [ref=f1e50]:
+      - generic [ref=f1e51]:
+        - banner [ref=f1e52]:
+          - generic [ref=f1e54]:
+            - heading "Site administration" [level=1] [ref=f1e59]
+            - generic [ref=f1e64]:
+              - textbox "Search" [ref=f1e65]: searchbanner
+              - generic: Search
+              - button "Search" [ref=f1e67]:
+                - generic [aria-hidden] [ref=f1e68]: 
+        - navigation "Site administration menu" [ref=f1e72]:
+          - menubar [ref=f1e73]:
+            - menuitem "General" [ref=f1e74]
+            - menuitem "Users" [ref=f1e77]
+            - menuitem "Courses" [ref=f1e79]
+            - menuitem "Grades" [ref=f1e81]
+            - menuitem "Plugins" [ref=f1e83]
+            - menuitem "Appearance" [ref=f1e85]
+            - menuitem "More " [ref=f1e87]:
+              - generic [ref=f1e88]: More
+              - text: 
+        - main [ref=f1e92]:
+          - separator [ref=f1e94]
+          - group [ref=f1e96]:
+            - heading "Search results" [level=2] [ref=f1e98]
+            - heading [le
+…[truncated 4652 chars]
+#6 CALL browser_click {"target": "iframe", "element": "Search information rich text editor"}
+#6 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-40-18-745Z.yml)
+#7 CALL browser_type {"target": "iframe", "text": "The search currently only finds frog-related content; we hope to fix it soon."}
+#7 RESULT ### Error
+Error: browserBackend.callTool: Error: Element is not an <input>, <textarea>, <select> or [contenteditable] and does not have a role allowing [aria-readonly]
+Call log:
+  - waiting for locator('iframe')
+    - locator resolved to <iframe frameborder="0" allowtransparency="true" id="id_s__searchbanner_ifr" class="tox-edit-area__iframe" aria-labelledby="id_s__searchbanner_ifr_label" srcdoc="<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head><body id="tinymce" class="mce-content-body " data-id="id_s__searchbanner" aria-label="Search information. Rich text area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help."><br></body></html>"></iframe>
+    - fill("The search currently only finds frog-related content; we hope to fix it soon.")
+  - attempting fill action
+    - waiting for element to be visible, enabled and editable
+
+#8 CALL browser_click {"target": "body#tinymce", "element": "text entry area inside rich text editor"}
+#8 RESULT ### Error
+Error: "body#tinymce" does not match any elements.
+MSG {"status":"fail","reason":"At step 2, the admin settings page exposed the two requested fields, but I could not enter the banner text in its rich text editor through the browser UI. I did not save changes or proceed to search.","failingStep":2,"failingStepText":"And the following config values are set as admin:\n  | searchbannerenable | 0 |\n  | searchbanner | The search currently only finds frog-related content; we hope to fix it soon. |"}

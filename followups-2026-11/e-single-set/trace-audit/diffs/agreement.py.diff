@@ -1,0 +1,21 @@
+--- ../../a-trace-audit/agreement/agreement.py	2026-11-26 22:14:03.149913793 +0000
++++ agreement/agreement.py	2026-11-27 05:59:08.046464754 +0000
+@@ -1,7 +1,8 @@
+ # /// script
+ # requires-python = ">=3.11"
+ # ///
+-"""Pairwise agreement (percent and Cohen's kappa) between trace-audit coders, by unit kind."""
++"""FOLLOWUP-E-TA: copy of followups-2026-11/a-trace-audit/agreement/agreement.py; only the codes-file paths changed (coderN-work/codes-coderN.jsonl).
++Pairwise agreement (percent and Cohen's kappa) between trace-audit coders, by unit kind."""
+ import json, sys, itertools, collections
+ from pathlib import Path
+ base = Path(__file__).resolve().parent.parent
+@@ -12,7 +13,7 @@
+     k = u.get("build_kind") or u.get("kind") or ("faulty" if u.get("fault_id") else "healthy")
+     return "faulty" if "fault" in str(k) and "health" not in str(k) else "healthy"
+ def app(u): return "moodle" if "moodle" in json.dumps(u.get("app", u.get("run_set",""))).lower() else "payment"
+-files = {"c1": base/"codes-coder1.jsonl", "c2": base/"codes-coder2.jsonl", "c3": base/"coder3-work/codes-coder3.jsonl"}
++files = {f"c{n}": base/f"coder{n}-work/codes-coder{n}.jsonl" for n in (1, 2, 3)}  # FOLLOWUP-E-TA
+ codes = {}
+ for name, f in files.items():
+     if f.exists():

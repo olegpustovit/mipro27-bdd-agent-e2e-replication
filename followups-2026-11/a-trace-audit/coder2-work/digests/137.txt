@@ -1,0 +1,642 @@
+UNIT pay:D:fault-v0-2/social-comment/runtime
+model claude-haiku-5-5 driver omp 18.14.0 (REPRODUCE.md) build v0+fault type faulty
+scenario social-comment 
+  1. Given I am signed in as "Heath93" with password "s3cret"
+  2. Then the authenticated home identifies "Heath93"
+  3. When I open transaction "1xfcAhNDZK4"
+  4. Then the transaction detail heading is visible
+  5. When I add comment "Study comment"
+  6. Then comment "Study comment" is visible in the transaction's comments
+  7. When I reload the current page
+  8. Then comment "Study comment" is visible exactly once in the transaction's comments
+fault {"file": "src/components/CommentForm.tsx", "before": "transactionComment({ transactionId, ...values });", "after": "transactionComment({ transactionId, ...values, content: \"Altered comment\" });"}
+target [6] Then comment "Study comment" is visible in the transaction's comments
+VERDICT fail step [6] 'Then comment "Study comment" is visible in the transaction's comments'
+REASON Signed in as Heath93; home shows @Heath93. Direct navigation to /transaction/1xfcAhNDZK4 bounced to home, but the transaction page rendered 'Transaction Detail' on a later snapshot. Submitted 'Study comment' with Enter; textbox cleared, but the Comments list shows only 'Altered comment' after about 5s of waiting. 'Study comment' never appeared. Not retried, and not reloaded, because the Then had already failed. Unclear whether the submit was dropped or the posted text was altered to 'Altered comment'.
+parse_error None tool_calls 22 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+THINK I'll begin by opening the app to see what I'm working with.
+
+
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-41-38-715Z.yml)
+#2 RESULT ### Page
+- Page URL: about:blank
+### Snapshot
+```yaml
+
+```
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#4 CALL browser_fill_form {"fields": [{"target": "e16", "name": "Username", "type": "textbox", "value": "Heath93"}, {"target": "e19", "name": "Password", "type": "textbox", "value": "s3cret"}]}
+#5 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#6 CALL browser_wait_for {"time": 3}
+#7 CALL browser_snapshot {}
+#7 RESULT 
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-41-44-949Z.yml)
+#7 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-41-44-267Z.yml)
+#7 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+THINK The fields look empty and I'm still stuck on the sign-in page, so the fill probably didn't register. Let me try retyping into the fields directly instead.
+
+
+#8 CALL browser_type {"target": "e16", "element": "Username textbox", "text": "Heath93"}
+#9 CALL browser_type {"target": "e19", "element": "Password textbox", "text": "s3cret", "submit": true}
+#10 CALL browser_wait_for {"time": 3}
+#10 RESULT 
+#10 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-41-51-286Z.yml)
+#10 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-41-50-088Z.yml)
+THINK It's unclear whether the submit redirected to "/" or landed on a signin page, so I should take a snapshot to check.
+
+
+#11 CALL browser_snapshot {}
+#11 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK I'm signed in and confirmed the home page shows "@Heath93". Now I need to open the specific transaction, but I'm weighing whether navigating directly via URL counts as improperly targeting a feed control by its destination URL, versus finding it through the UI naturally.
+
+
+#12 CALL browser_navigate {"url": "http://localhost:3000/transaction/1xfcAhNDZK4"}
+#13 CALL browser_snapshot {}
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-41-56-498Z.yml)
+#13 RESULT ### Page
+- Page URL: http://localhost:3000/
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - button "open drawer"
+      - heading [level=1]:
+        - link:
+          - /url: /
+      - link "New":
+        - /url: /transaction/new
+      - link "8":
+        - /url: /notifications
+    - tablist:
+      - tab "Everyone" [selected]
+      - tab "Friends"
+      - tab "Mine"
+  - generic:
+    - generic:
+      - generic: T
+      - generic:
+        - heading "Ted P" [level=6]
+        - heading "@Heath93" [level=6]
+    - generic:
+      - generic:
+        - heading "$1,509.53" [level=6]
+        - heading "Account Balance" [level=6]
+      - generic:
+        - separator
+      - list:
+        - generic:
+          - link "Home":
+            - /url: /
+          - link "My Account":
+            - /url: /user/settings
+          - link "Bank Accounts":
+            - /url: /bankaccounts
+          - link "Notifications":
+            - /url: /notifications
+      - generic:
+        - separator
+      - list:
+        - button "Logout"
+  - main:
+    - generic:
+      - generic:
+        - 'button "Date: ALL"'
+        - 'button "Amount: $0 - $1,000"'
+      - generic: Public
+      - grid "grid":
+        - rowgroup:
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$307.99"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "1"
+                - generic: "-$312.31"
+            - separator
+          - generic:
+            - listitem:
+              - generic:
+                - generic:
+                  - paragraph: Darrel Ortiz paid Lia Rosenbaum
+                  - paragraph: "Payment: _XblMqbuoP to WHjJ4qR2R2"
+                  - generic:
+                    - paragraph: "0"
+                    - paragraph: "0"
+                - generic: "-$86.07"
+            - separator
+          - generic:
+            - listitem:
+              - generic
+…[truncated 2768 chars]
+THINK I'm noticing the transaction route redirected back to home instead of showing the detail page, so the heading check fails — possibly the ID doesn't exist in the seed data, or this is a genuine defect. I'm weighing whether a retry is appropriate here, but mindful that the rule against navigating away to mask missing outcomes applies specifically after the When step.
+
+Instead of hitting the route directly, let me try clicking a feed item through the UI to open its detail page and see what ID shows up in the URL — that's just observing the browser's address bar, not inspecting internals. I'll click the first feed item and check if a proper detail page loads.
+
+
+#14 CALL browser_click {"target": "e164", "element": "First feed item description"}
+#15 CALL browser_snapshot {}
+#15 RESULT [isError] Error: ### Error
+Error: Ref e164 not found in the current page snapshot. Try capturing new snapshot.
+#15 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e4]:
+  - banner [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - button "open drawer" [ref=f1e7]
+      - heading [level=1] [ref=f1e10]:
+        - link [ref=f1e11]:
+          - /url: /
+      - link "New" [ref=f1e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f1e91]:
+        - /url: /notifications
+  - generic [ref=f1e24]:
+    - generic [ref=f1e25]:
+      - generic [ref=f1e26]: T
+      - generic [ref=f1e28]:
+        - heading "Ted P" [level=6] [ref=f1e29]
+        - heading "@Heath93" [level=6] [ref=f1e30]
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - heading "$1,509.53" [level=6] [ref=f1e33]
+        - heading "Account Balance" [level=6] [ref=f1e34]
+      - generic:
+        - separator
+      - list [ref=f1e36]:
+        - generic [ref=f1e37]:
+          - link "Home" [ref=f1e38]:
+            - /url: /
+          - link "My Account" [ref=f1e44]:
+            - /url: /user/settings
+          - link "Bank Accounts" [ref=f1e50]:
+            - /url: /bankaccounts
+          - link "Notifications" [ref=f1e56]:
+            - /url: /notifications
+      - generic:
+        - separator
+      - list [ref=f1e63]:
+        - button "Logout" [ref=f1e65]
+  - main [ref=f1e71]:
+    - generic [ref=f1e93]:
+      - heading "Transaction Detail" [level=2] [ref=f1e94]
+      - generic [ref=f1e95]:
+        - generic [ref=f1e105]:
+          - paragraph [ref=f1e107]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f1e109]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f1e110]: +$204.68
+      - generic [ref=f1e113]:
+        - generic [ref=f1e114]:
+          - generic [ref=f1e115]: "0"
+          - button [ref=f1e117]
+        - generic [ref=f1e125]:
+          - textbox "Write a comment..." [ref=f1e126]
+          - group [aria-hidden]
+    - paragraph [ref=f1e78]:
+      - text: Built by
+      - link [ref=f1e79]:
+        - /url: https://cypress.io
+```
+THINK The transaction detail page is now showing properly — the earlier flash was just a brief render before hydration settled. Good, the heading is visible, so I can proceed to add a comment.
+
+
+#16 CALL browser_type {"target": "f1e126", "element": "Write a comment textbox", "text": "Study comment", "submit": true}
+#17 CALL browser_wait_for {"time": 2}
+#18 CALL browser_snapshot {}
+#18 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-42-06-306Z.yml)
+#18 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-42-05-167Z.yml)
+#18 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e4]:
+  - banner [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - button "open drawer" [ref=f1e7]
+      - heading [level=1] [ref=f1e10]:
+        - link [ref=f1e11]:
+          - /url: /
+      - link "New" [ref=f1e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f1e91]:
+        - /url: /notifications
+  - generic [ref=f1e24]:
+    - generic [ref=f1e25]:
+      - generic [ref=f1e26]: T
+      - generic [ref=f1e28]:
+        - heading "Ted P" [level=6] [ref=f1e29]
+        - heading "@Heath93" [level=6] [ref=f1e30]
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - heading "$1,509.53" [level=6] [ref=f1e33]
+        - heading "Account Balance" [level=6] [ref=f1e34]
+      - generic:
+        - separator
+      - list [ref=f1e36]:
+        - generic [ref=f1e37]:
+          - link "Home" [ref=f1e38]:
+            - /url: /
+          - link "My Account" [ref=f1e44]:
+            - /url: /user/settings
+          - link "Bank Accounts" [ref=f1e50]:
+            - /url: /bankaccounts
+          - link "Notifications" [ref=f1e56]:
+            - /url: /notifications
+      - generic:
+        - separator
+      - list [ref=f1e63]:
+        - button "Logout" [ref=f1e65]
+  - main [ref=f1e71]:
+    - generic [ref=f1e93]:
+      - heading "Transaction Detail" [level=2] [ref=f1e94]
+      - generic [ref=f1e95]:
+        - generic [ref=f1e105]:
+          - paragraph [ref=f1e107]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f1e109]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f1e110]: +$204.68
+      - generic [ref=f1e113]:
+        - generic [ref=f1e114]:
+          - generic [ref=f1e115]: "0"
+          - button [ref=f1e117]
+        - generic [ref=f1e125]:
+          - textbox "Write a comment..." [ref=f1e126]
+          - group [aria-hidden]
+    - paragraph [ref=f1e78]:
+      - text: Built by
+      - link [ref=f1e79]:
+        - /url: https://cypress.io
+```
+THINK The comment doesn't seem to have posted — the count still shows 0 and I can't tell from the snapshot whether the textbox retained my typed text or if it submitted but the list just hasn't updated. I'll need to check the textbox state directly to figure out what happened.
+
+
+#19 CALL browser_type {"target": "f1e126", "element": "Write a comment textbox", "text": "Study comment"}
+#20 CALL browser_snapshot {}
+#20 RESULT [isError] Error: ### Error
+Error: Ref f1e126 not found in the current page snapshot. Try capturing new snapshot.
+#20 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e4]:
+  - banner [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - button "open drawer" [ref=f1e7]
+      - heading [level=1] [ref=f1e10]:
+        - link [ref=f1e11]:
+          - /url: /
+      - link "New" [ref=f1e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f1e91]:
+        - /url: /notifications
+  - generic [ref=f1e24]:
+    - generic [ref=f1e25]:
+      - generic [ref=f1e26]: T
+      - generic [ref=f1e28]:
+        - heading "Ted P" [level=6] [ref=f1e29]
+        - heading "@Heath93" [level=6] [ref=f1e30]
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - heading "$1,509.53" [level=6] [ref=f1e33]
+        - heading "Account Balance" [level=6] [ref=f1e34]
+      - generic:
+        - separator
+      - list [ref=f1e36]:
+        - generic [ref=f1e37]:
+          - link "Home" [ref=f1e38]:
+            - /url: /
+          - link "My Account" [ref=f1e44]:
+            - /url: /user/settings
+          - link "Bank Accounts" [ref=f1e50]:
+            - /url: /bankaccounts
+          - link "Notifications" [ref=f1e56]:
+            - /url: /notifications
+      - generic:
+        - separator
+      - list [ref=f1e63]:
+        - button "Logout" [ref=f1e65]
+  - main [ref=f1e71]:
+    - generic [ref=f1e127]:
+      - heading "Transaction Detail" [level=2] [ref=f1e128]
+      - generic [ref=f1e129]:
+        - generic [ref=f1e139]:
+          - paragraph [ref=f1e141]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f1e143]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f1e144]: +$204.68
+      - generic [ref=f1e147]:
+        - generic [ref=f1e148]:
+          - generic [ref=f1e149]: "0"
+          - button [ref=f1e151]
+        - generic [ref=f1e159]:
+          - textbox "Write a comment..." [ref=f1e160]
+          - group [aria-hidden]
+      - generic [ref=f1e161]:
+        - heading "Comments" [level=2] [ref=f1e162]
+        - list [ref=f1e165]:
+          - listitem [ref=f1e166]:
+            - generic [ref=f1e167]: Altered comment
+    - paragraph [ref=f1e78]:
+      - text: Built by
+      - link [ref=f1e79]:
+        - /url: https://cypress.io
+```
+THINK I see a comment labeled "Altered comment" instead of my expected "Study comment" — unclear if it's a pre-seeded comment or if my own comment got modified somehow. I don't see confirmation my comment posted, so I should wait and check the page state again.
+
+
+#21 CALL browser_wait_for {"time": 3}
+#22 CALL browser_snapshot {}
+#22 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T16-42-15-068Z.yml)
+#22 RESULT ### Page
+- Page URL: http://localhost:3000/transaction/1xfcAhNDZK4
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- generic [ref=f1e4]:
+  - banner [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - button "open drawer" [ref=f1e7]
+      - heading [level=1] [ref=f1e10]:
+        - link [ref=f1e11]:
+          - /url: /
+      - link "New" [ref=f1e16]:
+        - /url: /transaction/new
+      - link "8" [ref=f1e91]:
+        - /url: /notifications
+  - generic [ref=f1e24]:
+    - generic [ref=f1e25]:
+      - generic [ref=f1e26]: T
+      - generic [ref=f1e28]:
+        - heading "Ted P" [level=6] [ref=f1e29]
+        - heading "@Heath93" [level=6] [ref=f1e30]
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - heading "$1,509.53" [level=6] [ref=f1e33]
+        - heading "Account Balance" [level=6] [ref=f1e34]
+      - generic:
+        - separator
+      - list [ref=f1e36]:
+        - generic [ref=f1e37]:
+          - link "Home" [ref=f1e38]:
+            - /url: /
+          - link "My Account" [ref=f1e44]:
+            - /url: /user/settings
+          - link "Bank Accounts" [ref=f1e50]:
+            - /url: /bankaccounts
+          - link "Notifications" [ref=f1e56]:
+            - /url: /notifications
+      - generic:
+        - separator
+      - list [ref=f1e63]:
+        - button "Logout" [ref=f1e65]
+  - main [ref=f1e71]:
+    - generic [ref=f1e127]:
+      - heading "Transaction Detail" [level=2] [ref=f1e128]
+      - generic [ref=f1e129]:
+        - generic [ref=f1e139]:
+          - paragraph [ref=f1e141]: Ted Parisian charged Lia Rosenbaum
+          - paragraph [ref=f1e143]: "Request: WHjJ4qR2R2 to uBmeaz5pX"
+        - generic [ref=f1e144]: +$204.68
+      - generic [ref=f1e147]:
+        - generic [ref=f1e148]:
+          - generic [ref=f1e149]: "0"
+          - button [ref=f1e151]
+        - generic [ref=f1e159]:
+          - textbox "Write a comment..." [ref=f1e160]
+          - group [aria-hidden]
+      - generic [ref=f1e161]:
+        - heading "Comments" [level=2] [ref=f1e162]
+        - list [ref=f1e165]:
+          - listitem [ref=f1e166]:
+            - generic [ref=f1e167]: Altered comment
+    - paragraph [ref=f1e78]:
+      - text: Built by
+      - link [ref=f1e79]:
+        - /url: https://cypress.io
+```
+THINK The comment box is empty, and "Altered comment" appears in the list, but I'm not sure if that's from my submission or was already seeded there. "Study comment" isn't visible, which means my attempt to add it via type-with-submit may not have actually worked, even though the textbox cleared afterward.
+
+Retrying risks creating a duplicate if the first submission actually did persist somewhere I can't see — but since the only visible evidence shows no "Study comment" anywhere, I should try adding it again, this time submitting with the button instead of Enter to be safer.
+
+
+MSG {"status":"fail","reason":"Signed in as Heath93; home shows @Heath93. Direct navigation to /transaction/1xfcAhNDZK4 bounced to home, but the transaction page rendered 'Transaction Detail' on a later snapshot. Submitted 'Study comment' with Enter; textbox cleared, but the Comments list shows only 'Altered comment' after about 5s of waiting. 'Study comment' never appeared. Not retried, and not reloaded, because the Then had already failed. Unclear whether the submit was dropped or the posted text was altered to 'Altered comment'.","failedAssertion":"Then comment \"Study comment\" is visible in the transaction's comments"}
+RAWRESPONSE {"status":"fail","reason":"Signed in as Heath93; home shows @Heath93. Direct navigation to /transaction/1xfcAhNDZK4 bounced to home, but the transaction page rendered 'Transaction Detail' on a later snapshot. Submitted 'Study comment' with Enter; textbox cleared, but the Comments list shows only 'Altered comment' after about 5s of waiting. 'Study comment' never appeared. Not retried, and not reloaded, because the Then had already failed. Unclear whether the submit was dropped or the posted text was altered to 'Altered comment'.","failedAssertion":"Then comment \"Study comment\" is visible in the transaction's comments"}

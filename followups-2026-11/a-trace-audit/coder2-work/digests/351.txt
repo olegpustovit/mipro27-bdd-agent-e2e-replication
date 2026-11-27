@@ -1,0 +1,651 @@
+UNIT moodle:6ac189f540b8/B34.S153/fault:X018/C/claude-haiku-5-5/r2
+model claude-haiku-5-5 driver omp build Moodle pin cfe123f26fc7 + seeded fault X018; pair from change B34 type faulty
+scenario S153 No criterion added to marking guide
+  1. And I am on the "Course 1" course page logged in as teacher1
+  2. And I go to "Assign 1" advanced grading definition page
+  3. And I set the following fields to these values:
+  | Name | Marking guide 1 |
+  4. When I press "Save as draft"
+  5. Then I should see "Criterion name can not be empty"
+  6. And I should see "Criterion max score can not be empty"
+  7. And I should not see "Marking guide 1 Draft"
+  8. And I should not see "Please note: the advanced grading form is not ready at the moment. Simple grading method will be used until the form has a valid status."
+fault {"intent": "Marking guide editor: the 'criterion name can not be empty' validation fires for criteria that HAVE a name and not for empty ones (inverted condition), so a guide with named criteria cannot be saved and an empty one can.", "mutations": [{"file": "public/grade/grading/form/guide/guideeditor.php", "old": "                if (!strlen(trim($criterion['shortname']))) {\n                    $errors['err_noshortname'] = 1;", "new": "                if (strlen(trim($criterion['shortname']))) {\n                    $errors['err_noshortname'] = 1;"}]}
+target [5] Then I should see "Criterion name can not be empty"
+VERDICT fail step 5 'Then I should see "Criterion name can not be empty"'
+REASON After filling Name='Marking guide 1' and pressing 'Save as draft' on http://webserver/grade/grading/form/guide/edit.php?areaid=219000, the page shows a single alert: 'Criterion max score can not be empty'. The text 'Criterion name can not be empty' does not appear anywhere on the page. Step 5 is the first failing assertion.
+parse_error None tool_calls 20 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+THINK I'm already logged in as teacher1 from step 1, so the next move is getting to the Course 1 page. Taking a snapshot to locate the course.
+
+
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1768 chars]
+#2 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-31-112Z.yml)
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1768 chars]
+THINK The navigation to the course page seems to have bounced back to the dashboard, even though the result suggested it should have landed on the course. I'll try navigating again and take a fresh snapshot to see where it actually lands.
+
+
+#4 CALL browser_navigate {"url": "http://webserver/course/view.php?id=2"}
+#5 CALL browser_wait_for {"time": 2}
+#5 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-33-955Z.yml)
+#5 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-35-982Z.yml)
+THINK I need to find the Assign 1 advanced grading page first, so I'm looking for its link. Once I have it, I'll take a snapshot of the page.
+
+
+#6 CALL browser_snapshot {}
+#6 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e48]:
+          - heading "Course 1" [level=1] [ref=f2e55]
+        - navigation "Course menu" [ref=f2e58]:
+          - menubar [ref=f2e59]:
+            - menuitem "Course" [ref=f2e60]
+            - menuitem "Settings" [ref=f2e63]
+            - menuitem "Participants" [ref=f2e65]
+            - menuitem "Grades" [ref=f2e67]
+            - menuitem "Activities" [ref=f2e69]
+            - menuitem "More " [ref=f2e71]:
+              - generic [ref=f2e72]: More
+              - text: 
+        - main [ref=f2e76]:
+          - generic [ref=f2e79]:
+            - heading "Section outline" [level=2] [ref=f2e80]
+            - button [expanded] [ref=f2e82]:
+              - generic [ref=f2e83]:
+                - generic [aria-hidden] [ref=f2e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e85]:
+              - listitem [ref=f2e86]:
+                - generic [ref=f2e87]:
+                  - generic [ref=f2e89]:
+                    - button "General" [expanded] [ref=f2e90]:
+                      - generic "Collapse" [ref=f2e91]:
+                        - generic [aria-hidden] [ref=f2e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f2e94]:
+                      - link "General" [ref=f2e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - list [ref=f2e99]:
+ 
+…[truncated 4687 chars]
+THINK I'm checking where the advanced grading definition for Assign 1 lives in Moodle, starting from its course module id 109000. I'm not sure whether the link sits on the assignment's settings page or under a separate grading menu, so I still need to work that out.
+
+I'm still trying to pin down whether the advanced grading link lives under the assignment's Settings or its Grade page, and I'd rather check the assign view page than guess. I'll open it and look for the link there.
+
+
+#7 CALL browser_navigate {"url": "http://webserver/mod/assign/view.php?id=109000"}
+#8 CALL browser_snapshot {}
+#8 RESULT ### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Assign 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-41-164Z.yml)
+#8 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e48]:
+          - heading "Course 1" [level=1] [ref=f2e55]
+        - navigation "Course menu" [ref=f2e58]:
+          - menubar [ref=f2e59]:
+            - menuitem "Course" [ref=f2e60]
+            - menuitem "Settings" [ref=f2e63]
+            - menuitem "Participants" [ref=f2e65]
+            - menuitem "Grades" [ref=f2e67]
+            - menuitem "Activities" [ref=f2e69]
+            - menuitem "More " [ref=f2e71]:
+              - generic [ref=f2e72]: More
+              - text: 
+        - main [ref=f2e76]:
+          - generic [ref=f2e79]:
+            - heading "Section outline" [level=2] [ref=f2e80]
+            - button [expanded] [ref=f2e82]:
+              - generic [ref=f2e83]:
+                - generic [aria-hidden] [ref=f2e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f2e85]:
+              - listitem [ref=f2e86]:
+                - generic [ref=f2e87]:
+                  - generic [ref=f2e89]:
+                    - button "General" [expanded] [ref=f2e90]:
+                      - generic "Collapse" [ref=f2e91]:
+                        - generic [aria-hidden] [ref=f2e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f2e94]:
+                      - link "General" [ref=f2e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - list [ref=f2e99]:
+ 
+…[truncated 4687 chars]
+THINK The assign page keeps landing on the course view, and the page title says "C1: Assign 1" while the snapshot shows course/view.php, so the browser seems to be bouncing. That could be a redirect after navigation or just a stale snapshot, so I'll take a fresh snapshot to check.
+
+
+#9 CALL browser_wait_for {"time": 2}
+#10 CALL browser_snapshot {}
+#10 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Assign 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-45-229Z.yml)
+#10 RESULT ### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Assign 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - button "Open course index" [ref=f3e44]
+        - banner [ref=f3e48]:
+          - generic [ref=f3e49]:
+            - navigation "Breadcrumb" [ref=f3e52]:
+              - list [ref=f3e53]:
+                - listitem [ref=f3e54]:
+                  - link "C1" [ref=f3e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f3e56]:
+                  - text: /
+                  - link "General" [ref=f3e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f3e58]:
+                  - text: /
+                  - generic [ref=f3e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f3e68]
+        - navigation "Activity menu" [ref=f3e71]:
+          - menubar [ref=f3e72]:
+            - menuitem "Assignment" [ref=f3e73]
+            - menuitem "Settings" [ref=f3e76]
+            - menuitem "Submissions" [ref=f3e78]
+            - menuitem "Advanced grading" [ref=f3e80]
+            - menuitem "More " [ref=f3e82]:
+              - generic [ref=f3e83]: More
+              - text: 
+        - generic [ref=f3e86]:
+          - generic [ref=f3e88]: Test assign 1
+          - main [ref=f3e94]:
+            - link "Grade" [ref=f3e98]:
+              - /url: http://webserver/mod/assign/view.php?id=109000&action=grader
+            - generic [ref=f3e99]:
+              - heading "Grading summary" [level=3] [ref=f3e100]
+              - table [ref=f3
+…[truncated 1917 chars]
+MSG The assignment page has an "Advanced grading" menu item, so I'll open it.
+#11 CALL browser_click {"target": "f3e80"}
+#12 CALL browser_wait_for {"time": 2}
+#12 RESULT ### Page
+- Page URL: http://webserver/grade/grading/manage.php?contextid=14&component=mod_assign&area=submissions
+- Page Title: Advanced grading | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-47-369Z.yml)
+#12 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/grade/grading/manage.php?contextid=14&component=mod_assign&area=submissions
+- Page Title: Advanced grading | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-49-386Z.yml)
+THINK I'm on the manage page now, so the next step is the definition page where I set the name and press "Save as draft." I need to find the "Define new template" or "Create new" link, and I'll take a snapshot to locate it.
+
+
+#13 CALL browser_snapshot {}
+#13 RESULT ### Page
+- Page URL: http://webserver/grade/grading/manage.php?contextid=14&component=mod_assign&area=submissions
+- Page Title: Advanced grading | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e82]:
+              - generic [ref=f4e83]: More
+              - text: 
+        - main [ref=f4e88]:
+          - heading "Advanced grading" [level=2] [ref=f4e89]
+          - generic [ref=f4e91]:
+            - generic [ref=f4e92]: Change active grading method to
+            - button "Help" [ref=f4e93]:
+              - img "Help with Grading method" [ref=f4e94]: 
+            - comb
+…[truncated 2224 chars]
+THINK I'm heading to the advanced grading definition page for Assignment 1, which is probably reached through the "Define new grading form from scratch" link. I'll click it to get there. The alert text on the manage page matters for step 8, but I'll deal with it when I get to that step.
+
+
+#14 CALL browser_click {"target": "f4e97"}
+#15 CALL browser_wait_for {"time": 2}
+#15 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-54-711Z.yml)
+#15 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-27-56-737Z.yml)
+#16 CALL browser_snapshot {}
+#16 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f5e1]:
+  - status
+  - generic [ref=f5e2]:
+    - link "Skip to main content" [ref=f5e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - link "Acceptance test site" [ref=f5e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f5e9]:
+          - menuitem "Dashboard" [ref=f5e10]
+          - text: 
+        - generic [ref=f5e12]:
+          - generic [ref=f5e15]:
+            - switch "Edit mode" [ref=f5e16]
+            - generic [ref=f5e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f5e27]:
+            - generic [aria-hidden] [ref=f5e28]: 
+          - button "Toggle messaging drawer" [ref=f5e30]:
+            - generic [aria-hidden] [ref=f5e31]: 
+          - button "User menu" [ref=f5e37]: 
+    - generic [ref=f5e41]:
+      - generic [ref=f5e42]:
+        - button "Open course index" [ref=f5e44]
+        - banner [ref=f5e48]:
+          - generic [ref=f5e49]:
+            - navigation "Breadcrumb" [ref=f5e52]:
+              - list [ref=f5e53]:
+                - listitem [ref=f5e54]:
+                  - link "C1" [ref=f5e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f5e56]:
+                  - text: /
+                  - link "General" [ref=f5e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f5e58]:
+                  - text: /
+                  - generic [ref=f5e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f5e68]
+        - navigation "Activity menu" [ref=f5e71]:
+          - menubar [ref=f5e72]:
+            - menuitem "Assignment" [ref=f5e73]
+            - menuitem "Settings" [ref=f5e75]
+            - menuitem "Submissions" [ref=f5e77]
+            - menuitem "Advanced grading" [ref=f5e79]
+            - menuitem "More " [ref=f5e81]:
+              - generic [ref=f5e82]: More
+              - text: 
+        - generic [ref=f5e85]:
+          - generic [ref=f5e87]: Test assign 1
+          - main [ref=f5e92]:
+            - generic [ref=f5e93]:
+              - generic [ref=f5e94]:
+                - generic [ref=f5e95]:
+                  - generic [ref=f5e96]: Name
+                  - generic [aria-hidden] [ref=f5e99]: 
+            
+…[truncated 6360 chars]
+MSG Definition page is open. Step 3: set the Name field.
+#17 CALL browser_fill_form {"fields": [{"target": "f5e101", "name": "Name", "type": "textbox", "value": "Marking guide 1"}]}
+#17 RESULT 
+#18 CALL browser_click {"target": "f5e190"}
+#19 CALL browser_wait_for {"time": 2}
+#19 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-28-01-106Z.yml)
+#19 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-28-03-139Z.yml)
+#20 CALL browser_snapshot {}
+#20 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f7e1]:
+  - status
+  - generic [ref=f7e2]:
+    - link "Skip to main content" [ref=f7e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f7e4]:
+      - generic [ref=f7e5]:
+        - link "Acceptance test site" [ref=f7e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f7e9]:
+          - menuitem "Dashboard" [ref=f7e10]
+          - text: 
+        - generic [ref=f7e12]:
+          - generic [ref=f7e15]:
+            - switch "Edit mode" [ref=f7e16]
+            - generic [ref=f7e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f7e27]:
+            - generic [aria-hidden] [ref=f7e28]: 
+          - button "Toggle messaging drawer" [ref=f7e30]:
+            - generic [aria-hidden] [ref=f7e31]: 
+          - button "User menu" [ref=f7e37]: 
+    - generic [ref=f7e41]:
+      - generic [ref=f7e42]:
+        - button "Open course index" [ref=f7e44]
+        - banner [ref=f7e48]:
+          - generic [ref=f7e49]:
+            - navigation "Breadcrumb" [ref=f7e52]:
+              - list [ref=f7e53]:
+                - listitem [ref=f7e54]:
+                  - link "C1" [ref=f7e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f7e56]:
+                  - text: /
+                  - link "General" [ref=f7e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f7e58]:
+                  - text: /
+                  - generic [ref=f7e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f7e68]
+        - navigation "Activity menu" [ref=f7e71]:
+          - menubar [ref=f7e72]:
+            - menuitem "Assignment" [ref=f7e73]
+            - menuitem "Settings" [ref=f7e75]
+            - menuitem "Submissions" [ref=f7e77]
+            - menuitem "Advanced grading" [ref=f7e79]
+            - menuitem "More " [ref=f7e81]:
+              - generic [ref=f7e82]: More
+              - text: 
+        - generic [ref=f7e85]:
+          - generic [ref=f7e87]: Test assign 1
+          - main [ref=f7e92]:
+            - generic [ref=f7e93]:
+              - generic [ref=f7e94]:
+                - generic [ref=f7e95]:
+                  - generic [ref=f7e96]: Name
+                  - generic [aria-hidden] [ref=f7e99]: 
+                - textbox 
+…[truncated 6644 chars]
+THINK Step 5 is failing: the "Criterion name can not be empty" alert isn't showing, only the max score one is. Since the first failure ends the run, I'm reporting a fail at step 5, and the snapshot was taken after the 2-second wait, so I'm treating the evidence as conclusive.
+
+
+MSG ```json
+{"status":"fail","reason":"After filling Name='Marking guide 1' and pressing 'Save as draft' on http://webserver/grade/grading/form/guide/edit.php?areaid=219000, the page shows a single alert: 'Criterion max score can not be empty'. The text 'Criterion name can not be empty' does not appear anywhere on the page. Step 5 is the first failing assertion.","failingStep":5,"failingStepText":"Then I should see \"Criterion name can not be empty\""}
+```

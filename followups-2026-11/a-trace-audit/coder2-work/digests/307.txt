@@ -1,0 +1,1365 @@
+UNIT moodle:6ac189f540b8/B34.S154/fault:X018/C/gpt-6-luna/r2
+model gpt-6-luna driver codex build Moodle pin cfe123f26fc7 + seeded fault X018; pair from change B34 type faulty
+scenario S154 Marking guide options and frequently used comment are added to marking guide
+  1. And I am on the "Course 1" course page logged in as teacher1
+  2. And I go to "Assign 1" advanced grading definition page
+  3. And I set the following fields to these values:
+  | Name | Marking guide 1 |
+  4. Given I define the following marking guide:
+  | Criterion name | Description for students | Description for markers | Maximum score |
+  | Criteria 1 | Criteria 1 description for student | Criteria 1 description for marker | 50 |
+  | Criteria 2 | Criteria 2 description for student | Criteria 2 description for marker | 50 |
+  5. And I define the following frequently used comments:
+  | Comment 1 |
+  | Comment 2 |
+  6. And I set the following fields to these values:
+  | Show guide definition to students | 1 |
+  | Show marks per criterion to students | 0 |
+  7. When I press "Save as draft"
+  8. And I go to "Assign 1" advanced grading definition page
+  9. Then I should see "Comment 1"
+  10. And I should see "Comment 2"
+  11. And the field "Show guide definition to students" matches value "1"
+  12. And the field "Show marks per criterion to students" matches value "0"
+fault {"intent": "Marking guide editor: the 'criterion name can not be empty' validation fires for criteria that HAVE a name and not for empty ones (inverted condition), so a guide with named criteria cannot be saved and an empty one can.", "mutations": [{"file": "public/grade/grading/form/guide/guideeditor.php", "old": "                if (!strlen(trim($criterion['shortname']))) {\n                    $errors['err_noshortname'] = 1;", "new": "                if (strlen(trim($criterion['shortname']))) {\n                    $errors['err_noshortname'] = 1;"}]}
+target [9] Then I should see "Comment 1"
+VERDICT fail step 7 'When I press "Save as draft"'
+REASON Step 7 save attempt showed the validation error “Criterion name can not be empty.” An additional empty criterion/comment row is present, so the draft did not save.
+parse_error None tool_calls 55 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+MSG I’ll use the existing teacher1 browser session and follow the course and grading UI steps in order, stopping at the first failure.
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - search "Course overview controls":
+                    - generic:
+                      - generic:
+                        - button "Grouping drop-down menu": All 
+                        - text: 
+                      - generic:
+                        - generic: Search courses
+                        - textbox "Search courses":
+                          - /placeholder: Search
+                        - text: 
+                      - generic:
+                        - button "Sorting drop-down menu": Sort by course name 
+                        - text: 
+                      - generic:
+                        - button "Display drop-down menu": Card 
+                        - text: 
+                  - generic:
+                    - list:
+                      - listitem:
+                        - link "Course 1":
+                          - /url: http://webserver/course/view.php?id=2
+                        - generic:
+                          - link "Course name Course 1":
+                            - /url: http://webserver/course/view.php?id=2
+                            - generic: 
+                            - generic: Course name
+                            - generic "Course 1"
+                          - generic:
+                            - generic: Course category
+…[truncated 1768 chars]
+#2 CALL browser_click {"target": "e93", "element": "Course 1 course link"}
+#2 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-04-986Z.yml)
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://webserver/course/view.php?id=2
+- Page Title: Course: Course 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e15]:
+            - switch "Edit mode" [ref=f1e16]
+            - generic [ref=f1e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e27]:
+            - generic [aria-hidden] [ref=f1e28]: 
+          - button "Toggle messaging drawer" [ref=f1e30]:
+            - generic [aria-hidden] [ref=f1e31]: 
+          - button "User menu" [ref=f1e37]: 
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Open course index" [ref=f1e44]
+        - banner [ref=f1e48]:
+          - heading "Course 1" [level=1] [ref=f1e55]
+        - navigation "Course menu" [ref=f1e58]:
+          - menubar [ref=f1e59]:
+            - menuitem "Course" [ref=f1e60]
+            - menuitem "Settings" [ref=f1e63]
+            - menuitem "Participants" [ref=f1e65]
+            - menuitem "Grades" [ref=f1e67]
+            - menuitem "Activities" [ref=f1e69]
+            - menuitem "More " [ref=f1e71]:
+              - generic [ref=f1e72]: More
+              - text: 
+        - main [ref=f1e76]:
+          - generic [ref=f1e79]:
+            - heading "Section outline" [level=2] [ref=f1e80]
+            - button [expanded] [ref=f1e82]:
+              - generic [ref=f1e83]:
+                - generic [aria-hidden] [ref=f1e84]: 
+                - text: Collapse all
+              - text: 
+            - list [ref=f1e85]:
+              - listitem [ref=f1e86]:
+                - generic [ref=f1e87]:
+                  - generic [ref=f1e89]:
+                    - button "General" [expanded] [ref=f1e90]:
+                      - generic "Collapse" [ref=f1e91]:
+                        - generic [aria-hidden] [ref=f1e92]: 
+                      - text:  
+                    - heading [level=3] [ref=f1e94]:
+                      - link "General" [ref=f1e95]:
+                        - /url: http://webserver/course/section.php?id=111000
+                  - list [ref=f1e99]:
+ 
+…[truncated 4687 chars]
+#4 CALL browser_click {"target": "f1e107", "element": "Assign 1 assignment link"}
+#4 RESULT ### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Assign 1 | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-07-635Z.yml)
+#5 CALL browser_snapshot {}
+#5 RESULT ### Page
+- Page URL: http://webserver/mod/assign/view.php?id=109000
+- Page Title: C1: Assign 1 | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e12]:
+          - generic [ref=f2e15]:
+            - switch "Edit mode" [ref=f2e16]
+            - generic [ref=f2e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e27]:
+            - generic [aria-hidden] [ref=f2e28]: 
+          - button "Toggle messaging drawer" [ref=f2e30]:
+            - generic [aria-hidden] [ref=f2e31]: 
+          - button "User menu" [ref=f2e37]: 
+    - generic [ref=f2e41]:
+      - generic [ref=f2e42]:
+        - button "Open course index" [ref=f2e44]
+        - banner [ref=f2e48]:
+          - generic [ref=f2e49]:
+            - navigation "Breadcrumb" [ref=f2e52]:
+              - list [ref=f2e53]:
+                - listitem [ref=f2e54]:
+                  - link "C1" [ref=f2e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f2e56]:
+                  - text: /
+                  - link "General" [ref=f2e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f2e58]:
+                  - text: /
+                  - generic [ref=f2e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f2e68]
+        - navigation "Activity menu" [ref=f2e71]:
+          - menubar [ref=f2e72]:
+            - menuitem "Assignment" [ref=f2e73]
+            - menuitem "Settings" [ref=f2e76]
+            - menuitem "Submissions" [ref=f2e78]
+            - menuitem "Advanced grading" [ref=f2e80]
+            - menuitem "More " [ref=f2e82]:
+              - generic [ref=f2e83]: More
+              - text: 
+        - generic [ref=f2e86]:
+          - generic [ref=f2e88]: Test assign 1
+          - main [ref=f2e94]:
+            - link "Grade" [ref=f2e98]:
+              - /url: http://webserver/mod/assign/view.php?id=109000&action=grader
+            - generic [ref=f2e99]:
+              - heading "Grading summary" [level=3] [ref=f2e100]
+              - table [ref=f2
+…[truncated 1917 chars]
+#6 CALL browser_click {"target": "f2e80", "element": "Advanced grading menu item"}
+#6 RESULT ### Page
+- Page URL: http://webserver/grade/grading/manage.php?contextid=14&component=mod_assign&area=submissions
+- Page Title: Advanced grading | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-10-679Z.yml)
+#7 CALL browser_snapshot {}
+#7 RESULT ### Page
+- Page URL: http://webserver/grade/grading/manage.php?contextid=14&component=mod_assign&area=submissions
+- Page Title: Advanced grading | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f3e1]:
+  - status
+  - generic [ref=f3e2]:
+    - link "Skip to main content" [ref=f3e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "Acceptance test site" [ref=f3e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f3e9]:
+          - menuitem "Dashboard" [ref=f3e10]
+          - text: 
+        - generic [ref=f3e12]:
+          - generic [ref=f3e15]:
+            - switch "Edit mode" [ref=f3e16]
+            - generic [ref=f3e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f3e27]:
+            - generic [aria-hidden] [ref=f3e28]: 
+          - button "Toggle messaging drawer" [ref=f3e30]:
+            - generic [aria-hidden] [ref=f3e31]: 
+          - button "User menu" [ref=f3e37]: 
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]:
+        - button "Open course index" [ref=f3e44]
+        - banner [ref=f3e48]:
+          - generic [ref=f3e49]:
+            - navigation "Breadcrumb" [ref=f3e52]:
+              - list [ref=f3e53]:
+                - listitem [ref=f3e54]:
+                  - link "C1" [ref=f3e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f3e56]:
+                  - text: /
+                  - link "General" [ref=f3e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f3e58]:
+                  - text: /
+                  - generic [ref=f3e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f3e68]
+        - navigation "Activity menu" [ref=f3e71]:
+          - menubar [ref=f3e72]:
+            - menuitem "Assignment" [ref=f3e73]
+            - menuitem "Settings" [ref=f3e75]
+            - menuitem "Submissions" [ref=f3e77]
+            - menuitem "Advanced grading" [ref=f3e79]
+            - menuitem "More " [ref=f3e82]:
+              - generic [ref=f3e83]: More
+              - text: 
+        - main [ref=f3e88]:
+          - heading "Advanced grading" [level=2] [ref=f3e89]
+          - generic [ref=f3e91]:
+            - generic [ref=f3e92]: Change active grading method to
+            - button "Help" [ref=f3e93]:
+              - img "Help with Grading method" [ref=f3e94]: 
+            - comb
+…[truncated 2224 chars]
+#8 CALL browser_click {"target": "f3e97", "element": "Define new grading form from scratch"}
+#8 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-13-424Z.yml)
+#9 CALL browser_snapshot {}
+#9 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+            
+…[truncated 4951 chars]
+MSG The advanced grading form is open, with the marking guide editor and its criterion/comment controls visible. I’m entering the requested fields through those controls.
+#10 CALL browser_fill_form {"fields": [{"name": "Name", "target": "f4e101", "type": "textbox", "value": "Marking guide 1"}]}
+#10 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+#11 CALL browser_click {"target": "f4e120", "element": "Click to edit criterion name first row"}
+#11 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-18-466Z.yml)
+#12 CALL browser_snapshot {}
+#12 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 6350 chars]
+#13 CALL browser_type {"target": "f4e258", "text": "Criteria 1"}
+#13 RESULT 
+#14 CALL browser_press_key {"key": "Enter"}
+#14 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-26-719Z.yml)
+#15 CALL browser_snapshot {}
+#15 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+            
+…[truncated 6341 chars]
+#16 CALL browser_click {"target": "f4e123", "element": "Description for students field first criterion"}
+#16 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-29-458Z.yml)
+#17 CALL browser_snapshot {}
+#17 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 6339 chars]
+#18 CALL browser_type {"target": "f4e263", "text": "Criteria 1 description for student"}
+#18 RESULT 
+#19 CALL browser_press_key {"key": "Enter"}
+#19 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-33-722Z.yml)
+#20 CALL browser_click {"target": "f4e128", "element": "Description for Markers field first criterion"}
+#20 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-35-437Z.yml)
+#21 CALL browser_snapshot {}
+#21 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 6380 chars]
+#22 CALL browser_type {"target": "f4e268", "text": "Criteria 1 description for marker"}
+#22 RESULT 
+#23 CALL browser_press_key {"key": "Enter"}
+#23 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-39-880Z.yml)
+#24 CALL browser_click {"target": "f4e132", "element": "Maximum score first criterion"}
+#24 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-41-743Z.yml)
+#25 CALL browser_snapshot {}
+#25 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 6410 chars]
+#26 CALL browser_type {"target": "f4e273", "text": "50"}
+#26 RESULT 
+#27 CALL browser_press_key {"key": "Enter"}
+#27 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-45-224Z.yml)
+#28 CALL browser_click {"target": "f4e136", "element": "Add criterion button"}
+#28 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-48-099Z.yml)
+#29 CALL browser_snapshot {}
+#29 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 7409 chars]
+#30 CALL browser_type {"target": "f4e290", "text": "Criteria 2"}
+#30 RESULT 
+#31 CALL browser_press_key {"key": "Enter"}
+#31 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-52-312Z.yml)
+#32 CALL browser_click {"target": "f4e291", "element": "Description for students field second criterion"}
+#32 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-57-54-750Z.yml)
+#33 CALL browser_snapshot {}
+#33 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 7398 chars]
+#34 CALL browser_type {"target": "f4e309", "text": "Criteria 2 description for student"}
+#34 RESULT 
+#35 CALL browser_press_key {"key": "Enter"}
+#35 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-00-737Z.yml)
+#36 CALL browser_click {"target": "f4e296", "element": "Description for Markers second criterion"}
+#36 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-02-806Z.yml)
+#37 CALL browser_snapshot {}
+#37 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 7439 chars]
+#38 CALL browser_type {"target": "f4e314", "text": "Criteria 2 description for marker"}
+#38 RESULT 
+#39 CALL browser_press_key {"key": "Enter"}
+#39 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-07-186Z.yml)
+#40 CALL browser_click {"target": "f4e300", "element": "Maximum score second criterion"}
+#40 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-09-512Z.yml)
+#41 CALL browser_snapshot {}
+#41 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 7469 chars]
+#42 CALL browser_type {"target": "f4e319", "text": "50"}
+#42 RESULT 
+#43 CALL browser_press_key {"key": "Enter"}
+#43 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-12-698Z.yml)
+#44 CALL browser_click {"target": "f4e147", "element": "Add frequently used comment button"}
+#44 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-14-657Z.yml)
+#45 CALL browser_snapshot {}
+#45 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 7918 chars]
+#46 CALL browser_type {"target": "f4e336", "text": "Comment 1"}
+#46 RESULT 
+#47 CALL browser_press_key {"key": "Enter"}
+#47 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-21-977Z.yml)
+#48 CALL browser_click {"target": "f4e147", "element": "Add frequently used comment button"}
+#48 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-24-311Z.yml)
+#49 CALL browser_snapshot {}
+#49 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 8256 chars]
+#50 CALL browser_type {"target": "f4e352", "text": "Comment 2"}
+#50 RESULT 
+#51 CALL browser_press_key {"key": "Enter"}
+#51 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-29-446Z.yml)
+#52 CALL browser_fill_form {"fields": [{"name": "Show marks per criterion to students", "target": "f4e154", "type": "checkbox", "value": "false"}, {"name": "Show guide definition to students", "target": "f4e151", "type": "checkbox", "value": "true"}]}
+#52 RESULT 
+#53 CALL browser_snapshot {}
+#53 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php?areaid=219000
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "Dashboard" [ref=f4e10]
+          - text: 
+        - generic [ref=f4e12]:
+          - generic [ref=f4e15]:
+            - switch "Edit mode" [ref=f4e16]
+            - generic [ref=f4e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e27]:
+            - generic [aria-hidden] [ref=f4e28]: 
+          - button "Toggle messaging drawer" [ref=f4e30]:
+            - generic [aria-hidden] [ref=f4e31]: 
+          - button "User menu" [ref=f4e37]: 
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - button "Open course index" [ref=f4e44]
+        - banner [ref=f4e48]:
+          - generic [ref=f4e49]:
+            - navigation "Breadcrumb" [ref=f4e52]:
+              - list [ref=f4e53]:
+                - listitem [ref=f4e54]:
+                  - link "C1" [ref=f4e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f4e56]:
+                  - text: /
+                  - link "General" [ref=f4e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f4e58]:
+                  - text: /
+                  - generic [ref=f4e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f4e68]
+        - navigation "Activity menu" [ref=f4e71]:
+          - menubar [ref=f4e72]:
+            - menuitem "Assignment" [ref=f4e73]
+            - menuitem "Settings" [ref=f4e75]
+            - menuitem "Submissions" [ref=f4e77]
+            - menuitem "Advanced grading" [ref=f4e79]
+            - menuitem "More " [ref=f4e81]:
+              - generic [ref=f4e82]: More
+              - text: 
+        - generic [ref=f4e85]:
+          - generic [ref=f4e87]: Test assign 1
+          - main [ref=f4e92]:
+            - generic [ref=f4e93]:
+              - generic [ref=f4e94]:
+                - generic [ref=f4e95]:
+                  - generic [ref=f4e96]: Name
+                  - generic [aria-hidden] [ref=f4e99]: 
+                - tex
+…[truncated 8196 chars]
+#54 CALL browser_click {"target": "f4e166", "element": "Save as draft button"}
+#54 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T04-58-35-676Z.yml)
+#55 CALL browser_snapshot {}
+#55 RESULT ### Page
+- Page URL: http://webserver/grade/grading/form/guide/edit.php
+- Page Title: Define marking guide | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f6e1]:
+  - status
+  - generic [ref=f6e2]:
+    - link "Skip to main content" [ref=f6e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - link "Acceptance test site" [ref=f6e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f6e9]:
+          - menuitem "Dashboard" [ref=f6e10]
+          - text: 
+        - generic [ref=f6e12]:
+          - generic [ref=f6e15]:
+            - switch "Edit mode" [ref=f6e16]
+            - generic [ref=f6e17]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f6e27]:
+            - generic [aria-hidden] [ref=f6e28]: 
+          - button "Toggle messaging drawer" [ref=f6e30]:
+            - generic [aria-hidden] [ref=f6e31]: 
+          - button "User menu" [ref=f6e37]: 
+    - generic [ref=f6e41]:
+      - generic [ref=f6e42]:
+        - button "Open course index" [ref=f6e44]
+        - banner [ref=f6e48]:
+          - generic [ref=f6e49]:
+            - navigation "Breadcrumb" [ref=f6e52]:
+              - list [ref=f6e53]:
+                - listitem [ref=f6e54]:
+                  - link "C1" [ref=f6e55]:
+                    - /url: http://webserver/course/view.php?id=2
+                - listitem [ref=f6e56]:
+                  - text: /
+                  - link "General" [ref=f6e57]:
+                    - /url: http://webserver/course/section.php?id=111000
+                - listitem [ref=f6e58]:
+                  - text: /
+                  - generic [ref=f6e59]: Assign 1
+            - heading "Assign 1" [level=1] [ref=f6e68]
+        - navigation "Activity menu" [ref=f6e71]:
+          - menubar [ref=f6e72]:
+            - menuitem "Assignment" [ref=f6e73]
+            - menuitem "Settings" [ref=f6e75]
+            - menuitem "Submissions" [ref=f6e77]
+            - menuitem "Advanced grading" [ref=f6e79]
+            - menuitem "More " [ref=f6e81]:
+              - generic [ref=f6e82]: More
+              - text: 
+        - generic [ref=f6e85]:
+          - generic [ref=f6e87]: Test assign 1
+          - main [ref=f6e92]:
+            - generic [ref=f6e93]:
+              - generic [ref=f6e94]:
+                - generic [ref=f6e95]:
+                  - generic [ref=f6e96]: Name
+                  - generic [aria-hidden] [ref=f6e99]: 
+                - textbox 
+…[truncated 8512 chars]
+MSG {"status":"fail","reason":"Step 7 save attempt showed the validation error “Criterion name can not be empty.” An additional empty criterion/comment row is present, so the draft did not save.","failingStep":7,"failingStepText":"When I press \"Save as draft\""}

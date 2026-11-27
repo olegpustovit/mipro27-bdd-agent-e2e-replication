@@ -1,0 +1,581 @@
+UNIT moodle:6ac189f540b8/B15.S091/fault:X022/C/claude-haiku-5-5/r1
+model claude-haiku-5-5 driver omp build Moodle pin cfe123f26fc7 + seeded fault X022; pair from change B15 type faulty
+scenario S091 View the logged in user block by a user on the dashboard
+  1. And I log in as "teacher1"
+  2. And I turn editing mode on
+  3. When I add the "Logged in user" block
+  4. Then I should see "Teacher One" in the "Logged in user" "block"
+fault {"intent": "Logged in user block shows the username where the user's full name belongs (wrong value).", "mutations": [{"file": "public/blocks/myprofile/classes/output/myprofile.php", "old": "        $data->userfullname = fullname($USER);", "new": "        $data->userfullname = $USER->username;"}]}
+target [4] Then I should see "Teacher One" in the "Logged in user" "block"
+VERDICT fail step 4 'Then I should see "Teacher One" in the "Logged in user" "block"'
+REASON Steps 1-3 passed: edit mode was switched on (switch shows checked, Add a block and block menus appeared) and the "Logged in user" block was added to the Dashboard. The block's visible text is "teacher1" and "Email address: teacher1@example.com". "Teacher One" appears only as the user picture's alt text (img "Teacher One"), not as visible text in the block region. The string "Teacher One" is visible elsewhere on the page (footer 'You are logged in as Teacher One'), but not in the "Logged in user" block.
+parse_error None tool_calls 18 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+THINK I've confirmed the first step is done since I'm already logged in. Next I need to switch on editing mode, but I'll take a snapshot before making any changes.
+
+
+#1 CALL browser_snapshot {}
+#1 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - heading "You're not enrolled in any courses." [level=4]
+                  - paragraph: Once you're enrolled in a course, it will appear here.
+            - link "Skip Timeline":
+              - /url: "#sb-4"
+            - region:
+              - generic:
+                - heading "Timeline" [level=3]
+                - generic:
+                  - generic:
+                    - generic:
+                      - 'button "Next 30 days: filter timeline by date"': Next 30 days 
+                      - text: 
+                    - generic:
+                      - 'button "Sort by dates: sort timeline items"': Sort by dates 
+                      - text: 
+                    - search:
+                      - textbox "Search by activity type or name"
+                  - paragraph: No in-progress courses
+      - contentinfo:
+        - button "Show footer":
+          - generic [aria-hidden]: "?"
+        - generic:
+          - link "Contact site support":
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden]: 
+            - text: Contact site support
+          - generic:
+            - generic:
+              - text: You are logged in as
+              - link "Teacher One":
+                - /url: http://webserver/user/profile.php?id=3
+         
+…[truncated 392 chars]
+THINK I'm on the dashboard page now, and the edit mode switch is at e17, so I'll click it.
+
+
+#2 CALL browser_click {"target": "e17"}
+#3 CALL browser_snapshot {}
+#3 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-37-37-454Z.yml)
+#3 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "Dashboard"
+          - text: 
+        - generic:
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - heading "You're not enrolled in any courses." [level=4]
+                  - paragraph: Once you're enrolled in a course, it will appear here.
+            - link "Skip Timeline":
+              - /url: "#sb-4"
+            - region:
+              - generic:
+                - heading "Timeline" [level=3]
+                - generic:
+                  - generic:
+                    - generic:
+                      - 'button "Next 30 days: filter timeline by date"': Next 30 days 
+                      - text: 
+                    - generic:
+                      - 'button "Sort by dates: sort timeline items"': Sort by dates 
+                      - text: 
+                    - search:
+                      - textbox "Search by activity type or name"
+                  - paragraph: No in-progress courses
+      - contentinfo:
+        - button "Show footer":
+          - generic [aria-hidden]: "?"
+        - generic:
+          - link "Contact site support":
+            - /url: http://webserver/user/contactsitesupport.php
+            - generic [aria-hidden]: 
+            - text: Contact site support
+          - generic:
+            - generic:
+              - text: You are logged in as
+              - link "Teacher One":
+                - /url: http://webserver/user/profile.php?id=3
+         
+…[truncated 392 chars]
+THINK The edit mode switch still isn't showing as checked, and the page moved from /my/index.php to /my/ without an "Add a block" button appearing, which would normally mean editing is on. The reload may have wiped the toggle, so I'm weighing whether to click it again or first confirm what the step actually requires: turning editing mode on.
+
+Retrying the switch seems reasonable if it didn't take effect, since editing mode is a precondition for the step. I'll click it again and take a fresh snapshot to check.
+
+
+#4 CALL browser_click {"target": "e17"}
+#5 CALL browser_wait_for {"time": 2}
+#6 CALL browser_snapshot {}
+#6 RESULT [isError] Error: ### Error
+Error: Ref e17 not found in the current page snapshot. Try capturing new snapshot.
+#6 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-37-42-452Z.yml)
+#6 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e16]:
+            - switch "Edit mode" [checked] [ref=f1e17]
+            - generic [ref=f1e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e28]:
+            - generic [aria-hidden] [ref=f1e29]: 
+          - button "Toggle messaging drawer" [ref=f1e31]:
+            - generic [aria-hidden] [ref=f1e32]: 
+          - button "User menu" [ref=f1e38]: 
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]:
+          - generic [ref=f1e50]:
+            - button "Reset page to default" [ref=f1e55]
+            - heading "Dashboard" [level=1] [ref=f1e61]
+        - main [ref=f1e65]:
+          - link "Add a block" [ref=f1e68]:
+            - /url: http://webserver/my/index.php?bui_addblock&sesskey=OyUw8RYC2H&bui_blockregion=content
+            - generic [aria-hidden] [ref=f1e69]: +
+            - text: Add a block
+          - region [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region [ref=f1e73]:
+              - generic [ref=f1e74]:
+                - generic [ref=f1e75]:
+                  - heading "Course overview" [level=3] [ref=f1e76]
+                  - menubar [ref=f1e78]:
+                    - generic [ref=f1e79]:
+                      - menuitem "Move Course overview block" [ref=f1e81]:
+                        - generic [aria-hidden] [ref=f1e82]: 
+                      - generic [ref=f1e84]:
+                        - menuitem "Actions menu" [ref=f1e85]:
+                          - generic [aria-hidden] [ref=f1e86]: 
+                        - text:   
+                - generic [ref=f1e91]:
+                  - heading "You're not enrolled in any courses." [level=4] [ref=f1e92]
+                  - paragraph [ref=f1e93]: Once you're enrolled
+…[truncated 2395 chars]
+THINK The edit mode check passed, so I'm on to step 3: adding the "Logged in user" block. The "Add a block" link now has ID f1e68 in the new snapshot. I'm wondering whether my earlier click on e17 toggled edit mode and then the page reloaded and lost that state, but either way edit mode is on now, so I'll go ahead.
+
+
+#7 CALL browser_click {"target": "f1e68"}
+#8 CALL browser_wait_for {"time": 2}
+#9 CALL browser_snapshot {}
+#9 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-37-46-128Z.yml)
+#9 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-37-48-152Z.yml)
+#9 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e16]:
+            - switch "Edit mode" [checked] [ref=f1e17]
+            - generic [ref=f1e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e28]:
+            - generic [aria-hidden] [ref=f1e29]: 
+          - button "Toggle messaging drawer" [ref=f1e31]:
+            - generic [aria-hidden] [ref=f1e32]: 
+          - button "User menu" [ref=f1e38]: 
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]:
+          - generic [ref=f1e50]:
+            - button "Reset page to default" [ref=f1e55]
+            - heading "Dashboard" [level=1] [ref=f1e61]
+        - main [ref=f1e65]:
+          - link "Add a block" [ref=f1e68]:
+            - /url: http://webserver/my/index.php?bui_addblock&sesskey=OyUw8RYC2H&bui_blockregion=content
+            - generic [aria-hidden] [ref=f1e69]: +
+            - text: Add a block
+          - region [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region [ref=f1e73]:
+              - generic [ref=f1e74]:
+                - generic [ref=f1e75]:
+                  - heading "Course overview" [level=3] [ref=f1e76]
+                  - menubar [ref=f1e78]:
+                    - generic [ref=f1e79]:
+                      - menuitem "Move Course overview block" [ref=f1e81]:
+                        - generic [aria-hidden] [ref=f1e82]: 
+                      - generic [ref=f1e84]:
+                        - menuitem "Actions menu" [ref=f1e85]:
+                          - generic [aria-hidden] [ref=f1e86]: 
+                        - text:   
+                - generic [ref=f1e91]:
+                  - heading "You're not enrolled in any courses." [level=4] [ref=f1e92]
+                  - paragraph [ref=f1e93]: Once you're enrolled
+…[truncated 2395 chars]
+THINK My click on "Add a block" just reloaded the same page, and no drawer showed up in the snapshot. The block drawer might open from the "Open block drawer" button instead, so I'll click that and take a fresh snapshot.
+
+
+#10 CALL browser_click {"target": "f1e45"}
+#11 CALL browser_wait_for {"time": 2}
+#12 CALL browser_snapshot {}
+#12 RESULT [isError] Error: ### Error
+TimeoutError: browserBackend.callTool: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator('aria-ref=f1e45')
+    - locator resolved to <button data-action="toggle" data-toggler="drawers" data-bs-placement="right" title="Open block drawer" class="btn btn-icon icon-size-3" data-disabled-toggle="undefined" data-restore-tooltip-on-blur="true" data-target="theme_boost-drawers-blocks">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div role="dialog" tabindex="-1" aria-modal="true" data-region="modal-container" aria-labelledby="3-modal-title" class="modal moodle-has-zindex show">…</div> from <div>…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div role="dialog" tabindex="-1" aria-modal="true" data-region="modal-container" aria-labelledby="3-modal-title" class="modal moodle-has-zindex show">…</div> from <div>…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    10 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div role="dialog" tabindex="-1" aria-modal="true" data-region="modal-container" aria-labelledby="3-modal-title" class="modal moodle-has-zindex show">…</div> from <div>…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+#12 RESULT ### Result
+Waited for 2 seconds
+### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-37-57-452Z.yml)
+#12 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e16]:
+            - switch "Edit mode" [checked] [ref=f1e17]
+            - generic [ref=f1e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e28]:
+            - generic [aria-hidden] [ref=f1e29]: 
+          - button "Toggle messaging drawer" [ref=f1e31]:
+            - generic [aria-hidden] [ref=f1e32]: 
+          - button "User menu" [ref=f1e38]: 
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]:
+          - generic [ref=f1e50]:
+            - button "Reset page to default" [ref=f1e55]
+            - heading "Dashboard" [level=1] [ref=f1e61]
+        - main [ref=f1e65]:
+          - link "Add a block" [ref=f1e68]:
+            - /url: http://webserver/my/index.php?bui_addblock&sesskey=OyUw8RYC2H&bui_blockregion=content
+            - generic [aria-hidden] [ref=f1e69]: +
+            - text: Add a block
+          - region [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region [ref=f1e73]:
+              - generic [ref=f1e74]:
+                - generic [ref=f1e75]:
+                  - heading "Course overview" [level=3] [ref=f1e76]
+                  - menubar [ref=f1e78]:
+                    - generic [ref=f1e79]:
+                      - menuitem "Move Course overview block" [ref=f1e81]:
+                        - generic [aria-hidden] [ref=f1e82]: 
+                      - generic [ref=f1e84]:
+                        - menuitem "Actions menu" [ref=f1e85]:
+                          - generic [aria-hidden] [ref=f1e86]: 
+                        - text:   
+                - generic [ref=f1e91]:
+                  - heading "You're not enrolled in any courses." [level=4] [ref=f1e92]
+                  - paragraph [ref=f1e93]: Once you're enrolled in a cou
+…[truncated 4686 chars]
+MSG The Add a block dialog is open and lists "Logged in user". Clicking it.
+#13 CALL browser_click {"target": "f1e162"}
+#14 CALL browser_wait_for {"time": 3}
+#15 CALL browser_snapshot {}
+#15 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-37-59-860Z.yml)
+#15 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-38-02-893Z.yml)
+#15 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "Dashboard" [ref=f1e10]
+          - text: 
+        - generic [ref=f1e13]:
+          - generic [ref=f1e16]:
+            - switch "Edit mode" [checked] [ref=f1e17]
+            - generic [ref=f1e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e28]:
+            - generic [aria-hidden] [ref=f1e29]: 
+          - button "Toggle messaging drawer" [ref=f1e31]:
+            - generic [aria-hidden] [ref=f1e32]: 
+          - button "User menu" [ref=f1e38]: 
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - button "Open block drawer" [ref=f1e45]
+        - banner [ref=f1e49]:
+          - generic [ref=f1e50]:
+            - button "Reset page to default" [ref=f1e55]
+            - heading "Dashboard" [level=1] [ref=f1e61]
+        - main [ref=f1e65]:
+          - link "Add a block" [ref=f1e68]:
+            - /url: http://webserver/my/index.php?bui_addblock&sesskey=OyUw8RYC2H&bui_blockregion=content
+            - generic [aria-hidden] [ref=f1e69]: +
+            - text: Add a block
+          - region [ref=f1e70]:
+            - heading "Main content blocks" [level=2] [ref=f1e71]
+            - link "Skip Course overview" [ref=f1e72]:
+              - /url: "#sb-3"
+            - region [ref=f1e73]:
+              - generic [ref=f1e74]:
+                - generic [ref=f1e75]:
+                  - heading "Course overview" [level=3] [ref=f1e76]
+                  - menubar [ref=f1e78]:
+                    - generic [ref=f1e79]:
+                      - menuitem "Move Course overview block" [ref=f1e81]:
+                        - generic [aria-hidden] [ref=f1e82]: 
+                      - generic [ref=f1e84]:
+                        - menuitem "Actions menu" [ref=f1e85]:
+                          - generic [aria-hidden] [ref=f1e86]: 
+                        - text:   
+                - generic [ref=f1e91]:
+                  - heading "You're not enrolled in any courses." [level=4] [ref=f1e92]
+                  - paragraph [ref=f1e93]: Once you're enrolled in a cou
+…[truncated 4686 chars]
+THINK The dialog is still open and the page hasn't changed, so the click may not have registered. I'll try targeting the link by its href containing bui_addblock=myprofile, since the snapshot shows that link as a relative URL, and retry the click once.
+
+
+#16 CALL browser_click {"target": "f1e162"}
+#17 CALL browser_wait_for {"time": 3}
+#17 RESULT [isError] Error: ### Error
+Error: Ref f1e162 not found in the current page snapshot. Try capturing new snapshot.
+#17 RESULT ### Result
+Waited for 3 seconds
+### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-38-08-122Z.yml)
+#18 CALL browser_snapshot {}
+#18 RESULT ### Page
+- Page URL: http://webserver/my/index.php
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "Dashboard" [ref=f2e10]
+          - text: 
+        - generic [ref=f2e13]:
+          - generic [ref=f2e16]:
+            - switch "Edit mode" [checked] [ref=f2e17]
+            - generic [ref=f2e18]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e28]:
+            - generic [aria-hidden] [ref=f2e29]: 
+          - button "Toggle messaging drawer" [ref=f2e31]:
+            - generic [aria-hidden] [ref=f2e32]: 
+          - button "User menu" [ref=f2e38]: 
+    - generic [ref=f2e42]:
+      - generic [ref=f2e43]:
+        - button "Open block drawer" [ref=f2e45]
+        - banner [ref=f2e49]:
+          - generic [ref=f2e50]:
+            - button "Reset page to default" [ref=f2e55]
+            - heading "Dashboard" [level=1] [ref=f2e61]
+        - main [ref=f2e65]:
+          - link "Add a block" [ref=f2e68]:
+            - /url: http://webserver/my/index.php?bui_addblock&sesskey=OyUw8RYC2H&bui_blockregion=content
+            - generic [aria-hidden] [ref=f2e69]: +
+            - text: Add a block
+          - region [ref=f2e70]:
+            - heading "Main content blocks" [level=2] [ref=f2e71]
+            - link "Skip Course overview" [ref=f2e72]:
+              - /url: "#sb-3"
+            - region [ref=f2e73]:
+              - generic [ref=f2e74]:
+                - generic [ref=f2e75]:
+                  - heading "Course overview" [level=3] [ref=f2e76]
+                  - menubar [ref=f2e78]:
+                    - generic [ref=f2e79]:
+                      - menuitem "Move Course overview block" [ref=f2e81]:
+                        - generic [aria-hidden] [ref=f2e82]: 
+                      - generic [ref=f2e84]:
+                        - menuitem "Actions menu" [ref=f2e85]:
+                          - generic [aria-hidden] [ref=f2e86]: 
+                        - text:   
+                - generic [ref=f2e91]:
+                  - heading "You're not enrolled in any courses." [level=4] [ref=f2e92]
+                  - paragraph [ref=f2e93]: Once you're enrolled
+…[truncated 3641 chars]
+THINK I'm checking whether the "Logged in user" block actually shows "Teacher One" as visible text. The only place that name appears is the alt text on the user picture, and the block's visible text is just "teacher1" and "Email address:".
+
+I'm now weighing whether Moodle's myprofile block would normally show the full name rather than the username, since the block here displays "teacher1" and not "Teacher One" as text.
+
+I'm treating the "Teacher One" name as only alt text on the picture, not visible text in the block, so I'm leaning toward a fail on that step. I'm not sure whether standard Moodle shows the full name there, so I'll go by what the page actually displays.
+
+
+MSG ```json
+{"status":"fail","reason":"Steps 1-3 passed: edit mode was switched on (switch shows checked, Add a block and block menus appeared) and the \"Logged in user\" block was added to the Dashboard. The block's visible text is \"teacher1\" and \"Email address: teacher1@example.com\". \"Teacher One\" appears only as the user picture's alt text (img \"Teacher One\"), not as visible text in the block region. The string \"Teacher One\" is visible elsewhere on the page (footer 'You are logged in as Teacher One'), but not in the \"Logged in user\" block.","failingStep":4,"failingStepText":"Then I should see \"Teacher One\" in the \"Logged in user\" \"block\""}
+```

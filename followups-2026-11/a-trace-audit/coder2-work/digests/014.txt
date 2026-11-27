@@ -1,0 +1,100 @@
+UNIT pay:B:fault-v0-2/auth-login/runtime
+model gpt-6-luna driver codex-cli 0.159.3 (REPRODUCE.md) build v0+fault type faulty
+scenario auth-login 
+  1. Given I open the sign-in page
+  2. Then the sign-in heading is visible
+  3. When I sign in as "Heath93" with password "s3cret"
+  4. Then the authenticated home identifies "Heath93"
+  5. And the authenticated home route is "/" or "/public"
+fault {"file": "src/components/SignInForm.tsx", "before": "signInPending(values);", "after": "signInPending({ ...values, password: \"controlled-invalid-password\" });"}
+target [4] Then the authenticated home identifies "Heath93"
+VERDICT fail step [4] 'the authenticated home identifies "Heath93"'
+REASON The sign-in page showed the heading “Sign in.” Submitting username “Heath93” and password “s3cret” displayed “Username or password is invalid”; the page remained at /signin and did not identify Heath93 as authenticated.
+parse_error None tool_calls 5 timed_out False run_result recorded run_error None
+SOURCE events log
+============================================================
+MSG I’ll run the sign-in scenario through the visible browser UI and check the displayed identity and route.
+#1 CALL browser_navigate {"url": "http://localhost:3000"}
+#1 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T12-42-59-343Z.yml)
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+#3 CALL browser_fill_form {"fields": [{"name": "Username", "target": "e16", "type": "textbox", "value": "Heath93"}, {"name": "Password", "target": "e19", "type": "textbox", "value": "s3cret"}]}
+#3 RESULT 
+#4 CALL browser_click {"target": "e26", "element": "Sign In button"}
+#4 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-01T12-43-03-787Z.yml)
+#5 CALL browser_snapshot {}
+#5 RESULT ### Page
+- Page URL: http://localhost:3000/signin
+- Page Title: Cypress Real World App
+### Snapshot
+```yaml
+- main:
+  - generic:
+    - alert:
+      - generic: Username or password is invalid
+    - heading "Sign in" [level=1]
+    - generic:
+      - generic:
+        - generic: Username
+        - generic:
+          - textbox "Username" [active]
+          - group [aria-hidden]:
+            - generic: Username
+      - generic:
+        - generic: Password
+        - generic:
+          - textbox "Password"
+          - group [aria-hidden]:
+            - generic: Password
+      - generic:
+        - checkbox "Remember me"
+        - generic: Remember me
+      - button "Sign In"
+      - link "Don't have an account? Sign Up":
+        - /url: /signup
+  - paragraph:
+    - text: Built by
+    - link:
+      - /url: https://cypress.io
+```
+MSG {"status":"fail","reason":"The sign-in page showed the heading “Sign in.” Submitting username “Heath93” and password “s3cret” displayed “Username or password is invalid”; the page remained at /signin and did not identify Heath93 as authenticated.","failedAssertion":"the authenticated home identifies \"Heath93\""}
+RAWRESPONSE {"status":"fail","reason":"The sign-in page showed the heading “Sign in.” Submitting username “Heath93” and password “s3cret” displayed “Username or password is invalid”; the page remained at /signin and did not identify Heath93 as authenticated.","failedAssertion":"the authenticated home identifies \"Heath93\""}

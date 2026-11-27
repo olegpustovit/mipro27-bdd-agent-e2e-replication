@@ -1,0 +1,109 @@
+== A. Change-level funnel (whole manifest) ==
+mined interface changes (manifest breaks): 47
+  not usable: 18 {'repaired step used by no scenario at the pin': 1, 'start state passed in every probed scenario': 14, 'no scenario uses the changed step definitions at the pin': 2, 'bites only scenarios of a lower-numbered change (not distinct)': 1}
+usable: 29 ; bite in arm B start state (core): 21 ; strict: 1
+  usable but no scenario fails in the start state: ['B03', 'B06', 'B08', 'B09', 'B10', 'B11', 'B12', 'B13']
+changes with >=1 valid pair (exact rule): 14 ['B01', 'B04', 'B05', 'B07', 'B15', 'B25', 'B27', 'B28', 'B29', 'B30', 'B34', 'B35', 'B38', 'B39'] ; valid pairs: 29 (strict 3 )
+  B16: bites ['S096', 'S097', 'S098']; faults aimed at these scenarios: none
+  B17: bites ['S100', 'S101']; faults aimed at these scenarios: none
+  B26: bites ['S129']; faults aimed at these scenarios: {'mined rejected': 18}
+  B31: bites ['S145', 'S146']; faults aimed at these scenarios: none
+  B32: bites ['S147', 'S148']; faults aimed at these scenarios: {'mined rejected': 61}
+  B37: bites ['S162']; faults aimed at these scenarios: {'mined rejected': 7}
+  B44: bites ['S178', 'S180']; faults aimed at these scenarios: none
+valid pairs passing the ordering criterion (target step >= bite step): 25 over 11 changes
+  ordering-excluded: B05.X013@S043 target 13 < bite 21
+  ordering-excluded: B30.C760@S141 target 0 < bite 1
+  ordering-excluded: B30.C760@S144 target 2 < bite 3
+  ordering-excluded: B39.X025@S170 target 8 < bite 12
+  changes losing every pair to the ordering criterion: ['B05', 'B30', 'B39']
+selected pairs: 16 over 8 changes
+  not selected: B01.X010@S028: same fault and scenario already selected under an earlier change
+  not selected: B01.X010@S029: same fault and scenario already selected under an earlier change
+  not selected: B01.X011@S025: same fault and scenario already selected under an earlier change
+  not selected: B34.X018@S155: total of 16 reached
+  not selected: B34.X018@S156: total of 16 reached
+  not selected: B35.X024@S157: total of 16 reached
+  not selected: B35.X024@S159: total of 16 reached
+  not selected: B38.X016@S163: total of 16 reached
+  not selected: B38.X017@S165: total of 16 reached
+  changes with eligible pairs but none selected: ['B01', 'B35', 'B38']
+
+== B. The 8 selected changes ==
+change cls static-scen probed bitten | seeded aimed (acc/rej) | mined aimed (acc/rej-screen/rej-static/pending) | valid ordered selected | agent cases
+B04  i    30   6   4 | X014 (1/0) | 0/26/33/57 | 3 3 3 | 3
+B07  i    14   6   6 | X010,X011 (2/0) | 0/28/26/1 | 3 3 3 | 2
+B15  i   119   4   3 | X021,X022 (2/0) | 0/1/0/0 | 2 2 2 | 2
+B25  i    19   4   4 | X020 (1/0) | 0/8/0/0 | 1 1 1 | 1
+B27  i   221   4   2 | X023 (1/0) | 0/0/0/0 | 1 1 1 | 0
+B28  i    12   4   4 | X025 (1/0) | 0/31/13/0 | 2 2 2 | 2
+B29  i    58   4   3 | X026 (1/0) | 0/0/0/0 | 2 2 2 | 2
+B34  i    27   4   4 | X018 (1/0) | 0/7/4/0 | 4 4 2 | 2
+totals: {'static': 500, 'probed': 36, 'bitten': 30, 'sacc': 10, 'srej': 0, 'valid': 18, 'ordered': 18, 'selected': 16, 'agent': 14}
+mined candidates aimed at the bitten scenarios of the 8 changes (distinct): 235 {'pending': 58, 'rej-screen': 101, 'rej-static': 76}
+case faults: 10 ['X010', 'X011', 'X014', 'X018', 'X020', 'X021', 'X022', 'X023', 'X025', 'X026']
+
+== C. Fault sources and verification ==
+seeded faults written: 26 {'accepted': 24, 'rejected': 2}
+  X006 rejected (aimed at S064, change(s) []): screening: PHP/Moodle exception from an incomplete revert in S064, S065, S066, S067 (Exception: Moodle exception: Exception - Call to a member function get_cont
+  X019 rejected (aimed at S157, change(s) ['B35']): screening: the faulted build failed, but not at the declared step in any scenario (S157: step 6 'I set the field "Advanced role override" to "Student (3)"'; S15
+mined candidates (C*, cross-runs): 902 {'pending': 230, 'rejected: revert does not apply at the pin': 328, 'accepted': 2, 'rejected: faulted build passed every probe': 340, 'rejected: screening: the adapter refused to build the faulte': 1, 'rejected: screening: PHP/Moodle exception from an incomplete': 1}
+original mined faults F*: 24 reproduced 19
+valid pairs by fault origin: {'seeded': 27, 'mined': 2} ; after ordering: {'seeded': 25} ; selected: {'seeded': 16}
+
+== D. Does selection require the coded (developers') tests to catch the fault? ==
+selected pairs whose developers' Behat run failed at the target on the faulted pin and passed on the healthy pin: 16/16
+target step of every selected pair = first failing step of the developers' Behat screening run (manifest screen_targets.source): yes
+measured arm A (developers' current step definitions): Counter({'caught': 16})
+
+== E. Campaign cases and dropout ==
+cases (scenario + fault): 16 over 8 changes; faults 10
+setup-invalid arm C executions: 24 over cases [('B07', 'S025'), ('B27', 'S131')]
+cases the agents could run: 14 over 7 changes; faults 8
+  lost for the agents: B07.S025 (all 12 arm C executions: "Scenario has no leading data steps ...", adapters/moodle/handoff.mjs:46)
+  lost for the agents: B27.S131 (all 12 arm C executions: "Scenario has no leading data steps ...", adapters/moodle/handoff.mjs:46)
+arm A and arm B pairs per case: Counter({'B': 96, 'C': 96, 'A': 16})
+
+== F. Fault types (post-hoc coding, rule in faults.md) ==
+payment app: faults (= cases)                NAV=2 VAL=1 NOSAVE=5 WRONGDATA=4 GUARD=0 DISPLAY=0 total=12
+Moodle: seeded faults written                NAV=0 VAL=1 NOSAVE=5 WRONGDATA=2 GUARD=12 DISPLAY=6 total=26
+Moodle: seeded faults verified (accepted)    NAV=0 VAL=1 NOSAVE=4 WRONGDATA=2 GUARD=11 DISPLAY=6 total=24
+Moodle: faults in the 16 cases               NAV=0 VAL=1 NOSAVE=0 WRONGDATA=0 GUARD=7 DISPLAY=2 total=10
+Moodle: the 16 cases                         NAV=0 VAL=2 NOSAVE=0 WRONGDATA=0 GUARD=12 DISPLAY=2 total=16
+Moodle: the 14 cases the agents ran          NAV=0 VAL=2 NOSAVE=0 WRONGDATA=0 GUARD=11 DISPLAY=1 total=14
+author labels (manifest semantic_change) of the 10 case faults: {'wrong condition': 7, 'wrong value': 3}
+author labels of all 26 seeded: {'wrong value': 8, 'missing update': 4, 'wrong condition': 14}
+
+== G. Is the fault visible in the UI at the targeted check? ==
+  B04.S036 X014 GUARD    target step  8 "the manual completion button for "Test choice manual" should" -> control state (disabled attribute)
+  B04.S037 X014 GUARD    target step 15 "the manual completion button for "Test choice manual" should" -> control state (disabled attribute)
+  B04.S041 X014 GUARD    target step  6 "the manual completion button for "Music history" should be d" -> control state (disabled attribute)
+  B07.S025 X011 DISPLAY  target step 13 ""Anne Additional" "text" should appear after "Anne Other" "t" -> order of listed items
+  B07.S028 X010 GUARD    target step  4 "I should not see "The search currently only finds frog-relat" -> text or element present/absent
+  B07.S029 X010 GUARD    target step  4 "".notifywarning" "css_element" should not exist" -> text or element present/absent
+  B15.S091 X022 DISPLAY  target step  4 "I should see "Teacher One" in the "Logged in user" "block"" -> text or element present/absent
+  B15.S094 X021 GUARD    target step  6 "I should see "Please configure this block and select which a" -> text or element present/absent
+  B25.S125 X020 GUARD    target step 16 ""Delete submission" "button" should not exist" -> text or element present/absent
+  B27.S131 X023 GUARD    target step  3 "I should see "Current session"" -> text or element present/absent
+  B28.S134 X025 GUARD    target step  8 "I should see "You can't block Teacher 1"" -> text or element present/absent
+  B28.S137 X025 GUARD    target step  8 "I should see "Are you sure you want to block Student 2?"" -> text or element present/absent
+  B29.S138 X026 GUARD    target step 10 "I should not see "Content bank"" -> text or element present/absent
+  B29.S139 X026 GUARD    target step 10 "I should see "Content bank"" -> text or element present/absent
+  B34.S153 X018 VAL      target step  8 "I should see "Criterion name can not be empty"" -> text or element present/absent
+  B34.S154 X018 VAL      target step 12 "I should see "Comment 1"" -> text or element present/absent
+Moodle 16 cases: {'control state (disabled attribute)': 3, 'order of listed items': 1, 'text or element present/absent': 12} ; 14 agent cases: {'control state (disabled attribute)': 3, 'text or element present/absent': 11}
+  auth-login        NOSAVE    target check "the authenticated home identifies "heath93"" -> page or URL
+  auth-logout       NOSAVE    target check "the sign-in page and url are visible" -> page or URL
+  profile-name      NOSAVE    target check "my displayed full name contains "study"" -> text present/absent/changed
+  profile-email     VAL       target check "the profile form displays email error "must contain a valid email addr" -> text present/absent/changed
+  bank-create       WRONGDATA target check "bank "study credit union" is visible exactly once" -> text present/absent/changed
+  bank-delete       NOSAVE    target check "bank "waters, king and o'reilly bank" is visibly marked deleted" -> text present/absent/changed
+  transfer-pay      WRONGDATA target check "my personal feed contains one visible "study payment" transaction for " -> text present/absent/changed
+  transfer-request  WRONGDATA target check "my personal feed contains one visible "study request" transaction for " -> text present/absent/changed
+  social-like       NOSAVE    target check "the displayed like count is one greater and like is disabled" -> number and control state
+  social-comment    WRONGDATA target check "comment "study comment" is visible in the transaction's comments" -> text present/absent/changed
+  feed-personal     NAV       target check "the "personal" feed at "/personal" contains transactions" -> page or URL
+  feed-friends      NAV       target check "the "contacts" feed at "/contacts" contains transactions" -> page or URL
+payment 12 cases: {'page or URL': 4, 'text present/absent/changed': 7, 'number and control state': 1}
+
+all checks passed

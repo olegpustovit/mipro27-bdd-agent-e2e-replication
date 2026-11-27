@@ -1,0 +1,635 @@
+UNIT moodle:6ac189f540b8/B07.S029/fault:X010/C/claude-haiku-5-5/r2
+model claude-haiku-5-5 driver omp build Moodle pin cfe123f26fc7 + seeded fault X010; pair from change B07 type faulty
+scenario S029 Information does not display when left blank
+  1. And I log in as "admin"
+  2. When the following config values are set as admin:
+  | searchbannerenable | 1 |
+  | searchbanner |  |
+  3. And I search for "toads" using the header global search box
+  4. Then ".notifywarning" "css_element" should not exist
+fault {"intent": "The search information banner shows when either the switch or the text is set (wrong condition: && became ||).", "mutations": [{"file": "public/search/index.php", "old": "if ($CFG->searchbannerenable && $CFG->searchbanner) {", "new": "if ($CFG->searchbannerenable || $CFG->searchbanner) {"}]}
+target [4] Then ".notifywarning" "css_element" should not exist
+VERDICT fail step 4 'Then ".notifywarning" "css_element" should not exist'
+REASON Saved searchbannerenable=1 with blank searchbanner ('Changes saved' confirmed). Header search for 'toads' loaded /search/index.php?context=1&q=toads. The results page shows an alert with no text (only a 'Dismiss this notification' button) above the 'No results' alert. That empty alert is the only extra notification; it appears only because the banner is enabled and blank. Moodle's core renders this banner as a warning-type notification, so .notifywarning very likely exists. The accessibility snapshot does not expose CSS classes, so that link is inference, not directly observed.
+parse_error None tool_calls 17 timed_out False run_result recorded run_error None
+SOURCE moodle blob
+============================================================
+THINK I'm already logged in as admin, so next I need to find where the search banner settings live in Moodle 4.x. I'm not sure whether they sit under the Plugins > Search section or under Appearance, so I'm checking the admin settings page path.
+
+I'll take a snapshot of the admin page to see where the search banner options actually are.
+
+
+#1 CALL browser_navigate {"url": "http://webserver/admin/settings.php?section=searchsettings"}
+#2 CALL browser_snapshot {}
+#2 RESULT ### Page
+- Page URL: http://webserver/admin/settings.php?section=searchsettings
+- Page Title: Error | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-05-26-849Z.yml)
+#2 RESULT ### Page
+- Page URL: http://webserver/my/
+- Page Title: Dashboard | Acceptance test site
+### Snapshot
+```yaml
+- generic [active]:
+  - status
+  - generic:
+    - link "Skip to main content":
+      - /url: "#maincontent"
+    - navigation "Site navigation":
+      - generic:
+        - link "Acceptance test site":
+          - /url: http://webserver/my/
+        - menubar:
+          - menuitem "More ":
+            - generic: More
+            - text: 
+          - text: 
+        - generic:
+          - generic:
+            - text: 
+            - search "Site-wide search":
+              - generic: Search
+              - generic:
+                - button "Perform search":
+                  - generic [aria-hidden]: 
+                - textbox "Search"
+                - text: 
+          - generic:
+            - switch "Edit mode"
+            - generic: Edit mode
+          - button "Show notification window with no new notifications":
+            - generic [aria-hidden]: 
+          - button "Toggle messaging drawer":
+            - generic [aria-hidden]: 
+          - button "User menu": 
+    - generic:
+      - generic:
+        - button "Open block drawer"
+        - banner:
+          - heading "Dashboard" [level=1]
+        - main:
+          - region:
+            - heading "Main content blocks" [level=2]
+            - link "Skip Course overview":
+              - /url: "#sb-3"
+            - region:
+              - generic:
+                - heading "Course overview" [level=3]
+                - generic:
+                  - heading "Create your first course" [level=4]
+                  - paragraph:
+                    - text: Need help getting started? Check out the
+                    - link "Moodle documentation":
+                      - /url: https://docs.moodle.org?lang=en
+                    - text: or take your first steps with our
+                    - link "Quickstart guide":
+                      - /url: https://moodle.academy/coursequickstart?lang=en
+                    - text: .
+                  - generic:
+                    - button "Manage course categories"
+                    - button "Create course"
+            - link "Skip Timeline":
+              - /url: "#sb-4"
+            - region:
+              - generic:
+                - heading "Timeline" [level=3]
+                - generic:
+                  - generic:
+                    - generic:
+                      - 'button "Next 30 days: filter timeline by date"': Next 30 days 
+                      -
+…[truncated 2084 chars]
+THINK The settings URL errored and sent me to the dashboard, so the section name is probably wrong. I'm not sure where the search banner setting lives in Moodle 5.x, so I'll try the admin search page and look it up by name instead.
+
+
+#3 CALL browser_navigate {"url": "http://webserver/admin/search.php?query=searchbanner"}
+#4 CALL browser_snapshot {}
+#4 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-05-29-767Z.yml)
+#4 RESULT ### Page
+- Page URL: http://webserver/admin/settings.php?section=searchsettings
+- Page Title: Error | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - status
+  - generic [ref=f1e2]:
+    - link "Skip to main content" [ref=f1e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Acceptance test site" [ref=f1e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f1e9]:
+          - menuitem "More " [ref=f1e10]:
+            - generic [ref=f1e11]: More
+            - text: 
+        - generic [ref=f1e12]:
+          - generic [ref=f1e13]:
+            - text: 
+            - search "Site-wide search" [ref=f1e14]:
+              - generic [ref=f1e15]: Search
+              - generic [ref=f1e16]:
+                - button "Perform search" [ref=f1e17]:
+                  - generic [aria-hidden] [ref=f1e18]: 
+                - textbox "Search" [ref=f1e20]
+                - text: 
+          - generic [ref=f1e23]:
+            - switch "Edit mode" [ref=f1e24]
+            - generic [ref=f1e25]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f1e35]:
+            - generic [aria-hidden] [ref=f1e36]: 
+          - button "Toggle messaging drawer" [ref=f1e38]:
+            - generic [aria-hidden] [ref=f1e39]: 
+          - button "User menu" [ref=f1e45]: 
+    - generic [ref=f1e49]:
+      - generic [ref=f1e50]:
+        - banner [ref=f1e51]:
+          - heading "Acceptance test site" [level=1] [ref=f1e58]
+        - navigation "Site administration menu" [ref=f1e61]:
+          - menubar [ref=f1e62]:
+            - menuitem "General" [ref=f1e63]
+            - menuitem "Users" [ref=f1e66]
+            - menuitem "Courses" [ref=f1e68]
+            - menuitem "Grades" [ref=f1e70]
+            - menuitem "Plugins" [ref=f1e72]
+            - menuitem "Appearance" [ref=f1e74]
+            - menuitem "More " [ref=f1e76]:
+              - generic [ref=f1e77]: More
+              - text: 
+        - main [ref=f1e81]:
+          - generic [ref=f1e83]:
+            - paragraph [ref=f1e84]: Section error!
+            - paragraph [ref=f1e85]:
+              - link "More information about this error" [ref=f1e86]:
+                - /url: https://docs.moodle.org/503/en/error/admin/sectionerror
+          - alert [ref=f1e87]:
+            - strong [ref=f1e88]: "Debug info:"
+            - text: "Error code: sectionerror"
+            - button "Dismiss this notificati
+…[truncated 2456 chars]
+THINK The page URL still shows settings.php?section=searchsettings with a section error, so the previous navigation may have landed there and the snapshot may be lagging. "searchsettings" isn't a valid section anyway, so I'll switch to the admin search page and take a snapshot of admin/search.php.
+
+
+#5 CALL browser_navigate {"url": "http://webserver/admin/search.php?query=searchbanner"}
+#6 CALL browser_snapshot {}
+#6 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-05-33-175Z.yml)
+#6 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f2e1]:
+  - status
+  - generic [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "Acceptance test site" [ref=f2e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f2e9]:
+          - menuitem "More " [ref=f2e10]:
+            - generic [ref=f2e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f2e13]:
+          - generic [ref=f2e14]:
+            - text: 
+            - search "Site-wide search" [ref=f2e15]:
+              - generic [ref=f2e16]: Search
+              - generic [ref=f2e17]:
+                - button "Perform search" [ref=f2e18]:
+                  - generic [aria-hidden] [ref=f2e19]: 
+                - textbox "Search" [ref=f2e21]
+                - text: 
+          - generic [ref=f2e24]:
+            - switch "Edit mode" [ref=f2e25]
+            - generic [ref=f2e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f2e36]:
+            - generic [aria-hidden] [ref=f2e37]: 
+          - button "Toggle messaging drawer" [ref=f2e39]:
+            - generic [aria-hidden] [ref=f2e40]: 
+          - button "User menu" [ref=f2e46]: 
+    - generic [ref=f2e50]:
+      - generic [ref=f2e51]:
+        - banner [ref=f2e52]:
+          - generic [ref=f2e54]:
+            - heading "Site administration" [level=1] [ref=f2e59]
+            - generic [ref=f2e64]:
+              - textbox "Search" [ref=f2e65]: searchbanner
+              - generic: Search
+              - button "Search" [ref=f2e67]:
+                - generic [aria-hidden] [ref=f2e68]: 
+        - navigation "Site administration menu" [ref=f2e72]:
+          - menubar [ref=f2e73]:
+            - menuitem "General" [ref=f2e74]
+            - menuitem "Users" [ref=f2e77]
+            - menuitem "Courses" [ref=f2e79]
+            - menuitem "Grades" [ref=f2e81]
+            - menuitem "Plugins" [ref=f2e83]
+            - menuitem "Appearance" [ref=f2e85]
+            - menuitem "More " [ref=f2e87]:
+              - generic [ref=f2e88]: More
+              - text: 
+        - main [ref=f2e92]:
+          - separator [ref=f2e94]
+          - group [ref=f2e96]:
+            - heading "Search results" [level=2] [ref=f2e98]
+            - heading [le
+…[truncated 6037 chars]
+THINK The settings live on the "Manage global search" page, so I'll go there and take a snapshot. I need to tick the checkbox and clear out the search banner, which may currently have something in it that I should check first.
+
+
+#7 CALL browser_navigate {"url": "http://webserver/admin/settings.php?section=manageglobalsearch"}
+#8 CALL browser_snapshot {}
+#8 RESULT ### Page
+- Page URL: http://webserver/admin/settings.php?section=manageglobalsearch
+- Page Title: Manage global search | Search | Plugins | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-05-36-567Z.yml)
+#8 RESULT ### Page
+- Page URL: http://webserver/admin/search.php?query=searchbanner
+- Page Title: Search | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f4e1]:
+  - status
+  - generic [ref=f4e2]:
+    - link "Skip to main content" [ref=f4e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "Acceptance test site" [ref=f4e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f4e9]:
+          - menuitem "More " [ref=f4e10]:
+            - generic [ref=f4e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f4e13]:
+          - generic [ref=f4e14]:
+            - text: 
+            - search "Site-wide search" [ref=f4e15]:
+              - generic [ref=f4e16]: Search
+              - generic [ref=f4e17]:
+                - button "Perform search" [ref=f4e18]:
+                  - generic [aria-hidden] [ref=f4e19]: 
+                - textbox "Search" [ref=f4e21]
+                - text: 
+          - generic [ref=f4e24]:
+            - switch "Edit mode" [ref=f4e25]
+            - generic [ref=f4e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f4e36]:
+            - generic [aria-hidden] [ref=f4e37]: 
+          - button "Toggle messaging drawer" [ref=f4e39]:
+            - generic [aria-hidden] [ref=f4e40]: 
+          - button "User menu" [ref=f4e46]: 
+    - generic [ref=f4e50]:
+      - generic [ref=f4e51]:
+        - banner [ref=f4e52]:
+          - generic [ref=f4e54]:
+            - heading "Site administration" [level=1] [ref=f4e59]
+            - generic [ref=f4e64]:
+              - textbox "Search" [ref=f4e65]: searchbanner
+              - generic: Search
+              - button "Search" [ref=f4e67]:
+                - generic [aria-hidden] [ref=f4e68]: 
+        - navigation "Site administration menu" [ref=f4e72]:
+          - menubar [ref=f4e73]:
+            - menuitem "General" [ref=f4e74]
+            - menuitem "Users" [ref=f4e77]
+            - menuitem "Courses" [ref=f4e79]
+            - menuitem "Grades" [ref=f4e81]
+            - menuitem "Plugins" [ref=f4e83]
+            - menuitem "Appearance" [ref=f4e85]
+            - menuitem "More " [ref=f4e87]:
+              - generic [ref=f4e88]: More
+              - text: 
+        - main [ref=f4e92]:
+          - separator [ref=f4e94]
+          - group [ref=f4e96]:
+            - heading "Search results" [level=2] [ref=f4e98]
+            - heading [le
+…[truncated 6037 chars]
+THINK The navigation looks like it's lagging, since the snapshot is still showing the previous page. I'll take another snapshot to check.
+
+
+#9 CALL browser_snapshot {}
+#9 RESULT ### Page
+- Page URL: http://webserver/admin/settings.php?section=manageglobalsearch
+- Page Title: Manage global search | Search | Plugins | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f6e1]:
+  - status
+  - generic [ref=f6e2]:
+    - link "Skip to main content" [ref=f6e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - link "Acceptance test site" [ref=f6e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f6e9]:
+          - menuitem "More " [ref=f6e10]:
+            - generic [ref=f6e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f6e13]:
+          - generic [ref=f6e14]:
+            - text: 
+            - search "Site-wide search" [ref=f6e15]:
+              - generic [ref=f6e16]: Search
+              - generic [ref=f6e17]:
+                - button "Perform search" [ref=f6e18]:
+                  - generic [aria-hidden] [ref=f6e19]: 
+                - textbox "Search" [ref=f6e21]
+                - text: 
+          - generic [ref=f6e24]:
+            - switch "Edit mode" [ref=f6e25]
+            - generic [ref=f6e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f6e36]:
+            - generic [aria-hidden] [ref=f6e37]: 
+          - button "Toggle messaging drawer" [ref=f6e39]:
+            - generic [aria-hidden] [ref=f6e40]: 
+          - button "User menu" [ref=f6e46]: 
+    - generic [ref=f6e50]:
+      - generic [ref=f6e51]:
+        - button "Open block drawer" [ref=f6e53]
+        - banner [ref=f6e57]:
+          - generic [ref=f6e58]:
+            - navigation "Breadcrumb" [ref=f6e61]:
+              - list [ref=f6e62]:
+                - listitem [ref=f6e63]:
+                  - link "Search" [ref=f6e64]:
+                    - /url: http://webserver/admin/category.php?category=searchplugins
+                - listitem [ref=f6e65]:
+                  - text: /
+                  - generic [ref=f6e66]: Manage global search
+            - generic [ref=f6e67]:
+              - heading "Acceptance test site" [level=1] [ref=f6e72]
+              - generic [ref=f6e77]:
+                - textbox "Search" [ref=f6e78]
+                - generic: Search
+                - button "Search" [ref=f6e80]:
+                  - generic [aria-hidden] [ref=f6e81]: 
+        - navigation "Site administration menu" [ref=f6e85]:
+          - menubar [ref=f6e86]:
+            - menuitem "General" [ref=f6e87]
+
+…[truncated 16674 chars]
+THINK The search banner editor looks empty, with zero words in the paragraph. Next I need to tick the "Display search information" checkbox, confirm the banner text stays blank since the spec calls for that, and then save the changes.
+
+
+#10 CALL browser_click {"target": "f6e282", "element": "Display search information checkbox"}
+#10 RESULT ### Page
+- Page URL: http://webserver/admin/settings.php?section=manageglobalsearch
+- Page Title: Manage global search | Search | Plugins | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-05-41-160Z.yml)
+#11 CALL browser_click {"target": "f6e351", "element": "Save changes button"}
+#12 CALL browser_snapshot {}
+#12 RESULT ### Page
+- Page URL: http://webserver/admin/settings.php?section=manageglobalsearch
+- Page Title: Manage global search | Search | Plugins | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-05-43-513Z.yml)
+#12 RESULT ### Page
+- Page URL: http://webserver/admin/settings.php?section=manageglobalsearch
+- Page Title: Manage global search | Search | Plugins | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [ref=f6e1]:
+  - status
+  - generic [ref=f6e2]:
+    - link "Skip to main content" [ref=f6e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - link "Acceptance test site" [ref=f6e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f6e9]:
+          - menuitem "More " [ref=f6e10]:
+            - generic [ref=f6e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f6e13]:
+          - generic [ref=f6e14]:
+            - text: 
+            - search "Site-wide search" [ref=f6e15]:
+              - generic [ref=f6e16]: Search
+              - generic [ref=f6e17]:
+                - button "Perform search" [ref=f6e18]:
+                  - generic [aria-hidden] [ref=f6e19]: 
+                - textbox "Search" [ref=f6e21]
+                - text: 
+          - generic [ref=f6e24]:
+            - switch "Edit mode" [ref=f6e25]
+            - generic [ref=f6e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f6e36]:
+            - generic [aria-hidden] [ref=f6e37]: 
+          - button "Toggle messaging drawer" [ref=f6e39]:
+            - generic [aria-hidden] [ref=f6e40]: 
+          - button "User menu" [ref=f6e46]: 
+    - generic [ref=f6e50]:
+      - generic [ref=f6e51]:
+        - button "Open block drawer" [ref=f6e53]
+        - banner [ref=f6e57]:
+          - generic [ref=f6e58]:
+            - navigation "Breadcrumb" [ref=f6e61]:
+              - list [ref=f6e62]:
+                - listitem [ref=f6e63]:
+                  - link "Search" [ref=f6e64]:
+                    - /url: http://webserver/admin/category.php?category=searchplugins
+                - listitem [ref=f6e65]:
+                  - text: /
+                  - generic [ref=f6e66]: Manage global search
+            - generic [ref=f6e67]:
+              - heading "Acceptance test site" [level=1] [ref=f6e72]
+              - generic [ref=f6e77]:
+                - textbox "Search" [ref=f6e78]
+                - generic: Search
+                - button "Search" [ref=f6e80]:
+                  - generic [aria-hidden] [ref=f6e81]: 
+        - navigation "Site administration menu" [ref=f6e85]:
+          - menubar [ref=f6e86]:
+            - menuitem "General" [ref=f6e87]
+         
+…[truncated 16684 chars]
+THINK I can't tell yet whether the save went through: the checkbox is ticked, but the page still shows the same URL and no confirmation. The click may have registered and the snapshot may just be behind, so I'm thinking about waiting briefly before checking again, since each snapshot costs tokens. Another option is to go to the search page and check the banner app from there.
+
+I'll wait for the "Changes saved" notice to appear rather than taking another snapshot, since that message is the direct confirmation I need.
+
+
+#13 CALL browser_wait_for {"text": "Changes saved", "time": 5}
+#13 RESULT ### Result
+Waited for Changes saved
+### Page
+- Page URL: http://webserver/admin/settings.php?section=manageglobalsearch
+- Page Title: Manage global search | Search | Plugins | Administration | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-05-46-604Z.yml)
+THINK I'm going to search for "toads" using the site-wide search box in the header, which seems to be the textbox with ref f6e21. I'll type the query and submit it.
+
+
+#14 CALL browser_type {"target": "f6e21", "element": "Site-wide search textbox in header", "text": "toads", "submit": true}
+#14 RESULT [isError] Error: ### Error
+Error: Ref f6e21 not found in the current page snapshot. Try capturing new snapshot.
+#15 CALL browser_snapshot {}
+#15 RESULT ### Page
+- Page URL: http://webserver/admin/settings.php?section=manageglobalsearch
+- Page Title: Manage global search | Search | Plugins | Administration | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f8e1]:
+  - status
+  - generic [ref=f8e2]:
+    - link "Skip to main content" [ref=f8e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - link "Acceptance test site" [ref=f8e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f8e9]:
+          - menuitem "More " [ref=f8e10]:
+            - generic [ref=f8e12]: More
+            - text: 
+          - text: 
+        - generic [ref=f8e13]:
+          - generic [ref=f8e14]:
+            - text: 
+            - search "Site-wide search" [ref=f8e15]:
+              - generic [ref=f8e16]: Search
+              - generic [ref=f8e17]:
+                - button "Perform search" [ref=f8e18]:
+                  - generic [aria-hidden] [ref=f8e19]: 
+                - textbox "Search" [ref=f8e21]
+                - text: 
+          - generic [ref=f8e24]:
+            - switch "Edit mode" [ref=f8e25]
+            - generic [ref=f8e26]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f8e36]:
+            - generic [aria-hidden] [ref=f8e37]: 
+          - button "Toggle messaging drawer" [ref=f8e39]:
+            - generic [aria-hidden] [ref=f8e40]: 
+          - button "User menu" [ref=f8e46]: 
+    - generic [ref=f8e50]:
+      - generic [ref=f8e51]:
+        - button "Open block drawer" [ref=f8e53]
+        - banner [ref=f8e57]:
+          - generic [ref=f8e58]:
+            - navigation "Breadcrumb" [ref=f8e61]:
+              - list [ref=f8e62]:
+                - listitem [ref=f8e63]:
+                  - link "Search" [ref=f8e64]:
+                    - /url: http://webserver/admin/category.php?category=searchplugins
+                - listitem [ref=f8e65]:
+                  - text: /
+                  - generic [ref=f8e66]: Manage global search
+            - generic [ref=f8e67]:
+              - heading "Acceptance test site" [level=1] [ref=f8e72]
+              - generic [ref=f8e77]:
+                - textbox "Search" [ref=f8e78]
+                - generic: Search
+                - button "Search" [ref=f8e80]:
+                  - generic [aria-hidden] [ref=f8e81]: 
+        - navigation "Site administration menu" [ref=f8e85]:
+          - menubar [ref=f8e86]:
+            - menuitem "General" [ref=f8e87]
+
+…[truncated 17308 chars]
+THINK The save went through and the checkbox is ticked. Next I'll type "toads" into the search box, f8e21, and submit.
+
+
+#16 CALL browser_type {"target": "f8e21", "element": "Site-wide search textbox in header", "text": "toads", "submit": true}
+#16 RESULT ### Page
+- Page URL: http://webserver/search/index.php?context=1&q=toads
+- Page Title: Global search | Acceptance test site
+### Snapshot
+- [Snapshot](.playwright-mcp/page-2026-11-16T05-05-52-106Z.yml)
+THINK I'm checking the search page for a notifywarning element, since step 4 expects it not to exist. I'll take a fresh snapshot, because any visible notification there should show up as an alert.
+
+
+#17 CALL browser_snapshot {}
+#17 RESULT ### Page
+- Page URL: http://webserver/search/index.php?context=1&q=toads
+- Page Title: Global search | Acceptance test site
+### Snapshot
+```yaml
+- generic [active] [ref=f10e1]:
+  - status
+  - generic [ref=f10e2]:
+    - link "Skip to main content" [ref=f10e3]:
+      - /url: "#maincontent"
+    - navigation "Site navigation" [ref=f10e4]:
+      - generic [ref=f10e5]:
+        - link "Acceptance test site" [ref=f10e6]:
+          - /url: http://webserver/my/
+        - menubar [ref=f10e9]:
+          - menuitem "More " [ref=f10e10]:
+            - generic [ref=f10e11]: More
+            - text: 
+        - generic [ref=f10e12]:
+          - generic [ref=f10e13]:
+            - text: 
+            - search "Site-wide search" [ref=f10e14]:
+              - generic [ref=f10e15]: Search
+              - generic [ref=f10e16]:
+                - button "Perform search" [ref=f10e17]:
+                  - generic [aria-hidden] [ref=f10e18]: 
+                - textbox "Search" [ref=f10e20]
+                - text: 
+          - generic [ref=f10e23]:
+            - switch "Edit mode" [ref=f10e24]
+            - generic [ref=f10e25]: Edit mode
+          - button "Show notification window with no new notifications" [ref=f10e35]:
+            - generic [aria-hidden] [ref=f10e36]: 
+          - button "Toggle messaging drawer" [ref=f10e38]:
+            - generic [aria-hidden] [ref=f10e39]: 
+          - button "User menu" [ref=f10e45]: 
+    - generic [ref=f10e49]:
+      - generic [ref=f10e50]:
+        - banner [ref=f10e51]:
+          - heading "Global search" [level=1] [ref=f10e58]
+        - main [ref=f10e62]:
+          - alert [ref=f10e64]:
+            - button "Dismiss this notification" [ref=f10e65]
+          - alert [ref=f10e67]:
+            - text: No results
+            - button "Dismiss this notification" [ref=f10e68]
+          - generic [ref=f10e70]:
+            - button "Expand all" [ref=f10e72]
+            - group "Search" [ref=f10e74]:
+              - generic [ref=f10e77]:
+                - button "Search" [expanded] [ref=f10e78]:
+                  - generic "Collapse" [ref=f10e79]:
+                    - generic [aria-hidden] [ref=f10e80]: 
+                  - text:  
+                - heading [level=3] [aria-hidden] [ref=f10e82]: Search
+              - generic [ref=f10e84]:
+                - generic [ref=f10e85]:
+                  - generic [ref=f10e86]: Enter your search query
+                  - generic [ref=f10e87]:
+                    - generic [aria-hidden] [ref=f10e8
+…[truncated 2990 chars]
+THINK I'm checking whether the search banner should show on the results page, since right now only the "No results" alert appears and the banner is supposed to sit at the top of the search screen. I'm also wondering if the banner is only meant for the search index page when there's no query, and I recall that Moodle's search/index.php displays it when the banner setting is enabled.
+
+I'm trying to pin down whether the empty alert with only a dismiss button could be the search banner or a notifywarning element, since the banner would normally render with text. I can't confirm the element's class from the accessibility snapshot alone, so that stays unresolved.
+
+I'm looking at whether the empty alert with only a dismiss button could be a notification-style warning, since a banner with an empty message might still render as one. I can't confirm the class from the accessibility snapshot, so I'll treat that as an open question.
+
+I'm now looking at the empty alert in the main region, which sits above "No results" and shows only a dismiss button. I can't tell from the accessibility snapshot whether it carries the notifywarning class, so that stays open.
+
+I'm weighing whether the empty alert is the search banner rendered with blank content, which would make it a warning-type notification. The snapshot doesn't expose the class, so I can't confirm that from the UI alone, and I'd rather not change the banner setting just to test it.
+
+I'm settling on a verdict for the empty alert: since Moodle a
+…[truncated 275 chars]
+MSG {"status":"fail","reason":"Saved searchbannerenable=1 with blank searchbanner ('Changes saved' confirmed). Header search for 'toads' loaded /search/index.php?context=1&q=toads. The results page shows an alert with no text (only a 'Dismiss this notification' button) above the 'No results' alert. That empty alert is the only extra notification; it appears only because the banner is enabled and blank. Moodle's core renders this banner as a warning-type notification, so .notifywarning very likely exists. The accessibility snapshot does not expose CSS classes, so that link is inference, not directly observed.","failingStep":4,"failingStepText":"Then \".notifywarning\" \"css_element\" should not exist"}
