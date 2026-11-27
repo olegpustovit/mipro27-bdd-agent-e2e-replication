@@ -1,8 +1,8 @@
 # Real bug candidates
 
 Payment scope is the 12 tagged scenarios in `study/scenarios.feature` at the
-upstream baseline `0729f68ac220f7cda4ad09c5693dba11d7c532c6`. P4d supplies the
-hold-outs and P7c supplies the Moodle scenario and tested revision inventory.
+upstream baseline `0729f68ac220f7cda4ad09c5693dba11d7c532c6`. P4d supplied the eight
+hold-outs below and P7c supplies the Moodle scenario and tested revision inventory.
 Each row records its selection status. Source review used upstream history and
 issues, scenario text, and baseline product code.
 
@@ -31,14 +31,6 @@ bench/plan/bug-candidates.py rwa ../rwa-0729f68 0729f68 'fix|bug|login|logout|ba
 | social-comment | No upstream match | [#66][66] and [201441d][comment] introduce commenting and give no evidence of missing or duplicate comments on reload. |
 | feed-personal | No upstream match | [622f88e][dimensions] fixes invalid dimensions for the virtualized feed, but the inverse does not apply at the baseline, even with zero context. [#1555][1555] requests replacing the library and gives no matching feed failure. |
 | feed-friends | No upstream match | [622f88e][dimensions] and [#1555][1555] have the same limitations as feed-personal. |
-| Hold-out 01 | TODO (P4d) | Await scenario ID and text. |
-| Hold-out 02 | TODO (P4d) | Await scenario ID and text. |
-| Hold-out 03 | TODO (P4d) | Await scenario ID and text. |
-| Hold-out 04 | TODO (P4d) | Await scenario ID and text. |
-| Hold-out 05 | TODO (P4d) | Await scenario ID and text. |
-| Hold-out 06 | TODO (P4d) | Await scenario ID and text. |
-| Hold-out 07 | TODO (P4d) | Await scenario ID and text. |
-| Hold-out 08 | TODO (P4d) | Await scenario ID and text. |
 
 ## External payment report review, 2026-11-27
 
@@ -99,6 +91,48 @@ terms:
 | social-comment | Cannot post comment, comment disappears on refresh. |
 | feed-personal | Personal feed missing posts, own posts missing from profile, personal feed tab. [Mastodon #34463](https://github.com/mastodon/mastodon/issues/34463) concerns a Featured tab with no featured content configured. |
 | feed-friends | Following feed empty, friends feed blank, following feed tab. |
+
+## Payment hold-outs
+
+The eight P4d scenarios are in `bench/scenarios/pay/hold-out`. Step numbers
+come from `bench/stepdefs/pay/v0/hold-out-targets.json`. These are planned
+first failing assertions. Independent confirmation belongs to the patch stage.
+
+```sh
+bench/plan/bug-candidates.py rwa ../rwa-0729f68 0729f68 'notification|dismiss|onboard|sign.up|confirm.password|phone|search|reject|accept|filter' --path src --path backend
+```
+
+The upstream history and issue scan yielded no reversible product fix or
+fitting upstream defect for these targets. Notifications issue [#1332](https://github.com/cypress-io/cypress-realworld-app/issues/1332)
+concerns test flakiness. [#153](https://github.com/cypress-io/cypress-realworld-app/issues/153),
+[#34][34], [#36](https://github.com/cypress-io/cypress-realworld-app/issues/36),
+[#15](https://github.com/cypress-io/cypress-realworld-app/issues/15) and
+[#117](https://github.com/cypress-io/cypress-realworld-app/issues/117) specify features.
+[#1106][1106] concerns a backend connection failure during sign-in,
+[#585](https://github.com/cypress-io/cypress-realworld-app/issues/585) concerns the
+Cypress command log, and [#759][759] describes a test/search discrepancy where
+first-name search already works.
+
+| Scenario | Selection | Report title and failure quote | Payment component and planned change | Symptom at targeted step |
+| --- | --- | --- | --- | --- |
+| hold-01 | re-created-from-report | [nextcloud/server #1356](https://github.com/nextcloud/server/issues/1356), Can't dismiss “send usage report” notification. “Clicking any button fails to dismiss the notification.” | Notification dismissal. Accept the Dismiss click and keep the selected row in the notifications list. | Step 5 — Then the notification "Kristian Bradtke liked a transaction." is no longer listed |
+| hold-02 | re-created-from-report | [Expensify/App #65169](https://github.com/Expensify/App/issues/65169), After selecting “11-50” employees “How would you like to get started” is not shown. “page is not displayed, user is redirected to the OD Home page” | New-user onboarding. Keep registration and first sign-in working and route to home without opening the onboarding dialog. | Step 4 — Then the "Get Started with Real World App" dialog is shown |
+| hold-03 | re-created-from-report | [Data-Boom/SOEN490 #206](https://github.com/Data-Boom/SOEN490/issues/206), Sign up confirm password does not check for the same password. “there is no validation that the passwords are the same.” | Sign-up form validation. Suppress the inline confirmation mismatch message after blur. Keep submission validation in place. | Step 4 — Then the message "Password does not match" is shown under Confirm Password |
+| hold-04 | re-created-from-report | [Expensify/App #33294](https://github.com/Expensify/App/issues/33294), Web - Profile - Legal name not saved/no validation if language specific characters used. “the Legal name is briefly shown but disappears” | Profile save. Acknowledge the phone edit successfully and retain the old phone value in storage so reload restores it. | Step 7 — Then the Phone Number field shows "555-123-4567" |
+| hold-05 | re-created-from-report | [woocommerce/woocommerce #26587](https://github.com/woocommerce/woocommerce/issues/26587), Imported Customers Cannot Be Searched for by First and Last Name When Creating a Manual Order. “Imported customers are not searchable by first and last name when creating a manual order.” | Transaction recipient picker. Leave the initial people list intact, then omit first-name matches from the filtered results. | Step 5 — Then the first person in the list is "Ruthie Prosacco" |
+| hold-06 | re-created-from-report | [frappe/payments #204](https://github.com/frappe/payments/issues/204), Payment Request lacks `on_payment_authorized()` handler for Stripe success flow, causing successful Stripe payments to remain in `Requested` state. “still leave the ERPNext `Payment Request` in status `Requested`.” | Payment-request details. Complete acceptance while leaving the detail title on the pre-acceptance Requested wording. | Step 6 — Then the transaction reads "Lia Rosenbaum charged Ted Parisian" |
+| hold-07 | re-created-from-report | [Expensify/App #87095](https://github.com/Expensify/App/issues/87095), Concierge AI Re-Adds Rejected Expenses and Resubmits Reports, Causing Infinite Reject Loop. “Resubmits reports automatically in some cases” | Payment-request rejection. Complete the rejection click, then restore the pending presentation so the same request again shows Accept and Reject. | Step 6 — Then the "Accept Request" and "Reject Request" buttons are no longer shown |
+| hold-08 | re-created-from-report | [jameskokoska/Cashew #633](https://github.com/jameskokoska/Cashew/issues/633), Incorrect operation of the transaction filter with non-primary currencies. “the program displays transactions based on the account currency instead of the priority currency” | Personal feed amount filter. Keep the chosen chip and lower bound intact, but apply the upper bound in the wrong amount units so larger transactions remain visible. | Step 6 — And every listed transaction shows an amount between $10.00 and $20.00 |
+
+External searches covered notification dismissal, missing onboarding, missing
+password confirmation feedback, lost profile edits, name-based recipient search,
+stale payment request status after acceptance, reopened requests after rejection,
+and incorrect amount filters. The external reports use different inputs or
+triggers under the amended rule. For hold-04 the affected profile field in the
+source is legal name. For hold-05 the source uses an imported customer and a full
+name. For hold-07 the source reopens a rejected expense via automatic resubmission.
+For hold-08 the source compares amounts in the wrong currency. The planned change
+compares the upper bound in the wrong units.
 
 ## Moodle
 
