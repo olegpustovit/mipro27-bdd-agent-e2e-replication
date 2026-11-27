@@ -2,7 +2,7 @@ import { When } from '@cucumber/cucumber';
 import { expect } from 'playwright/test';
 import './steps.mjs';
 
-When('I open the feed transaction where {string} charged {string} {string} with note {string}', async function (sender, receiver, amount, note) {
+When('I open, from the Everyone feed, the transaction where {string} charged {string} {string} with note {string}', async function (sender, receiver, amount, note) {
   const rows = this.locator('transactionRows');
   const row = rows
     .filter({ hasText: `${sender} charged ${receiver}` })

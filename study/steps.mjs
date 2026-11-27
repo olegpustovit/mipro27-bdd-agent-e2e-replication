@@ -26,8 +26,8 @@ When('I reload the current page', async function () { await this.act(() => this.
 
 When('I change my {string} to {string}', async function (field, value) { assert(profileKey(field)); await actions.updateProfile(this, profileKey(field), value); });
 Then('my {string} field is {string}', async function (field, value) { assert(profileKey(field)); await expect(this.locator(profileKey(field))).toBeVisible(); await expect(this.locator(profileKey(field))).toHaveValue(value); });
-Then('my displayed full name contains {string}', async function (value) { await expect(this.locator('displayedName')).toBeVisible(); await expect(this.locator('displayedName')).toContainText(value); });
-When('I attempt to save invalid email {string}', async function (value) { await actions.invalidEmail(this, value); });
+Then('the name shown in the side menu contains {string}', async function (value) { await expect(this.locator('displayedName')).toBeVisible(); await expect(this.locator('displayedName')).toContainText(value); });
+When('I enter {string} in the Email field and leave the field', async function (value) { await actions.invalidEmail(this, value); });
 Then('the profile form displays email error {string}', async function (message) { await expect(this.locator('profileForm').getByText(message, { exact: true })).toBeVisible(); });
 Then('the profile Save control is visible and disabled', async function () {
   const save = this.locator('save', this.locator('profileForm'));
@@ -40,12 +40,13 @@ When('I delete bank {string}', async function (bank) { await actions.deleteBank(
 Then('bank {string} is visibly marked deleted', async function (bank) { const row = this.locator('bankRows').filter({ hasText: bank, visible: true }); await expect(row).toBeVisible(); await expect(row).toContainText('(Deleted)'); });
 
 When('I {string} {string} dollars to {string} with note {string}', async function (type, amount, recipient, note) { assert(['Pay', 'Request'].includes(type)); await actions.transfer(this, type, amount, recipient, note); });
+When(/^I request \$(\d+(?:\.\d{2})?) from "([^"]+)" with note "([^"]+)"$/, async function (amount, recipient, note) { await actions.transfer(this, 'Request', amount, recipient, note); });
 Then('a confirmation heading shows {string}', async function (note) { await expect(this.page.getByRole('heading', { name: new RegExp(note) })).toBeVisible(); });
 When('I open my personal feed', async function () { await actions.openPersonalFeed(this); });
-Then('my personal feed contains one visible {string} transaction for {string} with {string} as {string}', async function (note, amount, recipient, verb) {
+Then(/^my personal feed contains one visible "([^"]+)" transaction reading "([^"]+)" for (\$[\d,.]+)$/, async function (note, description, amount) {
   const row = this.locator('transactionRows').filter({ hasText: note, visible: true });
   await expect(row).toHaveCount(1); await expect(row).toBeVisible();
-  await expect(row).toContainText(amount); await expect(row).toContainText(recipient); await expect(row).toContainText(verb);
+  await expect(row).toContainText(amount); await expect(row.getByText(description, { exact: true })).toBeVisible();
 });
 
 When('I open transaction {string}', async function (id) { assert(/^[A-Za-z0-9_-]+$/.test(id)); await this.act(() => this.page.goto('http://localhost:3000/transaction/' + id)); });

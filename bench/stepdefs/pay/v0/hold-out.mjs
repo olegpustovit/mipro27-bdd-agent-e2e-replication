@@ -142,15 +142,6 @@ Then('the first person in the list is {string}', async function (name) {
   await expectFirstPerson(this, name);
 });
 
-Given(/^Lia Rosenbaum \("([^"]+)", password "([^"]+)"\) has requested \$(\d+\.\d{2}) from Ted Parisian for "([^"]+)"$/, async function (username, password, amount, note) {
-  await this.act(() => this.page.goto(app + '/signin'));
-  await signIn(this, username, password);
-  await actions.transfer(this, 'Request', amount, 'Ted Parisian', note);
-  await expect(heading(this.page, `Requested $${amount} for ${note}`)).toBeVisible();
-  await actions.signOut(this);
-  await expect(this.locator('signInHeading')).toBeVisible();
-});
-
 Given('Ted opens the transaction {string} from the {string} tab', async function (note, tab) {
   await actions.selectFeed(this, tab);
   const row = this.locator('transactionRows').filter({ has: this.page.getByText(note, { exact: true }) });
@@ -205,7 +196,7 @@ Then('at least one transaction is listed', async function () {
   await expect(this.locator('transactionRows').first()).toBeVisible();
 });
 
-Then(/^every listed transaction shows an amount between (\$[\d,.]+) and (\$[\d,.]+)$/, async function (low, high) {
+Then(/^every listed transaction's amount, ignoring its \+ or − sign, is between (\$[\d,.]+) and (\$[\d,.]+)$/, async function (low, high) {
   const grid = this.page.locator('[data-test="transaction-list"] .ReactVirtualized__Grid');
   const rows = this.locator('transactionRows', grid);
   const minimum = dollars(low);

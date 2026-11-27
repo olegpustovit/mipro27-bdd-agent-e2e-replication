@@ -47,12 +47,26 @@ export function parseAnswer(raw, steps) {
 
 const withoutKeyword = text => text.trim().replace(/^(Given|When|Then|And|But|\*)\s+/i, '').replace(/\s+/g, ' ');
 
+const parseGherkin = source =>
+  new Parser(new AstBuilder(IdGenerator.incrementing()), new GherkinClassicTokenMatcher()).parse(source);
+
+export function selectTaggedScenario(source, tag) {
+  const { feature } = parseGherkin(source);
+  const scenarios = feature.children.map(child => child.scenario).filter(Boolean);
+  const matches = scenarios.filter(scenario => scenario.tags.some(entry => entry.name === `@${tag}`));
+  if (matches.length !== 1) throw new Error(`Expected one payment scenario tagged @${tag}`);
+  const start = scenario => (scenario.tags[0] ?? scenario).location.line - 1;
+  const lines = source.split(/\r?\n/);
+  const selected = matches[0];
+  const next = scenarios[scenarios.indexOf(selected) + 1];
+  return [...lines.slice(0, start(scenarios[0])), ...lines.slice(start(selected), next ? start(next) : lines.length)].join('\n');
+}
+
 export function scenarioDetails(source) {
   const hasFeature = /^\s*Feature:/m.test(source);
   const prefix = hasFeature ? [] : /^\s*Scenario(?: Outline)?:/m.test(source)
     ? ['Feature: Prepared scenario'] : ['Feature: Prepared scenario', 'Scenario: Prepared steps'];
-  const parser = new Parser(new AstBuilder(IdGenerator.incrementing()), new GherkinClassicTokenMatcher());
-  const { feature } = parser.parse([...prefix, source].join('\n'));
+  const { feature } = parseGherkin([...prefix, source].join('\n'));
   const scenarios = (feature?.children ?? []).flatMap(child =>
     child.rule?.children.map(entry => entry.scenario).filter(Boolean) ??
     (child.scenario ? [child.scenario] : []));

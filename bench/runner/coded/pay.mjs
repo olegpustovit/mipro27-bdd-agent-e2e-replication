@@ -1,3 +1,4 @@
+import { setupPayment } from './pay-setup.mjs';
 import { spawn } from 'node:child_process';
 import { existsSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
@@ -74,6 +75,7 @@ export async function payment(item) {
 
   const { origin } = await import('./pay-origin.mjs');
   const { freshBrowser } = await import('../../../scripts/fixture.mjs');
+  await setupPayment(scenario);
   const temp = mkdtempSync(join(tmpdir(), 'coded-pay-'));
   try {
     const browser = await freshBrowser({ observerVersion: version });

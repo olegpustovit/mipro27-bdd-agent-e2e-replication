@@ -18,7 +18,6 @@ export async function invalidEmail(w, value) {
   await w.act(() => w.locator('account').click());
   await w.act(() => w.locator('email').fill(value));
   await w.act(() => w.locator('email').press('Tab'));
-  if (await w.locator('save').isEnabled()) await w.act(() => w.locator('save').click());
 }
 export async function addBank(w, bank, routing, account) {
   await w.act(() => w.locator('banks').click());

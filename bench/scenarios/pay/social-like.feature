@@ -4,7 +4,7 @@ Feature: Synthetic payment application workflows
   Scenario: Liking a transaction is retained exactly once
     Given I am signed in as "Heath93" with password "s3cret"
     Then the authenticated home identifies "Heath93"
-    When I open the feed transaction where "Ted Parisian" charged "Lia Rosenbaum" "$204.68" with note "Request: WHjJ4qR2R2 to uBmeaz5pX"
+    When I open, from the Everyone feed, the transaction where "Ted Parisian" charged "Lia Rosenbaum" "$204.68" with note "Request: WHjJ4qR2R2 to uBmeaz5pX"
     Then the transaction detail heading is visible
     And the displayed like count is a number
     When I record the displayed like count
