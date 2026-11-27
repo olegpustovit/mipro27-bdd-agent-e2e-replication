@@ -15,7 +15,7 @@ function response(page, method, path, action, status = 200, matches = () => true
   return Promise.all([
     page.waitForResponse((reply) => {
       const url = new URL(reply.url());
-      return url.pathname === path && reply.request().method() === method && matches(reply, url);
+      return url.pathname.replace(/^\/api(?=\/)/, '') === path && reply.request().method() === method && matches(reply, url);
     }, { timeout }),
     action(),
   ]).then(([reply]) => {
@@ -413,6 +413,10 @@ async function respondToRequest({ page, browser, version, bug, api }, action, no
   if (action === 'Accept') {
     await eventually(title, bug ? requested : 'Lia Rosenbaum charged Ted Parisian', 'accepted request title');
   } else {
+    await page.getByRole('dialog').waitFor({ state: 'hidden' });
+    const persisted = await page.request.get(api + endpoint);
+    assert.equal(persisted.status(), 200);
+    assert.equal((await persisted.json()).transaction.requestStatus, 'rejected');
     await eventually(() => accept.isVisible(), bug, 'Accept visibility after rejection');
     assert.equal(await reject.isVisible(), bug);
   }
