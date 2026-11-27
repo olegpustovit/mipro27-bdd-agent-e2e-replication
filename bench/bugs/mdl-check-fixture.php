@@ -23,10 +23,14 @@ if (in_array($scenario, ['S027', 'S028', 'S029'])) {
         'password' => 'teacher1',
     ]);
     $student = $generator->create_user(['username' => 'student1', 'password' => 'student1']);
-    $course = $generator->create_course([
+    $courseoptions = [
         'fullname' => 'Course 1', 'shortname' => 'C1',
         'enablecompletion' => 1, 'showcompletionconditions' => 1,
-    ]);
+    ];
+    if ($scenario === 'S040') {
+        $courseoptions['numsections'] = 1;
+    }
+    $course = $generator->create_course($courseoptions);
     $generator->enrol_user($teacher->id, $course->id, 'editingteacher');
     $generator->enrol_user($student->id, $course->id, 'student');
     $result['course'] = $course->id;
@@ -34,14 +38,19 @@ if (in_array($scenario, ['S027', 'S028', 'S029'])) {
         $manual = $generator->create_module('choice', [
             'course' => $course->id, 'name' => 'Test choice manual', 'completion' => 1,
         ]);
-        $generator->create_module('choice', [
+        $automatic = $generator->create_module('choice', [
             'course' => $course->id, 'name' => 'Test choice auto', 'completion' => 2, 'completionsubmit' => 1,
         ]);
         $result['cm'] = $manual->cmid;
+        $result['automaticcm'] = $automatic->cmid;
     } else if (in_array($scenario, ['S040', 'S041'])) {
-        $assign = $generator->create_module('assign', [
+        $assignmentoptions = [
             'course' => $course->id, 'name' => 'Music history', 'completion' => 1,
-        ]);
+        ];
+        if ($scenario === 'S040') {
+            $assignmentoptions['section'] = 1;
+        }
+        $assign = $generator->create_module('assign', $assignmentoptions);
         $result['cm'] = $assign->cmid;
         $result['student'] = $student->id;
     } else if (in_array($scenario, ['S042', 'S043', 'S044', 'S045', 'S046', 'S047'])) {
