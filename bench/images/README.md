@@ -46,8 +46,16 @@ The web and database containers require the private network aliases
 `webserver` and `db`. The database image is for isolated worker networks.
 The build can reuse a read-only adapter cache supplied as `P2A_MOODLE_CACHE`.
 In cache-only mode it builds the available variants and reports missing seeds. Reserve the adapter's `w0` seed builder when generating missing seeds.
-Moodle mutation images can use the same per-commit database image and smoke
-check once their committed overlays and any generated assets are available.
+Run `bench/images/build.mjs moodle-bugs` with the healthy post-change
+images already pinned and the exact source commits in `P2A_MOODLE_CACHE`.
+The command applies each committed bug patch to files archived from its
+selected post-change commit, then layers those files on the corresponding
+healthy web image. It reuses the post-change database pin and checks both
+fresh databases against the healthy seed checksum. The lock key is the
+exact bug ID, for example `mdl-B01-S027`. Docker tags use lowercase. Pass
+explicit bug IDs after `moodle-bugs` to retry a subset.
+If Docker has exhausted its default subnet pools, set
+`P2A_MOODLE_SMOKE_SUBNET` to an unused subnet and `P2A_BUILD_JOBS=1`.
 
 `bench/plan/startup.json` records health-check startup times measured on the
 build host. Each app starts twice in fresh containers and the
