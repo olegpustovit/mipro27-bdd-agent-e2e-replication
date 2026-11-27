@@ -1,0 +1,76 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = ["pyyaml==6.0.3"]
+# ///
+"""Extract the frozen candidate pool from the archived manifest and coded reproduction."""
+import argparse
+from datetime import datetime
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+import yaml
+
+args = argparse.ArgumentParser(description=__doc__)
+args.add_argument("--verify-history", type=Path, metavar="MOODLE_GIT",
+                  help="verify archived commit and feature metadata against a Moodle clone")
+options = args.parse_args()
+
+
+def verify_history(repo, pool, changes):
+    def git(*args):
+        return subprocess.check_output(["git", "-C", repo, *args], text=True).strip()
+
+    for row in pool:
+        change = changes[row["id"]]
+        commits = list(dict.fromkeys([*change["ui_commits"], change["test_fix_commit"]]))
+        first_ui, last_ui = change["ui_commits"][0], change["ui_commits"][-1]
+        edited = {
+            path for commit in commits
+            for path in git("diff-tree", "--no-commit-id", "--name-only", "-r", commit).splitlines()
+            if path.endswith(".feature")
+        }
+        date = datetime.fromisoformat(git("show", "-s", "--format=%cI", first_ui))
+        if (git("rev-parse", first_ui) != row["firstUi"]
+                or git("rev-parse", last_ui) != row["lastUi"]
+                or git("rev-parse", first_ui + "^") != row["pre"]
+                or git("rev-parse", change["test_fix_commit"]) != row["post"]
+                or date != datetime.fromisoformat(row["firstUiCommittedAt"])
+                or edited != set(row["editedFeatures"])):
+            raise SystemExit(f"Moodle history differs for {row['id']}")
+        git("merge-base", "--is-ancestor", row["lastUi"], row["post"])
+    print(f"{len(pool)}/{len(pool)} verified commit pairs, timestamps and edited feature paths",
+          file=sys.stderr)
+
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[2]
+manifest = yaml.safe_load((ROOT / "manifests/moodle.yaml").read_text())
+changes = {change["id"]: change for change in manifest["breaks"]}
+scenarios = {scenario["id"]: scenario for scenario in manifest["scenarios"]}
+history = json.loads((HERE / "history.json").read_text())
+pool = []
+with (ROOT / "results/moodle-v1-reproduction.jsonl").open() as rows:
+    for line in rows:
+        row = json.loads(line)
+        if row["type"] != "break" or not row["reproduced_core"]:
+            continue
+        change = changes[row["break"]]
+        edited = [path for path in change["test_half"]["files"] if path.endswith(".feature")]
+        pool.append({
+            "id": change["id"],
+            "tracker": change["mdl"],
+            **history[change["id"]],
+            "editedFeatures": edited,
+            "scenarios": [
+                scenarios[test["scenario"]]
+                for test in row["scenarios"] if test["core"]
+            ],
+        })
+if len(pool) != 21 or {change["id"] for change in pool} != history.keys():
+    raise SystemExit("Expected the frozen set of 21 coded-break changes")
+pool.sort(key=lambda change: (change["firstUiCommittedAt"], change["firstUi"], change["id"]))
+if options.verify_history:
+    verify_history(options.verify_history, pool, changes)
+print(json.dumps(pool, indent=2, ensure_ascii=False))

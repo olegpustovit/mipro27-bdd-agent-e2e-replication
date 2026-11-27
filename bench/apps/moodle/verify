@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+diff -u mining-output.json <(./mining-query)
+diff -u changes.json <(node select.mjs --check-scenarios)
+node --input-type=module - <<'JS'
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+
+const read = name => JSON.parse(readFileSync(name));
+const { changes, chosenChangeCount, eligibleScenarioCount, rejectedChangeCount,
+  pendingChangeCount, targetScenarioCount, shortfall, editedScenarios } = read('changes.json');
+assert.deepEqual(changes.map(row => row.id), read('mining-output.json').map(row => row.id));
+assert.equal(changes.length, 21);
+assert.equal(new Set(changes.map(row => row.id)).size, 21);
+assert.equal(pendingChangeCount, 0);
+assert.equal(chosenChangeCount + rejectedChangeCount, changes.length);
+assert.ok(changes.every(row => row.reason && ['chosen', 'rejected'].includes(row.decision)));
+assert.ok(changes.every(row => [row.pre, row.post].every(sha => /^[a-f0-9]{40}$/.test(sha))));
+console.log(`21/21 historical decisions with reasons (${chosenChangeCount} chosen, ${rejectedChangeCount} rejected)`);
+
+const eligible = changes.filter(row => row.decision === 'chosen').flatMap(row =>
+  row.scenarios.filter(scenario => scenario.decision === 'eligible'));
+assert.ok(eligible.every(row => row.codedBefore === 'passed' &&
+  [row.pre, row.post].every(phase => phase.setup === 'passed' && phase.handoff.ui.length)));
+assert.equal(eligibleScenarioCount, eligible.length);
+assert.equal(targetScenarioCount, 20);
+assert.equal(shortfall, Math.max(0, targetScenarioCount - eligible.length));
+console.log(`${eligible.length}/${targetScenarioCount} eligible scenarios. Shortfall ${shortfall}. ${editedScenarios.length} old-text runs required.`);
+JS
