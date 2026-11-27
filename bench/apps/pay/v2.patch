@@ -1,0 +1,649 @@
+diff --git a/src/components/BankAccountItem.tsx b/src/components/BankAccountItem.tsx
+index 97fc15a..a629d47 100644
+--- a/src/components/BankAccountItem.tsx
++++ b/src/components/BankAccountItem.tsx
+@@ -38,10 +38,10 @@ const BankAccountListItem: React.FC<BankAccountListItemProps> = ({
+               variant="contained"
+               color="secondary"
+               size="large"
+-              data-test="bankaccount-delete"
++              data-test="bankaccount-remove"
+               onClick={() => setDeleteOpen(true)}
+             >
+-              Delete
++              Remove
+             </Button>
+           </Grid>
+         )}
+@@ -51,7 +51,7 @@ const BankAccountListItem: React.FC<BankAccountListItemProps> = ({
+         onClose={() => setDeleteOpen(false)}
+         data-test="bankaccount-delete-dialog"
+       >
+-        <DialogTitle>Delete this bank account?</DialogTitle>
++        <DialogTitle>Remove this bank account?</DialogTitle>
+         <DialogContent>
+           <DialogContentText>
+             {bankAccount.bankName} will no longer be available for transfers.
+@@ -62,14 +62,14 @@ const BankAccountListItem: React.FC<BankAccountListItemProps> = ({
+             Cancel
+           </Button>
+           <Button
+-            data-test="bankaccount-delete-confirm"
++            data-test="bankaccount-remove-confirm"
+             color="secondary"
+             onClick={() => {
+               deleteBankAccount({ id: bankAccount.id });
+               setDeleteOpen(false);
+             }}
+           >
+-            Delete
++            Remove
+           </Button>
+         </DialogActions>
+       </Dialog>
+diff --git a/src/components/NavDrawer.tsx b/src/components/NavDrawer.tsx
+index 0cfc5c7..57d234d 100644
+--- a/src/components/NavDrawer.tsx
++++ b/src/components/NavDrawer.tsx
+@@ -1,4 +1,4 @@
+-import React from "react";
++import React, { useState } from "react";
+ import { styled } from "@mui/material/styles";
+ import { head } from "lodash/fp";
+ import { Interpreter } from "xstate";
+@@ -8,6 +8,9 @@ import {
+   useMediaQuery,
+   useTheme,
+   Drawer,
++  Dialog,
++  DialogActions,
++  DialogTitle,
+   List,
+   Divider,
+   ListItem,
+@@ -15,6 +18,7 @@ import {
+   ListItemText,
+   Grid,
+   Avatar,
++  Button,
+   Typography,
+ } from "@mui/material";
+ import { Link as RouterLink } from "react-router-dom";
+@@ -135,39 +139,39 @@ export const mainListItems = (
+       // @ts-ignore
+       onClick={() => showTemporaryDrawer && toggleDrawer()}
+       component={RouterLink}
+-      to="/user/settings"
+-      data-test="sidenav-user-settings"
++      to="/notifications"
++      data-test="sidenav-notifications"
+     >
+       <ListItemIcon>
+-        <PersonIcon />
++        <NotificationsIcon />
+       </ListItemIcon>
+-      <ListItemText primary="Account settings" />
++      <ListItemText primary="Notifications" />
+     </ListItem>
+     <ListItem
+       button
+       // @ts-ignore
+       onClick={() => showTemporaryDrawer && toggleDrawer()}
+       component={RouterLink}
+-      to="/bankaccounts"
+-      data-test="sidenav-bankaccounts"
++      to="/user/settings"
++      data-test="sidenav-user-settings"
+     >
+       <ListItemIcon>
+-        <AccountBalanceIcon />
++        <PersonIcon />
+       </ListItemIcon>
+-      <ListItemText primary="Bank Accounts" />
++      <ListItemText primary="Account settings" />
+     </ListItem>
+     <ListItem
+       button
+       // @ts-ignore
+       onClick={() => showTemporaryDrawer && toggleDrawer()}
+       component={RouterLink}
+-      to="/notifications"
+-      data-test="sidenav-notifications"
++      to="/bankaccounts"
++      data-test="sidenav-bankaccounts"
+     >
+       <ListItemIcon>
+-        <NotificationsIcon />
++        <AccountBalanceIcon />
+       </ListItemIcon>
+-      <ListItemText primary="Notifications" />
++      <ListItemText primary="Bank Accounts" />
+     </ListItem>
+   </div>
+ );
+@@ -201,6 +205,7 @@ const NavDrawer: React.FC<Props> = ({
+   const showTemporaryDrawer = useMediaQuery(theme.breakpoints.only("xs"));
+ 
+   const currentUser = authState?.context?.user;
++  const [signOutOpen, setSignOutOpen] = useState(false);
+   const signOut = () => sendAuth("LOGOUT");
+ 
+   return (
+@@ -262,6 +267,18 @@ const NavDrawer: React.FC<Props> = ({
+         alignItems="center"
+         className={drawerOpen ? classes.userProfile : classes.userProfileHidden}
+       >
++        <Grid item>
++          <Divider />
++        </Grid>
++        <Grid item>
++          <List>{mainListItems(toggleDrawer, showTemporaryDrawer)}</List>
++        </Grid>
++        <Grid item>
++          <Divider />
++        </Grid>
++        <Grid item>
++          <List>{secondaryListItems(() => setSignOutOpen(true))}</List>
++        </Grid>
+         <Grid item>
+           {currentUser && (
+             <>
+@@ -279,19 +296,24 @@ const NavDrawer: React.FC<Props> = ({
+             </>
+           )}
+         </Grid>
+-        <Grid item>
+-          <Divider />
+-        </Grid>
+-        <Grid item>
+-          <List>{mainListItems(toggleDrawer, showTemporaryDrawer)}</List>
+-        </Grid>
+-        <Grid item>
+-          <Divider />
+-        </Grid>
+-        <Grid item>
+-          <List>{secondaryListItems(signOut)}</List>
+-        </Grid>
+       </Grid>
++      <Dialog open={signOutOpen} onClose={() => setSignOutOpen(false)} data-test="signout-dialog">
++        <DialogTitle>Sign out of Real World App?</DialogTitle>
++        <DialogActions>
++          <Button data-test="signout-cancel" onClick={() => setSignOutOpen(false)}>
++            Cancel
++          </Button>
++          <Button
++            data-test="signout-confirm"
++            onClick={() => {
++              setSignOutOpen(false);
++              signOut();
++            }}
++          >
++            Sign out
++          </Button>
++        </DialogActions>
++      </Dialog>
+     </StyledDrawer>
+   );
+ };
+diff --git a/src/components/NotificationListItem.tsx b/src/components/NotificationListItem.tsx
+index 9d3da62..d6abcd7 100644
+--- a/src/components/NotificationListItem.tsx
++++ b/src/components/NotificationListItem.tsx
+@@ -90,30 +90,33 @@ const NotificationListItem: React.FC<NotificationListItemProps> = ({
+   }
+ 
+   return (
+-    <StyledListItem data-test={`notification-list-item-${notification.id}`}>
++    <StyledListItem
++      data-test={`notification-list-item-${notification.id}`}
++      secondaryAction={
++        xsBreakpoint ? (
++          <IconButton
++            aria-label="mark as read"
++            color="primary"
++            onClick={() => updateNotification({ id: notification.id, isRead: true })}
++            data-test={`notification-mark-read-${notification.id}`}
++            size="large"
++          >
++            <CheckIcon />
++          </IconButton>
++        ) : (
++          <Button
++            color="primary"
++            size="small"
++            onClick={() => updateNotification({ id: notification.id, isRead: true })}
++            data-test={`notification-mark-read-${notification.id}`}
++          >
++            Dismiss
++          </Button>
++        )
++      }
++    >
+       <ListItemIcon>{listItemIcon!}</ListItemIcon>
+       <ListItemText primary={listItemText} />
+-      {xsBreakpoint && (
+-        <IconButton
+-          aria-label="mark as read"
+-          color="primary"
+-          onClick={() => updateNotification({ id: notification.id, isRead: true })}
+-          data-test={`notification-mark-read-${notification.id}`}
+-          size="large"
+-        >
+-          <CheckIcon />
+-        </IconButton>
+-      )}
+-      {!xsBreakpoint && (
+-        <Button
+-          color="primary"
+-          size="small"
+-          onClick={() => updateNotification({ id: notification.id, isRead: true })}
+-          data-test={`notification-mark-read-${notification.id}`}
+-        >
+-          Dismiss
+-        </Button>
+-      )}
+     </StyledListItem>
+   );
+ };
+diff --git a/src/components/SignInForm.tsx b/src/components/SignInForm.tsx
+index 0bb0c52..5ab4f04 100644
+--- a/src/components/SignInForm.tsx
++++ b/src/components/SignInForm.tsx
+@@ -9,7 +9,6 @@ import {
+   TextField,
+   FormControlLabel,
+   Checkbox,
+-  Grid,
+   Box,
+   Typography,
+   Container,
+@@ -95,6 +94,11 @@ const SignInForm: React.FC<Props> = ({ authService }) => {
+         <Typography component="h1" variant="h5">
+           Sign in
+         </Typography>
++        <Typography variant="body2">
++          <Link data-test="signup" to="/signup">
++            {"Don't have an account? Sign Up"}
++          </Link>
++        </Typography>
+         <Formik
+           initialValues={initialValues}
+           validationSchema={validationSchema}
+@@ -106,49 +110,53 @@ const SignInForm: React.FC<Props> = ({ authService }) => {
+         >
+           {({ isValid, isSubmitting }) => (
+             <Form className={classes.form}>
+-              <Field name="username">
+-                {({ field, meta: { error, value, initialValue, touched } }: FieldProps) => (
+-                  <TextField
+-                    variant="outlined"
+-                    margin="normal"
+-                    fullWidth
+-                    id="username"
+-                    label="Username"
+-                    type="text"
+-                    autoFocus
+-                    data-test="login-username"
+-                    error={(touched || value !== initialValue) && Boolean(error)}
+-                    helperText={touched || value !== initialValue ? error : ""}
+-                    {...field}
+-                  />
+-                )}
+-              </Field>
+-              <Field name="password">
+-                {({ field, meta: { error, value, initialValue, touched } }: FieldProps) => (
+-                  <TextField
+-                    variant="outlined"
+-                    margin="normal"
+-                    fullWidth
+-                    label="Password"
+-                    type="password"
+-                    id="password"
+-                    data-test="login-password"
+-                    error={touched && value !== initialValue && Boolean(error)}
+-                    helperText={touched && value !== initialValue && touched ? error : ""}
+-                    {...field}
+-                  />
+-                )}
+-              </Field>
+-              <FormControlLabel
+-                control={
+-                  <Field name={"remember"}>
+-                    {({ field }: FieldProps) => {
+-                      return <Checkbox color="primary" data-test="signin-remember-me" {...field} />;
+-                    }}
+-                  </Field>
+-                }
+-                label="Remember me"
+-              />
++              <Box component="fieldset" className="SignInForm-fields" border={0} p={0}>
++                <Field name="username">
++                  {({ field, meta: { error, value, initialValue, touched } }: FieldProps) => (
++                    <TextField
++                      variant="outlined"
++                      margin="normal"
++                      fullWidth
++                      id="username"
++                      label="Username"
++                      type="text"
++                      autoFocus
++                      data-test="login-username"
++                      error={(touched || value !== initialValue) && Boolean(error)}
++                      helperText={touched || value !== initialValue ? error : ""}
++                      {...field}
++                    />
++                  )}
++                </Field>
++                <Field name="password">
++                  {({ field, meta: { error, value, initialValue, touched } }: FieldProps) => (
++                    <TextField
++                      variant="outlined"
++                      margin="normal"
++                      fullWidth
++                      label="Password"
++                      type="password"
++                      id="password"
++                      data-test="login-password"
++                      error={touched && value !== initialValue && Boolean(error)}
++                      helperText={touched && value !== initialValue && touched ? error : ""}
++                      {...field}
++                    />
++                  )}
++                </Field>
++                <FormControlLabel
++                  control={
++                    <Field name={"remember"}>
++                      {({ field }: FieldProps) => {
++                        return (
++                          <Checkbox color="primary" data-test="signin-remember-me" {...field} />
++                        );
++                      }}
++                    </Field>
++                  }
++                  label="Remember me"
++                />
++              </Box>
+               <Button
+                 type="submit"
+                 fullWidth
+@@ -160,16 +168,6 @@ const SignInForm: React.FC<Props> = ({ authService }) => {
+               >
+                 Log In
+               </Button>
+-              <Grid container>
+-                <Grid item xs>
+-                  {/*<Link to="/forgotpassword">Forgot password?</Link>*/}
+-                </Grid>
+-                <Grid item>
+-                  <Link data-test="signup" to="/signup">
+-                    {"Don't have an account? Sign Up"}
+-                  </Link>
+-                </Grid>
+-              </Grid>
+             </Form>
+           )}
+         </Formik>
+diff --git a/src/components/SignUpForm.tsx b/src/components/SignUpForm.tsx
+index ef78e77..1ad3864 100644
+--- a/src/components/SignUpForm.tsx
++++ b/src/components/SignUpForm.tsx
+@@ -170,7 +170,7 @@ const SignUpForm: React.FC<Props> = ({ authService }) => {
+                     fullWidth
+                     label="Confirm Password"
+                     id="confirmPassword"
+-                    data-test="signup-confirmPassword"
++                    data-test="signup-confirm-password"
+                     type="password"
+                     error={(touched || value !== initialValue) && Boolean(error)}
+                     helperText={touched || value !== initialValue ? error : ""}
+@@ -187,7 +187,7 @@ const SignUpForm: React.FC<Props> = ({ authService }) => {
+                 data-test="signup-submit"
+                 disabled={!isValid || isSubmitting}
+               >
+-                Sign Up
++                Create account
+               </Button>
+               <Grid container>
+                 <Grid item>
+diff --git a/src/components/TransactionCreateStepTwo.tsx b/src/components/TransactionCreateStepTwo.tsx
+index 8f14407..5ba563c 100644
+--- a/src/components/TransactionCreateStepTwo.tsx
++++ b/src/components/TransactionCreateStepTwo.tsx
+@@ -7,7 +7,13 @@ import {
+   Paper,
+   Typography,
+   Button,
+-  ButtonGroup,
++  ToggleButton,
++  ToggleButtonGroup,
++  Dialog,
++  DialogActions,
++  DialogContent,
++  DialogContentText,
++  DialogTitle,
+   Grid,
+   Container,
+   Avatar,
+@@ -96,7 +102,8 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+   showSnackbar,
+ }) => {
+   const [transactionType, setTransactionType] = useState<string>();
+-  const requestButton = useRef<HTMLButtonElement>(null);
++  const implicitRequest = useRef(false);
++  const [review, setReview] = useState<{ transactionType: string; values: FormValues }>();
+   const initialValues: FormValues = {
+     amount: "",
+     description: "",
+@@ -125,19 +132,17 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+           validationSchema={validationSchema}
+           validateOnMount={true}
+           onSubmit={(values, { setSubmitting }) => {
+-            setSubmitting(true);
++            const selectedType = implicitRequest.current ? "request" : transactionType;
++            if (!selectedType) {
++              setSubmitting(false);
++              return;
++            }
+ 
+-            // reset transactionType
+-            setTransactionType(undefined);
+-
+-            createTransaction({ transactionType, ...values });
+-            showSnackbar({
+-              severity: "success",
+-              message: "Transaction Submitted!",
+-            });
++            setTransactionType(selectedType);
++            setReview({ transactionType: selectedType, values });
+           }}
+         >
+-          {({ isValid, isSubmitting }) => (
++          {({ isValid, isSubmitting, setSubmitting, submitForm }) => (
+             <Form
+               className={classes.form}
+               data-test="transaction-create-form"
+@@ -149,7 +154,12 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+                   event.target.type === "text"
+                 ) {
+                   event.preventDefault();
+-                  requestButton.current?.click();
++                  if (isValid && !isSubmitting && event.currentTarget.reportValidity()) {
++                    implicitRequest.current = true;
++                    void submitForm().finally(() => {
++                      implicitRequest.current = false;
++                    });
++                  }
+                 }
+               }}
+             >
+@@ -193,34 +203,96 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+                 )}
+               </Field>
+               <Box data-test="transaction-create-actions">
+-                <ButtonGroup variant="contained" fullWidth>
+-                  <Button
+-                    type="submit"
+-                    fullWidth
+-                    variant="contained"
+-                    color="primary"
+-                    className={classes.submit}
++                <ToggleButtonGroup
++                  data-test="transaction-create-type"
++                  exclusive
++                  value={transactionType ?? null}
++                  onChange={(_, value: string | null) => setTransactionType(value ?? undefined)}
++                >
++                  <ToggleButton
++                    type="button"
++                    value="payment"
+                     data-test="transaction-create-pay-button"
+-                    disabled={!isValid || isSubmitting}
+-                    onClick={() => setTransactionType("payment")}
+                   >
+                     Pay
+-                  </Button>
+-                  <Button
+-                    type="submit"
+-                    fullWidth
+-                    variant="contained"
+-                    color="primary"
+-                    className={classes.submit}
++                  </ToggleButton>
++                  <ToggleButton
++                    type="button"
++                    value="request"
+                     data-test="transaction-create-request-button"
+-                    ref={requestButton}
+-                    disabled={!isValid || isSubmitting}
+-                    onClick={() => setTransactionType("request")}
+                   >
+                     Request
+-                  </Button>
+-                </ButtonGroup>
++                  </ToggleButton>
++                </ToggleButtonGroup>
++                <Button
++                  type="submit"
++                  variant="contained"
++                  fullWidth
++                  className={classes.submit}
++                  data-test="transaction-create-continue"
++                  disabled={!isValid || !transactionType || isSubmitting}
++                >
++                  Continue
++                </Button>
+               </Box>
++              {review && (
++                <Dialog
++                  open
++                  onClose={() => {
++                    setReview(undefined);
++                    setSubmitting(false);
++                  }}
++                  data-test="transaction-review-dialog"
++                >
++                  <DialogTitle>
++                    {review.transactionType === "payment" ? "Confirm payment" : "Confirm request"}
++                  </DialogTitle>
++                  <DialogContent>
++                    <DialogContentText>
++                      {review.transactionType === "payment" ? "Pay" : "Request"}{" "}
++                      {Number(review.values.amount).toLocaleString("en-US", {
++                        style: "currency",
++                        currency: "USD",
++                      })}{" "}
++                      {review.transactionType === "payment" ? "to" : "from"} {receiver.firstName}{" "}
++                      {receiver.lastName} for "{review.values.description}"?
++                    </DialogContentText>
++                  </DialogContent>
++                  <DialogActions>
++                    <Button
++                      data-test="transaction-review-back"
++                      onClick={() => {
++                        setReview(undefined);
++                        setSubmitting(false);
++                      }}
++                    >
++                      Back
++                    </Button>
++                    <Button
++                      data-test="transaction-review-confirm"
++                      variant="contained"
++                      onClick={() => {
++                        setSubmitting(true);
++                        setReview(undefined);
++
++                        // reset transactionType
++                        setTransactionType(undefined);
++
++                        createTransaction({
++                          transactionType: review.transactionType,
++                          ...review.values,
++                        });
++                        showSnackbar({
++                          severity: "success",
++                          message: "Transaction Submitted!",
++                        });
++                      }}
++                    >
++                      Confirm
++                    </Button>
++                  </DialogActions>
++                </Dialog>
++              )}
+             </Form>
+           )}
+         </Formik>
+diff --git a/src/components/UserSettingsForm.tsx b/src/components/UserSettingsForm.tsx
+index 0b09969..27a6cfe 100644
+--- a/src/components/UserSettingsForm.tsx
++++ b/src/components/UserSettingsForm.tsx
+@@ -77,7 +77,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
+                   required
+                   id={"user-settings-firstName-input"}
+                   type="text"
+-                  placeholder="First Name"
++                  label="First name"
+                   inputProps={{ "data-test": "user-settings-firstName-input" }}
+                   error={(touched || value !== initialValue) && Boolean(error)}
+                   helperText={touched || value !== initialValue ? error : ""}
+@@ -94,7 +94,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
+                   required
+                   id={"user-settings-lastName-input"}
+                   type="text"
+-                  placeholder="Last Name"
++                  label="Last name"
+                   inputProps={{ "data-test": "user-settings-lastName-input" }}
+                   error={(touched || value !== initialValue) && Boolean(error)}
+                   helperText={touched || value !== initialValue ? error : ""}
+@@ -111,7 +111,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
+                   required
+                   id={"user-settings-email-input"}
+                   type="text"
+-                  placeholder="Email"
++                  label="Email address"
+                   inputProps={{ "data-test": "user-settings-email-input" }}
+                   error={(touched || value !== initialValue) && Boolean(error)}
+                   helperText={touched || value !== initialValue ? error : ""}
+@@ -128,7 +128,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
+                   required
+                   id={"user-settings-phoneNumber-input"}
+                   type="text"
+-                  placeholder="Phone Number"
++                  label="Phone number"
+                   inputProps={{ "data-test": "user-settings-phoneNumber-input" }}
+                   error={(touched || value !== initialValue) && Boolean(error)}
+                   helperText={touched || value !== initialValue ? error : ""}
+@@ -150,10 +150,10 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
+                   variant="contained"
+                   color="primary"
+                   sx={{ marginTop: 3, marginLeft: 0, marginBottom: 2 }}
+-                  data-test="user-settings-submit"
++                  data-test="user-settings-save"
+                   disabled={!isValid || isSubmitting}
+                 >
+-                  Save
++                  Save changes
+                 </Button>
+               </Grid>
+             </Grid>
