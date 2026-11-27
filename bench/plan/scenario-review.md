@@ -92,3 +92,33 @@ Every Moodle scenario also depends on H2 and H3, and the B05 scenarios also on H
 | Low | 6 | L1–L6 |
 
 Scenarios with no finding: auth-login, auth-logout, bank-create, bank-delete, feed-personal, feed-friends, hold-01..05, S093*, S036*, S037*, S040*, S041*, S043*, S045*, S046*. (*Clean apart from the harness findings H1–H3, which must still be fixed before any Moodle run.)
+
+## P4b fixes
+
+| ID | Status | Resolution |
+|---|---|---|
+| H1 | Fixed | The runner classifies quiz question and section fixtures as setup wherever they appear. A test compares the original UI handoff to the manifest for all 38 eligible pre/post extracts. |
+| H2 | Fixed | The agent feature has an unnumbered accounts line using the Behat fixture credentials, including the built-in admin and users needed after a switch. |
+| H3 | Fixed | The agent runner writes the prepared feature from ordered UI steps. The test checks generator exclusion and the mapping from agent numbering to Behat indices. The runner accepts names such as `S042.pre.feature`. |
+| P1 | Fixed | Fixture setup creates the pending Concert tickets request through the payment API. The Feature description records the fixture and the target is step 5. |
+| P2 | Fixed | Fixture setup creates the pending Pizza night request through the payment API. The Feature description records the fixture and the target is step 5. |
+| M1 | Fixed | S027 names the visible search warning notice. |
+| M2 | Fixed | S028 checks that the search warning notice is absent. |
+| M3 | Fixed | S029 checks that the search warning notice is absent. |
+| M4 | Fixed | S042 names the Description choice and the Add and Save changes controls. |
+| M5 | Fixed | S044 names the main content, bottom Add menu and Questions per page control. |
+| M6 | Fixed | S047 names the question count summary and bottom Add menu. |
+| M7 | Deferred | The P6 healthy gate decides whether S042 and S044 fit the current agent budgets. |
+| M8 | Fixed | S094’s agent title omits the JavaScript-disabled qualifier. Coded Behat uses the non-JavaScript path and the agent browser runs JavaScript. |
+| M9 | Fixed | The payment check specifies the full transaction title and $12.00 amount. |
+| M10 | Fixed | The request names who is asked for $12. The check specifies the full transaction title and $12.00 amount. |
+| M11 | Fixed | The amount-range check explicitly ignores the displayed sign. |
+| M12 | Fixed | The visitor leaves the Email field after entering the malformed value. The validation message, disabled Save and reload checks remain. |
+| L1 | Fixed | The name is described as shown in the side menu. |
+| L2 | Fixed | Social-like names the Everyone feed. |
+| L3 | Fixed | Social-comment names the Everyone feed. |
+| L4 | Fixed | The hidden-ID scenarios were removed from the shared feature. The runner selects the dedicated social features and can select the shared tagged feed scenarios directly. |
+| L5 | Open | Both B15 sources default to the Dashboard. The observed redirect in the seeded app remains to be checked on both commits. S091 is a non-JavaScript coded scenario and uses JavaScript in the agent browser. |
+| L6 | Fixed | S042–S047 refer to the quiz’s Questions page in the agent text. |
+
+H4 is addressed by M1–M6 and L6. [Agent wording](../scenarios/moodle/agent-wording.json) records 23 medium and 6 low step replacements across the 16 distinct scenario texts, plus the S094 title change. Replacements keep the original step positions. The agent runner records the hash of the rendered feature. The Moodle bug target cross-check remains pending the P7c/P7d target inventory.

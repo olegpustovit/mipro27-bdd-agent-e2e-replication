@@ -27,7 +27,7 @@ Feature: Synthetic payment application workflows
     Then the authenticated home identifies "Heath93"
     When I change my "First Name" to "Study"
     Then my "First Name" field is "Study"
-    And my displayed full name contains "Study"
+    And the name shown in the side menu contains "Study"
     When I reload the current page
     Then my "First Name" field is "Study"
 
@@ -35,7 +35,7 @@ Feature: Synthetic payment application workflows
   Scenario: An invalid email cannot be saved
     Given I am signed in as "Heath93" with password "s3cret"
     Then the authenticated home identifies "Heath93"
-    When I attempt to save invalid email "invalid-email"
+    When I enter "invalid-email" in the Email field and leave the field
     Then the profile form displays email error "Must contain a valid email address"
     And the profile Save control is visible and disabled
     When I reload the current page
@@ -67,41 +67,17 @@ Feature: Synthetic payment application workflows
     Then a confirmation heading shows "Study payment"
     When I open my personal feed
     And I reload the current page
-    Then my personal feed contains one visible "Study payment" transaction for "$12.00" with "Kristian" as "paid"
+    Then my personal feed contains one visible "Study payment" transaction reading "Ted Parisian paid Kristian Bradtke" for $12.00
 
   @transfer-request
   Scenario: A request records the requested amount and recipient
     Given I am signed in as "Heath93" with password "s3cret"
     Then the authenticated home identifies "Heath93"
-    When I "Request" "12" dollars to "Kristian Bradtke" with note "Study request"
+    When I request $12 from "Kristian Bradtke" with note "Study request"
     Then a confirmation heading shows "Study request"
     When I open my personal feed
     And I reload the current page
-    Then my personal feed contains one visible "Study request" transaction for "$12.00" with "Kristian" as "requested"
-
-  @social-like
-  Scenario: Liking a transaction is retained exactly once
-    Given I am signed in as "Heath93" with password "s3cret"
-    Then the authenticated home identifies "Heath93"
-    When I open transaction "1xfcAhNDZK4"
-    Then the transaction detail heading is visible
-    And the displayed like count is a number
-    When I record the displayed like count
-    And I like the transaction
-    Then the displayed like count is one greater and Like is disabled
-    When I reload the current page
-    Then the displayed like count is one greater and Like is disabled
-
-  @social-comment
-  Scenario: A comment is retained exactly once
-    Given I am signed in as "Heath93" with password "s3cret"
-    Then the authenticated home identifies "Heath93"
-    When I open transaction "1xfcAhNDZK4"
-    Then the transaction detail heading is visible
-    When I add comment "Study comment"
-    Then comment "Study comment" is visible in the transaction's comments
-    When I reload the current page
-    Then comment "Study comment" is visible exactly once in the transaction's comments
+    Then my personal feed contains one visible "Study request" transaction reading "Ted Parisian requested Kristian Bradtke" for $12.00
 
   @feed-personal
   Scenario: Mine opens the personal feed

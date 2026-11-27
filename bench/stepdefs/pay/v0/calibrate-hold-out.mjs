@@ -1,3 +1,4 @@
+import { setupPayment } from '../../../runner/coded/pay-setup.mjs';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { acquireLock, freshBrowser, reset } from '../../../../scripts/fixture.mjs';
@@ -7,6 +8,7 @@ const unlock = acquireLock();
 try {
   for (const scenario of ['hold-01', 'hold-02', 'hold-03', 'hold-04', 'hold-05', 'hold-06', 'hold-07', 'hold-08']) {
     await reset();
+    await setupPayment(scenario);
     const browser = await freshBrowser({ observerVersion: 'v0' });
     try {
       const code = await new Promise((resolve, reject) => {

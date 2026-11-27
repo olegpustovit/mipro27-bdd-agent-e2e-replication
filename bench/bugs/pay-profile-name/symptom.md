@@ -4,4 +4,4 @@ Preserve the typed first name in the current form after Save while discarding th
 
 Targeted step 5
 
-> And my displayed full name contains "Study"
+> And the name shown in the side menu contains "Study"

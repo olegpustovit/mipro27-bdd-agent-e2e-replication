@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { answerFormat, scenarioDetails } from './answer.mjs';
+import { answerFormat, scenarioDetails, selectTaggedScenario } from './answer.mjs';
 import { models } from './codex.mjs';
 import { runSession } from './session.mjs';
 
@@ -28,17 +28,34 @@ const modelPin = Object.hasOwn(models, item.arm) && models[item.arm];
 if (!modelPin) throw new Error('Run item must select an agent arm (luna, terra or sol)');
 const [model, effort] = modelPin;
 if (!['pay', 'mdl', 'fixture'].includes(item.app)) throw new Error('Invalid run item app');
-for (const segment of [item.scenario, ...(item.app === 'mdl' ? [item.version] : [])]) {
-  if (typeof segment !== 'string' || !/^[\w-]+$/.test(segment)) throw new Error('Invalid scenario path segment');
+
+const scenarioPattern = item.app === 'mdl' ? /^S\d+(?:\.(?:pre|post))?(?:\.feature)?$/ : /^[\w-]+$/;
+if (typeof item.scenario !== 'string' || !scenarioPattern.test(item.scenario) ||
+    (item.app === 'mdl' && (typeof item.version !== 'string' || !/^[\w-]+$/.test(item.version)))) {
+  throw new Error('Invalid scenario path segment');
 }
-const path = item.app === 'mdl' ? `scenarios/moodle/${item.version}/${item.scenario}.feature` :
-  `scenarios/${item.app}/${item.scenario}.feature`;
 const url = new URL(process.env.BENCH_APP_URL);
 if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
   throw new Error('BENCH_APP_URL must be an HTTP(S) URL without embedded credentials');
 }
 
-const scenario = await load(process.env.BENCH_SCENARIO_FILE ?? new URL(path, bench));
+const scenarioUrl = new URL(`scenarios/${item.app}/${item.scenario}.feature`, bench);
+let scenario;
+if (item.app === 'mdl') {
+  const { writeAgentScenario } = await import('../runner/moodle/agent-scenario.mjs');
+  await mkdir(values.out, { recursive: true });
+  process.env.BENCH_SCENARIO_FILE = await writeAgentScenario(item, values.out);
+  scenario = await load(process.env.BENCH_SCENARIO_FILE);
+} else if (process.env.BENCH_SCENARIO_FILE) {
+  scenario = await load(process.env.BENCH_SCENARIO_FILE);
+} else if (item.app === 'pay' && /^hold-\d+$/.test(item.scenario)) {
+  scenario = await load(new URL(`scenarios/pay/hold-out/${item.scenario}.feature`, bench));
+} else if (item.app === 'pay') {
+  scenario = await optional(scenarioUrl, null);
+  scenario ??= selectTaggedScenario(await load(new URL('../study/scenarios.feature', bench)), item.scenario);
+} else {
+  scenario = await load(scenarioUrl);
+}
 const { steps, numbered } = scenarioDetails(scenario);
 if (!steps.length) throw new Error('Scenario has no numbered steps');
 const template = item.app === 'fixture'
@@ -74,6 +91,10 @@ await writeFile(output('run.json'), JSON.stringify({
 }, null, 2) + '\n', { flag: 'wx' });
 for (const kind of ['codex', 'browser']) await writeFile(output(kind + '.jsonl'), '', { flag: 'wx' });
 
+if (item.app === 'pay') {
+  const { setupPayment } = await import('../runner/coded/pay-setup.mjs');
+  await setupPayment(item.scenario);
+}
 const answer = await runSession({
   prompt, steps, model, effort, app: item.app, url: url.href,
   trace: (kind, event) => appendFileSync(output(kind + '.jsonl'), JSON.stringify(event) + '\n'),

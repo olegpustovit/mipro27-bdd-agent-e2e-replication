@@ -17,7 +17,9 @@ failure has null step fields.
 
 For payment, start and seed the selected build before invoking the adapter.
 Each invocation starts a fresh browser. Use a separate app and reset its data
-between items, including when running with multiple workers. For the old local
+between items, including when running with multiple workers. For hold-06 and
+hold-07 the adapter creates the pending request through `BENCH_PAY_API_URL`
+(default `http://localhost:3001`) before Cucumber starts. For the old local
 fixture, the browser allows the app origin and the API at
 `http://localhost:3001`. For the local v0 acceptance smoke, start the app
 with `npm run app` and run `make -C bench p3e-smoke-pay`. The smoke restores

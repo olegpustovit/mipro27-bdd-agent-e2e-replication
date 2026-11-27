@@ -1,14 +1,17 @@
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { dataFeatureText, isDataStep, seededCredentials } from '../../../adapters/moodle/handoff.mjs';
+import { dataFeatureText, isDataStep as isGeneratorStep, seededCredentials } from '../../../adapters/moodle/handoff.mjs';
 import { effectiveSteps, findScenario, parseFeature, renderStep } from '../../../adapters/moodle/gherkin.mjs';
 import { parseResult } from '../../../adapters/moodle/behat-runner.mjs';
 import { decodeStepVerdict } from '../../../adapters/moodle/verdict.mjs';
 
 const DATA_CONFIG = '/opt/study-behat/study-behat-data.yml';
 
-function planHandoff(text, selection) {
+const DATA_STEP = /^quiz "[^"]+" contains the following (?:questions|sections):?$/;
+export const isDataStep = text => isGeneratorStep(text) || DATA_STEP.test(text);
+
+export function planHandoff(text, selection) {
   const feature = parseFeature(text);
   const scenario = findScenario(feature, selection);
   const steps = effectiveSteps(feature, scenario, selection);
@@ -46,7 +49,8 @@ async function runSetup(adapter, dataSteps, timeoutMs) {
   const id = randomBytes(6).toString('hex');
   const file = `/tmp/study-runs/study-data-${id}.feature`;
   const log = `/tmp/study-steps-${id}.jsonl`;
-  await adapter.exec('webserver', ['sh', '-c', `mkdir -p /tmp/study-runs && cat > ${file}`], { input: dataFeatureText(dataSteps) });
+  const setup = dataSteps.map((step, index) => ({ ...step, keyword: index ? 'And' : 'Given' }));
+  await adapter.exec('webserver', ['sh', '-c', `mkdir -p /tmp/study-runs && cat > ${file}`], { input: dataFeatureText(setup) });
   const began = performance.now();
   let execution, raw;
   try {

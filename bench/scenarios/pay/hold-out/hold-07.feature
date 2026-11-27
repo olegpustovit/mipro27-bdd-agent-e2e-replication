@@ -1,8 +1,8 @@
 Feature: Rejecting a payment request
+  Setup has already created a $30.00 request from Lia Rosenbaum to Ted Parisian for "Pizza night".
 
   Scenario: Rejecting a request closes it without charging
-    Given Lia Rosenbaum ("Judah_Dietrich50", password "s3cret") has requested $30.00 from Ted Parisian for "Pizza night"
-    And Ted Parisian is signed in as "Heath93" with password "s3cret"
+    Given Ted Parisian is signed in as "Heath93" with password "s3cret"
     And Ted opens the transaction "Pizza night" from the "Mine" tab
     And the "Accept Request" and "Reject Request" buttons are shown
     When Ted clicks "Reject Request"
