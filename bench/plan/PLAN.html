@@ -1,0 +1,235 @@
+<html><body><h1>Plan-1 (design locked 2026-11-27)</h1>
+<h2>1. Goal</h2>
+<p>Teams write tests as plain-language Gherkin scenarios. There are two ways to run them:</p>
+<ul>
+<li><b>Step definitions.</b> Code a developer writes for each test line and keeps up to date after every interface change.</li>
+<li><b>Browser agents.</b> AI models that read the scenario and operate the browser themselves, with no code to update.</li>
+</ul>
+<p>The study asks whether lower-tier AI agents are good enough to run these tests, compared with step definitions kept up to date, and what they cost. It also measures the gap right after an interface change, when the old step definitions no longer work.</p>
+<p><b>Main results, fixed before any run.</b> For each agent and app, the unit is a scenario with its bug on one version (payment app) or at one change (Moodle):</p>
+<ul>
+<li><b>Catch rate.</b> Of all bugs confirmed by the independent check, the share the agent reliably catches. Reliably means caught in at least 2 of 3 runs with the bug, while in at least 2 of its 3 runs without the bug the same step passed.</li>
+<li><b>Catch retention.</b> The same, counted only over the bugs the up-to-date step definitions reliably catch.</li>
+<li><b>False alarms.</b> The share of runs without a bug that failed, and the chance that a whole suite run on a correct build is all green.</li>
+</ul>
+<p><b>Headline results</b> are catch retention and false alarms, each with a 95% Wilson interval with the scenario as the unit (Wilson intervals stay valid at 0% and 100%), and the per-scenario counts out of 3 behind them. Catch rate, the all-green suite chance and best-of-3 use are reported as one column or one sentence each.</p>
+<p><b>Good enough.</b> An agent is good enough on an app when its catch retention reaches a set level and its false alarms stay below a set level. The two levels come from published figures, such as reported flaky-test rates, found in pre-task P0b; if no solid source exists, 80% and 10% are used and labelled as our choice. The verdict is <i>good enough</i>, <i>not good enough</i> or <i>inconclusive</i> (the interval crosses the level). The paper also shows how the verdict changes across a range of levels, so a reader can apply their own.</p>
+<p>Cells without a valid result (section 9) are left out and reported. Moodle results are estimates; Moodle gets a verdict only if it reaches 20 scenarios.</p>
+<p><b>The gap after a change.</b> For each changed version or Moodle change: the share of scenarios the step definitions from before the update fail without a bug, and the agents' catch rate and false alarms on the same scenarios.</p>
+
+<h2>2. Design at a glance</h2>
+<table class="t">
+<tr><th></th><th>Payment app</th><th>Moodle</th></tr>
+<tr><td>What it is</td><td>Public demo payment app (Cypress Real World App, commit 0729f68)</td><td>Real open-source learning platform with its developers' own tests</td></tr>
+<tr><td>Interface changes</td><td>2 changes written by a blind session from published breakage types, giving 3 versions</td><td>Every eligible real past change (rule in section 3); each run on the commit just before and just after</td></tr>
+<tr><td>Tests</td><td>20 scenarios: the 12 used in earlier exploratory runs, plus 8 new hold-out scenarios written blind</td><td>The developers' scenarios that each change touched: at least 20 in total (8 for the first 3 changes)</td></tr>
+<tr><td>Bugs</td><td colspan="2">One real bug per scenario, chosen by a frozen rule and confirmed by a check that uses neither approach (section 3)</td></tr>
+<tr><td>Approaches</td><td>Step definitions up to date; step definitions before the update; agents Luna, Terra, Sol</td><td>Developers' step definitions before and after the change; agents Luna, Terra, Sol</td></tr>
+<tr><td>Repetitions</td><td colspan="2">3 of every run</td></tr>
+<tr><td>Runs now</td><td>600 step-definition runs, 1080 agent runs</td><td>120 step-definition runs, 189 agent runs for the first 3 changes; more when the eligible changes are added</td></tr>
+</table>
+
+<h2>3. Apps, changes and bugs</h2>
+<h3>Payment app</h3>
+<ul>
+<li><b>Original</b> (v0): the app as published.</li>
+<li><b>Change 1</b> (v1) and <b>change 2</b> (v2, built on change 1) are specified by a separate blind session (pre-task P4c). It works only from the published web-test breakage types (WATERFALL and the studies it summarises) and the app's code. It never sees the scenarios' step definitions, the agents, the prompt or any run. Its specs are frozen before the prompt is tuned and before the step definitions are updated.</li>
+</ul>
+<p>The changes keep the app's behavior the same, so a correct test passes on every version without a bug. The agents see the same scenario text on every version.</p>
+<p><b>Hold-out scenarios.</b> The first 12 scenarios were used in earlier exploratory runs that shaped this design. Eight new scenarios are written by a session that never saw those runs, the agents or the prompt (pre-task P4d). Results are reported for all 20 and for the 8 hold-out scenarios alone. A short log lists what the exploratory runs changed in the design.</p>
+<h3>Moodle</h3>
+<p>Each change is a real Moodle commit in which the developers changed the interface and fixed their own step definitions. The first three:</p>
+<ul>
+<li><b>B04</b> (MDL-87662) moves the manual completion button into the activity header. Scenarios S036, S037, S041.</li>
+<li><b>B07</b> (MDL-87834) redesigns the inline search box in the navigation bar. Scenarios S025, S028, S029.</li>
+<li><b>B15</b> (MDL-85281) restyles the "Add block" buttons. Scenarios S091, S094.</li>
+</ul>
+<p><b>Rule for adding changes, fixed before any run.</b> Take all 21 mined changes that broke at least one scenario, in history order. The mining query and its output are published. A change is eligible if both hold:</p>
+<ul>
+<li><b>It builds</b>: the commits just before and just after it build into a working Moodle site on the current runtime (PHP 8.3, Postgres 17, pinned images), and its scenarios' test setup runs.</li>
+<li><b>Both approaches can run it</b>: at least one touched scenario passes with the developers' step definitions on the commit before the change, and the setup can prepare its data so the agent receives only the steps a user performs.</li>
+</ul>
+<p>Scenarios run with their text at each commit. Where the developers also edited a scenario's text in the change, the agents additionally run the old text on the commit after the change: no one updates an agent's scenarios either. B04, B07 and B15 go through the same rule as the rest. The 2021 changes do not meet it because they do not build on the current runtime. The rule uses no outcome of any agent. All eligible changes are included, and the rejected ones are listed with their reason. The target is at least 20 Moodle scenarios; if the eligible changes give fewer, the paper says so plainly.</p>
+<h3>Bugs</h3>
+<p>Every bug is a real bug. For each scenario, pre-task P7b applies a frozen rule:</p>
+<ol>
+<li>Prefer a real fix from the app's history that can be reverted at the tested commit and breaks the behavior the scenario describes.</li>
+<li>Otherwise, re-create a specific real bug report (Moodle tracker or the app's GitHub issues) in the same kind of component, cited by its ID.</li>
+</ol>
+<p>The rule never looks at either approach. Each bug is confirmed by an <b>independent check</b> that reads the app's state or page directly, not through the step definitions or an agent. The check confirms the bug really happens and is visible at the scenario's targeted step. Bugs are written with a short symptom description before any run.</p>
+<p><b>Every bug is code in the harness.</b> Each bug is committed as its own folder, <code>bugs/&lt;bug-id&gt;/</code>, before any run:</p>
+<ul>
+<li><code>patch.diff</code>: the code change that puts the bug into the app.</li>
+<li><code>source.md</code>: the real fix commit it reverts, or the real bug report it re-creates, with link and ID.</li>
+<li><code>symptom.md</code>: what goes wrong and at which scenario step it shows.</li>
+<li><code>check.mjs</code>: the independent check that confirms the bug, without the step definitions or an agent.</li>
+<li><code>applies-to.json</code>: the app versions the patch applies to.</li>
+</ul>
+<p>The prebuilt images are built from these folders, and the bug's ID and source appear in each run's record and in the run grid. Results are reported separately for the two kinds of bug: reverted real fixes, and bugs re-created from a real bug report. Only the first kind is called a real bug in the paper.</p>
+
+<h2>4. The approaches</h2>
+<ul>
+<li><b>Step definitions, up to date</b> (payment app). Made once, before any run (pre-task P5): Claude Opus 5.5 in Claude Code updates them after each change until every scenario passes on the version without bugs, with no check removed. Each result is committed in the harness, and runs check it out. Each update is done in 3 separate sessions; the first session that passes provides the code for the runs, fixed before the others are looked at. Claude Code's records give each session's tokens, minutes and dollars, so the spread of maintenance cost is visible. Opus is not one of the agents, so no model both maintains the tests and runs them.</li>
+<li><b>Step definitions, before the update</b> (payment app). The previous version's step definitions run on the changed version.</li>
+<li><b>Developers' step definitions, before and after the change</b> (Moodle). The before code comes from the commit before the change; the after code is the developers' own fix.</li>
+<li><b>Agents.</b> All in Codex CLI 0.169.0, with Playwright MCP 0.0.84 as the only tool, network limited to the app, and a limit of 5 minutes and 80 tool calls per run:
+ <ul>
+ <li>GPT-6 Luna, lower tier, medium effort;</li>
+ <li>GPT-5.6 Terra, lower tier, medium effort;</li>
+ <li>GPT-6.2 Sol, frontier reference, high effort.</li>
+ </ul></li>
+</ul>
+<p><b>Why these models.</b> Running a test suite on every change is a high-volume workload. A team, or a cloud testing service, would pick models that are cheap and fast per run, so the study tests whether lower-tier models are good enough. Sol is the frontier reference: it shows how much a stronger model closes the gap, and at what cost. The top models (GPT-6.2 Astra and GPT-6 Astra) were not used because of their high cost per run. Running every agent in the same tool means model differences are not mixed up with tool differences.</p>
+<p><b>Prompt.</b> One shared template for both apps: the scenario, the app's address, a short glossary of app terms and the required answer format (pass or fail, the failing step, the reason). The template and glossary are tuned only on practice scenarios that are never scored, then frozen with a hash. The agent sees only the browser, never the bugs, the step definitions or earlier runs.</p>
+
+<h2>5. One run</h2>
+<p>A run is one plan item: one app version, one scenario, with or without its bug, one approach, one repetition. Every item has a fixed ID, for example <code>pay.v1.bank-delete.bug.luna.r2</code>.</p>
+<ol>
+<li>Start fresh containers from the prebuilt image for this app variant: version, bug or no bug, database already seeded.</li>
+<li>Run the scenario with the approach.</li>
+<li>Record the result: pass or fail, the failing step, the reason or assertion message, the full trace, tokens, minutes, image digests and tool versions.</li>
+<li>Append the record to the ledger and discard the containers.</li>
+</ol>
+<p>Running an item again adds an attempt and keeps the old ones. Only an invalid attempt (the environment failed before the test ran) is rerun. Every other attempt counts as it is, and no run is repeated to get a different answer.</p>
+
+<h2>6. Outcomes and analysis</h2>
+<table class="t">
+<tr><th>Run</th><th>Result</th><th>Outcome</th><th>Color</th></tr>
+<tr><td>No bug</td><td>Passed</td><td>Correct</td><td>Green</td></tr>
+<tr><td>No bug</td><td>Failed</td><td>False alarm</td><td>Red</td></tr>
+<tr><td>With bug</td><td>Failed at the targeted step</td><td>Caught</td><td>Green</td></tr>
+<tr><td>With bug</td><td>Failed at another step</td><td>Detected elsewhere</td><td>Yellow</td></tr>
+<tr><td>With bug</td><td>Passed</td><td>Missed</td><td>Red</td></tr>
+<tr><td>Either</td><td>No readable answer, out of time or tool calls, or a loop</td><td>Unresolved: counts as a fail, reported separately</td><td>Orange</td></tr>
+<tr><td>Either</td><td>Environment failed before the test ran</td><td>Invalid: rerun</td><td>Grey</td></tr>
+</table>
+<h3>Scoring rules, frozen before any run</h3>
+<ul>
+<li><b>Caught is mechanical and the same for both approaches.</b> A run with the bug is caught when the failing step it reports is the targeted step. For step definitions, the failing step comes from the test runner. For agents, it comes from the step named in the required answer, matched by its number in the scenario or its exact text. No judge is involved.</li>
+<li><b>Reason match is secondary and stays in the replication package, not in the paper.</b> Whether the stated reason describes the bug's written symptom is coded by three coders: two Claude Opus sessions and one Codex session. They see the reason text with the approach's identity removed and agent prose reduced to the same short form as assertion messages, so they cannot tell which approach wrote it. Agreement (kappa) is reported. The coders never change any primary result.</li>
+<li><b>Worked examples.</b> The scoring code ships with worked examples of every outcome, run as tests before the freeze.</li>
+</ul>
+<h3>What the paper reports</h3>
+<ul>
+<li><b>Unit.</b> The scenario with its bug. Per scenario and approach, the paper gives how many of the 3 runs with the bug were caught, and how many of the 3 runs without it were false alarms.</li>
+<li><b>Main results.</b> Catch rate, catch retention, false alarms and the verdict from section 1, per agent and app, for one run and for best of 3.</li>
+<li><b>Secondary results.</b> Detected at any step, reason match, unresolved runs by cause, results by kind of bug, and Sol as the frontier reference.</li>
+<li><b>No significance tests.</b> The study is a descriptive benchmark: counts and Wilson intervals. Most accepted MIPRO SSE empirical papers report results this way (a planning note; the paper does not say this).</li>
+<li><b>Cost.</b> One table for every approach: tokens and minutes per suite and per caught bug. For the step definitions it adds the cost of each update from Claude Code's records (tokens, minutes, dollars), the size of each change in code (broken step definitions, changed lines), and a break-even line: how many agent suite runs cost as much as one update. That is set against how often Moodle's interface actually changed in its history, assuming one suite run per commit, so a team can read it as runs per interface change.</li>
+</ul>
+<p><b>A note on the step definitions.</b> Up-to-date step definitions pass every scenario without a bug by the maintenance rule, so their false-alarm count is zero by definition. The paper states this and does not present it as a measured result. Their catches of real bugs are measured: real bugs, chosen independently of them, can slip past their checks.</p>
+
+<h2>7. Why 3 repetitions, not 10</h2>
+<p>Reviewers asked whether 10 runs per cell would be stronger. It would not change the conclusions, for three reasons:</p>
+<ul>
+<li><b>The limit is scenarios, not runs.</b> The claims are about scenarios and their bugs, and there are 20 in the payment app plus the Moodle scenarios. More runs of the same scenario make each scenario's estimate a little sharper, but they add no new scenario, bug or interface change. The number of independent units, and with it the strength of every comparison, stays the same.</li>
+<li><b>3 runs already answer the practical question.</b> A team needs to know whether an agent gives the same answer each time. Three runs show that directly: 3 of 3 is consistent, 2 of 3 is shaky, and 1 of 3 is unreliable.</li>
+<li><b>10 runs would more than triple the cost and time</b> of the agent runs, effort better spent on more real Moodle changes, which add independent units.</li>
+</ul>
+<p>Comparable studies differ: Bergsmann et al. ran 10 runs, Xu et al. 4, PinATA 1, and none of the accepted MIPRO SSE empirical papers repeats runs.</p>
+
+<h2>8. How runs execute</h2>
+<ul>
+<li><b>Prebuilt container variants.</b> Every app variant is built once before any run, as its own image pinned by digest: each version, with no bug or with each bug, database already seeded. A run only starts images, so it is fast and starts from exactly the same state every time.</li>
+<li><b>Isolated and parallel.</b> Every run gets fresh containers. Several workers run at once; the smoke test sets their number. This machine has 20 CPUs and 23 GB.</li>
+<li><b>Randomized order.</b> Runs go in time blocks. Within each block, the order of approaches and of runs with and without the bug is shuffled with a recorded seed, so a change in a hosted model during the day affects every approach equally. Provider responses and worker load are logged.</li>
+<li><b>Credentials.</b> The Codex login is passed into each container at start, read-only, and never written to logs, traces or the ledger.</li>
+<li><b>No slow runs.</b> A hard limit of 5 minutes per run. There is no token cap; tokens are recorded per run.</li>
+</ul>
+
+<h2>9. Run control and alerts</h2>
+<p>The runner stops starting new runs and lets running ones finish when any of these happens:</p>
+<ul>
+<li>a provider refuses a call: out of credits, quota or rate limit, expired login, or an authentication error;</li>
+<li>two invalid runs in a row on the same worker or approach;</li>
+<li>runs of one approach take more than twice their smoke-test time, three times in a row;</li>
+<li>an all-pass gate or a bug check fails;</li>
+<li>a worker runs low on memory or disk.</li>
+</ul>
+<p>It then sends a Telegram message to the owner (TELEGRAM_CHAT_ID in .envrc) naming the run, the error and what is needed. Runs resume only after the fix.</p>
+<h3>Missing data, as code</h3>
+<ul>
+<li>An invalid attempt is quarantined and rerun as a new attempt, up to 3 times. After that, the run is reported as missing.</li>
+<li>Runs stopped by an alert are rerun after the fix; they are never dropped.</li>
+<li>A cell counts toward the primary claim only when all its runs have a valid result; otherwise it is reported as incomplete.</li>
+<li>These rules are code in the runner, with tests, before the freeze.</li>
+</ul>
+
+<h2>10. Results are kept immutably</h2>
+<ul>
+<li><b>Append-only ledger.</b> One record per attempt, never edited or deleted. Each record holds the SHA-256 of its trace and of the record before it, so any change to the history is detectable.</li>
+<li><b>Raw files.</b> Traces, agent answers and test-runner logs are kept per attempt.</li>
+<li><b>Dashboard.</b> Synced from the ledger every 15 minutes and at the end of each batch. The ledger is the record; the dashboard is a view.</li>
+<li><b>Snapshots.</b> After every batch, the ledger and raw files are committed to the replication repository with checksums. A summary with the commit and ledger hash is saved in Foundry.</li>
+<li><b>Counts.</b> One script computes every paper number from the ledger of the frozen plan and names the ledger hash it read.</li>
+<li><b>Published before the runs.</b> The frozen plan, its run-cell list, the scoring code and the bug folders are published as a public, timestamped release of the replication repository before the first measured run. The paper cites it, and states in one sentence that earlier exploratory runs exist and are in the package.</li>
+</ul>
+
+<h2>11. Run counts</h2>
+<table class="t">
+<tr><th>App</th><th>Approach</th><th>Formula</th><th>Runs</th></tr>
+<tr><td>Payment</td><td>Step definitions, up to date</td><td>20 scenarios × 3 versions × 2 (with and without bug) × 3</td><td>360</td></tr>
+<tr><td>Payment</td><td>Step definitions, before update</td><td>20 × 2 changed versions × 2 × 3</td><td>240</td></tr>
+<tr><td>Payment</td><td>Each agent (3)</td><td>20 × 3 × 2 × 3</td><td>360 each, 1,080 in all</td></tr>
+<tr><td>Moodle, first 3 changes</td><td>Developers' step definitions, before the change</td><td>8 scenarios × 3 cells (before without bug, after without bug, after with bug) × 3</td><td>72</td></tr>
+<tr><td>Moodle, first 3 changes</td><td>Developers' step definitions, after the change</td><td>8 × 2 cells (after without and with bug) × 3</td><td>48</td></tr>
+<tr><td>Moodle, first 3 changes</td><td>Each agent (3)</td><td>7 scenarios (S025 cannot be prepared for agents) × 3 cells × 3</td><td>63 each, 189 in all</td></tr>
+</table>
+<p>Moodle bug runs happen only after the change. The Moodle rows grow when the eligible changes are added, and by the old-text runs (pre-task P7c).</p>
+
+<h2>12. What goes into the paper</h2>
+<ul>
+<li>One question, two experiments (payment app, Moodle real changes), and the good-enough claim.</li>
+<li>Result words: caught, detected elsewhere, false alarm, unresolved. Cost per suite and per caught bug, the cost of each step-definition update, and the break-even line.</li>
+<li>A short worked example and one study-flow figure.</li>
+<li>At most 4,000 words and 8 to 9 headings, near the median of accepted MIPRO SSE papers.</li>
+<li><b>Related work and novelty.</b> Automated repair of broken web tests (WATER, Vista, LLM-based repair such as Xu et al.) is covered as the alternative to agents. Kim (2026) ran hand-written Playwright scripts and a GPT-4o agent on the same 12 scenarios under a UI change, measuring pass rates only. This study adds:
+ <ul>
+ <li>real bugs, run with and without the bug;</li>
+ <li>Gherkin step definitions before and after their update;</li>
+ <li>real Moodle interface changes.</li>
+ </ul>
+ No "first" claim beyond that combination.</li>
+<li><b>Threats.</b>
+ <ul>
+ <li>Both apps, their public tests, the Moodle commits and public bug reports may be in the models' training data. Commit dates are listed next to model knowledge cutoffs.</li>
+ <li>Unclear steps can cause false failures.</li>
+ <li>Agents may claim actions they did not take; the traces show the actions.</li>
+ <li>A model updating code can weaken assertions; the diff check prevents this.</li>
+ <li>Interface breakage has causes beyond locators.</li>
+ <li>There are few apps and scenarios.</li>
+ </ul></li>
+<li>The hold-out scenarios, the Moodle old-text runs and the run infrastructure get one sentence each.</li>
+<li>Every number comes from the counts script. All data, traces and scripts go to the replication package.</li>
+</ul>
+<h2>13. Infrastructure</h2><p>All of it lives under <code>bench/</code> in the replication repository and is built by the pre-tasks.</p>
+<pre><code>bench/
+  Makefile                      one entry point: make lock-check, images, gate, smoke, run, sync, verify, counts
+  env.lock.json                 every pinned version and digest (P1)
+  plan/plan.json                frozen run items and their sha256 (P11)
+  apps/pay/                     Cypress Real World App at 0729f68; versions v0, v1, v2 as patches (P4c)
+  apps/moodle/changes.json      eligible Moodle changes with before and after commits (P7c)
+  scenarios/pay/*.feature       20 payment scenarios (12 existing, 8 hold-out) (P4, P4d)
+  scenarios/moodle/             scenario text per change and commit, old and new text (P7c)
+  stepdefs/pay/v0|v1|v2/        up-to-date step definitions per version (P5)
+  bugs/&lt;bug-id&gt;/                patch.diff, source.md, symptom.md, check.mjs, applies-to.json (P7b, P7d)
+  prompt/                       template.md, glossary.md, practice/ scenarios never scored (P8)
+  images/                       Dockerfiles: pay app per variant, Moodle per variant, browser, codex agent (P2a)
+  runner/                       run-item CLI, worker pool, block shuffle, stop rules, alerts (P2, P3, P0)
+  agent/                        Codex CLI adapter: prompt rendering, answer parsing, limits, token capture (P3c)
+  scoring/                      cell list, scoring, intervals, counts script, worked-example tests (P3b)
+  ledger/                       append-only attempts.jsonl and raw/&lt;item&gt;/&lt;attempt&gt;/ files (P3)
+  sync/                         ledger to dashboard sync (P3d)
+  tools/                        lock-check, secret-scan, diff-check, verify-ledger (P1, P0, P5, P3)
+</code></pre>
+<p><strong>Run record</strong> (one JSON line per attempt in <code>ledger/attempts.jsonl</code>):
+plan_id, plan_sha256, item_id, attempt, worker, started_at, finished_at, image digests (app, db, browser, agent),
+tool versions, model, effort, prompt_sha256, scenario_sha256, bug_id, valid (true or false with reason),
+coded result (passed, failing step, assertion message) or agent answer (status, failing step, reason, raw text),
+unresolved cause, tokens (input, cached, output), minutes, tool calls, trace_sha256, raw_dir,
+prev_record_sha256, record_sha256.</p>
+<p><strong>Credentials:</strong> the Codex login (<code>~/.codex/auth.json</code>) is mounted read-only into agent containers only.
+Telegram uses TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID from <code>~/projects/researcher/.envrc</code>, read by the runner
+on the host, never passed into containers. No secret is written to the ledger, raw files or logs.</p>
+<p><strong>Network:</strong> browser containers reach only their app; agent containers reach only the browser and the OpenAI
+endpoints Codex needs.</p></body></html>
