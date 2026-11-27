@@ -6,6 +6,7 @@ from statistics import NormalDist
 from cells import FIELDS
 
 BASELINE = {"pay": "sd-cur", "mdl": "sd-new"}
+AGENTS = ("luna", "terra", "sol")
 STALE = {"pay": "sd-stale", "mdl": "sd-old"}
 CAUSES = ("budget_time", "budget_tools", "loop", "no_readable_answer")
 TOKEN_FIELDS = ("input", "cached", "output")
@@ -66,7 +67,14 @@ def read_cells(manifest, history, targets):
     invalid = []
     for cell in manifest:
         condition = cell["condition"]
-        target = targets.get(target_key(cell)) if condition == "bug" else None
+        target = None
+        if condition == "bug":
+            key = target_key(cell)
+            frozen = targets.get(key)
+            if frozen is None or frozen["bug_id"] != cell["bug_id"]:
+                raise ValueError(f"no matching frozen target for {key} ({cell['bug_id']})")
+            approach = "agent" if cell["arm"] in AGENTS else "coded"
+            target = {**frozen[approach], "kind": frozen["kind"]}
         missing = []
         records = []
         for item in cell["items"]:
@@ -83,8 +91,6 @@ def read_cells(manifest, history, targets):
         reasons = []
         if missing:
             reasons.append("missing valid repetitions")
-        if condition == "bug" and not target:
-            reasons.append("missing confirmed target")
         if reasons:
             excluded.append({**cell, "missing_items": missing, "reasons": reasons})
             continue
@@ -130,14 +136,16 @@ def healthy_metrics(group):
     outcomes = [cell["outcomes"] for cell in group]
     counts = Counter(outcome for series in outcomes for outcome in series)
     one = [series[0] for series in outcomes]
+    causes = Counter(row["unresolved_cause"] for cell in group for row in cell["records"]
+                     if row["unresolved_cause"] is not None)
+    total = sum(counts.values())
     return {
-        "per_run_false_alarms": proportion(counts["false_alarm"], sum(counts.values())),
-        "one_run_false_alarms": proportion(one.count("false_alarm"), len(one), interval=True),
-        "best_of_3_false_alarms": proportion(sum(all(o == "false_alarm" for o in series)
-                                                 for series in outcomes), len(one), interval=True),
-        "one_run_non_green": proportion(sum(o != "correct" for o in one), len(one), interval=True),
-        "best_of_3_non_green": proportion(sum("correct" not in series for series in outcomes),
+        "per_run_false_alarms": proportion(total - counts["correct"], total),
+        "one_run_false_alarms": proportion(len(one) - one.count("correct"), len(one), interval=True),
+        "best_of_3_false_alarms": proportion(sum("correct" not in series for series in outcomes),
                                            len(one), interval=True),
+        "per_run_unresolved": proportion(counts["unresolved"], total),
+        "per_run_unresolved_by_cause": {cause: proportion(causes[cause], total) for cause in CAUSES},
     }
 
 

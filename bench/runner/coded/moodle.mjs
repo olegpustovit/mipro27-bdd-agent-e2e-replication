@@ -5,6 +5,7 @@ import { runScenario } from '../../../adapters/moodle/behat-runner.mjs';
 import { run } from '../../../adapters/moodle/shell.mjs';
 import { findScenario, parseFeature } from '../../../adapters/moodle/gherkin.mjs';
 import { ensureStateText, stackPatches } from '../../../adapters/moodle/state-text.mjs';
+import { scenarioBodySteps } from '../moodle/handoff.mjs';
 
 const readJson = url => JSON.parse(readFileSync(url, 'utf8'));
 const manifest = readJson(new URL('../../apps/moodle/changes.json', import.meta.url));
@@ -106,7 +107,7 @@ function interpret(result, name, scenario, commit, exactName) {
   const failed = result.scenarios.find(entry => entry.status !== 'passed');
   if (!failed) return { status: 'pass', message: `Behat passed at ${commit}` };
   const step = failed.failingStep;
-  const steps = failed.steps.filter(entry => !entry.background);
+  const steps = scenarioBodySteps(failed.steps);
   return {
     status: 'fail',
     failed_step: step && !step.background ? steps.indexOf(step) + 1 : null,
