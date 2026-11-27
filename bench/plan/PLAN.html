@@ -1,4 +1,4 @@
-<html><body><h1>Plan-2 (frozen 2026-11-27)</h1>
+<html><body><h1>Plan-3 (frozen 2026-11-27)</h1>
 
 <h2>1. Goal</h2>
 <p>Teams write tests as plain-language Gherkin scenarios. There are two ways to run them:</p>
@@ -28,11 +28,11 @@
 <tr><th></th><th>Payment app</th><th>Moodle</th></tr>
 <tr><td>What it is</td><td>Public demo payment app (Cypress Real World App, commit 0729f68)</td><td>Real open-source learning platform with its developers' own tests</td></tr>
 <tr><td>Interface changes</td><td>2 changes written by a blind session from published breakage types, giving 3 versions</td><td>Every eligible real past change (rule in section 3); each run on the commit just before and just after</td></tr>
-<tr><td>Tests</td><td>20 scenarios: the 12 used in earlier exploratory runs, plus 8 new hold-out scenarios written blind</td><td>The developers' scenarios that each change touched: 18 units over 5 changes (target 20)</td></tr>
+<tr><td>Tests</td><td>20 scenarios: the 12 used in earlier exploratory runs, plus 8 new hold-out scenarios written blind</td><td>The developers' scenarios that each change touched: 17 units over 5 changes (target 20)</td></tr>
 <tr><td>Bugs</td><td colspan="2">One real bug per scenario, chosen by a frozen rule and confirmed by a check that uses neither approach (section 3)</td></tr>
 <tr><td>Approaches</td><td>Step definitions up to date; step definitions before the update; agents Luna, Terra, Sol</td><td>Developers' step definitions before and after the change; agents Luna, Terra, Sol</td></tr>
 <tr><td>Repetitions</td><td colspan="2">3 of every run</td></tr>
-<tr><td>Runs now</td><td>600 step-definition runs, 1080 agent runs</td><td>270 step-definition runs, 486 agent runs for the first 3 changes; more when the eligible changes are added</td></tr>
+<tr><td>Runs now</td><td>600 step-definition runs, 1080 agent runs</td><td>255 step-definition runs, 459 agent runs for the first 3 changes; more when the eligible changes are added</td></tr>
 </table>
 
 <h2>3. Apps, changes and bugs</h2>
@@ -44,15 +44,15 @@
 <p>The changes keep the app's behavior the same, so a correct test passes on every version without a bug. The agents see the same scenario text on every version.</p>
 <p><b>Hold-out scenarios.</b> The first 12 scenarios were used in earlier exploratory runs that shaped this design. Eight new scenarios are written by a session that never saw those runs, the agents or the prompt (pre-task P4d). Results are reported for all 20 and for the 8 hold-out scenarios alone. A short log lists what the exploratory runs changed in the design.</p>
 <h3>Moodle</h3>
-<p>Each change is a real Moodle commit in which the developers changed the interface and fixed their own step definitions. Pre-task P7c applied the rule below to all 21 mined changes; 5 are eligible, with 19 scenario units; one (B05/S044) was then excluded, leaving 18 units over 15 distinct scenarios (S027 to S029 are units under both B01 and B07, run on different commits):</p>
+<p>Each change is a real Moodle commit in which the developers changed the interface and fixed their own step definitions. Pre-task P7c applied the rule below to all 21 mined changes; 5 are eligible, with 19 scenario units; two (B05/S044 and B05/S047) were then excluded, leaving 17 units over 14 distinct scenarios (S027 to S029 are units under both B01 and B07, run on different commits):</p>
 <ul>
 <li><b>B01</b> (MDL-85795) encloses the navigation-bar search widget in a group and relabels its button. Scenarios S027, S028, S029.</li>
 <li><b>B04</b> (MDL-87662) moves the manual completion button into the activity header. Scenarios S036, S037, S040, S041.</li>
-<li><b>B05</b> (MDL-81608) replaces the quiz page-break buttons' titles with labels and new strings. Scenarios S042, S043, S045, S046 and S047 (S044 excluded: at about 4 tool calls per user step, as measured in the smoke check, its 136 steps need about 544 calls, above the 250-call limit; rule fixed before any run).</li>
+<li><b>B05</b> (MDL-81608) replaces the quiz page-break buttons' titles with labels and new strings. Scenarios S042, S043, S045 and S046 (S047 excluded: its re-created bug does not show in the scenario's own steps, so the coded test passes on the bug build and the bug cannot be confirmed. S044 excluded: at about 4 tool calls per user step, as measured in the smoke check, its 136 steps need about 544 calls, above the 250-call limit; rule fixed before any run).</li>
 <li><b>B07</b> (MDL-87834) redesigns the inline search box in the navigation bar. Scenarios S027, S028, S029.</li>
 <li><b>B15</b> (MDL-85281) restyles the "Add block" buttons. Scenarios S091, S093, S094.</li>
 </ul>
-<p>The other 16 were rejected with recorded reasons: 13 do not build on the current runtime, and 3 have no scenario both approaches can run. 18 units is below the target of 20, so Moodle gives estimates only, without a verdict.</p>
+<p>The other 16 were rejected with recorded reasons: 13 do not build on the current runtime, and 3 have no scenario both approaches can run. 17 units is below the target of 20, so Moodle gives estimates only, without a verdict.</p>
 <p><b>Rule for adding changes, fixed before any run.</b> Take all 21 mined changes that broke at least one scenario, in history order. The mining query and its output are published. A change is eligible if both hold:</p>
 <ul>
 <li><b>It builds</b>: the commits just before and just after it build into a working Moodle site on the current runtime (PHP 8.3, Postgres 17, pinned images), and its scenarios' test setup runs.</li>
@@ -146,10 +146,9 @@
 <li><b>Randomized order.</b> Runs go in time blocks. Within each block, the order of approaches and of runs with and without the bug is shuffled with a recorded seed, so a change in a hosted model during the day affects every approach equally. Provider responses and worker load are logged.</li>
 <li><b>Credentials.</b> The Codex login is passed into each container at start, read-only, and never written to logs, traces or the ledger.</li>
 <li><b>No slow runs.</b> A hard limit of 15 minutes and 250 tool calls per agent run. There is no token cap; tokens are recorded per run.</li>
+<li><b>Stable coded tests.</b> Before the campaign, every coded cell runs 5 times through the real runner, in parallel: without the bug it passes every time, with the bug it fails at the targeted step every time; old and stale step definitions give the same result every time.</li>
 <li><b>Readable checkout.</b> Before any measured run, the runner checks that the repository is clean and readable by the container user, and refuses to start otherwise.</li>
 </ul>
-
-<p><b>Plan-2 amendment, 27 Nov, after a 20-run pilot and before the campaign.</b> The pilot found environment faults, not results to tune on. (1) The repository folder was not readable by the container user, so coded payment runs could not start; a pre-flight check now refuses such a checkout. (2) The shared scenario preamble told the agent never to reload, while seven scenarios have a step "When I reload the current page"; it now reads "Reload or navigate only when a step says so." (3) An agent that answers "unresolved" on its own is recorded with its own cause, agent declared, instead of no readable answer. (4) Adapter output is saved with each run, secrets redacted. No scenario step, bug, target, model or metric changed. Pilot runs stay in the archived plan-1 ledger and count for nothing.</p>
 
 <h2>9. Run control and alerts</h2>
 <p>The runner stops starting new runs and lets running ones finish when any of these happens:</p>
@@ -185,11 +184,11 @@
 <tr><td>Payment</td><td>Step definitions, up to date</td><td>20 scenarios × 3 versions × 2 (with and without bug) × 3</td><td>360</td></tr>
 <tr><td>Payment</td><td>Step definitions, before update</td><td>20 × 2 changed versions × 2 × 3</td><td>240</td></tr>
 <tr><td>Payment</td><td>Each agent (3)</td><td>20 × 3 × 2 × 3</td><td>360 each, 1,080 in all</td></tr>
-<tr><td>Moodle, 5 changes</td><td>Developers' step definitions, before the change</td><td>18 units × 3 cells (before without bug, after without bug, after with bug) × 3</td><td>162</td></tr>
-<tr><td>Moodle, 5 changes</td><td>Developers' step definitions, after the change</td><td>18 × 2 cells (after without and with bug) × 3</td><td>108</td></tr>
-<tr><td>Moodle, 5 changes</td><td>Each agent (3)</td><td>18 × 3 cells × 3</td><td>162 each, 486 in all</td></tr>
+<tr><td>Moodle, 5 changes</td><td>Developers' step definitions, before the change</td><td>17 units × 3 cells (before without bug, after without bug, after with bug) × 3</td><td>153</td></tr>
+<tr><td>Moodle, 5 changes</td><td>Developers' step definitions, after the change</td><td>17 × 2 cells (after without and with bug) × 3</td><td>102</td></tr>
+<tr><td>Moodle, 5 changes</td><td>Each agent (3)</td><td>17 × 3 cells × 3</td><td>153 each, 459 in all</td></tr>
 </table>
-<p>Moodle bug runs happen only after the change. No chosen change edited its scenario text, so there are no old-text runs. In total: 2,436 runs, 1,566 of them agent runs.</p>
+<p>Moodle bug runs happen only after the change. No chosen change edited its scenario text, so there are no old-text runs. In total: 2,394 runs, 1,539 of them agent runs.</p>
 
 <h2>12. What goes into the paper</h2>
 <ul>

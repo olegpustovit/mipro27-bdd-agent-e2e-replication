@@ -112,8 +112,8 @@ class ScoringTests(unittest.TestCase):
                     else:
                         self.assertEqual(coded["text"], agent["text"])
         self.assertEqual(len(payment), 20)
-        self.assertEqual(len(moodle), 18)
-        print("Verified coded and agent target texts for 20 payment scenarios and 18 Moodle units")
+        self.assertEqual(len(moodle), 17)
+        print("Verified coded and agent target texts for 20 payment scenarios and 17 Moodle units")
 
         # Replay the documented P9 smoke answers as scoring inputs.
         text = 'Then I should see "Teacher One" in the "Logged in user" "block"'
