@@ -63,7 +63,7 @@ with TemporaryDirectory(prefix="p3d-fixture-") as tmp:
         stub.write_text(fixture)
         stub.chmod(0o755)
         targets = root / "targets.json"
-        targets.write_text('{"targets":{"pay/v0/auth-login":{"step":2}}}')
+        targets.write_text('{"targets":{"pay/v0/auth-login":{"kind":"k","coded":{"step":2,"text":"t"},"agent":{"step":2,"text":"t"}}}}')
         sync = [BENCH / "sync/dashboard", "--artifact", artifact, "--ledger-dir", root / "ledger",
                 "--metadata", targets]
         batch = [*sync, "--batch", "--coded-run", stub, "--lock-check", "/usr/bin/true",

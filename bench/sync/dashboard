@@ -16,7 +16,8 @@ import time
 BENCH = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(BENCH / name) for name in ("scoring", "runner")]
 from ledger import ITEM_ID, ZERO, canonical, digest
-from score import classify, target_key, total_cost
+from score import AGENTS, classify, target_key, total_cost
+from report import load_targets
 
 OUTCOMES = {"correct": "pass", "caught": "caught_target", "detected_elsewhere": "caught_other"}
 ARMS = {"sd-cur", "sd-stale", "sd-old", "sd-new", "luna", "terra", "sol"}
@@ -55,6 +56,8 @@ def project(plan, plan_hash, history, targets):
         if app not in {"pay", "mdl"} or arm not in ARMS or not ITEM_ID.fullmatch(item_id):
             raise ValueError(f"invalid dashboard path for {item_id}")
         target = targets.get(target_key(item)) if condition == "bug" else None
+        if target and "coded" in target:  # frozen targets.json: one target per approach
+            target = target["agent" if arm in AGENTS else "coded"]
         if target and (type(target["step"]) is not int or target["step"] < 1):
             raise ValueError(f"invalid confirmed target for {item_id}")
         attempts = []
@@ -87,7 +90,7 @@ def art(args, operation, *operands):
 
 def sync(args, *, final=True):
     plan_bytes = args.plan.read_bytes()
-    targets = json.loads(args.metadata.read_bytes()).get("targets", {}) if args.metadata else {}
+    targets = json.loads(args.metadata.read_bytes()).get("targets", {}) if args.metadata else load_targets()[0]
     ledger = args.ledger_dir / "attempts.jsonl"
     if not final and not ledger.exists():
         return
