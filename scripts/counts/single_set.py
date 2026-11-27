@@ -41,6 +41,7 @@ Rules are the paper's and are reused, not re-derived:
 Every value line names its source file(s). Values a stream script prints are checked against that output.
 """
 import contextlib
+import hashlib
 import io
 import json
 import re
@@ -1427,7 +1428,7 @@ def paper_support_section(out, data, target, m_trials, r_runs):
     if m_trials:
         heads = {(json.loads(t['e']['env']) if isinstance(t['e'].get('env'), str) else t['e'].get('env') or {}).get('studyRepoHead') for t in m_trials}
         clean = {(json.loads(t['e']['env']) if isinstance(t['e'].get('env'), str) else t['e'].get('env') or {}).get('studyRepoTrackedClean') for t in m_trials}
-        same = all(git('rev-parse', f'{PLAN["harnessCommit"]}:{f}') == git('hash-object', f) for f in ('scripts/codex-boundary.mjs', 'scripts/drivers/omp.mjs'))
+        same = all(blob_at_harness(f) == blob_id(f) for f in ('scripts/codex-boundary.mjs', 'scripts/drivers/omp.mjs'))
         out.val('moodle Haiku thinking level (pinned code at the runs\' studyRepoHead, tracked tree clean)',
                 'medium' if heads == {PLAN['harnessCommit']} and clean == {True} and same and passes and const == ["'medium'"] else None,
                 [MOODLE_SRC, 'scripts/codex-boundary.mjs at 9c9eee2'])
@@ -1526,6 +1527,30 @@ def git(*args):
         return None
 
 
+# Git blob ids of the pinned files at the single set's harness commit 9c9eee2 (`git rev-parse 9c9eee2:<file>`).
+# A release archive has no .git; the comparison then uses these recorded ids. With git, both must agree.
+BLOB_AT_HARNESS = {
+    'scripts/verdict.mjs': '43a4d082b61cb873b908ff70423ea9af027e3ccb',
+    'adapters/moodle/verdict.mjs': '9fdfe6245e56b1db7b4bc2cf621ff5eca0d21348',
+    'scripts/codex-boundary.mjs': '813a34fce87eeace3e215664c8557a79bdc37915',
+    'scripts/drivers/omp.mjs': '2ce60a9d97f904da1b8d414748bc3ae98b11091e',
+}
+
+
+def blob_id(rel):
+    """Git blob id of a package file (same as `git hash-object`), computed without git."""
+    data = (ROOT / rel).read_bytes()
+    return hashlib.sha1(b'blob %d\0' % len(data) + data).hexdigest()
+
+
+def blob_at_harness(rel):
+    recorded = BLOB_AT_HARNESS.get(rel)
+    at = git('rev-parse', f'{PLAN["harnessCommit"]}:{rel}')
+    if at is not None and recorded is not None and at != recorded:
+        sys.exit(f'{rel}: git blob at {PLAN["harnessCommit"][:7]} is {at}, recorded {recorded}')
+    return at or recorded
+
+
 def versions_section(out, data, moodle_trials_, replay_runs):
     out.section('6. Verdict parser and versions of the single set (fails loudly when campaigns differ)')
     # Verdict parser shipped at 9c9eee2.
@@ -1533,8 +1558,8 @@ def versions_section(out, data, moodle_trials_, replay_runs):
         text = (ROOT / rel).read_text('utf-8')
         m = re.search(r'export const verdictParserVersion = (\d+);', text)
         out.val(f'verdict parser {rel}: verdictParserVersion', m[1] if m else None, rel)
-        at = git('rev-parse', f'{PLAN["harnessCommit"]}:{rel}')
-        here = git('hash-object', rel)
+        at = blob_at_harness(rel)
+        here = blob_id(rel)
         out.val(f'verdict parser {rel}: file equals the one at 9c9eee2', 'yes' if at and at == here else ('NOT FOUND (no git)' if at is None else 'no'),
                 [rel, 'git 9c9eee2'], 'yes', 'git blob at 9c9eee2' if at else None)
     harness_copy = ROOT / E_PAY / 'harness/scripts/verdict.mjs'

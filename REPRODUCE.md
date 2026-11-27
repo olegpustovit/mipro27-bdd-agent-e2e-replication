@@ -34,7 +34,9 @@ uv run scripts/reproduce_single_set.py
 
 `single_set.py` writes `results/counts-single-set.txt` and `results/counts-single-set.json`. It exits
 with status 1 when a value differs from the output of the stream count script that first reported it,
-or when a version check fails. Use `--no-write` to leave the shipped output untouched.
+or when a version check fails. Use `--no-write` to leave the shipped output untouched. Since v1.2.1 both scripts also run from the
+release archive without git: the files pinned at harness commit 9c9eee2 are compared by their recorded
+git blob ids.
 `reproduce_single_set.py` runs `single_set.py` and compares the values listed in
 `results/paper-numbers-single-set.txt` with the computed ones. It exits with status 1 on a mismatch,
 on a missing quantity, or on a value that cannot be computed. The scripts above

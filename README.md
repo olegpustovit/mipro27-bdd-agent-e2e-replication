@@ -5,7 +5,7 @@ executable: maintained step definitions, and an LLM browser agent that interpret
 unchanged scenario on every run. It holds the study code, every recorded execution and
 automated grade, the derived reports, and scripts that recompute every count in the paper.
 
-Version 1.2.0. Changes are listed under [Changes in v1.2.0](#changes-in-v120), [Changes in v1.1.4](#changes-in-v114), [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
+Version 1.2.1. Changes are listed under [Changes in v1.2.1](#changes-in-v121), [Changes in v1.2.0](#changes-in-v120), [Changes in v1.1.4](#changes-in-v114), [Changes in v1.1.3](#changes-in-v113), [Changes in v1.1.2](#changes-in-v112), [Changes in v1.1.1](#changes-in-v111) and [Changes in v1.1.0](#changes-in-v110).
 All results are exploratory; see `AGENTS.md` and `REPRODUCE.md` for the run status.
 
 Since v1.2.0 the paper's numbers come from one consistent set of runs, the **single set**
@@ -275,7 +275,16 @@ The Node analyses that produced the derived reports (`npm run analyze`, the Mood
 the follow-up-comparison summary), the re-run procedure for each campaign and the local trace
 console are described in `REPRODUCE.md`. They need Node 24 and `npm ci`.
 
-## Changes in v1.2.0
+## Changes in v1.2.1
+
+- `scripts/counts/single_set.py` no longer needs git. Three checks compare `scripts/verdict.mjs`,
+  `adapters/moodle/verdict.mjs`, `scripts/codex-boundary.mjs` and `scripts/drivers/omp.mjs` with the harness
+  commit 9c9eee2. In v1.2.0 they read the files at that commit from git, so in the release archive (which has
+  no `.git`) they reported "NOT FOUND (no git)". `single_set.py` then reported 2 mismatches and
+  `reproduce_single_set.py` 3 problems. The script now computes each file's git blob id itself and compares
+  it with the blob id recorded for 9c9eee2; with git present it also checks that git agrees.
+- No data, count or stated value changed. With git, `results/counts-single-set.*` are byte-identical to v1.2.0.
+
 
 - New: `followups-2026-11/`, the follow-up work of November 2026 (streams A-E, all post hoc, run
   without a gate pass). See [Follow-up work, November 2026](#follow-up-work-november-2026).
