@@ -45,7 +45,7 @@ export async function prepareForAgent(adapter, { feature, line, name, exampleLin
   };
 }
 
-async function runSetup(adapter, dataSteps, timeoutMs) {
+export async function runSetup(adapter, dataSteps, timeoutMs) {
   const id = randomBytes(6).toString('hex');
   const file = `/tmp/study-runs/study-data-${id}.feature`;
   const log = `/tmp/study-steps-${id}.jsonl`;

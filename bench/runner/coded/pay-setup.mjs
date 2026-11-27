@@ -12,6 +12,7 @@ async function signIn(context, username) {
 }
 
 export async function setupPayment(scenario) {
+  if (process.env.BENCH_PAY_PREPARED === '1') return;
   const fixture = Object.hasOwn(requests, scenario) && requests[scenario];
   if (!fixture) return;
   const api = new URL(process.env.BENCH_PAY_API_URL ?? 'http://localhost:3001');
