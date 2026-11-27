@@ -31,20 +31,23 @@ function isBankList(request) {
 // The app ignores a delete sent while it is loading the bank list, and it may load the list
 // more than once. Wait until list loading has finished.
 async function afterBankListSettles(w, open) {
-  let inflight = 0, seen = 0, last = Date.now();
-  const started = request => { if (isBankList(request)) { inflight++; seen++; last = Date.now(); } };
-  const ended = request => { if (isBankList(request)) { inflight--; last = Date.now(); } };
-  w.page.on('request', started); w.page.on('requestfinished', ended); w.page.on('requestfailed', ended);
+  // Track list requests until each has a response; ignore requests that never report finishing.
+  const pending = new Set();
+  let seen = 0, last = Date.now();
+  const started = request => { if (isBankList(request)) { pending.add(request); seen++; last = Date.now(); } };
+  const answered = response => { if (pending.delete(response.request())) last = Date.now(); };
+  const failed = request => { if (pending.delete(request)) last = Date.now(); };
+  w.page.on('request', started); w.page.on('response', answered); w.page.on('requestfailed', failed);
   try {
     await open();
     const opened = Date.now(), deadline = opened + 7000;
-    // Settled: loading started and then stayed quiet for 500 ms, or no loading started within 1.5 s.
-    while (!(inflight === 0 && (seen > 0 ? Date.now() - last >= 500 : Date.now() - opened >= 1500))) {
+    // Settled: loading started and every request was answered 500 ms ago, or no loading started within 1.5 s.
+    while (!(pending.size === 0 && (seen > 0 ? Date.now() - last >= 500 : Date.now() - opened >= 1500))) {
       if (Date.now() > deadline) throw new Error('The bank list did not finish loading');
       await w.page.waitForTimeout(50);
     }
   } finally {
-    w.page.off('request', started); w.page.off('requestfinished', ended); w.page.off('requestfailed', ended);
+    w.page.off('request', started); w.page.off('response', answered); w.page.off('requestfailed', failed);
   }
 }
 export async function deleteBank(w, bank) {

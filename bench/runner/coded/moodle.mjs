@@ -116,5 +116,6 @@ function interpret(result, name, scenario, commit, exactName) {
     failed_step: step && !step.background ? steps.indexOf(step) + 1 : null,
     failed_step_text: step && !step.background ? `${step.keyword} ${step.text}` : null,
     message: step ? `Behat ${step.background ? 'Background' : 'scenario'} step: ${step.status}` : 'Behat scenario failed outside a numbered step',
+    error: step ? `${step.keyword} ${step.text}: ${String(step.exception ?? step.message ?? '')}`.slice(0, 2000) : null,
   };
 }
