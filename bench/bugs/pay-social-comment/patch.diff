@@ -1,0 +1,44 @@
+diff --git a/backend/comment-routes.ts b/backend/comment-routes.ts
+index d503a74..0485e36 100644
+--- a/backend/comment-routes.ts
++++ b/backend/comment-routes.ts
+@@ -1,7 +1,7 @@
+ ///<reference path="types.ts" />
+ 
+ import express from "express";
+-import { getCommentsByTransactionId, createComments } from "./database";
++import { getCommentsByTransactionId } from "./database";
+ import { ensureAuthenticated, validateMiddleware } from "./helpers";
+ import { shortIdValidation, isCommentValidator } from "./validators";
+ const router = express.Router();
+@@ -27,14 +27,8 @@ router.post(
+   "/:transactionId",
+   ensureAuthenticated,
+   validateMiddleware([shortIdValidation("transactionId"), isCommentValidator]),
+-  (req, res) => {
+-    const { transactionId } = req.params;
+-    const { content } = req.body;
+-
+-    /* istanbul ignore next */
+-    createComments(req.user?.id!, transactionId, content);
+-
+-    res.sendStatus(200);
++  (_req, res) => {
++    res.sendStatus(503);
+   }
+ );
+ 
+diff --git a/src/machines/transactionDetailMachine.ts b/src/machines/transactionDetailMachine.ts
+index f8ff7d6..87d261e 100644
+--- a/src/machines/transactionDetailMachine.ts
++++ b/src/machines/transactionDetailMachine.ts
+@@ -20,7 +20,8 @@ export const transactionDetailMachine = dataMachine("transactionData").withConfi
+       const payload = flow(omit("type"), omit("entity"))(event);
+       const resp = await httpClient.post(
+         `http://localhost:${backendPort}/${route}/${payload.transactionId}`,
+-        payload
++        payload,
++        { validateStatus: (status) => status === 200 || (route === "comments" && status === 503) }
+       );
+       return resp.data;
+     },

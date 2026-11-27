@@ -1,0 +1,19 @@
+diff --git a/src/components/TransactionDetail.tsx b/src/components/TransactionDetail.tsx
+index 44d9544..2fac057 100644
+--- a/src/components/TransactionDetail.tsx
++++ b/src/components/TransactionDetail.tsx
+@@ -144,7 +144,13 @@ const TransactionDetail: React.FC<TransactionProps> = ({
+           <Grid container direction="column" justifyContent="flex-start" alignItems="flex-start">
+             <Grid item></Grid>
+             <Grid item>
+-              <TransactionTitle transaction={transaction} />
++              <TransactionTitle
++                transaction={
++                  transaction.requestStatus === TransactionRequestStatus.accepted
++                    ? { ...transaction, requestStatus: TransactionRequestStatus.pending }
++                    : transaction
++                }
++              />
+             </Grid>
+             <Grid item>
+               <Typography

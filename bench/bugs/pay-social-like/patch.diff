@@ -1,0 +1,32 @@
+diff --git a/src/containers/TransactionDetailContainer.tsx b/src/containers/TransactionDetailContainer.tsx
+index 2e152fd..dddc9ff 100644
+--- a/src/containers/TransactionDetailContainer.tsx
++++ b/src/containers/TransactionDetailContainer.tsx
+@@ -18,21 +18,24 @@ interface Params {
+ const TransactionDetailsContainer: React.FC<Props> = ({ authService }) => {
+   const { transactionId }: Params = useParams();
+   const [authState] = useActor(authService);
++  const [locallyLikedId, setLocallyLikedId] = React.useState<string>();
+   const [transactionDetailState, sendTransactionDetail] = useMachine(transactionDetailMachine);
+   useEffect(() => {
+     sendTransactionDetail("FETCH", { transactionId });
+   }, [sendTransactionDetail, transactionId]);
+ 
+-  const transactionLike = (transactionId: Transaction["id"]) =>
+-    sendTransactionDetail("CREATE", { entity: "LIKE", transactionId });
++  const transactionLike = (id: Transaction["id"]) => setLocallyLikedId(id);
+ 
+   const transactionComment = (payload: any) =>
+     sendTransactionDetail("CREATE", { entity: "COMMENT", ...payload });
+ 
+   const transactionUpdate = (payload: any) => sendTransactionDetail("UPDATE", payload);
+ 
+-  const transaction = first(transactionDetailState.context?.results);
+   const currentUser = authState?.context?.user;
++  const storedTransaction = first(transactionDetailState.context?.results);
++  const transaction = currentUser && storedTransaction && locallyLikedId === storedTransaction.id
++    ? { ...storedTransaction, likes: [...storedTransaction.likes, { userId: currentUser.id }] }
++    : storedTransaction;
+ 
+   return (
+     <>

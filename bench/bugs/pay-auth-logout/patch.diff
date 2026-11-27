@@ -1,0 +1,82 @@
+diff --git a/src/containers/App.tsx b/src/containers/App.tsx
+index ccb5014..bc15b12 100644
+--- a/src/containers/App.tsx
++++ b/src/containers/App.tsx
+@@ -1,12 +1,13 @@
+ import React from "react";
+ import { styled } from "@mui/material/styles";
+-import { Switch, Route, Redirect } from "react-router-dom";
++import { Switch, Route, Redirect, useLocation } from "react-router-dom";
+ import { useActor, useMachine } from "@xstate/react";
+ import { CssBaseline } from "@mui/material";
+ 
+ import { snackbarMachine } from "../machines/snackbarMachine";
+ import { notificationsMachine } from "../machines/notificationsMachine";
+ import { authService } from "../machines/authMachine";
++import MainLayout from "../components/MainLayout";
+ import AlertBar from "../components/AlertBar";
+ import SignInForm from "../components/SignInForm";
+ import SignUpForm from "../components/SignUpForm";
+@@ -40,6 +41,10 @@ const App: React.FC = () => {
+ 
+   const [, , bankAccountsService] = useMachine(bankAccountsMachine);
+ 
++  const { pathname } = useLocation();
++  const signedOutHome = authState.matches("signedOutHome");
++  const showHomeShell = signedOutHome && ["/", "/public"].includes(pathname);
++
+   const isLoggedIn =
+     authState.matches("authorized") ||
+     authState.matches("refreshing") ||
+@@ -58,7 +63,12 @@ const App: React.FC = () => {
+           bankAccountsService={bankAccountsService}
+         />
+       )}
+-      {authState.matches("unauthorized") && (
++      {showHomeShell && (
++        <MainLayout notificationsService={notificationsService} authService={authService}>
++          <h2>Public</h2>
++        </MainLayout>
++      )}
++      {(authState.matches("unauthorized") || (signedOutHome && !showHomeShell)) && (
+         <Switch>
+           <Route exact path="/signup">
+             <SignUpForm authService={authService} />
+diff --git a/src/machines/authMachine.ts b/src/machines/authMachine.ts
+index 669f4d7..796a80f 100644
+--- a/src/machines/authMachine.ts
++++ b/src/machines/authMachine.ts
+@@ -12,6 +12,7 @@ export interface AuthMachineSchema {
+     loading: {};
+     updating: {};
+     logout: {};
++    signedOutHome: {};
+     refreshing: {};
+     google: {};
+     authorized: {};
+@@ -101,10 +102,11 @@ export const authMachine = Machine<AuthMachineContext, AuthMachineSchema, AuthMa
+       logout: {
+         invoke: {
+           src: "performLogout",
+-          onDone: { target: "unauthorized" },
++          onDone: { target: "signedOutHome" },
+           onError: { target: "unauthorized", actions: "onError" },
+         },
+       },
++      signedOutHome: {},
+       authorized: {
+         entry: "redirectHomeAfterLogin",
+         on: {
+@@ -275,7 +277,11 @@ if (stateDefinition) {
+ export const authService = interpret(authMachine)
+   .onTransition((state) => {
+     if (state.changed) {
+-      localStorage.setItem("authState", JSON.stringify(state));
++      if (state.matches("signedOutHome")) {
++        localStorage.removeItem("authState");
++      } else {
++        localStorage.setItem("authState", JSON.stringify(state));
++      }
+     }
+   })
+   .start(resolvedState);

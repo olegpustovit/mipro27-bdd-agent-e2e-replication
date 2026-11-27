@@ -1,0 +1,15 @@
+diff --git a/backend/notification-routes.ts b/backend/notification-routes.ts
+index 91ea07e..3b7a12f 100644
+--- a/backend/notification-routes.ts
++++ b/backend/notification-routes.ts
+@@ -49,7 +49,9 @@ router.patch(
+   (req, res) => {
+     const { notificationId } = req.params;
+     /* istanbul ignore next */
+-    updateNotificationById(req.user?.id!, notificationId, req.body);
++    if (!req.body.isRead) {
++      updateNotificationById(req.user?.id!, notificationId, req.body);
++    }
+ 
+     res.sendStatus(204);
+   }
