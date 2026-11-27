@@ -19,18 +19,18 @@ bench/plan/bug-candidates.py rwa ../rwa-0729f68 0729f68 'fix|bug|login|logout|ba
 
 | Scenario | Selection | Candidates rejected and why |
 | --- | --- | --- |
-| auth-login | TODO | [#581][581] is a blank-field validation message after a background click. [#1106][1106] reports an unavailable backend following signup. [#986][986] concerns bypassing the UI sign-in. [f41733c][labels] changes accessible field labels, without establishing that the valid-credentials flow fails. |
-| auth-logout | TODO | [#1592][1592] documents a direct API response status. The browser auth machine enters the unauthorized state on either response outcome and clears its local auth state. [#998][998] concerns Cognito, which the scenario does not use. [#231][231] reports cookie cleanup between logins rather than the asserted same-page reload symptom. The inverses of [39d7adf][logout] and [bf8f402][cookie] do not apply at the baseline. |
-| profile-name | TODO | [#35][35] and [4881181][profile] introduce the settings workflow. Neither identifies a first-name save or reload defect. |
-| profile-email | TODO | [#35][35] and [4881181][profile] introduce settings. [#759][759] concerns user search, outside settings validation. |
-| bank-create | TODO | [b754e46][bankvalidation] changes the accepted account-number length from exactly nine to nine through twelve. The scenario uses nine. [#221][221] concerns a Cypress route stub. |
-| bank-delete | TODO | [#85][85] defines the bank-account UI. [bfaffd4][graphql] migrates it to GraphQL and does not document a soft-delete regression. |
-| transfer-pay | TODO | [#155][155] proposes input masking and gives no wrong-result example for a whole-dollar input. [17b7ab2][width] corrects list width. The inverse applies, but the documented clipping does not establish failure for this specific seeded row and desktop viewport. [#67][67] specifies the feature. |
-| transfer-request | TODO | [#34][34] defines accepting or rejecting existing payment requests. [ea3b57c][notification] addresses request notifications, which the scenario does not assert. [17b7ab2][width] has the same amount-visibility evidence gap as transfer-pay. |
-| social-like | TODO | [#403][403] reports a Firefox mobile test canceling the like request during immediate logout and failing a notification assertion. This scenario stays on the transaction and checks count and disabled state before reload. [#65][65] specifies the feature. |
-| social-comment | TODO | [#66][66] and [201441d][comment] introduce commenting and give no evidence of missing or duplicate comments on reload. |
-| feed-personal | TODO | [622f88e][dimensions] fixes invalid dimensions for the virtualized feed, but the inverse does not apply at the baseline, even with zero context. [#1555][1555] requests replacing the library and gives no matching feed failure. |
-| feed-friends | TODO | [622f88e][dimensions] and [#1555][1555] have the same limitations as feed-personal. |
+| auth-login | No upstream match | [#581][581] is a blank-field validation message after a background click. [#1106][1106] reports an unavailable backend following signup. [#986][986] concerns bypassing the UI sign-in. [f41733c][labels] changes accessible field labels, without establishing that the valid-credentials flow fails. |
+| auth-logout | No upstream match | [#1592][1592] documents a direct API response status. The browser auth machine enters the unauthorized state on either response outcome and clears its local auth state. [#998][998] concerns Cognito, which the scenario does not use. [#231][231] reports cookie cleanup between logins rather than the asserted same-page reload symptom. The inverses of [39d7adf][logout] and [bf8f402][cookie] do not apply at the baseline. |
+| profile-name | No upstream match | [#35][35] and [4881181][profile] introduce the settings workflow. Neither identifies a first-name save or reload defect. |
+| profile-email | No upstream match | [#35][35] and [4881181][profile] introduce settings. [#759][759] concerns user search, outside settings validation. |
+| bank-create | No upstream match | [b754e46][bankvalidation] changes the accepted account-number length from exactly nine to nine through twelve. The scenario uses nine. [#221][221] concerns a Cypress route stub. |
+| bank-delete | No upstream match | [#85][85] defines the bank-account UI. [bfaffd4][graphql] migrates it to GraphQL and does not document a soft-delete regression. |
+| transfer-pay | No upstream match | [#155][155] proposes input masking and gives no wrong-result example for a whole-dollar input. [17b7ab2][width] corrects list width. The inverse applies, but the documented clipping does not establish failure for this specific seeded row and desktop viewport. [#67][67] specifies the feature. |
+| transfer-request | No upstream match | [#34][34] defines accepting or rejecting existing payment requests. [ea3b57c][notification] addresses request notifications, which the scenario does not assert. [17b7ab2][width] has the same amount-visibility evidence gap as transfer-pay. |
+| social-like | No upstream match | [#403][403] reports a Firefox mobile test canceling the like request during immediate logout and failing a notification assertion. This scenario stays on the transaction and checks count and disabled state before reload. [#65][65] specifies the feature. |
+| social-comment | No upstream match | [#66][66] and [201441d][comment] introduce commenting and give no evidence of missing or duplicate comments on reload. |
+| feed-personal | No upstream match | [622f88e][dimensions] fixes invalid dimensions for the virtualized feed, but the inverse does not apply at the baseline, even with zero context. [#1555][1555] requests replacing the library and gives no matching feed failure. |
+| feed-friends | No upstream match | [622f88e][dimensions] and [#1555][1555] have the same limitations as feed-personal. |
 | Hold-out 01 | TODO (P4d) | Await scenario ID and text. |
 | Hold-out 02 | TODO (P4d) | Await scenario ID and text. |
 | Hold-out 03 | TODO (P4d) | Await scenario ID and text. |
@@ -39,6 +39,53 @@ bench/plan/bug-candidates.py rwa ../rwa-0729f68 0729f68 'fix|bug|login|logout|ba
 | Hold-out 06 | TODO (P4d) | Await scenario ID and text. |
 | Hold-out 07 | TODO (P4d) | Await scenario ID and text. |
 | Hold-out 08 | TODO (P4d) | Await scenario ID and text. |
+
+## External payment report review, 2026-11-27
+
+The dated amendment permits these selections after the upstream search above.
+All selected rows are labelled `re-created-from-report`. Each linked report
+was opened and checked against the scenario at the baseline above. The two
+feed scenarios are in `study/scenarios.feature`. The corresponding dedicated
+files under `bench/scenarios/pay` are pending on this branch, which contains
+only the two social feature files in that directory.
+
+| Scenario | Selection | Report title and failure quote | Payment component and planned change |
+| --- | --- | --- | --- |
+| auth-login | re-created-from-report | [Nextcloud #56165](https://github.com/nextcloud/server/issues/56165), [Bug]: Login loop after upgrade to 32.0.1. “Get redirected back to login page with no error” | Local sign-in in `authMachine.ts`. Return the correct-credentials submission to the signed-out sign-in view without an error message. |
+| auth-logout | re-created-from-report | [Postiz #998](https://github.com/gitroomhq/postiz-app/issues/998), Logout redirects to internal page /launches instead of logging out. “the client-side code then immediately redirects the browser to the internal /launches page” | Post-logout navigation. Send a successfully signed-out browser to the existing sign-up page in place of the sign-in page, with server logout and route guards intact. |
+| profile-name | TODO | No fitting report found. | [Expensify #33294](https://github.com/Expensify/App/issues/33294) loses name edits containing language-specific characters. The scenario uses ASCII “Study”. |
+| profile-email | TODO | No fitting report found. | [freeCodeCamp #59701](https://github.com/freeCodeCamp/freeCodeCamp/issues/59701) concerns DNS validation of a syntactically valid address. The scenario omits the at sign and domain. |
+| bank-create | re-created-from-report | [Dolibarr #14421](https://github.com/Dolibarr/dolibarr/issues/14421), Unable to edit or add internal user bank accounts. “There is no '+ Add' button” | Bank-account list in `BankAccountsContainer.tsx`. Omit the Create control, leaving the user unable to start the bank-account form from the list. |
+| bank-delete | re-created-from-report | [Dolibarr #14421](https://github.com/Dolibarr/dolibarr/issues/14421), Unable to edit or add internal user bank accounts. “they cannot be edited or deleted” | Existing bank-account row in `BankAccountItem.tsx`. Omit the Delete control for active bank accounts, leaving the original row undeleted. |
+| transfer-pay | re-created-from-report | [InvoicePlane #1226](https://github.com/InvoicePlane/InvoicePlane/issues/1226), Payment confirmation wrong amount. “An amount of 34 is changed to 3400.” | Recorded payment amount display in `TransactionAmount.tsx`. Apply the reported 100-fold scale error to the paid amount shown in the transaction row. |
+| transfer-request | TODO | No fitting report found. | [ERPNext #41901](https://github.com/frappe/erpnext/issues/41901) and [#42280](https://github.com/frappe/erpnext/issues/42280) concern settling an existing request. [MetaMask #1914](https://github.com/MetaMask/metamask-mobile/issues/1914) requires a mobile deeplink for more than 999 tokens. [Expensify #104045](https://github.com/Expensify/App/issues/104045) requires replacing a failed receipt scan. This scenario creates a manual whole-dollar request. |
+| social-like | re-created-from-report | [Forem #5459](https://github.com/forem/forem/issues/5459), Can't post comments. “refresh the page the likes are gone.” | Transaction detail reaction and persistence. Update the displayed count and button state on Like while dropping the write, so reload restores the pre-click state. |
+| social-comment | re-created-from-report | [Forem #5459](https://github.com/forem/forem/issues/5459), Can't post comments. “try posting a comment. it doesnt.” | Transaction detail comment submission. Fail the comment service call so the submitted text never appears in the thread. |
+| feed-personal | re-created-from-report | [Bluesky #7241](https://github.com/bluesky-social/social-app/issues/7241), Posts in user repo are not showing in profile or feeds. “not showing in their author feed” | Personal transaction feed. Omit the signed-in user's transactions from the personal feed response while retaining their records. |
+| feed-friends | re-created-from-report | [Bluesky #1768](https://github.com/bluesky-social/social-app/issues/1768), Following feed is empty. “Your following feed is empty!” | Contacts transaction feed. Return an empty contacts feed for a user who has contact transactions. |
+
+The Dolibarr and Forem reports each document two separate user actions. Each
+action above gets its own independent change. InvoicePlane shows the amount
+error after payment confirmation. The comparable checked surface here is the
+post-confirmation feed row.
+
+External searches paired the scenario action and failure with public tracker
+terms:
+
+| Scenario | Search terms and additional candidates rejected |
+| --- | --- |
+| auth-login | Correct credentials, login page, login loop. [pgAdmin #7404](https://github.com/pgadmin-org/pgadmin4/issues/7404) reports a CSRF error at the post-login page. |
+| auth-logout | Logout redirects, logout button does nothing. [Firefly III #9827](https://github.com/firefly-iii/firefly-iii/issues/9827) requires an SSO logout destination. |
+| profile-name | First name not saved, edit profile changes not saved, display name reverts. |
+| profile-email | Edit profile invalid email accepted, email format validation, change email. |
+| bank-create | Add bank account, cannot create account, form not saved. [Actual #4695](https://github.com/actualbudget/actual/issues/4695) requires GoCardless. [Expensify #35780](https://github.com/Expensify/App/issues/35780) loses edited beneficial-owner details during backtracking. [ERPNext #14877](https://github.com/frappe/erpnext/issues/14877) concerns automatic provisioning in a setup wizard. [Dolibarr #39146](https://github.com/Dolibarr/dolibarr/issues/39146) concerns payment-account associations across entities. |
+| bank-delete | Delete bank account, remove bank account, close account, action does nothing. |
+| transfer-pay | Payment wrong amount, payment confirmation wrong amount, transaction is saved incorrectly. [Firefly III #2412](https://github.com/firefly-iii/firefly-iii/issues/2412) concerns categorizing a transfer as income and uses different account and transaction types. |
+| transfer-request | Manual money request not created, payment request wrong amount, wrong recipient. |
+| social-like | Like disappears after refresh, favourite count, reaction count. |
+| social-comment | Cannot post comment, comment disappears on refresh. |
+| feed-personal | Personal feed missing posts, own posts missing from profile, personal feed tab. [Mastodon #34463](https://github.com/mastodon/mastodon/issues/34463) concerns a Featured tab with no featured content configured. |
+| feed-friends | Following feed empty, friends feed blank, following feed tab. |
 
 ## Moodle
 
