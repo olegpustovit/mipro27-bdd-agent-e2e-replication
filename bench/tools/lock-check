@@ -43,13 +43,34 @@ function promptHash() {
   return hash.digest('hex');
 }
 
+// Image IDs looked up in one bulk `docker image inspect` call (one CLI call per image took ~0.8 s each).
+const imageIds = new Map();
+function collectRefs(node, refs = []) {
+  if (Array.isArray(node)) node.forEach(child => collectRefs(child, refs));
+  else if (node && typeof node === 'object') {
+    if (typeof node.ref === 'string' && node.ref && !node.ref.startsWith('-') && typeof node.digest === 'string') refs.push(node.ref);
+    Object.values(node).forEach(child => collectRefs(child, refs));
+  }
+  return refs;
+}
+function prefetchImages(lock) {
+  const refs = [...new Set(collectRefs(lock))];
+  for (let i = 0; i < refs.length; i += 100) {
+    const batch = refs.slice(i, i + 100);
+    const result = spawnSync('docker', ['image', 'inspect', '--format', '{{.Id}}', ...batch], { encoding: 'utf8', timeout: 60_000 });
+    const ids = (result.stdout ?? '').trim().split('\n').filter(Boolean);
+    // Only trust the batch when every reference resolved; otherwise the per-image fallback below names the missing one.
+    if (!result.error && result.status === 0 && ids.length === batch.length) batch.forEach((ref, k) => imageIds.set(ref, ids[k]));
+  }
+}
+
 function checkImage(field, pin) {
   let observed;
   check(`${field}.ref`, () => {
     if (!pin || typeof pin.ref !== 'string' || !pin.ref || pin.ref.startsWith('-')) {
       throw new Error('missing image reference');
     }
-    observed = output('docker', 'image', 'inspect', '--format', '{{.Id}}', pin.ref);
+    observed = imageIds.get(pin.ref) ?? output('docker', 'image', 'inspect', '--format', '{{.Id}}', pin.ref);
   });
   check(`${field}.digest`, () => {
     if (typeof pin?.digest !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(pin.digest)) {
@@ -61,6 +82,7 @@ function checkImage(field, pin) {
 
 function verify() {
   const lock = JSON.parse(readFileSync(lockPath, 'utf8'));
+  prefetchImages(lock);
   const plan = JSON.parse(readFileSync(resolve(bench, 'plan/plan.json'), 'utf8'));
   const bin = resolve(bench, '../node_modules/.bin');
 
