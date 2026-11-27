@@ -8,7 +8,7 @@ from cells import FIELDS
 BASELINE = {"pay": "sd-cur", "mdl": "sd-new"}
 AGENTS = ("luna", "terra", "sol")
 STALE = {"pay": "sd-stale", "mdl": "sd-old"}
-CAUSES = ("budget_time", "budget_tools", "loop", "no_readable_answer")
+CAUSES = ("budget_time", "budget_tools", "loop", "no_readable_answer", "agent_declared")
 TOKEN_FIELDS = ("input", "cached", "output")
 
 

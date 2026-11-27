@@ -26,7 +26,7 @@ test('pass, fail by number, fail by step text, and explicit unresolved', () => {
   assert.equal(parseAnswer(fenced, steps).status, 'pass');
   assert.deepEqual(parseAnswer(encode('unresolved', null), steps), {
     status: 'unresolved', failed_step: null, failed_step_text: null, reason,
-    raw: encode('unresolved', null), unresolved_cause: 'no_readable_answer',
+    raw: encode('unresolved', null), unresolved_cause: 'agent_declared',
   });
 });
 

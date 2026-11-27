@@ -1,7 +1,7 @@
 Feature: Synthetic payment application workflows
   All cases start with a fresh browser and the same synthetic seed.
   Use only the visible application UI. Do not call APIs or inspect app internals.
-  Do not navigate away or reload to make a missing expected outcome appear.
+  Reload or navigate only when a step says so. Do not reload or navigate away on your own to make a missing expected outcome appear.
   UI actions needed to complete the current When are allowed.
 
   @auth-login

@@ -1,4 +1,5 @@
-<html><body><h1>Plan-1 (frozen 2026-11-27)</h1>
+<html><body><h1>Plan-2 (frozen 2026-11-27)</h1>
+
 <h2>1. Goal</h2>
 <p>Teams write tests as plain-language Gherkin scenarios. There are two ways to run them:</p>
 <ul>
@@ -110,7 +111,7 @@
 <tr><td>With bug</td><td>Failed at the targeted step</td><td>Caught</td><td>Green</td></tr>
 <tr><td>With bug</td><td>Failed at another step</td><td>Detected elsewhere</td><td>Yellow</td></tr>
 <tr><td>With bug</td><td>Passed</td><td>Missed</td><td>Red</td></tr>
-<tr><td>Either</td><td>No readable answer, out of time or tool calls, or a loop</td><td>Unresolved: counts as a fail, reported separately</td><td>Orange</td></tr>
+<tr><td>Either</td><td>No readable answer, the agent says it cannot decide, out of time or tool calls, or a loop</td><td>Unresolved: counts as a fail, reported separately</td><td>Orange</td></tr>
 <tr><td>Either</td><td>Environment failed before the test ran</td><td>Invalid: rerun</td><td>Grey</td></tr>
 </table>
 <h3>Scoring rules, frozen before any run</h3>
@@ -144,8 +145,11 @@
 <li><b>Isolated and parallel.</b> Every run gets fresh containers. Several workers run at once; the smoke test sets their number. This machine has 20 CPUs and 23 GB.</li>
 <li><b>Randomized order.</b> Runs go in time blocks. Within each block, the order of approaches and of runs with and without the bug is shuffled with a recorded seed, so a change in a hosted model during the day affects every approach equally. Provider responses and worker load are logged.</li>
 <li><b>Credentials.</b> The Codex login is passed into each container at start, read-only, and never written to logs, traces or the ledger.</li>
-<li><b>No slow runs.</b> A hard limit of 5 minutes per run. There is no token cap; tokens are recorded per run.</li>
+<li><b>No slow runs.</b> A hard limit of 15 minutes and 250 tool calls per agent run. There is no token cap; tokens are recorded per run.</li>
+<li><b>Readable checkout.</b> Before any measured run, the runner checks that the repository is clean and readable by the container user, and refuses to start otherwise.</li>
 </ul>
+
+<p><b>Plan-2 amendment, 27 Nov, after a 20-run pilot and before the campaign.</b> The pilot found environment faults, not results to tune on. (1) The repository folder was not readable by the container user, so coded payment runs could not start; a pre-flight check now refuses such a checkout. (2) The shared scenario preamble told the agent never to reload, while seven scenarios have a step "When I reload the current page"; it now reads "Reload or navigate only when a step says so." (3) An agent that answers "unresolved" on its own is recorded with its own cause, agent declared, instead of no readable answer. (4) Adapter output is saved with each run, secrets redacted. No scenario step, bug, target, model or metric changed. Pilot runs stay in the archived plan-1 ledger and count for nothing.</p>
 
 <h2>9. Run control and alerts</h2>
 <p>The runner stops starting new runs and lets running ones finish when any of these happens:</p>

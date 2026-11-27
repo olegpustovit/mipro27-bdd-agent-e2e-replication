@@ -24,7 +24,7 @@ export function parseAnswer(raw, steps) {
         Object.keys(value).sort().join() !== 'failed_step,reason,status') return unreadable();
     const { status, failed_step: step, reason } = value;
     if (typeof reason !== 'string' || !reason.trim()) return unreadable();
-    if (status === 'unresolved' && step === null) return unresolved(raw, 'no_readable_answer', reason);
+    if (status === 'unresolved' && step === null) return unresolved(raw, 'agent_declared', reason);
     let number = null;
     if (status === 'fail') {
       if (Number.isInteger(step)) number = step;
