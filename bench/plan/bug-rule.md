@@ -32,3 +32,11 @@ and preference for a reversible fix from the payment app's own history. Cite
 the external report by ID or URL and label the selection
 `re-created-from-report`. Moodle candidates still come only from Moodle's own
 history and tracker.
+
+## Coordinator-approved Moodle amendment, 2026-11-27
+
+When Moodle's own history and tracker yield no fitting report, step 2 may
+use a specific bug report from another well-known open-source web application's
+public tracker. The report must describe the same failure in the same kind of
+component. Cite its ID or URL and label the selection `re-created-from-report`.
+Moodle's own history and tracker retain priority.

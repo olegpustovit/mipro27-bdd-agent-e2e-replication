@@ -131,35 +131,103 @@ and incorrect amount filters. The external reports use different inputs or
 triggers under the amended rule. For hold-04 the affected profile field in the
 source is legal name. For hold-05 the source uses an imported customer and a full
 name. For hold-07 the source reopens a rejected expense via automatic resubmission.
+For hold-03, additional searches for signup confirmation mismatch and missing
+validation feedback found no fitting report in a well-known open-source web
+app. The Data-Boom course-project issue remains the direct match.
+[DevGuard #2117](https://github.com/l3montree-dev/devguard/issues/2117) reports
+a false mismatch message for identical passwords.
 For hold-08 the source compares amounts in the wrong currency. The planned change
 compares the upper bound in the wrong units.
 
 ## Moodle
 
-The plan provides provisional IDs for three changes. The upstream history links
-confirm they concern completion controls, global search and block buttons.
-Eligibility and the tested revisions come from P7c. Re-run per eligible scenario
-using its own search terms and source paths.
+P7c identifies 19 eligible scenario-at-change units across five changes.
+The same scenario ID can appear at more than one change. Each unit is keyed
+by change and scenario ID. Step numbers exclude Background and count all
+scenario steps, including fixture steps and continuations. I matched the listed
+step in both paired extracts.
 
+| Change | Tested pre revision | Tested post revision |
+| --- | --- | --- |
+| B15 | `d65e24a62c0dc3995f9b88eed0d3a4153bb1a290` | `88dbf8a0d99c4798504eb226b4490d05c908ed8e` |
+| B01 | `20bb0b2429535deecd811520a6820ee108b67821` | `a468a463289306de83672c3cfba902ff31f484fc` |
+| B04 | `746815af497517c350cff2753bfb386a99cd1d33` | `6200c31f94c9216f32902e263620f545250ad9ab` |
+| B05 | `51e3ffd811dd6b3378ad8c27eefe24091054b35a` | `c46ecf938abf04959896431eb63105504ee9e37f` |
+| B07 | `c87bae8d3979b9e2f131e7d237dd42c2f49d6810` | `9105de4c3336e35798be4bffb37d1a410bd8f8c2` |
+
+| Scenario at change | Selection | Report title and failure quote | Moodle component and planned change | Symptom at targeted step |
+| --- | --- | --- | --- | --- |
+| B15/S091 | re-created-from-report | [MDL-26023](https://moodle.atlassian.net/browse/MDL-26023), Blocks: myprofile block does not display for enrolled student on course page. “the block was not being displayed” | Logged-in-user block. Let the add action complete but suppress the block when the dashboard renders for the logged-in user. | Step 5 — Then I should see "Teacher One" in the "Logged in user" "block" |
+| B15/S093 | re-created-from-report | [Google for WooCommerce #3713](https://github.com/woocommerce/google-listings-and-ads/issues/3713), WPCOM REST API authorization can never be granted when Jetpack is already connected: no UI path, auth_url unusable. “no authorization prompt” | Accessibility review block. Add and render the block for an unregistered site while suppressing the registration prompt. | Step 5 — And I should see "Your accessibility toolkit needs to be registered." |
+| B15/S094 | re-created-from-report | [Google for WooCommerce #3713](https://github.com/woocommerce/google-listings-and-ads/issues/3713), WPCOM REST API authorization can never be granted when Jetpack is already connected: no UI path, auth_url unusable. “No admin notice appears anywhere in wp-admin.” | Activity results block. Add and render the unconfigured block with JavaScript disabled while suppressing its configuration instructions. | Step 2 — Then I should see "Please configure this block and select which activity it should display results from." in the "Activity results" "block" |
+| B01/S027 | re-created-from-report | [PrestaShop ps_banner #78](https://github.com/PrestaShop/ps_banner/issues/78), Uploading a banner for one language silently deletes the banner image for all other languages (root cause of #69). “display no banner at all” | Search results banner. Suppress the enabled, nonblank warning while allowing the search to return normally. | Step 3 — Then I should see "The search currently only finds frog-related content" in the ".notifywarning" "css_element" |
+| B01/S028 | re-created-from-report | [WooCommerce #55447](https://github.com/woocommerce/woocommerce/issues/55447), “This is a demo store for testing purposes — no orders shall be fulfilled.” is always shown independently from changing the website visibility option. “message is still shown” | Search results banner. Render the configured warning text even when its display setting is disabled. | Step 3 — Then I should not see "The search currently only finds frog-related content" |
+| B01/S029 | re-created-from-report | [Discourse Meta #408667](https://meta.discourse.org/t/empty-banner-box/408667), Empty banner box. “an empty banner box at the top of my page” | Search results banner. Render the empty warning container when the display setting is enabled and the banner text is blank. | Step 3 — Then ".notifywarning" "css_element" should not exist |
+| B04/S036 | re-created-from-report | [MDL-71455](https://moodle.atlassian.net/browse/MDL-71455), Restored course with completion conditions not shown yet 'Show completion conditions' set to Yes. “completion conditions are not shown” | Course activity completion display. Suppress the completion conditions on the course page even when the course flag is enabled. | Step 3 — Then "Test choice manual" should have the "Mark as done" completion condition |
+| B04/S037 | re-created-from-report | [MDL-76187](https://moodle.atlassian.net/browse/MDL-76187), Manual completion button can show when it should not. “has the Manual completion button present” | Course-page manual completion. Hide automatic conditions as configured, but continue to show the manual completion control for the manual Choice when the course setting is off. | Step 10 — And the manual completion button for "Test choice manual" should not exist |
+| B04/S040 | re-created-from-report | [MDL-76187](https://moodle.atlassian.net/browse/MDL-76187), Manual completion button can show when it should not. “has the Manual completion button present” | Course-page manual completion. Show the manual assignment control in the student's course view with conditions disabled, after the teacher's settings and visibility checks succeed. | Step 9 — Then the manual completion button for "Music history" should not exist |
+| B04/S041 | re-created-from-report | [MDL-80262](https://moodle.atlassian.net/browse/MDL-80262), Activity Completion Buttons are Incorrect for some Activities. “the "To Do" status is showing instead of showing "Done."” | Manual activity completion status. Let the student toggle completion while leaving the activity-page button on its prior label. | Step 7 — And the manual completion button of "Music history" is displayed as "Done" |
+| B05/S042 | re-created-from-report | [MDL-63194](https://moodle.atlassian.net/browse/MDL-63194), Moving questions from section to section in quiz does not work. “the question is still at its former position” | Quiz structure editor. Preserve the within-page reorder, then acknowledge the first cross-page move while retaining Question A on page 1. | Step 11 — And I should see "Question A" on quiz page "2" |
+| B05/S043 | re-created-from-report | [MDL-47959](https://moodle.atlassian.net/browse/MDL-47959), Number of questions not updated dynamically in new quiz edit page. “Doesn't update the number of questions in the quiz when a question gets deleted.” | Quiz questions summary. Delete the question and update marks while leaving the displayed question count at three. | Step 15 — And I should see "Questions: 2" |
+| B05/S044 | re-created-from-report | [MDL-25374](https://moodle.atlassian.net/browse/MDL-25374), Repaginate button doesn't work. “the repaginate button doesn't do anything when you click it.” | Quiz repagination. Open and submit the Repaginate dialog but retain the previous page assignments. | Step 87 — And I should see "Question2 text" on quiz page "2" |
+| B05/S045 | re-created-from-report | [MDL-63194](https://moodle.atlassian.net/browse/MDL-63194), Moving questions from section to section in quiz does not work. “the question is still at its former position” | Quiz structure editor. Acknowledge moving Question6 across a page boundary while retaining the original page assignment. | Step 7 — And I should see "Question6 text" on quiz page "1" |
+| B05/S046 | re-created-from-report | [MDL-62404](https://moodle.atlassian.net/browse/MDL-62404), Quiz "add page break" button works inconsistently on Clean theme. “when the quiz is previewed it doesn't seem to have actually worked.” | Quiz preview pagination. Accept both page-break actions but ignore the first break when persisting the layout used by preview. Keep the later break so Next page remains actionable. | Step 9 — And I should see "Question4 text" |
+| B05/S047 | re-created-from-report | [MDL-52040](https://moodle.atlassian.net/browse/MDL-52040), Error adding new quiz page section heading to first section (page). “Clicking the "Add section header" on first quiz page” | Quiz section-heading menu. Expose the new-section option on the first page, where the scenario expects the option to be hidden. | Step 7 — Then "a new section heading" "link" in the "Page 1" "list_item" should not be visible |
+| B07/S027 | re-created-from-report | [PrestaShop ps_banner #78](https://github.com/PrestaShop/ps_banner/issues/78), Uploading a banner for one language silently deletes the banner image for all other languages (root cause of #69). “display no banner at all” | Search results banner. Suppress the enabled, nonblank warning while allowing the search to return normally. | Step 3 — Then I should see "The search currently only finds frog-related content" in the ".notifywarning" "css_element" |
+| B07/S028 | re-created-from-report | [WooCommerce #55447](https://github.com/woocommerce/woocommerce/issues/55447), “This is a demo store for testing purposes — no orders shall be fulfilled.” is always shown independently from changing the website visibility option. “message is still shown” | Search results banner. Render the configured warning text even when its display setting is disabled. | Step 3 — Then I should not see "The search currently only finds frog-related content" |
+| B07/S029 | re-created-from-report | [Discourse Meta #408667](https://meta.discourse.org/t/empty-banner-box/408667), Empty banner box. “an empty banner box at the top of my page” | Search results banner. Render the empty warning container when the display setting is enabled and the banner text is blank. | Step 3 — Then ".notifywarning" "css_element" should not exist |
+
+Tracker searches used project `MDL`, issue type `Bug`, and the following
+summary or text terms: `searchbanner`, `searchbannerenable`, global search,
+search warning, completion conditions, manual completion, logged-in user
+block, activity results block, accessibility toolkit, move question, question
+count, repaginate, page break, and section heading. The public Jira issue API
+returned the summaries and descriptions when browser browsing of Jira failed.
+
+The available local Moodle checkout is shallow. I also searched Moodle's
+GitHub commit index and the integration diffs linked by the tracker. I checked
+the B05 snapshots with `git apply --reverse --check` on matching upstream
+source paths. The candidate diffs for [the quiz count fix](https://github.com/colchambers/moodle/compare/MDL-47368...MDL-47959)
+and [the older question-move fix](https://github.com/moodle/moodle/commit/72b8806abca06cfe60ff3fa08dba9dfb6e714505)
+did not apply to either revision. The old Repaginate JavaScript file is absent
+at both tested revisions. [The preview invalidation fix](https://github.com/moodle/moodle/commit/78c1a0a3e500c8428b8228f515ab05e44459a012)
+could be reversed at both revisions, but it invalidates existing previews.
+S046 starts a fresh preview and has no prior preview to invalidate.
+The completion visibility fix linked from MDL-71455 updates backup and
+restore behavior. S036 builds its course directly.
+
+The Moodle selections re-create reported effects using the scenario fixtures.
+For B05/S042 and B05/S045, the source moves between sections and sees the stale
+position upon reload. The current quiz editor checks the resulting position
+as part of the edit workflow and crosses page boundaries. For B04/S041, the
+source reports an incorrect completion status for quizzes or forums. This
+mapping reproduces the stale status label for a manual assignment toggle.
+S091 maps a missing block on a course page to a missing instance of the same
+block on the dashboard.
+
+The eight units without a fitting upstream report use the dated Moodle
+fallback. The external search covered missing configured banners, notices
+shown despite disabled display, empty warning containers, and missing plugin
+setup prompts. B01 and B07 share the same three search-banner expectations.
+The PrestaShop report uses a localized image, the WooCommerce report uses a
+store-visibility toggle, and the Discourse report uses a blank localized
+header. For B15 the Google for WooCommerce report supplies the missing
+setup-prompt effect for two separate block conditions. The earlier Moodle
+tracker candidates remain in the review below.
+
+| Unit or units | Moodle tracker candidates reviewed |
+| --- | --- |
+| B15/S093 | [MDL-71821](https://moodle.atlassian.net/browse/MDL-71821) concerns disappearing activation keys in a registered installation. This fixture starts unregistered. |
+| B15/S094 | [MDL-51905](https://moodle.atlassian.net/browse/MDL-51905) concerns default activity selection when a block is added from a module. [MDL-45429](https://moodle.atlassian.net/browse/MDL-45429) concerns a different block showing an unwanted configuration prompt to students. |
+| B01/S027 and B07/S027 | [MDL-79784](https://moodle.atlassian.net/browse/MDL-79784) concerns mobile web-service text formatting, and [MDL-59496](https://moodle.atlassian.net/browse/MDL-59496) concerns the separate site-registration warning on the administration page. |
+| B01/S028 and B07/S028 | [MDL-25491](https://moodle.atlassian.net/browse/MDL-25491) concerns stale radio-button state for an external-converter setting. [MDL-74781](https://moodle.atlassian.net/browse/MDL-74781) concerns a repeated page heading. |
+| B01/S029 and B07/S029 | [MDL-79784](https://moodle.atlassian.net/browse/MDL-79784) concerns formatting of configured mobile banner text. No matching report established a warning for an enabled but blank browser banner. |
+
+Reusable search:
 ```sh
-bench/plan/bug-candidates.py moodle /path/to/moodle <tested-revision> 'MDL-[0-9]+.*(assign|grade)' --issue-query 'issuetype = Bug AND text ~ "gradebook"'
+bench/plan/bug-candidates.py moodle /path/to/moodle <tested-revision> 'MDL-[0-9]+.*(quiz|repaginat|completion|search|block)' --issue-query 'issuetype = Bug AND summary ~ "repaginate"'
 ```
 
-The [MDL-89461 tracker record][moodle-bug] and [its upstream fix][moodle-fix]
-were a source-discovery probe. The defect concerns assignment access when
-grading is disabled, so it was rejected for the provisional workflows.
-
-| Scenario | Selection | Candidate review |
-| --- | --- | --- |
-| S036 | TODO (P7c) | [MDL-87662][b04] relocates the completion button. No qualifying defect established. |
-| S037 | TODO (P7c) | [MDL-87662][b04] relocates the completion button. No qualifying defect established. |
-| S041 | TODO (P7c) | [MDL-87662][b04] relocates the completion button. No qualifying defect established. |
-| S025 | TODO (P7c) | [MDL-87834][b07] redesigns global search. No qualifying defect established. |
-| S028 | TODO (P7c) | [MDL-87834][b07] redesigns global search. No qualifying defect established. |
-| S029 | TODO (P7c) | [MDL-87834][b07] redesigns global search. No qualifying defect established. |
-| S091 | TODO (P7c) | [MDL-85281][b15] restyles block controls. No qualifying defect established. |
-| S094 | TODO (P7c) | [MDL-85281][b15] restyles block controls. No qualifying defect established. |
-| Remaining Moodle scenarios | TODO (P7c) | Await eligible scenario inventory and tested revisions. |
 [581]: https://github.com/cypress-io/cypress-realworld-app/issues/581
 [1106]: https://github.com/cypress-io/cypress-realworld-app/issues/1106
 [986]: https://github.com/cypress-io/cypress-realworld-app/issues/986
@@ -187,8 +255,3 @@ grading is disabled, so it was rejected for the provisional workflows.
 [notification]: https://github.com/cypress-io/cypress-realworld-app/commit/ea3b57c1d43b8efdab9b313a7282890061a9120d
 [comment]: https://github.com/cypress-io/cypress-realworld-app/commit/201441dfbf47a69a319c9d2fbb169d291e9157a4
 [dimensions]: https://github.com/cypress-io/cypress-realworld-app/commit/622f88eaaf35d2d70da07fefc12df6601001e70e
-[b04]: https://github.com/moodle/moodle/commit/6200c31f94c9216f32902e263620f545250ad9ab
-[b07]: https://github.com/moodle/moodle/commit/9105de4c3336e35798be4bffb37d1a410bd8f8c2
-[b15]: https://github.com/moodle/moodle/commit/88dbf8a0d99c4798504eb226b4490d05c908ed8e
-[moodle-bug]: https://moodle.atlassian.net/browse/MDL-89461
-[moodle-fix]: https://github.com/moodle/moodle/commit/45ad958b854dff0575c952ac4bcee333adde2f1e
