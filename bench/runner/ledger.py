@@ -4,9 +4,11 @@ import hashlib
 import json
 import os
 import re
+import sys
 from collections import defaultdict
 from contextlib import contextmanager
 from pathlib import Path
+from tempfile import mkdtemp
 
 ZERO = "0" * 64
 ITEM_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*")
@@ -50,7 +52,7 @@ def locked(directory, *, exclusive=False):
 
 
 class Ledger:
-    def __init__(self, directory):
+    def __init__(self, directory, *, recover_orphans=False):
         self.directory = directory
         self.path = directory / "attempts.jsonl"
         self.history = defaultdict(list)
@@ -58,16 +60,17 @@ class Ledger:
         self.count = 0
         if self.path.is_symlink():
             raise ValueError("ledger is a symlink")
-        with self.path.open("rb") as source:
-            for number, line in enumerate(source, 1):
-                try:
-                    self.verify_line(line)
-                except (ValueError, KeyError, TypeError, AttributeError, OSError) as error:
-                    raise ValueError(f"ledger line {number}: {error}") from error
+        if self.path.exists():
+            with self.path.open("rb") as source:
+                for number, line in enumerate(source, 1):
+                    try:
+                        self.verify_line(line)
+                    except (ValueError, KeyError, TypeError, AttributeError, OSError) as error:
+                        raise ValueError(f"ledger line {number}: {error}") from error
 
-        self.verify_raw_inventory()
+        self.verify_raw_inventory(recover_orphans=recover_orphans)
 
-    def verify_raw_inventory(self):
+    def verify_raw_inventory(self, *, recover_orphans):
         root = self.directory / "raw"
         if root.is_symlink():
             raise ValueError("raw root is a symlink")
@@ -79,8 +82,21 @@ class Ledger:
             if item.is_symlink() or not item.is_dir():
                 raise ValueError(f"unexpected raw artifact {item.name}")
             expected = {str(row["attempt"]) for row in self.history.get(item.name, [])}
-            if {entry.name for entry in item.iterdir()} != expected:
-                raise ValueError(f"raw attempt inventory differs from ledger for {item.name}")
+            entries = set(item.iterdir())
+            for orphan in sorted(entry for entry in entries if entry.name not in expected):
+                if (not recover_orphans or not ITEM_ID.fullmatch(item.name) or
+                        not re.fullmatch(r"[1-9][0-9]*", orphan.name) or
+                        orphan.is_symlink() or not orphan.is_dir()):
+                    raise ValueError(f"raw attempt inventory differs from ledger for {item.name}")
+                quarantine = self.directory / "quarantine"
+                quarantine.mkdir(exist_ok=True)
+                if quarantine.is_symlink():
+                    raise ValueError("quarantine is a symlink")
+                destination = Path(mkdtemp(prefix="orphan-", dir=quarantine)) / item.name / orphan.name
+                destination.parent.mkdir()
+                orphan.rename(destination)
+                print(f"quarantined unrecorded {orphan.relative_to(self.directory)} "
+                      f"at {destination.relative_to(self.directory)}", file=sys.stderr)
 
     def verify_line(self, line):
         record = json.loads(line)

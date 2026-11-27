@@ -1,7 +1,7 @@
 .PHONY: run verify test-p3
 
 run:
-	./runner/run-item $(RUN_ARGS)
+	./runner/run-item --smoke-times smoke/smoke-times.json $(RUN_ARGS)
 
 verify:
 	./tools/verify-ledger $(VERIFY_ARGS)

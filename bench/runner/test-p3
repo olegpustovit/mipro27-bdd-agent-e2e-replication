@@ -3,9 +3,15 @@
 # requires-python = ">=3.11"
 # ///
 import argparse
+import hashlib
 import json
 import os
 import subprocess
+import sys
+from importlib.machinery import SourceFileLoader
+from importlib.util import module_from_spec, spec_from_loader
+from types import SimpleNamespace
+from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -14,6 +20,7 @@ RUN = BENCH / "runner/run-item"
 VERIFY = BENCH / "tools/verify-ledger"
 CODED = "pay.v0.auth-login.healthy.sd-cur.r1"
 AGENT = "pay.v0.auth-login.healthy.luna.r1"
+FROZEN = BENCH / "plan/plan.json"
 
 STUB = """#!/usr/bin/env -S uv run --no-project python
 import argparse
@@ -59,6 +66,10 @@ else:
                   tokens={"input": 10, "cached": 0, "output": 5}, tool_calls=1)
     result = "answer.json"
 (args.out / result).write_text(json.dumps(answer))
+provenance = {"scenario_sha256": "a" * 64,
+              "prompt_sha256": "b" * 64 if result == "answer.json" else None}
+filename = "run.json" if result == "answer.json" else "provenance.json"
+(args.out / filename).write_text(json.dumps(provenance))
 """
 
 
@@ -102,10 +113,28 @@ def suite(root, telegram):
     invoke("ledger", "--item", CODED)
     invoke("ledger", "--item", AGENT)
     assert records(ledger)[0] == first
-    assert [record["attempt"] for record in records(ledger)] == [1, 2, 1]
+    assert [record["attempt"] for record in records(ledger)] == [1, 1]
+    frozen_copy = root / "campaign-copy.json"
+    frozen_copy.write_bytes(FROZEN.read_bytes())
+    for flags in ((), ("--plan", frozen_copy)):
+        assert "forbidden for the campaign" in invoke(
+            "ledger", "--item", CODED, extra=(*flags, "--rerun-valid"), expected=1)
+    fixture_plan = root / "fixture-plan.json"
+    plan = json.loads(FROZEN.read_bytes())
+    plan["items"] = [next(item for item in plan["items"] if item["id"] == CODED)]
+    fixture_plan.write_text(json.dumps(plan))
+    for _ in range(2):
+        invoke("repeat", "--item", CODED, extra=("--plan", fixture_plan, "--rerun-valid"))
+    assert [record["attempt"] for record in records(root / "repeat")] == [1, 2]
     trace = ledger / first["raw_dir"] / "trace.txt"
     assert trace.read_text() == "fixture trace"
-    print("PASS repeat: coded attempts 1 and 2 preserved; agent attempt 1 recorded")
+    print("PASS repeat: valid campaign results skipped by default; explicit fixture repeat kept both attempts")
+    coded, agent = records(ledger)
+    head = run(["git", "-C", BENCH.parent, "rev-parse", "HEAD"]).strip()
+    assert coded["git_commit"] == agent["git_commit"] == head
+    assert coded["scenario_sha256"] == agent["scenario_sha256"] == "a" * 64
+    assert coded["prompt_sha256"] is None and agent["prompt_sha256"] == "b" * 64
+    print("PASS provenance: commit and hashes from coded provenance.json and agent run.json")
     print("PASS intact:", run([VERIFY, "--ledger-dir", ledger]).strip())
 
     def mutate(path, original, changed, reason):
@@ -126,6 +155,25 @@ def suite(root, telegram):
     added.unlink()
     run([VERIFY, "--ledger-dir", ledger])
     print("PASS tampering: record content, record whitespace, truncated suffix, trace byte, and added file detected")
+
+    orphan = ledger / "raw" / CODED / "2"
+    orphan.mkdir()
+    (orphan / "partial.log").write_text("interrupted trace")
+    assert "inventory differs" in run([VERIFY, "--ledger-dir", ledger], 1)
+    output = invoke("ledger", "--item", CODED)
+    assert f"quarantined unrecorded raw/{CODED}/2" in output
+    recovered, = (ledger / "quarantine").glob(f"orphan-*/{CODED}/2/partial.log")
+    assert recovered.read_text() == "interrupted trace" and not orphan.exists()
+    assert ledger_file.read_bytes() == data
+    run([VERIFY, "--ledger-dir", ledger])
+    print("PASS interrupted-run recovery: orphan trace quarantined and ledger verifies")
+
+    for _ in range(5):
+        invoke("provider-retry", "--item", AGENT, mode="provider", expected=2)
+    invoke("provider-retry", "--item", AGENT)
+    attempts = records(root / "provider-retry")
+    assert len(attempts) == 6 and attempts[-1]["valid"]
+    print("PASS alert retries: five provider stops preserved and the sixth attempt completed")
 
     for _ in range(2):
         output = invoke("invalid", "--item", CODED, mode="invalid", expected=2)
@@ -186,6 +234,14 @@ def suite(root, telegram):
     assert sorted(first.splitlines()[1:]) == sorted(different.splitlines()[1:])
     print("PASS seed: identical ordered IDs for seed 14; seed 41 changes order")
 
+    output = run([RUN, "--item", AGENT, "--ledger-dir", root / "dirty-ledger",
+                  "--gate-check", success, "--lock-check", success,
+                  "--min-disk-bytes", "0", "--min-memory-bytes", "0"],
+                 expected=1, env={**os.environ, "GIT_INDEX_FILE": str(root / "empty-index")})
+    assert "working tree must be clean" in output and "launch " not in output
+    assert not records(root / "dirty-ledger")
+    print("PASS dirty-tree refusal: no attempt allocated")
+
     if telegram:
         fixture_id = "P3-Telegram-test-simulated-provider-refusal"
         fixture_plan = root / "telegram-plan.json"
@@ -199,9 +255,70 @@ def suite(root, telegram):
         print("PASS live Telegram: one simulated provider stop returned Bot API ok=true")
 
 
+def slow_agent(root):
+    loader = SourceFileLoader("run_item", str(RUN))
+    runner = module_from_spec(spec_from_loader(loader.name, loader))
+    loader.exec_module(runner)
+    import worker
+
+    raw = root / "watchdog-raw"
+    raw.mkdir()
+    (raw / "item.json").write_text("{}")
+    item = {"id": "slow-agent", "app": "pay", "arm": "luna"}
+    milestones = []
+
+    class FakeWorker(worker.Worker):
+        def __init__(self, item, pins, is_agent):
+            self.item, self.agent_run = item, is_agent
+            self.images, self.phases_ms = {}, {}
+            self.startup_ms = self.teardown_ms = None
+            self.url, self.browser_path, self.proxy = "http://app", "/", "http://proxy"
+            self.agent = "fixture-agent"
+            self.input, self.output = root / "input", root / "output"
+            self.input.mkdir()
+            self.output.mkdir()
+
+        def start(self):
+            milestones.append("started")
+
+        def setup_payment(self):
+            milestones.append("seeded")
+
+        def remove(self, kind, name):
+            assert (kind, name) == ("container", self.agent)
+            milestones.append("stopped")
+
+        def __exit__(self, *_):
+            pass
+
+    scenario = b"Given the fixture has started"
+    prompt = b"Run the fixture: " + scenario
+
+    def fake_docker(*args, timeout, check):
+        assert args[0] == "exec" and milestones == ["started", "seeded"]
+        assert timeout == 330 and not check
+        with (root / "output" / "run.json").open("w") as output:
+            json.dump({"scenario_sha256": hashlib.sha256(scenario).hexdigest(),
+                       "prompt_sha256": hashlib.sha256(prompt).hexdigest()}, output)
+        script = "import pathlib, time; pathlib.Path('trace.txt').write_text('partial agent trace'); time.sleep(5)"
+        return subprocess.run([sys.executable, "-c", script], cwd=root / "output", timeout=0.25)
+
+    args = SimpleNamespace(agent_run=BENCH / "agent/run", seed=0)
+    with patch.object(runner, "Worker", FakeWorker), patch.object(worker, "docker", fake_docker):
+        record, stop = runner.attempt_run(args, item, {"kind": "agent"}, 1, raw, 1, {}, {})
+    assert milestones == ["started", "seeded", "stopped"]
+    assert record["valid"] and stop is None and record["unresolved_cause"] == "budget_time"
+    assert record["agent_answer"]["status"] == "unresolved"
+    assert (raw / "trace.txt").read_text() == "partial agent trace"
+    assert record["scenario_sha256"] == hashlib.sha256(scenario).hexdigest()
+    assert record["prompt_sha256"] == hashlib.sha256(prompt).hexdigest()
+    print("PASS slow fake agent: 330s watchdog after seeding, trace retained, valid budget_time")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--telegram", action="store_true", help="send exactly one live test alert")
     options = parser.parse_args()
     with TemporaryDirectory(prefix="p3-test-") as directory:
+        slow_agent(Path(directory))
         suite(Path(directory), options.telegram)
