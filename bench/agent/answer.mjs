@@ -47,7 +47,7 @@ export function parseAnswer(raw, steps) {
 
 const withoutKeyword = text => text.trim().replace(/^(Given|When|Then|And|But|\*)\s+/i, '').replace(/\s+/g, ' ');
 
-const parseGherkin = source =>
+export const parseGherkin = source =>
   new Parser(new AstBuilder(IdGenerator.incrementing()), new GherkinClassicTokenMatcher()).parse(source);
 
 export function selectTaggedScenario(source, tag) {

@@ -16,7 +16,12 @@ from statsmodels.stats.proportion import proportion_confint
 SCORING = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(SCORING), str(SCORING.parent / "runner")]
 from ledger import Ledger, digest
-from score import CAUSES, classify, reason_agreement, target_passed, verdict, wilson
+from cells import cells
+from report import load_targets, summarize
+from score import (
+    CAUSES, classify, healthy_metrics, paired_units, read_cells, reason_agreement,
+    target_passed, verdict, wilson,
+)
 
 
 def record(status, step=None, text=None, cause=None, *, agent=True, valid=True):
@@ -83,31 +88,114 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(len(manifest), len(expected_cells))
         self.assertEqual({item for cell in manifest for item in cell["items"]}, {item["id"] for item in plan_items})
 
+    def test_frozen_targets_and_p9_smoke(self):
+        targets, pinned = load_targets()
+        rendered = subprocess.check_output(["node", str(SCORING / "generate-targets.mjs")])
+        self.assertEqual(hashlib.sha256(rendered).hexdigest(), pinned)
+        bench = SCORING.parent
+        wording = json.loads((bench / "scenarios/moodle/agent-wording.json").read_bytes())
+        payment = set()
+        moodle = set()
+        for key, target in targets.items():
+            app, version, scenario = key.split("/")
+            coded, agent = (target[name] for name in ("coded", "agent"))
+            with self.subTest(key=key):
+                if app == "pay":
+                    payment.add(scenario)
+                    self.assertEqual(coded, agent)
+                else:
+                    moodle.add((version, scenario))
+                    replacement = wording.get(scenario, {}).get("steps", {}).get(str(agent["step"]))
+                    if replacement:
+                        self.assertEqual(coded["text"], replacement["original"])
+                        self.assertEqual(agent["text"], replacement["revised"])
+                    else:
+                        self.assertEqual(coded["text"], agent["text"])
+        self.assertEqual(len(payment), 20)
+        self.assertEqual(len(moodle), 18)
+        print("Verified coded and agent target texts for 20 payment scenarios and 18 Moodle units")
+
+        # Replay the documented P9 smoke answers as scoring inputs.
+        text = 'Then I should see "Teacher One" in the "Logged in user" "block"'
+        key = "mdl/B15-post/S091"
+        self.assertEqual(targets[key]["coded"], {"step": 5, "text": text})
+        self.assertEqual(targets[key]["agent"], {"step": 4, "text": text})
+        plan = json.loads((bench / "plan/plan.json").read_bytes())
+        smoke = [cell for cell in cells(plan)
+                 if cell["version"] == "B15-post" and cell["scenario"] == "S091"
+                 and cell["arm"] != "sd-old"]
+        self.assertEqual({cell["arm"] for cell in smoke}, {"sd-new", "luna", "sol", "terra"})
+        history = {}
+        for cell in smoke:
+            agent = cell["arm"] != "sd-new"
+            if cell["condition"] == "bug":
+                answer = record("fail", 4 if agent else 5, text, agent=agent)
+            else:
+                # A hypothetical healthy failure at 5 comes after the agent
+                # target, but is exactly at the coded target.
+                answer = record("fail", 5, agent=agent)
+            for item in cell["items"]:
+                history[item] = [{"attempt": 1, **answer}]
+        results, excluded, _ = read_cells(smoke, history, targets)
+        self.assertFalse(excluded)
+        self.assertEqual([cell["outcomes"] for (_, condition), cell in results.items()
+                          if condition == "bug"], [["caught"] * 3] * 4)
+        units, _ = paired_units(results)
+        for key, unit in units.items():
+            self.assertEqual(unit["target_passes"], 0 if key[-1] == "sd-new" else 3)
+        print("P9 S091 scored caught for sd-new and all three agent arms")
+
+    def test_healthy_unresolved_counts_toward_best_of_three_false_alarm(self):
+        metrics = healthy_metrics([{
+            "outcomes": ["unresolved", "false_alarm", "unresolved"],
+            "records": [record("unresolved", cause="loop"), record("fail", 1),
+                        record("unresolved", cause="budget_time")],
+        }])
+        for mode in ("one_run", "best_of_3", "per_run"):
+            self.assertEqual(metrics[f"{mode}_false_alarms"]["rate"], 1)
+        self.assertEqual(metrics["per_run_unresolved"]["rate"], 2 / 3)
+        self.assertEqual(metrics["per_run_unresolved_by_cause"]["loop"]["rate"], 1 / 3)
+
+    def test_counts_cli_reads_pin_and_verified_ledger(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "attempts.jsonl"
+            path.touch()
+            report = json.loads(subprocess.check_output([str(SCORING / "counts"), "--ledger", str(root)]))
+        self.assertEqual(report["targets_sha256"], load_targets()[1])
+        self.assertEqual(report["ledger_sha256"], digest(b""))
+        for row in report["payment_hold_out_by_arm"]:
+            self.assertEqual(row["scenarios"], [f"hold-{i:02}" for i in range(1, 9)])
+        self.assertEqual(len(report["payment_hold_out_by_arm"]), 5)
+
     def test_counts_on_synthetic_ledger(self):
         passed = record("pass")
         caught = record("fail", 2)
         elsewhere = record("fail", 1)
         examples = {
-            ("a", "luna", "healthy"): [elsewhere, passed, passed],
+            ("a", "luna", "healthy"): [record("unresolved", cause="budget_time"), passed, passed],
             ("a", "luna", "bug"): [caught, caught, record("unresolved", cause="loop")],
-            ("b", "luna", "healthy"): [passed, caught, record("fail", 3)],
-            ("b", "luna", "bug"): [caught, elsewhere, passed],
+            ("hold-01", "luna", "healthy"): [passed, caught, record("fail", 3)],
+            ("hold-01", "luna", "bug"): [caught, elsewhere, passed],
             ("a", "sd-cur", "healthy"): [passed] * 3,
             ("a", "sd-cur", "bug"): [caught] * 3,
-            ("b", "sd-cur", "healthy"): [passed] * 3,
-            ("b", "sd-cur", "bug"): [elsewhere, caught, passed],
+            ("hold-01", "sd-cur", "healthy"): [passed] * 3,
+            ("hold-01", "sd-cur", "bug"): [elsewhere, caught, passed],
             ("a", "sd-stale", "healthy"): [elsewhere, passed, elsewhere],
-            ("b", "sd-stale", "healthy"): [passed] * 3,
+            ("hold-01", "sd-stale", "healthy"): [passed] * 3,
             ("a", "terra", "healthy"): [passed, passed, None],
             ("a", "terra", "bug"): [caught] * 3,
             ("c", "terra", "healthy"): [None] * 3,
             ("c", "terra", "bug"): [None, None, record("fail", valid=False)],
         }
+        targets = {
+            f"pay/v1/{scenario}": {"agent": {"step": 2}, "coded": {"step": 2}, "kind": "recreated",
+                                  "bug_id": None}
+            for scenario in ("a", "hold-01", "c")
+        }
         metadata = {
-            "targets": {
-                "pay/v1/a": {"step": 2, "kind": "reverted"},
-                "pay/v1/b": {"step": 2, "kind": "recreated"},
-            },
+            "targets": {},  # Optional metadata has no influence on the targets.
+            "levels": {"retention": 0.8, "false_alarms": 0.05},
             "updates": [{"app": "pay", "version": "v1", "minutes": 16, "tokens": 96}],
             "moodle_history": {"commits": 20, "interface_changes": 4},
         }
@@ -125,8 +213,6 @@ class ScoringTests(unittest.TestCase):
             root = Path(directory)
             plan_path = root / "plan.json"
             plan_path.write_text(json.dumps(plan))
-            meta_path = root / "metadata.json"
-            meta_path.write_text(json.dumps(metadata))
             (root / "attempts.jsonl").touch()
             ledger = Ledger(root)
             for item, row in reversed(list(pending.items())):
@@ -141,16 +227,12 @@ class ScoringTests(unittest.TestCase):
                         "plan_id": "synthetic", "plan_sha256": digest(plan_path.read_bytes()),
                         "bug_id": None,
                     }, raw)
-            command = [str(SCORING / "counts"), "--plan", str(plan_path),
-                       "--ledger", str(root), "--metadata", str(meta_path)]
-            report = json.loads(subprocess.check_output(command))
+            verified = Ledger(root)
+            report = summarize(cells(plan), verified.history, metadata, targets)
             expected_sha = hashlib.sha256(ledger.path.read_bytes()).hexdigest()
-            self.assertEqual(report["ledger_sha256"], expected_sha)
-            self.assertEqual(report["ledger_head_sha256"], ledger.head)
             ledger.path.write_bytes(ledger.path.read_bytes().replace(b'"minutes":2', b'"minutes":3', 1))
-            corrupt = subprocess.run(command, capture_output=True, text=True)
-            self.assertNotEqual(corrupt.returncode, 0)
-            self.assertIn("record hash or previous hash mismatch", corrupt.stderr)
+            with self.assertRaisesRegex(ValueError, "record hash or previous hash mismatch"):
+                Ledger(root)
 
         luna = next(row for row in report["by_app_arm"] if row["arm"] == "luna")
         self.assertEqual(luna["catch"]["one_run"]["catch_rate"]["rate"], 0.5)
@@ -162,6 +244,14 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(luna["false_alarms"]["one_run_false_alarms"]["rate"], 0.5)
         self.assertEqual(luna["false_alarms"]["best_of_3_false_alarms"]["rate"], 0)
         self.assertEqual(luna["unresolved_by_cause"]["loop"], 1)
+        self.assertEqual(luna["unresolved_by_cause"]["budget_time"], 1)
+        self.assertEqual(luna["false_alarms"]["per_run_unresolved"]["rate"], 1 / 6)
+        self.assertEqual(luna["catch"]["one_run"]["verdict"], "not good enough")
+        hold = next(row for row in report["payment_hold_out_by_arm"] if row["arm"] == "luna")
+        self.assertEqual(hold["scenarios"], ["hold-01"])
+        self.assertEqual(hold["catch"]["one_run"]["catch_rate"]["rate"], 1)
+        self.assertEqual(hold["catch"]["best_of_3"]["catch_retention"]["rate"], 1)
+        self.assertEqual(hold["false_alarms"]["per_run_false_alarms"]["rate"], 2 / 3)
         self.assertEqual(luna["detected_any_step"]["rate"], 4 / 6)
         self.assertEqual(luna["cost_per_caught_bug"]["reliable"]["tokens"], 144)
         self.assertEqual(luna["cost_per_caught_bug"]["reliable"]["minutes"], 24)
@@ -184,7 +274,7 @@ class ScoringTests(unittest.TestCase):
         missing = {(row["scenario"], row["condition"]): row for row in report["excluded_cells"]}
         self.assertEqual(missing["a", "healthy"]["missing_items"], ["a.terra.healthy.r3"])
         self.assertEqual(len(missing["c", "healthy"]["missing_items"]), 3)
-        self.assertIn("missing confirmed target", missing["c", "bug"]["reasons"])
+        self.assertEqual(missing["c", "bug"]["reasons"], ["missing valid repetitions"])
         self.assertEqual(report["unpaired_bug_cells"][0]["cell"]["arm"], "terra")
         terra = next(row for row in report["by_app_arm"] if row["arm"] == "terra")
         self.assertIsNone(terra["catch"]["reliable"]["catch_rate"]["rate"])

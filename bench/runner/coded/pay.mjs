@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 
-function scenarioFile(scenario) {
+export function scenarioFile(scenario) {
   for (const directory of ['bench/scenarios/pay', 'bench/scenarios/pay/hold-out']) {
     const path = `${directory}/${scenario}.feature`;
     if (existsSync(join(root, path))) return path;

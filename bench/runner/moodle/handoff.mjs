@@ -11,6 +11,8 @@ const DATA_CONFIG = '/opt/study-behat/study-behat-data.yml';
 const DATA_STEP = /^quiz "[^"]+" contains the following (?:questions|sections):?$/;
 export const isDataStep = text => isGeneratorStep(text) || DATA_STEP.test(text);
 
+export const scenarioBodySteps = steps => steps.filter(step => !step.background);
+
 export function planHandoff(text, selection) {
   const feature = parseFeature(text);
   const scenario = findScenario(feature, selection);
@@ -18,6 +20,7 @@ export function planHandoff(text, selection) {
   return {
     feature: feature.name,
     scenario: scenario.name,
+    codedSteps: scenarioBodySteps(steps),
     dataSteps: steps.filter(step => isDataStep(step.text)),
     uiSteps: steps.filter(step => !isDataStep(step.text)),
   };

@@ -11,7 +11,7 @@ import sys
 
 from cells import BENCH, FIELDS, cells
 from score import (
-    BASELINE, CAUSES, STALE, catch_metrics, divide_cost, healthy_metrics,
+    AGENTS, BASELINE, CAUSES, STALE, catch_metrics, divide_cost, healthy_metrics,
     paired_units, proportion, ratio, read_cells, reason_agreement, total_cost, verdict,
 )
 
@@ -51,11 +51,21 @@ def by_scope(rows, suite=False):
     return grouped
 
 
-def summarize(manifest, history, metadata):
-    targets = metadata.get("targets", {})
-    for item, target in targets.items():
-        if type(target["step"]) is not int or target["step"] < 1:
-            raise ValueError(f"invalid target step for {item}")
+def load_targets():
+    data = (BENCH / "plan/targets.json").read_bytes()
+    pinned = json.loads((BENCH / "env.lock.json").read_bytes())["targetsSha256"]
+    if digest(data) != pinned:
+        raise ValueError("targets.json SHA-256 disagrees with env.lock.json")
+    targets = json.loads(data)
+    for key, target in targets.items():
+        for approach in ("coded", "agent"):
+            entry = target[approach]
+            if type(entry["step"]) is not int or entry["step"] < 1 or not entry["text"]:
+                raise ValueError(f"invalid {approach} target for {key}")
+    return targets, pinned
+
+
+def summarize(manifest, history, metadata, targets):
     results, excluded, invalid = read_cells(manifest, history, targets)
     units, unpaired = paired_units(results)
     healthy = [(key, cell) for (key, condition), cell in results.items() if condition == "healthy"]
@@ -64,6 +74,7 @@ def summarize(manifest, history, metadata):
     rates = metadata.get("rates_per_million", {})
     levels = metadata.get("levels", {"retention": 0.8, "false_alarms": 0.1, "source": "study fallback"})
     per_arm = []
+    hold_out = []
     for app, arm in sorted({(cell["app"], cell["arm"]) for cell in manifest}):
         own_units = units_by_arm.get((app, arm), [])
         baseline = {key: units[key[:-1] + (BASELINE[app],)]
@@ -102,7 +113,7 @@ def summarize(manifest, history, metadata):
             else:
                 costs[mode] = None
         row["cost_per_caught_bug"] = costs
-        if arm in ("luna", "terra", "sol"):
+        if arm in AGENTS:
             for mode in ("one_run", "best_of_3"):
                 retention = catches[mode]["catch_retention"]
                 alarms = alarm[f"{mode}_false_alarms"]["wilson95"]
@@ -119,6 +130,21 @@ def summarize(manifest, history, metadata):
                     for f in sorted({0.05, 0.1, 0.15, levels["false_alarms"]})
                 ]
         per_arm.append(row)
+        if app == "pay":
+            hold_scenarios = sorted({cell["scenario"] for cell in manifest
+                                     if cell["app"] == app and cell["arm"] == arm
+                                     and cell["scenario"].startswith("hold-")})
+            if hold_scenarios:
+                hold_units = [(key, unit) for key, unit in own_units if key[2] in hold_scenarios]
+                hold_health = [value for key, value in healthy_by_arm.get((app, arm), [])
+                               if key[2] in hold_scenarios]
+                hold_out.append({
+                    "app": app, "arm": arm, "scenarios": hold_scenarios,
+                    "catch": catch_metrics(hold_units, {key: baseline[key] for key, _ in hold_units
+                                                        if key in baseline}),
+                    "false_alarms": {"defined_as_zero": True} if arm == BASELINE[app]
+                    else healthy_metrics(hold_health),
+                })
 
     suites = []
     complete_suites = by_scope(healthy, suite=True)
@@ -132,7 +158,7 @@ def summarize(manifest, history, metadata):
         suites.append({"app": app, "version": version, "change": change, "phase": phase,
                        "arm": arm, **suite})
     return {
-        "levels": levels, "by_app_arm": per_arm, "suites": suites,
+        "levels": levels, "by_app_arm": per_arm, "payment_hold_out_by_arm": hold_out, "suites": suites,
         "gap": gaps(healthy, units),
         "maintenance": maintenance(metadata, suites),
         "replication_reason_match": reason_agreement(metadata.get("reason_ratings", {})),
@@ -152,7 +178,7 @@ def gaps(healthy, units):
     for (app, version, change, phase, arm), stale in grouped.items():
         if phase == "pre" or arm != STALE[app]:
             continue
-        for agent in ("luna", "terra", "sol"):
+        for agent in AGENTS:
             agents = dict(grouped.get((app, version, change, phase, agent), ()))
             shared = [(key, cell) for key, cell in stale if key[:-1] + (agent,) in units]
             agent_keys = [key[:-1] + (agent,) for key, _ in shared]
@@ -160,14 +186,13 @@ def gaps(healthy, units):
             own = [units[key] for key in agent_keys]
             stale_metrics = healthy_metrics([cell for _, cell in shared])
             agent_metrics = healthy_metrics(agent_health)
-            for mode, field in (("one_run", "one_run_non_green"),
-                                ("best_of_3", "best_of_3_non_green")):
+            for mode in ("one_run", "best_of_3"):
                 output.append({
                     "app": app, "version": version, "change": change, "agent": agent, "mode": mode,
                     "shared_scenarios": [key[2] for key, _ in shared],
                     "excluded_stale_scenarios": [key[2] for key, _ in stale
                                                  if key[:-1] + (agent,) not in units],
-                    "stale_failures": stale_metrics[field],
+                    "stale_failures": stale_metrics[f"{mode}_false_alarms"],
                     "stale_per_run_false_alarms": stale_metrics["per_run_false_alarms"],
                     "agent_reliable_catch_rate": proportion(sum(unit["reliable"] for unit in own), len(own)),
                     "agent_false_alarms": agent_metrics[f"{mode}_false_alarms"],
@@ -233,12 +258,13 @@ def main():
             ):
                 parser.error(f"ledger provenance disagrees with plan for {item}")
     try:
-        report = summarize(manifest, ledger.history, metadata)
+        targets, targets_hash = load_targets()
+        report = summarize(manifest, ledger.history, metadata, targets)
     except ValueError as error:
         parser.error(str(error))
     print(json.dumps({
         "ledger_sha256": ledger_hash, "ledger_head_sha256": ledger.head, "attempts": ledger.count,
-        "plan_sha256": plan_hash,
+        "plan_sha256": plan_hash, "targets_sha256": targets_hash,
         "metadata_sha256": digest(metadata_bytes) if metadata_bytes else None,
         **report,
     }, indent=2, allow_nan=False))
