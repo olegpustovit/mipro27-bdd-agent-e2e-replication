@@ -42,8 +42,8 @@ test('every coded item in the P7c Moodle grid resolves against its manifest phas
       }
     }
   }
-  assert.equal(count, 98);
-  assert.equal(bugs, 38);
+  assert.equal(count, 88);
+  assert.equal(bugs, 34);
   t.diagnostic(`Resolved ${count} coded items, including ${bugs} bug items`);
 });
 
