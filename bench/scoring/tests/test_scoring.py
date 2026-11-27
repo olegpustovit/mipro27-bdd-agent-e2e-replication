@@ -78,8 +78,10 @@ class ScoringTests(unittest.TestCase):
         rendered = subprocess.check_output(["uv", "run", str(SCORING / "cells.py")])
         self.assertEqual(rendered, (SCORING / "cells.json").read_bytes())
         manifest = json.loads(rendered)
-        self.assertEqual(len(manifest), 663)
-        self.assertEqual(len({item for cell in manifest for item in cell["items"]}), 1989)
+        plan_items = json.loads((SCORING.parent / "plan" / "plan.json").read_text())["items"]
+        expected_cells = {item["id"].rsplit(".", 1)[0] for item in plan_items}
+        self.assertEqual(len(manifest), len(expected_cells))
+        self.assertEqual({item for cell in manifest for item in cell["items"]}, {item["id"] for item in plan_items})
 
     def test_counts_on_synthetic_ledger(self):
         passed = record("pass")
