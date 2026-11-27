@@ -1,0 +1,66 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# dependencies = []
+# ///
+"""Verify that one bad Codex login pauses the runner and alerts the owner."""
+import argparse
+import json
+import os
+from pathlib import Path
+import shlex
+import shutil
+import subprocess
+from tempfile import TemporaryDirectory, mkdtemp
+
+BENCH = Path(__file__).resolve().parents[1]
+ITEM = "pay.v1.bank-create.healthy.luna.r1"
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--telegram", action="store_true", help="deliver one real Telegram alert")
+    args = parser.parse_args()
+
+    os.umask(0o077)
+    root = BENCH / "ledger-smoke"
+    root.mkdir(exist_ok=True)
+    ledger = Path(mkdtemp(prefix="p9-login-", dir=root))
+    owner = Path.home()
+    with TemporaryDirectory(prefix="p9-fake-home-") as temp:
+        home = Path(temp)
+        codex = home / ".codex"
+        codex.mkdir()
+        shutil.copyfile(owner / ".codex/models_cache.json", codex / "models_cache.json")
+        (codex / "auth.json").write_text(json.dumps({
+            "auth_mode": "apikey", "OPENAI_API_KEY": "p9-deliberately-invalid",
+        }))
+        alerts = ledger / "alerts.jsonl"
+        command = [BENCH / "runner/run-item", "--item", ITEM, "--workers", "1", "--ledger-dir", ledger]
+        if args.telegram:
+            researcher = home / "projects/researcher"
+            researcher.mkdir(parents=True)
+            (researcher / ".envrc").symlink_to(owner / "projects/researcher/.envrc")
+        else:
+            command.extend(["--alert-sink", alerts])
+        print("+", shlex.join(map(str, command)), flush=True)
+        result = subprocess.run(command, cwd=BENCH, env=dict(os.environ, HOME=str(home)),
+                                capture_output=True, text=True, umask=0o022)
+        print(result.stdout, end="")
+        print(result.stderr, end="")
+    subprocess.run([BENCH / "tools/verify-ledger", "--ledger-dir", ledger], check=True)
+    subprocess.run([BENCH / "tools/secret-scan", ledger], check=True)
+    records = [json.loads(line) for line in (ledger / "attempts.jsonl").read_text().splitlines()]
+    if (result.returncode != 2 or len(records) != 1 or records[0]["valid"] or
+            records[0]["invalid_reason"] != "provider refusal" or
+            result.stderr.count("P3 runner stopped at ") != 1 or "Alert delivery failed." in result.stderr):
+        raise SystemExit("Expected one invalid provider-refusal attempt, one stop, and successful alert delivery")
+    if not args.telegram:
+        messages = [json.loads(line) for line in alerts.read_text().splitlines()]
+        if len(messages) != 1 or "provider refusal" not in messages[0]["text"]:
+            raise SystemExit("Expected one provider refusal alert in the sink")
+    print("One provider refusal stop and one " + ("Telegram delivery" if args.telegram else "sink alert"))
+
+
+if __name__ == "__main__":
+    main()
