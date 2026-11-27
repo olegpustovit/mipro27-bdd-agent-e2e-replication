@@ -39,6 +39,30 @@ def docker(*args, timeout=30, check=True, input=None):
     return result
 
 
+SECRET_PATTERNS = [
+    re.compile(r"eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}"),
+    re.compile(r"sk-[A-Za-z0-9_-]{16,}"),
+    re.compile(r"\b\d{8,10}:[A-Za-z0-9_-]{30,}\b"),
+    re.compile(r'("?(?:access|refresh|id)_token"?\s*[:=]\s*"?)[^"\s,}]+'),
+    re.compile(r"(?i)(authorization:\s*bearer\s+)\S+"),
+]
+
+
+def redact(text):
+    for pattern in SECRET_PATTERNS:
+        text = pattern.sub(lambda m: (m.group(1) if m.groups() else "") + "[REDACTED]", text)
+    return text
+
+
+def save_adapter_streams(raw, stdout, stderr):
+    """Keep the adapter's own output with each attempt so an invalid attempt can be diagnosed."""
+    for name, text in (("adapter-stdout.txt", stdout), ("adapter-stderr.txt", stderr)):
+        if text:
+            path = raw / name
+            if not path.exists():
+                path.write_text(redact(text[-200_000:]))
+
+
 @cache
 def public_ca_bundle():
     return subprocess.check_output(
@@ -192,6 +216,7 @@ class Worker:
         output = subprocess.run([executable, *map(str, args)], stdin=subprocess.DEVNULL,
                                 capture_output=True, text=True, cwd=ROOT, env=env,
                                 timeout=INFRASTRUCTURE_TIMEOUT_SECONDS)
+        save_adapter_streams(raw, output.stdout, output.stderr)
         if output.returncode and not (raw / "coded.json").is_file():
             raise RuntimeError(f"{executable} failed (exit {output.returncode})")
         return output.returncode
@@ -383,6 +408,7 @@ class Worker:
         shutil.copyfile(raw / "item.json", self.input / "item.json")
         timeout = (AGENT_LIMIT_SECONDS + AGENT_HOST_MARGIN_SECONDS
                    if agent else INFRASTRUCTURE_TIMEOUT_SECONDS)
+        result = None
         try:
             with self.phase("adapter"):
                 flags = [flag for entry in env for flag in ("-e", entry)]
@@ -396,6 +422,8 @@ class Worker:
                 raise AgentTimeout(f"agent exceeded the {timeout:g}s host watchdog") from error
             raise
         finally:
+            if result is not None:
+                save_adapter_streams(raw, result.stdout, result.stderr)
             for output in self.output.iterdir():
                 if not output.is_file() or output.is_symlink():
                     raise RuntimeError("adapter output must be a regular file")
