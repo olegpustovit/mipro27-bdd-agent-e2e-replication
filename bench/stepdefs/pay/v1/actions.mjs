@@ -29,7 +29,7 @@ function isBankList(request) {
   try { return request.postDataJSON()?.operationName === 'ListBankAccount'; } catch { return false; }
 }
 // The app ignores a delete sent while it is loading the bank list, and it may load the list
-// more than once. Wait until list loading has started and then stayed quiet for 500 ms.
+// more than once. Wait until list loading has finished.
 async function afterBankListSettles(w, open) {
   let inflight = 0, seen = 0, last = Date.now();
   const started = request => { if (isBankList(request)) { inflight++; seen++; last = Date.now(); } };
@@ -37,8 +37,9 @@ async function afterBankListSettles(w, open) {
   w.page.on('request', started); w.page.on('requestfinished', ended); w.page.on('requestfailed', ended);
   try {
     await open();
-    const deadline = Date.now() + 10000;
-    while (!(seen > 0 && inflight === 0 && Date.now() - last >= 500)) {
+    const opened = Date.now(), deadline = opened + 7000;
+    // Settled: loading started and then stayed quiet for 500 ms, or no loading started within 1.5 s.
+    while (!(inflight === 0 && (seen > 0 ? Date.now() - last >= 500 : Date.now() - opened >= 1500))) {
       if (Date.now() > deadline) throw new Error('The bank list did not finish loading');
       await w.page.waitForTimeout(50);
     }
