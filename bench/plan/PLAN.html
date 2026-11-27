@@ -1,4 +1,4 @@
-<html><body><h1>Plan-1 (design locked 2026-11-27)</h1>
+<html><body><h1>Plan-1 (frozen 2026-11-27)</h1>
 <h2>1. Goal</h2>
 <p>Teams write tests as plain-language Gherkin scenarios. There are two ways to run them:</p>
 <ul>
@@ -13,7 +13,12 @@
 <li><b>False alarms.</b> The share of runs without a bug that failed, and the chance that a whole suite run on a correct build is all green.</li>
 </ul>
 <p><b>Headline results</b> are catch retention and false alarms, each with a 95% Wilson interval with the scenario as the unit (Wilson intervals stay valid at 0% and 100%), and the per-scenario counts out of 3 behind them. Catch rate, the all-green suite chance and best-of-3 use are reported as one column or one sentence each.</p>
-<p><b>Good enough.</b> An agent is good enough on an app when its catch retention reaches a set level and its false alarms stay below a set level. The two levels come from published figures, such as reported flaky-test rates, found in pre-task P0b; if no solid source exists, 80% and 10% are used and labelled as our choice. The verdict is <i>good enough</i>, <i>not good enough</i> or <i>inconclusive</i> (the interval crosses the level). The paper also shows how the verdict changes across a range of levels, so a reader can apply their own.</p>
+<p><b>Good enough.</b> An agent is good enough on an app when its catch retention reaches a set level and its false alarms stay below a set level. The two levels come from published figures (pre-task P0b, done):
+<ul>
+<li><b>Catch retention: at least 95%.</b> Facebook's predictive test selection reports catching over 95% of test failures, and calls that guarantee sufficient (Machalica et al., ICSE-SEIP 2019).</li>
+<li><b>False alarms: at most 1.5% of runs without a bug.</b> About 1.5% of Google's test runs report a flaky result (Micco, Google Testing Blog, 2016). No source states an acceptable rate; this is the documented rate a large maintained suite lives with.</li>
+</ul>
+<p>These are strict for agents. With the planned sample sizes, a "good enough" verdict needs a near-perfect result, so the range of levels shown next to the verdict is where most readers will look.</p> The verdict is <i>good enough</i>, <i>not good enough</i> or <i>inconclusive</i> (the interval crosses the level). The paper also shows how the verdict changes across a range of levels, so a reader can apply their own.</p>
 <p>Cells without a valid result (section 9) are left out and reported. Moodle results are estimates; Moodle gets a verdict only if it reaches 20 scenarios.</p>
 <p><b>The gap after a change.</b> For each changed version or Moodle change: the share of scenarios the step definitions from before the update fail without a bug, and the agents' catch rate and false alarms on the same scenarios.</p>
 
@@ -22,11 +27,11 @@
 <tr><th></th><th>Payment app</th><th>Moodle</th></tr>
 <tr><td>What it is</td><td>Public demo payment app (Cypress Real World App, commit 0729f68)</td><td>Real open-source learning platform with its developers' own tests</td></tr>
 <tr><td>Interface changes</td><td>2 changes written by a blind session from published breakage types, giving 3 versions</td><td>Every eligible real past change (rule in section 3); each run on the commit just before and just after</td></tr>
-<tr><td>Tests</td><td>20 scenarios: the 12 used in earlier exploratory runs, plus 8 new hold-out scenarios written blind</td><td>The developers' scenarios that each change touched: at least 20 in total (8 for the first 3 changes)</td></tr>
+<tr><td>Tests</td><td>20 scenarios: the 12 used in earlier exploratory runs, plus 8 new hold-out scenarios written blind</td><td>The developers' scenarios that each change touched: 18 units over 5 changes (target 20)</td></tr>
 <tr><td>Bugs</td><td colspan="2">One real bug per scenario, chosen by a frozen rule and confirmed by a check that uses neither approach (section 3)</td></tr>
 <tr><td>Approaches</td><td>Step definitions up to date; step definitions before the update; agents Luna, Terra, Sol</td><td>Developers' step definitions before and after the change; agents Luna, Terra, Sol</td></tr>
 <tr><td>Repetitions</td><td colspan="2">3 of every run</td></tr>
-<tr><td>Runs now</td><td>600 step-definition runs, 1080 agent runs</td><td>120 step-definition runs, 189 agent runs for the first 3 changes; more when the eligible changes are added</td></tr>
+<tr><td>Runs now</td><td>600 step-definition runs, 1080 agent runs</td><td>270 step-definition runs, 486 agent runs for the first 3 changes; more when the eligible changes are added</td></tr>
 </table>
 
 <h2>3. Apps, changes and bugs</h2>
@@ -38,24 +43,29 @@
 <p>The changes keep the app's behavior the same, so a correct test passes on every version without a bug. The agents see the same scenario text on every version.</p>
 <p><b>Hold-out scenarios.</b> The first 12 scenarios were used in earlier exploratory runs that shaped this design. Eight new scenarios are written by a session that never saw those runs, the agents or the prompt (pre-task P4d). Results are reported for all 20 and for the 8 hold-out scenarios alone. A short log lists what the exploratory runs changed in the design.</p>
 <h3>Moodle</h3>
-<p>Each change is a real Moodle commit in which the developers changed the interface and fixed their own step definitions. The first three:</p>
+<p>Each change is a real Moodle commit in which the developers changed the interface and fixed their own step definitions. Pre-task P7c applied the rule below to all 21 mined changes; 5 are eligible, with 19 scenario units; one (B05/S044) was then excluded, leaving 18 units over 15 distinct scenarios (S027 to S029 are units under both B01 and B07, run on different commits):</p>
 <ul>
-<li><b>B04</b> (MDL-87662) moves the manual completion button into the activity header. Scenarios S036, S037, S041.</li>
-<li><b>B07</b> (MDL-87834) redesigns the inline search box in the navigation bar. Scenarios S025, S028, S029.</li>
-<li><b>B15</b> (MDL-85281) restyles the "Add block" buttons. Scenarios S091, S094.</li>
+<li><b>B01</b> (MDL-85795) encloses the navigation-bar search widget in a group and relabels its button. Scenarios S027, S028, S029.</li>
+<li><b>B04</b> (MDL-87662) moves the manual completion button into the activity header. Scenarios S036, S037, S040, S041.</li>
+<li><b>B05</b> (MDL-81608) replaces the quiz page-break buttons' titles with labels and new strings. Scenarios S042, S043, S045, S046 and S047 (S044 excluded: at about 4 tool calls per user step, as measured in the smoke check, its 136 steps need about 544 calls, above the 250-call limit; rule fixed before any run).</li>
+<li><b>B07</b> (MDL-87834) redesigns the inline search box in the navigation bar. Scenarios S027, S028, S029.</li>
+<li><b>B15</b> (MDL-85281) restyles the "Add block" buttons. Scenarios S091, S093, S094.</li>
 </ul>
+<p>The other 16 were rejected with recorded reasons: 13 do not build on the current runtime, and 3 have no scenario both approaches can run. 18 units is below the target of 20, so Moodle gives estimates only, without a verdict.</p>
 <p><b>Rule for adding changes, fixed before any run.</b> Take all 21 mined changes that broke at least one scenario, in history order. The mining query and its output are published. A change is eligible if both hold:</p>
 <ul>
 <li><b>It builds</b>: the commits just before and just after it build into a working Moodle site on the current runtime (PHP 8.3, Postgres 17, pinned images), and its scenarios' test setup runs.</li>
 <li><b>Both approaches can run it</b>: at least one touched scenario passes with the developers' step definitions on the commit before the change, and the setup can prepare its data so the agent receives only the steps a user performs.</li>
 </ul>
+<p><b>Steps no user can see.</b> Some Moodle developer steps name things only code can see, such as a CSS class or a field id. The coded run keeps the original text. The agent gets a plain-language rewording of only those steps, with the same number of steps and the same targeted step, written before any run and published with the scenarios. The paper says how many steps were reworded (rule added 27 Nov after the scenario review).</p>
 <p>Scenarios run with their text at each commit. Where the developers also edited a scenario's text in the change, the agents additionally run the old text on the commit after the change: no one updates an agent's scenarios either. B04, B07 and B15 go through the same rule as the rest. The 2021 changes do not meet it because they do not build on the current runtime. The rule uses no outcome of any agent. All eligible changes are included, and the rejected ones are listed with their reason. The target is at least 20 Moodle scenarios; if the eligible changes give fewer, the paper says so plainly.</p>
 <h3>Bugs</h3>
-<p>Every bug is a real bug. For each scenario, pre-task P7b applies a frozen rule:</p>
+<p>Every bug re-creates a real, published failure. For each scenario, pre-task P7b applied a frozen rule:</p>
 <ol>
 <li>Prefer a real fix from the app's history that can be reverted at the tested commit and breaks the behavior the scenario describes.</li>
 <li>Otherwise, re-create a specific real bug report (Moodle tracker or the app's GitHub issues) in the same kind of component, cited by its ID.</li>
 </ol>
+<p><b>Amendment, 27 Nov, before any bug was chosen.</b> The payment app is a small demo, and its history (139 commits, 188 issues) has no real bug that fits the scenarios. For the payment app, step 2 may therefore re-create a specific real bug report from another open-source web application's public tracker, with the same failure in the same kind of component (for example a save that does nothing, a wrong amount saved, or a link to the wrong page). It is cited by its ID and labelled re-created from a real report. Moodle bugs come from Moodle's own history and tracker first. <b>Second amendment, 27 Nov, before those bugs were chosen:</b> for the 8 Moodle units where Moodle's own tracker had no fitting report (the six search-banner units and two block units), the same rule applies as for the payment app, with a report from another well-known open-source web application's tracker. The other 11 Moodle bugs come from Moodle's tracker.</p>
 <p>The rule never looks at either approach. Each bug is confirmed by an <b>independent check</b> that reads the app's state or page directly, not through the step definitions or an agent. The check confirms the bug really happens and is visible at the scenario's targeted step. Bugs are written with a short symptom description before any run.</p>
 <p><b>Every bug is code in the harness.</b> Each bug is committed as its own folder, <code>bugs/&lt;bug-id&gt;/</code>, before any run:</p>
 <ul>
@@ -65,14 +75,14 @@
 <li><code>check.mjs</code>: the independent check that confirms the bug, without the step definitions or an agent.</li>
 <li><code>applies-to.json</code>: the app versions the patch applies to.</li>
 </ul>
-<p>The prebuilt images are built from these folders, and the bug's ID and source appear in each run's record and in the run grid. Results are reported separately for the two kinds of bug: reverted real fixes, and bugs re-created from a real bug report. Only the first kind is called a real bug in the paper.</p>
+<p>The prebuilt images are built from these folders, and the bug's ID and source appear in each run's record and in the run grid. <p><b>What the rule produced.</b> No revertible real fix fitted any scenario. All 38 bugs are therefore re-created from a real bug report: 10 from Moodle's own tracker and 28 from other open-source projects' trackers. Nine reports serve two or more bugs. The paper calls them <i>bugs re-created from real bug reports</i>, never "real bugs", and reports where each came from. Each bug is built so its failure shows at the step the scenario checks; whether a test catches it is what the study measures.</p>
 
 <h2>4. The approaches</h2>
 <ul>
-<li><b>Step definitions, up to date</b> (payment app). Made once, before any run (pre-task P5): Claude Opus 5.5 in Claude Code updates them after each change until every scenario passes on the version without bugs, with no check removed. Each result is committed in the harness, and runs check it out. Each update is done in 3 separate sessions; the first session that passes provides the code for the runs, fixed before the others are looked at. Claude Code's records give each session's tokens, minutes and dollars, so the spread of maintenance cost is visible. Opus is not one of the agents, so no model both maintains the tests and runs them.</li>
+<li><b>Step definitions, up to date</b> (payment app). Made once, before any run (pre-task P5): Claude Opus 5.5 in Claude Code updates them after each change until every scenario passes on the version without bugs. Locators may change and actions the new interface requires may be added; no check is removed or weakened, and every change the diff check flags is reviewed and recorded. Each result is committed in the harness, and runs check it out. Each update is done in 3 separate sessions; the first session that passes provides the code for the runs, fixed before the others are looked at. Claude Code's records give each session's tokens, minutes and dollars, so the spread of maintenance cost is visible. Opus is not one of the agents, so no model both maintains the tests and runs them.</li>
 <li><b>Step definitions, before the update</b> (payment app). The previous version's step definitions run on the changed version.</li>
 <li><b>Developers' step definitions, before and after the change</b> (Moodle). The before code comes from the commit before the change; the after code is the developers' own fix.</li>
-<li><b>Agents.</b> All in Codex CLI 0.169.0, with Playwright MCP 0.0.84 as the only tool, network limited to the app, and a limit of 5 minutes and 80 tool calls per run:
+<li><b>Agents.</b> All in Codex CLI 0.169.0, with Playwright MCP 0.0.84 as the only tool, network limited to the app, and a limit of 15 minutes and 250 tool calls per run:
  <ul>
  <li>GPT-6 Luna, lower tier, medium effort;</li>
  <li>GPT-5.6 Terra, lower tier, medium effort;</li>
@@ -171,11 +181,11 @@
 <tr><td>Payment</td><td>Step definitions, up to date</td><td>20 scenarios × 3 versions × 2 (with and without bug) × 3</td><td>360</td></tr>
 <tr><td>Payment</td><td>Step definitions, before update</td><td>20 × 2 changed versions × 2 × 3</td><td>240</td></tr>
 <tr><td>Payment</td><td>Each agent (3)</td><td>20 × 3 × 2 × 3</td><td>360 each, 1,080 in all</td></tr>
-<tr><td>Moodle, first 3 changes</td><td>Developers' step definitions, before the change</td><td>8 scenarios × 3 cells (before without bug, after without bug, after with bug) × 3</td><td>72</td></tr>
-<tr><td>Moodle, first 3 changes</td><td>Developers' step definitions, after the change</td><td>8 × 2 cells (after without and with bug) × 3</td><td>48</td></tr>
-<tr><td>Moodle, first 3 changes</td><td>Each agent (3)</td><td>7 scenarios (S025 cannot be prepared for agents) × 3 cells × 3</td><td>63 each, 189 in all</td></tr>
+<tr><td>Moodle, 5 changes</td><td>Developers' step definitions, before the change</td><td>18 units × 3 cells (before without bug, after without bug, after with bug) × 3</td><td>162</td></tr>
+<tr><td>Moodle, 5 changes</td><td>Developers' step definitions, after the change</td><td>18 × 2 cells (after without and with bug) × 3</td><td>108</td></tr>
+<tr><td>Moodle, 5 changes</td><td>Each agent (3)</td><td>18 × 3 cells × 3</td><td>162 each, 486 in all</td></tr>
 </table>
-<p>Moodle bug runs happen only after the change. The Moodle rows grow when the eligible changes are added, and by the old-text runs (pre-task P7c).</p>
+<p>Moodle bug runs happen only after the change. No chosen change edited its scenario text, so there are no old-text runs. In total: 2,436 runs, 1,566 of them agent runs.</p>
 
 <h2>12. What goes into the paper</h2>
 <ul>
@@ -196,6 +206,8 @@
  <li>Unclear steps can cause false failures.</li>
  <li>Agents may claim actions they did not take; the traces show the actions.</li>
  <li>A model updating code can weaken assertions; the diff check prevents this.</li>
+ <li>The bugs re-create published failures but are built by us, and each is built to show at the step its scenario checks. A test that checks that step is therefore well placed to catch it; tests that check other things are not.</li>
+ <li>In Moodle, the developers' step definitions run in a browser without JavaScript, as Moodle's Behat setup does, while the agents' browser runs JavaScript.</li>
  <li>Interface breakage has causes beyond locators.</li>
  <li>There are few apps and scenarios.</li>
  </ul></li>

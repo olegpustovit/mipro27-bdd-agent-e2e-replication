@@ -1,13 +1,4 @@
-# Pre-tasks for plan-1 (design locked 2026-11-27)
-
-Build everything under `bench/`. The plan text is `bench/plan/PLAN.html`, and the run items are `bench/plan/plan.json`. No measured run starts before P11.
-
-Rules for every task:
-- Follow the repository's AGENTS.md.
-- Keep every task's tests in the repo.
-- Never put a secret into a file, log or commit.
-- Do not run measured campaigns.
-- Tasks marked not for the fleet are done by the coordinator's own sessions.
+# Pre-tasks for plan-1 (frozen 2026-11-27)
 
 
 ## Infrastructure (all under `bench/` in the replication repository)
@@ -63,9 +54,9 @@ Deliverables:
 - tools/lock-check
 
 Accepted when:
-- [ ] make lock-check passes on a matching host
-- [ ] changing any pinned value or an image digest makes make lock-check fail with the differing field named
-- [ ] the runner refuses to start when lock-check fails (test)
+- [x] make lock-check passes on a matching host
+- [x] changing any pinned value or an image digest makes make lock-check fail with the differing field named
+- [x] the runner refuses to start when lock-check fails (test)
 
 ### P0. Credentials and alerts
 
@@ -80,10 +71,10 @@ Deliverables:
 - container mount config for ~/.codex/auth.json (read-only, agent containers only)
 
 Accepted when:
-- [ ] a codex exec call with a one-word prompt succeeds inside an agent container
-- [ ] the owner receives a Telegram test message (API returns ok=true)
-- [ ] secret-scan finds a planted fake token in a test fixture and finds nothing in a real smoke run's outputs
-- [ ] auth.json is not present in app or browser containers (test)
+- [x] a codex exec call with a one-word prompt succeeds inside an agent container
+- [x] the owner receives a Telegram test message (API returns ok=true)
+- [x] secret-scan finds a planted fake token in a test fixture and finds nothing in a real smoke run's outputs
+- [x] auth.json is not present in app or browser containers (test)
 
 ### P0b. Source the good-enough levels
 
@@ -97,8 +88,8 @@ Deliverables:
 - a Foundry fact with the sources
 
 Accepted when:
-- [ ] every cited figure has a source that was opened and a page or section pointer
-- [ ] the levels are written before the freeze (P11)
+- [x] every cited figure has a source that was opened and a page or section pointer
+- [x] the levels are written before the freeze (P11)
 
 ### P4c. Blind interface-change specs
 
@@ -112,9 +103,9 @@ Deliverables:
 - the session ID and the exact inputs it was given
 
 Accepted when:
-- [ ] each spec keeps the app's behavior the same and changes only the interface
-- [ ] change 2 builds on change 1
-- [ ] the specs are committed before P5 and P8 start (git history)
+- [x] each spec keeps the app's behavior the same and changes only the interface
+- [x] change 2 builds on change 1
+- [x] the specs are committed before P5 and P8 start (git history)
 
 ### P4. Fix our two known test mistakes
 
@@ -128,8 +119,8 @@ Deliverables:
 - runner support for non-leading Moodle data steps in setup
 
 Accepted when:
-- [ ] model-free calibration passes for both feed scenarios on v0 (healthy passes)
-- [ ] a Moodle scenario with a non-leading admin data step gets that step done by setup, and the agent prompt contains only user steps (test)
+- [x] model-free calibration passes for both feed scenarios on v0 (healthy passes)
+- [x] a Moodle scenario with a non-leading admin data step gets that step done by setup, and the agent prompt contains only user steps (test)
 
 ### P4d. Write 8 hold-out scenarios
 
@@ -144,25 +135,25 @@ Deliverables:
 - bench/plan/exploratory-log.md
 
 Accepted when:
-- [ ] 8 scenarios, each with Given/When/Then and a targeted check
-- [ ] no scenario overlaps the existing 12 in feature
-- [ ] the exploratory log lists each design change and the run records behind it
+- [x] 8 scenarios, each with Given/When/Then and a targeted check
+- [x] no scenario overlaps the existing 12 in feature
+- [x] the exploratory log lists each design change and the run records behind it
 
 ### P7b. Choose the real bugs
 
 - Built by: Codex fleet
 - Needs: nothing
 
-Freeze the bug-selection rule, then apply it per scenario: prefer a real fix from the app's history that can be reverted at the tested commit; otherwise re-create a specific real bug report (Moodle tracker or the app's GitHub issues), cited by ID. The rule never looks at either approach.
+Freeze the bug-selection rule, then apply it per scenario: prefer a real fix from the app's history that can be reverted at the tested commit; otherwise re-create a specific real bug report, cited by ID: for Moodle from its own tracker; for the payment app, whose own history has no fitting bug, from another open-source web application's public tracker with the same failure in the same kind of component (amendment of 27 Nov). The rule never looks at either approach.
 
 Deliverables:
 - bench/plan/bug-rule.md, committed before any bug is chosen
 - a candidate log per scenario: candidates considered, chosen, rejected with reason
 
 Accepted when:
-- [ ] every payment scenario (20) and every Moodle scenario has exactly one chosen bug with a source link
-- [ ] each bug is labelled reverted-fix or re-created-from-report
-- [ ] git history shows the rule committed before the first choice
+- [x] every payment scenario (20) and every Moodle scenario has exactly one chosen bug with a source link
+- [x] each bug is labelled reverted-fix or re-created-from-report
+- [x] git history shows the rule committed before the first choice
 
 ### P7c. Choose the Moodle changes
 
@@ -177,9 +168,9 @@ Deliverables:
 - the list of edited scenarios (they get old-text agent runs)
 
 Accepted when:
-- [ ] every one of the 21 changes has a recorded decision and reason
-- [ ] the rule uses no agent outcome
-- [ ] the Moodle scenario count is recorded against the target of 20
+- [x] every one of the 21 changes has a recorded decision and reason
+- [x] the rule uses no agent outcome
+- [x] the Moodle scenario count is recorded against the target of 20
 
 ### P3c. Codex agent adapter
 
@@ -193,10 +184,10 @@ Deliverables:
 - agent/parse: read status, failing step and reason from the required answer format
 
 Accepted when:
-- [ ] a run against a fixture app returns a parsed answer and token counts
-- [ ] hitting 5 minutes or 80 tool calls ends the run as unresolved with the cause
-- [ ] an answer without the required format is recorded as unresolved: no readable answer
-- [ ] parser unit tests cover every answer form, including step given by number or by text
+- [x] a run against a fixture app returns a parsed answer and token counts
+- [x] hitting 5 minutes or 80 tool calls ends the run as unresolved with the cause
+- [x] an answer without the required format is recorded as unresolved: no readable answer
+- [x] parser unit tests cover every answer form, including step given by number or by text
 
 ### P3. Run-item runner and immutable ledger
 
@@ -212,11 +203,11 @@ Deliverables:
 - stop rules wired to alerts: provider refusal, 2 invalid in a row, 3 slow runs in a row, failed gate, low memory or disk
 
 Accepted when:
-- [ ] running an item twice gives attempts 1 and 2; nothing is overwritten
-- [ ] verify-ledger passes on a real ledger and fails after any byte of an earlier record or trace is changed
-- [ ] an invalid attempt is quarantined and retried up to 3 times, then the item is reported missing
-- [ ] each stop condition, simulated, stops new launches and sends one Telegram message
-- [ ] the block order is reproducible from the seed
+- [x] running an item twice gives attempts 1 and 2; nothing is overwritten
+- [x] verify-ledger passes on a real ledger and fails after any byte of an earlier record or trace is changed
+- [x] an invalid attempt is quarantined and retried up to 3 times, then the item is reported missing
+- [x] each stop condition, simulated, stops new launches and sends one Telegram message
+- [x] the block order is reproducible from the seed
 
 ### P3b. Cell list and scoring code
 
@@ -232,10 +223,10 @@ Deliverables:
 - scoring/counts: prints every paper number with the ledger hash it read
 
 Accepted when:
-- [ ] all worked-example tests pass
-- [ ] Wilson intervals match a reference implementation on test values including 0 of n and n of n
-- [ ] counts on a synthetic ledger reproduce hand-computed values
-- [ ] missing or incomplete cells are excluded and listed, never silently dropped
+- [x] all worked-example tests pass
+- [x] Wilson intervals match a reference implementation on test values including 0 of n and n of n
+- [x] counts on a synthetic ledger reproduce hand-computed values
+- [x] missing or incomplete cells are excluded and listed, never silently dropped
 
 ### P6tool. Assertion diff check
 
@@ -248,8 +239,8 @@ Deliverables:
 - tools/diff-check
 
 Accepted when:
-- [ ] it flags a deleted expect, a loosened matcher and a removed step binding in test fixtures
-- [ ] it passes a pure locator rename
+- [x] it flags a deleted expect, a loosened matcher and a removed step binding in test fixtures
+- [x] it passes a pure locator rename
 
 ## Wave 2
 
@@ -265,9 +256,9 @@ Deliverables:
 - a mapping from each spec item to its code change
 
 Accepted when:
-- [ ] both patches apply cleanly in order to 0729f68
-- [ ] every spec item maps to a code change and no code change lacks a spec item
-- [ ] the app builds and starts for v0, v1 and v2
+- [x] both patches apply cleanly in order to 0729f68
+- [x] every spec item maps to a code change and no code change lacks a spec item
+- [x] the app builds and starts for v0, v1 and v2
 
 ### P4b. Review every scenario
 
@@ -280,8 +271,8 @@ Deliverables:
 - bench/plan/scenario-review.md with findings and their fixes
 
 Accepted when:
-- [ ] every finding is fixed or explained
-- [ ] no scenario has an open finding
+- [x] every finding is fixed or explained
+- [x] no scenario has an open finding
 
 ### P7d. Commit the bugs in the harness
 
@@ -294,9 +285,9 @@ Deliverables:
 - bugs/<bug-id>/patch.diff, source.md, symptom.md (what goes wrong, at which step), check.mjs, applies-to.json
 
 Accepted when:
-- [ ] each patch applies cleanly to every version in applies-to.json
-- [ ] symptom.md names the targeted scenario step
-- [ ] image builds read only these folders (P2a test)
+- [x] each patch applies cleanly to every version in applies-to.json
+- [x] symptom.md names the targeted scenario step
+- [x] image builds read only these folders (P2a test)
 
 ### P2a. Prebuild every container variant
 
@@ -311,9 +302,9 @@ Deliverables:
 - startup time per variant in bench/plan/startup.json
 
 Accepted when:
-- [ ] every variant in the plan has a pinned image
-- [ ] a fresh container of each variant is ready (health check passes) and its startup time is recorded
-- [ ] two containers of the same variant start with identical database state (checksum test)
+- [x] every variant in the plan has a pinned image
+- [x] a fresh container of each variant is ready (health check passes) and its startup time is recorded
+- [x] two containers of the same variant start with identical database state (checksum test)
 
 ### P2. Isolated parallel workers
 
@@ -327,9 +318,26 @@ Deliverables:
 - network policy: browser reaches only its app; agent reaches only the browser and OpenAI endpoints
 
 Accepted when:
-- [ ] N workers run side by side without sharing state (concurrent test writes in one worker never appear in another)
-- [ ] an agent container cannot reach the app's database or the internet beyond OpenAI (test)
-- [ ] no container survives its run
+- [x] N workers run side by side without sharing state (concurrent test writes in one worker never appear in another)
+- [x] an agent container cannot reach the app's database or the internet beyond OpenAI (test)
+- [x] no container survives its run
+
+### P3e. Coded runner adapter
+
+- Built by: Codex fleet
+- Needs: P3, P4, P4d
+
+Run one scenario with step definitions and record the result in the coded-run contract: Cucumber with bench/stepdefs/pay/<version>/ against a payment app variant, and Behat with the developers' step definitions against a Moodle commit. Added 27 Nov: no task owned this adapter.
+
+Deliverables:
+- bench/runner/coded-run --item <item.json> --out <dir> writing coded.json (status, failed_step, failed_step_text, message, minutes)
+- 1-based step numbering matching the agent adapter
+
+Accepted when:
+- [x] on payment v0 without bugs, every scenario reports pass
+- [x] a scenario with a forced failure reports the right failing step number and text
+- [x] a Moodle scenario runs through Behat at a given commit and reports pass or its failing step
+- [x] the runner (P3) invokes it in place of the stub
 
 ### P3d. Dashboard sync
 
@@ -343,8 +351,8 @@ Deliverables:
 - pre-task status writes to pretasks/<id>
 
 Accepted when:
-- [ ] after a smoke run, the dashboard squares show the right colors and the detail panel lists every attempt
-- [ ] sync is idempotent: running it twice changes nothing
+- [x] after a smoke run, the dashboard squares show the right colors and the detail panel lists every attempt
+- [x] sync is idempotent: running it twice changes nothing
 
 ### P8. Freeze the prompt
 
@@ -358,8 +366,8 @@ Deliverables:
 - the prompt sha256 in env.lock.json
 
 Accepted when:
-- [ ] no scored scenario appears in practice/ (check)
-- [ ] the hash in env.lock.json matches the files
+- [x] no scored scenario appears in practice/ (check)
+- [x] the hash in env.lock.json matches the files
 
 ## Wave 3
 
@@ -374,16 +382,17 @@ Deliverables:
 - check results per bug and version in bench/plan/bug-checks.jsonl
 
 Accepted when:
-- [ ] every bug passes on every version where it runs
-- [ ] every bug-free version passes the same check's correctness half
-- [ ] check.mjs imports nothing from stepdefs/ or agent/ (lint test)
+- [x] every bug passes on every version where it runs
+- [x] every bug-free version passes the same check's correctness half
+- [x] where a check is an absence (for example buttons no longer shown), it also confirms the underlying state (for example the request is rejected in the database), so an open dialog cannot make it pass
+- [x] check.mjs imports nothing from stepdefs/ or agent/ (lint test)
 
 ### P5. Update the payment step definitions
 
 - Built by: Claude Opus 5.5 in Claude Code (not the fleet)
 - Needs: P4c2, P4, P4d, P6tool
 
-Claude Opus 5.5 in Claude Code updates the step definitions v0 to v1, then v1 to v2, each in 3 separate sessions. The first session that passes provides the committed code, fixed before the others are looked at. Only locators and bindings may change.
+Claude Opus 5.5 in Claude Code updates the step definitions v0 to v1, then v1 to v2, each in 3 separate sessions. The first session that passes provides the committed code, fixed before the others are looked at. Locators may change, and actions the new interface requires (such as confirming an added dialog) may be added; no check may be removed or weakened. Every change diff-check flags is reviewed by the coordinator and recorded (rule clarified 27 Nov).
 
 Deliverables:
 - stepdefs/pay/v1 and v2, committed
@@ -391,9 +400,9 @@ Deliverables:
 - the diff-check report per update
 
 Accepted when:
-- [ ] all 20 scenarios pass on v1 and v2 without bugs
-- [ ] the diff check finds no removed or weakened assertion
-- [ ] all 3 sessions' costs are recorded, passing or not
+- [x] all 20 scenarios pass on v1 and v2 without bugs
+- [x] the diff check finds no removed or weakened assertion
+- [x] all 3 sessions' costs are recorded, passing or not
 
 ### P6. All-pass gate
 
@@ -406,8 +415,8 @@ Deliverables:
 - runner gate command and its records
 
 Accepted when:
-- [ ] the gate passes on every version
-- [ ] the runner refuses items on a version whose gate failed (test)
+- [x] the gate passes on every version
+- [x] the runner refuses items on a version whose gate failed (test)
 
 ## Wave 4
 
@@ -422,11 +431,11 @@ Deliverables:
 - make smoke and its report
 
 Accepted when:
-- [ ] N workers start in parallel and the worker count is set from measured memory and time
-- [ ] one item per approach and app runs end to end and appears in the ledger and on the dashboard
-- [ ] a deliberately bad Codex login stops the runner and sends the Telegram alert
-- [ ] secret-scan of all smoke outputs finds nothing
-- [ ] per-run times per approach are recorded for the slowness rule
+- [x] N workers start in parallel and the worker count is set from measured memory and time
+- [x] one item per approach and app runs end to end and appears in the ledger and on the dashboard
+- [x] a deliberately bad Codex login stops the runner and sends the Telegram alert
+- [x] secret-scan of all smoke outputs finds nothing
+- [x] per-run times per approach are recorded for the slowness rule
 
 ### P10. Cold review
 
@@ -439,7 +448,7 @@ Deliverables:
 - bench/plan/review.md
 
 Accepted when:
-- [ ] every substantive finding is fixed
+- [x] every substantive finding is fixed
 
 ## Wave 5
 
@@ -455,6 +464,6 @@ Deliverables:
 - a public release of the replication repository containing the plan, cell list, scoring code and bug folders
 
 Accepted when:
-- [ ] the release exists and its plan sha256 matches the runner's
-- [ ] the dashboard shows plan-1 as frozen
-- [ ] make run refuses a plan whose sha256 differs from the release
+- [x] the release exists and its plan sha256 matches the runner's
+- [x] the dashboard shows plan-1 as frozen
+- [x] make run refuses a plan whose sha256 differs from the release

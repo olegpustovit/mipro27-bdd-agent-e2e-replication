@@ -25,7 +25,8 @@ for (const item of plan.items) {
     commit = selected?.[phase];
     if (!commit || version !== `${change}-${phase}`) throw new Error(`Invalid Moodle version ${version}`);
     Object.assign(base, { change, phase, arm: phase === 'pre' ? 'sd-old' : 'sd-new' });
-    scenarios = selected.scenarios.filter(entry => ['eligible', 'coded-only'].includes(entry.decision));
+    // The gate covers every scenario the version's suite runs, including ones excluded later from the run grid (S044).
+    scenarios = selected.scenarios.filter(entry => ['eligible', 'coded-only', 'excluded-from-runs'].includes(entry.decision));
   } else {
     throw new Error(`Unknown gate version ${key(item)}`);
   }
