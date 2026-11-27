@@ -296,7 +296,7 @@ def slow_agent(root):
 
     def fake_docker(*args, timeout, check):
         assert args[0] == "exec" and milestones == ["started", "seeded"]
-        assert timeout == 330 and not check
+        assert timeout == worker.AGENT_LIMIT_SECONDS + worker.AGENT_HOST_MARGIN_SECONDS and not check
         with (root / "output" / "run.json").open("w") as output:
             json.dump({"scenario_sha256": hashlib.sha256(scenario).hexdigest(),
                        "prompt_sha256": hashlib.sha256(prompt).hexdigest()}, output)
@@ -312,7 +312,7 @@ def slow_agent(root):
     assert (raw / "trace.txt").read_text() == "partial agent trace"
     assert record["scenario_sha256"] == hashlib.sha256(scenario).hexdigest()
     assert record["prompt_sha256"] == hashlib.sha256(prompt).hexdigest()
-    print("PASS slow fake agent: 330s watchdog after seeding, trace retained, valid budget_time")
+    print("PASS slow fake agent: host watchdog (limit + margin) after seeding, trace retained, valid budget_time")
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ BENCH = Path(__file__).resolve().parents[1]
 ROOT = BENCH.parent
 DEFAULT_WORKERS = 8
 MIB = 1024 ** 2
-AGENT_LIMIT_SECONDS = 300  # bench/agent/session.mjs
+AGENT_LIMIT_SECONDS = 900  # bench/agent/session.mjs
 AGENT_HOST_MARGIN_SECONDS = 30
 INFRASTRUCTURE_TIMEOUT_SECONDS = 300
 

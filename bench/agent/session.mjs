@@ -3,8 +3,8 @@ import { parseAnswer, unresolved } from './answer.mjs';
 import { codexCommand, providerRefusal, redactDiagnostic, redactEvent } from './codex.mjs';
 import { openBrowser } from './browser.mjs';
 
-export const timeLimitMs = 5 * 60 * 1000;
-export const toolLimit = 80;
+export const timeLimitMs = 15 * 60 * 1000;
+export const toolLimit = 250;
 
 export async function runSession({
   prompt, steps, model, effort, app, url, trace, stderr = () => {},

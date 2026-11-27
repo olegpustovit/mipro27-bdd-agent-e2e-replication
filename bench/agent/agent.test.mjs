@@ -86,10 +86,10 @@ function harness({ raw = null } = {}) {
   return { dependencies, get browser() { return callbacks; } };
 }
 
-test('5-minute watchdog terminates Codex with budget_time', async () => {
+test('15-minute watchdog terminates Codex with budget_time', async () => {
   const { dependencies } = harness();
   dependencies.schedule = (callback, delay) => {
-    assert.equal(delay, 300000);
+    assert.equal(delay, 900000);
     assert.equal(delay, timeLimitMs);
     return setTimeout(callback, 20);
   };
@@ -99,12 +99,12 @@ test('5-minute watchdog terminates Codex with budget_time', async () => {
   assert.equal(answer.tool_calls, 0);
 });
 
-test('81st tool call terminates Codex with budget_tools', async () => {
+test('251st tool call terminates Codex with budget_tools', async () => {
   const fake = harness();
   const running = runSession(input, fake.dependencies);
   await setImmediate();
-  assert.equal(toolLimit, 80);
-  for (let index = 0; index < 80; index++) {
+  assert.equal(toolLimit, 250);
+  for (let index = 0; index < toolLimit; index++) {
     assert.equal(fake.browser.attemptTool('browser_snapshot', {}), true);
   }
   assert.equal(fake.browser.attemptTool('browser_snapshot', {}), false);
@@ -112,7 +112,7 @@ test('81st tool call terminates Codex with budget_tools', async () => {
   const answer = await running;
   assert.equal(answer.status, 'unresolved');
   assert.equal(answer.unresolved_cause, 'budget_tools');
-  assert.equal(answer.tool_calls, 80);
+  assert.equal(answer.tool_calls, toolLimit);
 });
 
 test('identical repeated actions and observations terminate Codex with loop', async () => {
