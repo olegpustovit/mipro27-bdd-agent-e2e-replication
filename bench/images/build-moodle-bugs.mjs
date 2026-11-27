@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { smokeMoodle } from './build-moodle.mjs';
 
 export async function buildMoodleBugs({ bench, context, git, command, docker, build, waitHealthy, record, lock, startup, requested }) {
@@ -13,7 +13,6 @@ export async function buildMoodleBugs({ bench, context, git, command, docker, bu
   if (bugs.length !== 19) throw new Error(`Expected 19 committed Moodle patches, got ${bugs.length}`);
   const selected = requested.length ? bugs.filter(([, id]) => requested.includes(id)) : bugs;
   if (requested.length && selected.length !== requested.length) throw new Error('Expected distinct committed Moodle bug IDs');
-  const cache = process.env.P2A_MOODLE_CACHE || join(bench, 'images/.work/moodle');
   const jobs = Number(process.env.P2A_BUILD_JOBS ?? '2');
   const subnet = process.env.P2A_MOODLE_SMOKE_SUBNET;
   if (!Number.isSafeInteger(jobs) || jobs < 1) throw new Error('P2A_BUILD_JOBS must be a positive integer');
@@ -52,9 +51,16 @@ export async function buildMoodleBugs({ bench, context, git, command, docker, bu
           file.startsWith('/') || file.split('/').includes('..'))) {
         throw new Error(`Unexpected patch paths for ${id}`);
       }
-      const repo = join(cache, 'src', commit.slice(0, 12));
-      const archive = git('-C', repo, 'archive', commit, '--', ...files);
-      command('tar', ['-x', '-C', overlay], { input: archive, stdio: ['pipe', 'inherit', 'inherit'] });
+      // Take the unpatched files from the locked healthy image, which holds this commit's code.
+      const source = await docker('create', app.digest);
+      try {
+        for (const file of files) {
+          mkdirSync(dirname(join(overlay, file)), { recursive: true });
+          await docker('cp', `${source}:/var/www/html/${file}`, join(overlay, file));
+        }
+      } finally {
+        await docker('rm', '-f', source);
+      }
       apply();
       if (files.some(file => !existsSync(join(overlay, file)))) {
         throw new Error(`Moodle image overlays require existing files for ${id}`);
