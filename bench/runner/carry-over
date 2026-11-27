@@ -1,0 +1,100 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# ///
+"""Start a new plan's ledger with valid agent runs from an earlier plan whose inputs are unchanged.
+
+A run carries over only when: it is a valid agent run; its item is in the new plan with the same
+fields; its image digests equal the images the new plan would start; its model, effort and tool
+versions equal the lock; and no agent input file changed between the commit it ran on and HEAD.
+Everything else is left for the runner. Raw attempt folders are copied; the hash chain is rebuilt.
+"""
+import argparse
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+BENCH = Path(__file__).resolve().parents[1]
+AGENT_INPUTS = ("bench/agent", "bench/prompt", "study/scenarios.feature", "study/ui-contract.mjs",
+                "bench/scenarios", "bench/runner/moodle", "bench/runner/worker.py", "bench/runner/run-item")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--bench", type=Path, default=BENCH)
+    parser.add_argument("--from-ledger", type=Path, required=True)
+    parser.add_argument("--to-ledger", type=Path, required=True)
+    args = parser.parse_args()
+    bench = args.bench.resolve()
+    repo = bench.parent
+    sys.path[:0] = [str(bench / "runner")]
+    from ledger import ZERO, canonical, digest
+    from worker import pins_for
+
+    plan_bytes = (bench / "plan/plan.json").read_bytes()
+    plan = json.loads(plan_bytes)
+    plan_sha = digest(plan_bytes)
+    lock = json.loads((bench / "env.lock.json").read_text())
+    items = {item["id"]: item for item in plan["items"]}
+    target = args.to_ledger / "attempts.jsonl"
+    if target.exists() and target.stat().st_size:
+        sys.exit("target ledger is not empty")
+    head = subprocess.check_output(["git", "-C", repo, "rev-parse", "HEAD"], text=True).strip()
+    changed_by_commit = {}
+    kept, skipped = [], {}
+    rows = [json.loads(line) for line in (args.from_ledger / "attempts.jsonl").read_text().splitlines()]
+    latest = {}
+    for row in rows:
+        latest[row["item_id"]] = row
+    for item_id, row in latest.items():
+        item = items.get(item_id)
+        reason = None
+        if not row["valid"]:
+            reason = "not valid"
+        elif not row["agent_answer"]:
+            reason = "coded run"
+        elif item is None:
+            reason = "not in plan"
+        else:
+            pins = lock["models"][item["arm"]]
+            tools = {key: lock[key] for key in ("node", "playwright", "playwrightMcp", "codexCli")}
+            if row["image_digests"] != pins_for(item, lock, True):
+                reason = "images changed"
+            elif (row["model"], row["effort"]) != (pins["id"], pins["effort"]):
+                reason = "model changed"
+            elif row["tool_versions"] != tools:
+                reason = "tools changed"
+            else:
+                commit = row["git_commit"]
+                if commit not in changed_by_commit:
+                    changed_by_commit[commit] = subprocess.check_output(
+                        ["git", "-C", repo, "diff", "--name-only", commit, head, "--", *AGENT_INPUTS], text=True).split()
+                if changed_by_commit[commit]:
+                    reason = "agent inputs changed: " + ", ".join(changed_by_commit[commit][:3])
+        if reason:
+            skipped[item_id] = reason
+        else:
+            kept.append(row)
+    kept.sort(key=lambda row: (row["finished_at"], row["item_id"]))
+    args.to_ledger.mkdir(parents=True, exist_ok=True)
+    (args.to_ledger / "raw").mkdir(exist_ok=True)
+    previous = ZERO
+    with target.open("wb") as out:
+        for number, row in enumerate(kept, 1):
+            source = args.from_ledger / "raw" / row["item_id"] / str(row["attempt"])
+            destination = args.to_ledger / "raw" / row["item_id"] / "1"
+            shutil.copytree(source, destination)
+            record = {key: value for key, value in row.items() if key != "record_sha256"}
+            record.update(plan_id=plan["planId"], plan_sha256=plan_sha, attempt=1,
+                          raw_dir=f"raw/{row['item_id']}/1", prev_record_sha256=previous)
+            record["record_sha256"] = previous = digest(canonical(record))
+            out.write(canonical(record) + b"\n")
+    print(f"carried {len(kept)}, left for the runner {len(skipped)}")
+    for item_id, reason in sorted(skipped.items()):
+        print("rerun", item_id, reason)
+
+
+if __name__ == "__main__":
+    main()
