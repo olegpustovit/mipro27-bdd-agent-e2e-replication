@@ -1,0 +1,100 @@
+# Real bug candidates
+
+Payment scope is the 12 tagged scenarios in `study/scenarios.feature` at the
+upstream baseline `0729f68ac220f7cda4ad09c5693dba11d7c532c6`. P4d supplies the
+hold-outs and P7c supplies the Moodle scenario and tested revision inventory.
+Each row records its selection status. Source review used upstream history and
+issues, scenario text, and baseline product code.
+
+## Payment
+
+Enumerate open and closed GitHub issues and scan case-insensitive product history
+across local refs with this command. Repeat with narrower patterns and
+`--path` values as needed. The search yielded 188 issues and 139 commit rows in
+the supplied clone. Candidates below are the workflow-related hits reviewed.
+
+```sh
+bench/plan/bug-candidates.py rwa ../rwa-0729f68 0729f68 'fix|bug|login|logout|bank|profile|settings|email|payment|request|transaction|like|comment|contacts|personal|feed' --path src --path backend
+```
+
+| Scenario | Selection | Candidates rejected and why |
+| --- | --- | --- |
+| auth-login | TODO | [#581][581] is a blank-field validation message after a background click. [#1106][1106] reports an unavailable backend following signup. [#986][986] concerns bypassing the UI sign-in. [f41733c][labels] changes accessible field labels, without establishing that the valid-credentials flow fails. |
+| auth-logout | TODO | [#1592][1592] documents a direct API response status. The browser auth machine enters the unauthorized state on either response outcome and clears its local auth state. [#998][998] concerns Cognito, which the scenario does not use. [#231][231] reports cookie cleanup between logins rather than the asserted same-page reload symptom. The inverses of [39d7adf][logout] and [bf8f402][cookie] do not apply at the baseline. |
+| profile-name | TODO | [#35][35] and [4881181][profile] introduce the settings workflow. Neither identifies a first-name save or reload defect. |
+| profile-email | TODO | [#35][35] and [4881181][profile] introduce settings. [#759][759] concerns user search, outside settings validation. |
+| bank-create | TODO | [b754e46][bankvalidation] changes the accepted account-number length from exactly nine to nine through twelve. The scenario uses nine. [#221][221] concerns a Cypress route stub. |
+| bank-delete | TODO | [#85][85] defines the bank-account UI. [bfaffd4][graphql] migrates it to GraphQL and does not document a soft-delete regression. |
+| transfer-pay | TODO | [#155][155] proposes input masking and gives no wrong-result example for a whole-dollar input. [17b7ab2][width] corrects list width. The inverse applies, but the documented clipping does not establish failure for this specific seeded row and desktop viewport. [#67][67] specifies the feature. |
+| transfer-request | TODO | [#34][34] defines accepting or rejecting existing payment requests. [ea3b57c][notification] addresses request notifications, which the scenario does not assert. [17b7ab2][width] has the same amount-visibility evidence gap as transfer-pay. |
+| social-like | TODO | [#403][403] reports a Firefox mobile test canceling the like request during immediate logout and failing a notification assertion. This scenario stays on the transaction and checks count and disabled state before reload. [#65][65] specifies the feature. |
+| social-comment | TODO | [#66][66] and [201441d][comment] introduce commenting and give no evidence of missing or duplicate comments on reload. |
+| feed-personal | TODO | [622f88e][dimensions] fixes invalid dimensions for the virtualized feed, but the inverse does not apply at the baseline, even with zero context. [#1555][1555] requests replacing the library and gives no matching feed failure. |
+| feed-friends | TODO | [622f88e][dimensions] and [#1555][1555] have the same limitations as feed-personal. |
+| Hold-out 01 | TODO (P4d) | Await scenario ID and text. |
+| Hold-out 02 | TODO (P4d) | Await scenario ID and text. |
+| Hold-out 03 | TODO (P4d) | Await scenario ID and text. |
+| Hold-out 04 | TODO (P4d) | Await scenario ID and text. |
+| Hold-out 05 | TODO (P4d) | Await scenario ID and text. |
+| Hold-out 06 | TODO (P4d) | Await scenario ID and text. |
+| Hold-out 07 | TODO (P4d) | Await scenario ID and text. |
+| Hold-out 08 | TODO (P4d) | Await scenario ID and text. |
+
+## Moodle
+
+The plan provides provisional IDs for three changes. The upstream history links
+confirm they concern completion controls, global search and block buttons.
+Eligibility and the tested revisions come from P7c. Re-run per eligible scenario
+using its own search terms and source paths.
+
+```sh
+bench/plan/bug-candidates.py moodle /path/to/moodle <tested-revision> 'MDL-[0-9]+.*(assign|grade)' --issue-query 'issuetype = Bug AND text ~ "gradebook"'
+```
+
+The [MDL-89461 tracker record][moodle-bug] and [its upstream fix][moodle-fix]
+were a source-discovery probe. The defect concerns assignment access when
+grading is disabled, so it was rejected for the provisional workflows.
+
+| Scenario | Selection | Candidate review |
+| --- | --- | --- |
+| S036 | TODO (P7c) | [MDL-87662][b04] relocates the completion button. No qualifying defect established. |
+| S037 | TODO (P7c) | [MDL-87662][b04] relocates the completion button. No qualifying defect established. |
+| S041 | TODO (P7c) | [MDL-87662][b04] relocates the completion button. No qualifying defect established. |
+| S025 | TODO (P7c) | [MDL-87834][b07] redesigns global search. No qualifying defect established. |
+| S028 | TODO (P7c) | [MDL-87834][b07] redesigns global search. No qualifying defect established. |
+| S029 | TODO (P7c) | [MDL-87834][b07] redesigns global search. No qualifying defect established. |
+| S091 | TODO (P7c) | [MDL-85281][b15] restyles block controls. No qualifying defect established. |
+| S094 | TODO (P7c) | [MDL-85281][b15] restyles block controls. No qualifying defect established. |
+| Remaining Moodle scenarios | TODO (P7c) | Await eligible scenario inventory and tested revisions. |
+[581]: https://github.com/cypress-io/cypress-realworld-app/issues/581
+[1106]: https://github.com/cypress-io/cypress-realworld-app/issues/1106
+[986]: https://github.com/cypress-io/cypress-realworld-app/issues/986
+[1592]: https://github.com/cypress-io/cypress-realworld-app/issues/1592
+[998]: https://github.com/cypress-io/cypress-realworld-app/issues/998
+[231]: https://github.com/cypress-io/cypress-realworld-app/issues/231
+[35]: https://github.com/cypress-io/cypress-realworld-app/issues/35
+[759]: https://github.com/cypress-io/cypress-realworld-app/issues/759
+[221]: https://github.com/cypress-io/cypress-realworld-app/issues/221
+[85]: https://github.com/cypress-io/cypress-realworld-app/issues/85
+[155]: https://github.com/cypress-io/cypress-realworld-app/issues/155
+[67]: https://github.com/cypress-io/cypress-realworld-app/issues/67
+[34]: https://github.com/cypress-io/cypress-realworld-app/issues/34
+[403]: https://github.com/cypress-io/cypress-realworld-app/issues/403
+[65]: https://github.com/cypress-io/cypress-realworld-app/issues/65
+[66]: https://github.com/cypress-io/cypress-realworld-app/issues/66
+[1555]: https://github.com/cypress-io/cypress-realworld-app/issues/1555
+[labels]: https://github.com/cypress-io/cypress-realworld-app/commit/f41733c9e33b5c67cefca063fda8632cdf0350c1
+[logout]: https://github.com/cypress-io/cypress-realworld-app/commit/39d7adfe433987716e1d36e38c2bd4a897e1e28e
+[cookie]: https://github.com/cypress-io/cypress-realworld-app/commit/bf8f402178aea6b8c66c401ad7f226289fcd1430
+[profile]: https://github.com/cypress-io/cypress-realworld-app/commit/488118184ab899ca72333991983c04f6df27daa2
+[bankvalidation]: https://github.com/cypress-io/cypress-realworld-app/commit/b754e46259f4207409f7ff9af0c3b618c7bcfdf5
+[graphql]: https://github.com/cypress-io/cypress-realworld-app/commit/bfaffd4f382c349df89347e811b0dcfcfbd70bb0
+[width]: https://github.com/cypress-io/cypress-realworld-app/commit/17b7ab2d5902f7874036a60e523b625b77be46c2
+[notification]: https://github.com/cypress-io/cypress-realworld-app/commit/ea3b57c1d43b8efdab9b313a7282890061a9120d
+[comment]: https://github.com/cypress-io/cypress-realworld-app/commit/201441dfbf47a69a319c9d2fbb169d291e9157a4
+[dimensions]: https://github.com/cypress-io/cypress-realworld-app/commit/622f88eaaf35d2d70da07fefc12df6601001e70e
+[b04]: https://github.com/moodle/moodle/commit/6200c31f94c9216f32902e263620f545250ad9ab
+[b07]: https://github.com/moodle/moodle/commit/9105de4c3336e35798be4bffb37d1a410bd8f8c2
+[b15]: https://github.com/moodle/moodle/commit/88dbf8a0d99c4798504eb226b4490d05c908ed8e
+[moodle-bug]: https://moodle.atlassian.net/browse/MDL-89461
+[moodle-fix]: https://github.com/moodle/moodle/commit/45ad958b854dff0575c952ac4bcee333adde2f1e
