@@ -90,6 +90,7 @@ await writeFile(output('run.json'), JSON.stringify({
   model, effort, prompt_sha256: sha256(prompt), scenario_sha256: sha256(scenario),
 }, null, 2) + '\n', { flag: 'wx' });
 for (const kind of ['codex', 'browser']) await writeFile(output(kind + '.jsonl'), '', { flag: 'wx' });
+await writeFile(output('codex.stderr'), '', { flag: 'wx' });
 
 if (item.app === 'pay') {
   const { setupPayment } = await import('../runner/coded/pay-setup.mjs');
@@ -98,6 +99,9 @@ if (item.app === 'pay') {
 const answer = await runSession({
   prompt, steps, model, effort, app: item.app, url: url.href,
   trace: (kind, event) => appendFileSync(output(kind + '.jsonl'), JSON.stringify(event) + '\n'),
+  stderr: line => appendFileSync(output('codex.stderr'), line + '\n'),
   onInfrastructureFailure: () => { process.exitCode = 1; },
+  onProviderRefusal: control =>
+    writeFile(output('control.json'), JSON.stringify(control, null, 2) + '\n', { flag: 'wx' }),
 });
 await writeFile(output('answer.json'), JSON.stringify(answer, null, 2) + '\n', { flag: 'wx' });

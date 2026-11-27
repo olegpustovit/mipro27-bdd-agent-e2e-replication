@@ -1,18 +1,22 @@
 import { createInterface } from 'node:readline';
 import { parseAnswer, unresolved } from './answer.mjs';
-import { codexCommand } from './codex.mjs';
+import { codexCommand, providerRefusal, redactDiagnostic, redactEvent } from './codex.mjs';
 import { openBrowser } from './browser.mjs';
 
 export const timeLimitMs = 5 * 60 * 1000;
 export const toolLimit = 80;
 
-export async function runSession({ prompt, steps, model, effort, app, url, trace, onInfrastructureFailure = () => {} }, {
+export async function runSession({
+  prompt, steps, model, effort, app, url, trace, stderr = () => {},
+  onInfrastructureFailure = () => {}, onProviderRefusal = () => {},
+}, {
   prepare = codexCommand, browserFactory = openBrowser, schedule = setTimeout,
 } = {}) {
   const started = performance.now();
   let raw = null;
   let cause = null;
   let infrastructureFailed = false;
+  let refusal;
   let child;
   let timer;
   let killTimer;
@@ -59,25 +63,41 @@ export async function runSession({ prompt, steps, model, effort, app, url, trace
       child.once('close', (code, signal) => resolve({ code, signal }));
     });
     timer = schedule(() => stop('budget_time'), timeLimitMs);
+    let stderrRefusal;
+    const drainStderr = async () => {
+      if (!child.stderr) return;
+      for await (const line of createInterface({ input: child.stderr })) {
+        const diagnostic = redactDiagnostic(line);
+        stderr(diagnostic);
+        stderrRefusal ??= providerRefusal(diagnostic);
+      }
+    };
+    // Drain both pipes while Codex runs so either stream can carry diagnostics.
+    let stderrError;
+    const stderrDrained = drainStderr().catch(error => { stderrError = error; });
     child.stdin.end(prompt);
     for await (const line of createInterface({ input: child.stdout })) {
       let event;
       try { event = JSON.parse(line); } catch { continue; }
+      if (typeof event?.type !== 'string') continue;
+      event = redactEvent(event);
       const item = event.item;
-      // Error payloads may carry provider diagnostics. Retain their event type.
+      trace('codex', event);
       if (event.type === 'error' || event.type === 'turn.failed') {
-        trace('codex', { type: event.type });
-      } else {
-        trace('codex', event);
+        refusal = providerRefusal(JSON.stringify(event)) ?? refusal;
       }
       if (event.type === 'item.completed' && item?.type === 'agent_message') raw = item.text;
-      if (event.type === 'turn.completed' && event.usage) {
-        tokens = { input: event.usage.input_tokens ?? 0, cached: event.usage.cached_input_tokens ?? 0,
+      if (event.type === 'turn.completed') {
+        refusal = undefined;
+        if (event.usage) tokens = { input: event.usage.input_tokens ?? 0, cached: event.usage.cached_input_tokens ?? 0,
           output: event.usage.output_tokens ?? 0 };
       }
     }
     const exit = await closed;
+    await stderrDrained;
+    if (stderrError) throw stderrError;
     trace('codex', { type: 'process.exit', ...exit });
+    if (!cause && exit.code !== 0) refusal ??= stderrRefusal;
     if (!cause && exit.code !== 0) infrastructureFailed = true;
   } catch {
     infrastructureFailed = true;
@@ -93,8 +113,10 @@ export async function runSession({ prompt, steps, model, effort, app, url, trace
       trace('codex', { type: 'browser.cleanup_failure' });
     }
   }
-  if (infrastructureFailed) onInfrastructureFailure();
-  const verdict = cause ? unresolved(raw, cause) : infrastructureFailed
+  if (refusal) await onProviderRefusal(refusal);
+  if (infrastructureFailed || refusal) onInfrastructureFailure();
+  const verdict = refusal ? { ...unresolved(null, 'no_readable_answer', refusal.reason), valid: false }
+    : cause ? unresolved(raw, cause) : infrastructureFailed
     ? unresolved(raw, 'no_readable_answer', 'Agent infrastructure failed') : parseAnswer(raw, steps);
   return { ...verdict, tokens, tool_calls: calls, minutes: (performance.now() - started) / 60000 };
 }
