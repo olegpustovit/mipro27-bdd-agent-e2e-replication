@@ -23,7 +23,7 @@ const docker = (...args) => command('docker', args, { encoding: 'utf8' }).trim()
 const git = (...args) => command('git', args);
 const run = promisify(execFile);
 const dockerAsync = async (...args) =>
-  (await run('docker', args, { encoding: 'utf8', timeout: 60_000 })).stdout.trim();
+  (await run('docker', args, { encoding: 'utf8', timeout: 60_000, maxBuffer: 64 * 1024 * 1024 })).stdout.trim();
 let engine;
 const atomicJSON = (path, value) => {
   const temp = `${path}.${process.pid}.tmp`;
@@ -92,8 +92,8 @@ async function smoke(pin, app) {
 
 async function main() {
   const selection = process.argv[2] ?? 'all';
-  if (process.argv.length > 3 || !['all', 'tools', 'pay', 'pay-healthy', 'moodle'].includes(selection)) {
-    throw new Error('Usage: build.mjs [all|tools|pay|pay-healthy|moodle]');
+  if ((selection !== 'moodle-bugs' && process.argv.length > 3) || !['all', 'tools', 'pay', 'pay-healthy', 'moodle', 'moodle-bugs'].includes(selection)) {
+    throw new Error('Usage: build.mjs [all|tools|pay|pay-healthy|moodle|moodle-bugs [bug-id ...]]');
   }
 
   const endpoint = !process.env.DOCKER_CONTEXT && process.env.DOCKER_HOST ||
@@ -144,6 +144,13 @@ async function main() {
       // Lowdb is embedded in the payment app container.
       save(name, pin, pin, {
         startupMs: first.startupMs, seedSha256: first.checksum, secondStartupMs: second.startupMs,
+      });
+    }
+
+    if (selection === 'moodle-bugs') {
+      const { buildMoodleBugs } = await import('./build-moodle-bugs.mjs');
+      return await buildMoodleBugs({
+        bench, context, git, command, docker: dockerAsync, build, waitHealthy, record: save, lock, startup, requested: process.argv.slice(3),
       });
     }
 
