@@ -1,0 +1,207 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# ///
+import argparse
+import json
+import os
+import subprocess
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+BENCH = Path(__file__).resolve().parents[1]
+RUN = BENCH / "runner/run-item"
+VERIFY = BENCH / "tools/verify-ledger"
+CODED = "pay.v0.auth-login.healthy.sd-cur.r1"
+AGENT = "pay.v0.auth-login.healthy.luna.r1"
+
+STUB = """#!/usr/bin/env -S uv run --no-project python
+import argparse
+import json
+import os
+import time
+from pathlib import Path
+
+assert "TELEGRAM_BOT_TOKEN" not in os.environ
+assert "TELEGRAM_CHAT_ID" not in os.environ
+parser = argparse.ArgumentParser()
+parser.add_argument("--item", type=Path, required=True)
+parser.add_argument("--out", type=Path, required=True)
+args = parser.parse_args()
+item = json.loads(args.item.read_bytes())
+mode = os.getenv("P3_TEST_MODE")
+if mode == "parallel":
+    time.sleep(0.3)
+(args.out / "trace.txt").write_text("fixture trace")
+if mode == "invalid":
+    raise SystemExit(1)
+if mode == "parallel-provider":
+    ready = args.out.parents[2] / "second-ready"
+    if item["condition"] == "healthy":
+        deadline = time.monotonic() + 5
+        while not ready.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert ready.exists()
+        mode = "provider"
+    else:
+        ready.touch()
+        time.sleep(0.5)
+if mode == "provider" and item["arm"] == "luna":
+    (args.out / "control.json").write_text(json.dumps({"stop": "provider refusal"}))
+    raise SystemExit(1)
+answer = {"status": "pass", "failed_step": None, "failed_step_text": None,
+          "minutes": 1.5 if mode == "slow" else 0.1}
+if item["arm"].startswith("sd-"):
+    answer["message"] = ""
+    result = "coded.json"
+else:
+    answer.update(reason="", raw="pass", unresolved_cause=None,
+                  tokens={"input": 10, "cached": 0, "output": 5}, tool_calls=1)
+    result = "answer.json"
+(args.out / result).write_text(json.dumps(answer))
+"""
+
+
+def run(command, expected=0, env=None):
+    result = subprocess.run(list(map(str, command)), capture_output=True, text=True, env=env)
+    assert result.returncode == expected, (command, result.returncode, result.stdout, result.stderr)
+    return result.stdout + result.stderr
+
+
+def records(directory):
+    return [json.loads(line) for line in (directory / "attempts.jsonl").read_text().splitlines()]
+
+
+def suite(root, telegram):
+    stub = root / "adapter"
+    stub.write_text(STUB)
+    stub.chmod(0o755)
+    smoke = root / "smoke.json"
+    smoke.write_text('{"sd-cur":0.5}')
+    success = "/usr/bin/true"
+    failure = "/usr/bin/false"
+
+    def invoke(case, *selection, mode="", gate=success, lock=success, expected=0, live=False, extra=()):
+        ledger = root / case
+        sink = root / f"{case}.alerts"
+        flags = [] if live else ["--alert-sink", sink]
+        return run([RUN, "--ledger-dir", ledger, "--agent-run", stub, "--coded-run", stub,
+                    "--gate-check", gate, "--lock-check", lock, "--seed", "14",
+                    "--min-disk-bytes", "0", "--min-memory-bytes", "0",
+                    *flags, *selection, *extra], expected,
+                   dict(os.environ, P3_TEST_MODE=mode, TELEGRAM_BOT_TOKEN="fixture-token",
+                        TELEGRAM_CHAT_ID="fixture-chat"))
+
+    def alert_count(case, count, reason):
+        alerts = [json.loads(line)["text"] for line in (root / f"{case}.alerts").read_text().splitlines()]
+        assert len(alerts) == count and all(reason in message for message in alerts)
+
+    ledger = root / "ledger"
+    invoke("ledger", "--item", CODED)
+    first = records(ledger)[0]
+    invoke("ledger", "--item", CODED)
+    invoke("ledger", "--item", AGENT)
+    assert records(ledger)[0] == first
+    assert [record["attempt"] for record in records(ledger)] == [1, 2, 1]
+    trace = ledger / first["raw_dir"] / "trace.txt"
+    assert trace.read_text() == "fixture trace"
+    print("PASS repeat: coded attempts 1 and 2 preserved; agent attempt 1 recorded")
+    print("PASS intact:", run([VERIFY, "--ledger-dir", ledger]).strip())
+
+    def mutate(path, original, changed, reason):
+        path.write_bytes(changed)
+        assert reason in run([VERIFY, "--ledger-dir", ledger], 1)
+        path.write_bytes(original)
+
+    ledger_file = ledger / "attempts.jsonl"
+    data = ledger_file.read_bytes()
+    mutate(ledger_file, data, data.replace(b'"worker":1', b'"worker":9', 1), "record hash")
+    first_line, rest = data.split(b"\n", 1)
+    mutate(ledger_file, data, first_line + b" \n" + rest, "not canonical")
+    mutate(ledger_file, data, data[:data.rfind(b"\n", 0, -1) + 1], "inventory differs")
+    mutate(trace, b"fixture trace", b"Fixture trace", "raw artifact hash")
+    added = trace.with_name("added.txt")
+    added.touch()
+    assert "raw artifact hash" in run([VERIFY, "--ledger-dir", ledger], 1)
+    added.unlink()
+    run([VERIFY, "--ledger-dir", ledger])
+    print("PASS tampering: record content, record whitespace, truncated suffix, trace byte, and added file detected")
+
+    for _ in range(2):
+        output = invoke("invalid", "--item", CODED, mode="invalid", expected=2)
+        assert "two consecutive invalid attempts" in output
+    alert_count("invalid", 2, "two consecutive invalid attempts")
+    output = invoke("invalid", "--item", CODED, mode="invalid", expected=3)
+    assert f"missing {CODED}" in output
+    attempts = records(root / "invalid")
+    assert [row["attempt"] for row in attempts] == [1, 2, 3, 4]
+    assert all(row["quarantined"] and not row["valid"] for row in attempts)
+    assert all((root / "invalid" / row["raw_dir"] / "trace.txt").exists() for row in attempts)
+    run([VERIFY, "--ledger-dir", root / "invalid"])
+    print("PASS invalid stop/retry: two stops, one alert each, four quarantined attempts, then missing")
+
+    selection = ("--filter", "app=pay", "--filter", "version=v0", "--filter", "arm=sd-cur")
+    output = invoke("slow", *selection, mode="slow", expected=2, extra=("--smoke-times", smoke))
+    assert len(records(root / "slow")) == 3 and output.count("launch ") == 3
+    alert_count("slow", 1, "three consecutive slow runs")
+    print("PASS slow stop: three launches and one alert")
+
+    for case, reason, kwargs in [
+        ("provider", "provider refusal", {"mode": "provider"}),
+        ("gate", "failed gate", {"gate": failure}),
+        ("lock", "failed gate", {"lock": failure}),
+        ("memory", "low memory", {"extra": ("--min-memory-bytes", str(2**63))}),
+        ("disk", "low disk", {"extra": ("--min-disk-bytes", str(2**63))}),
+    ]:
+        output = invoke(case, "--filter", "arm=luna", expected=2, **kwargs)
+        expected_launches = int(case == "provider")
+        assert output.count("launch ") == len(records(root / case)) == expected_launches
+        alert_count(case, 1, reason)
+        print(f"PASS {case} stop: {expected_launches} launches and one alert")
+
+    parallel_selection = ("--filter", "app=pay", "--filter", "version=v0", "--filter", "rep=1",
+                          "--filter", "scenario=auth-login", "--filter", "arm=sd-cur")
+    invoke("parallel", *parallel_selection, mode="parallel", extra=("--workers", "2"))
+    first, second = records(root / "parallel")
+    assert first["worker"] != second["worker"] and second["started_at"] < first["finished_at"]
+    invoke("parallel", *parallel_selection, extra=("--resume",))
+    assert len(records(root / "parallel")) == 2
+    print("PASS two workers overlap; resume skips recorded valid items")
+
+    provider_selection = ("--filter", "app=pay", "--filter", "version=v0",
+                          "--filter", "scenario=auth-login", "--filter", "arm=luna")
+    output = invoke("parallel-provider", *provider_selection, mode="parallel-provider",
+                    expected=2, extra=("--workers", "2"))
+    stopped = records(root / "parallel-provider")
+    assert len(stopped) == output.count("launch ") == 2
+    assert [row["valid"] for row in stopped] == [False, True]
+    alert_count("parallel-provider", 1, "provider refusal")
+    print("PASS parallel stop: one alert, active worker completed, four items stayed queued")
+
+    order = [RUN, "--list-order", *selection]
+    first = run([*order, "--seed", 14])
+    assert first == run([*order, "--seed", 14])
+    different = run([*order, "--seed", 41])
+    assert first.splitlines()[1:] != different.splitlines()[1:]
+    assert sorted(first.splitlines()[1:]) == sorted(different.splitlines()[1:])
+    print("PASS seed: identical ordered IDs for seed 14; seed 41 changes order")
+
+    if telegram:
+        fixture_id = "P3-Telegram-test-simulated-provider-refusal"
+        fixture_plan = root / "telegram-plan.json"
+        plan = json.loads((BENCH / "plan/plan.json").read_bytes())
+        item = next(item for item in plan["items"] if item["id"] == AGENT)
+        plan["items"] = [dict(item, id=fixture_id)]
+        fixture_plan.write_text(json.dumps(plan))
+        output = invoke("live", "--item", fixture_id, mode="provider", expected=2,
+                        live=True, extra=("--plan", fixture_plan))
+        assert "provider refusal" in output and "Alert delivery failed" not in output, output
+        print("PASS live Telegram: one simulated provider stop returned Bot API ok=true")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--telegram", action="store_true", help="send exactly one live test alert")
+    options = parser.parse_args()
+    with TemporaryDirectory(prefix="p3-test-") as directory:
+        suite(Path(directory), options.telegram)

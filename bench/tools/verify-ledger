@@ -1,0 +1,27 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# ///
+import argparse
+import sys
+from pathlib import Path
+
+BENCH = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(BENCH / "runner"))
+from ledger import Ledger, locked
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Verify the attempt chain and all recorded raw artifacts.")
+    parser.add_argument("--ledger-dir", type=Path, default=BENCH / "ledger")
+    args = parser.parse_args()
+    try:
+        with locked(args.ledger_dir):
+            ledger = Ledger(args.ledger_dir)
+            print(f"verified {ledger.count} attempts, head {ledger.head}")
+    except (ValueError, OSError) as error:
+        parser.exit(1, f"verification failed: {error}\n")
+
+
+if __name__ == "__main__":
+    main()
