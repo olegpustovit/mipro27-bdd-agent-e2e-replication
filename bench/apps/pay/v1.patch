@@ -1,0 +1,475 @@
+diff --git a/src/components/BankAccountItem.tsx b/src/components/BankAccountItem.tsx
+index 98812c3..97fc15a 100644
+--- a/src/components/BankAccountItem.tsx
++++ b/src/components/BankAccountItem.tsx
+@@ -1,6 +1,16 @@
+-import React from "react";
++import React, { useState } from "react";
+ 
+-import { Grid, Typography, Button, ListItem } from "@mui/material";
++import {
++  Grid,
++  Typography,
++  Button,
++  Dialog,
++  DialogActions,
++  DialogContent,
++  DialogContentText,
++  DialogTitle,
++  ListItem,
++} from "@mui/material";
+ import { BankAccount } from "../models";
+ 
+ export interface BankAccountListItemProps {
+@@ -12,6 +22,8 @@ const BankAccountListItem: React.FC<BankAccountListItemProps> = ({
+   bankAccount,
+   deleteBankAccount,
+ }) => {
++  const [deleteOpen, setDeleteOpen] = useState(false);
++
+   return (
+     <ListItem data-test={`bankaccount-list-item-${bankAccount.id}`}>
+       <Grid container direction="row" justifyContent="space-between" alignItems="flex-start">
+@@ -27,15 +39,40 @@ const BankAccountListItem: React.FC<BankAccountListItemProps> = ({
+               color="secondary"
+               size="large"
+               data-test="bankaccount-delete"
+-              onClick={() => {
+-                deleteBankAccount({ id: bankAccount.id });
+-              }}
++              onClick={() => setDeleteOpen(true)}
+             >
+               Delete
+             </Button>
+           </Grid>
+         )}
+       </Grid>
++      <Dialog
++        open={deleteOpen}
++        onClose={() => setDeleteOpen(false)}
++        data-test="bankaccount-delete-dialog"
++      >
++        <DialogTitle>Delete this bank account?</DialogTitle>
++        <DialogContent>
++          <DialogContentText>
++            {bankAccount.bankName} will no longer be available for transfers.
++          </DialogContentText>
++        </DialogContent>
++        <DialogActions>
++          <Button data-test="bankaccount-delete-cancel" onClick={() => setDeleteOpen(false)}>
++            Cancel
++          </Button>
++          <Button
++            data-test="bankaccount-delete-confirm"
++            color="secondary"
++            onClick={() => {
++              deleteBankAccount({ id: bankAccount.id });
++              setDeleteOpen(false);
++            }}
++          >
++            Delete
++          </Button>
++        </DialogActions>
++      </Dialog>
+     </ListItem>
+   );
+ };
+diff --git a/src/components/NavBar.tsx b/src/components/NavBar.tsx
+index dff0a5e..ef19ddc 100644
+--- a/src/components/NavBar.tsx
++++ b/src/components/NavBar.tsx
+@@ -11,6 +11,7 @@ import {
+ import { useActor } from "@xstate/react";
+ import {
+   AppBar,
++  Box,
+   Toolbar,
+   Typography,
+   IconButton,
+@@ -160,31 +161,33 @@ const NavBar: React.FC<NavBarProps> = ({ drawerOpen, toggleDrawer, notifications
+             )}
+           </Link>
+         </Typography>
+-        <Button
+-          className={classes.newTransactionButton}
+-          variant="contained"
+-          color="inherit"
+-          component={RouterLink}
+-          to="/transaction/new"
+-          data-test="nav-top-new-transaction"
+-        >
+-          <AttachMoneyIcon /> New
+-        </Button>
+-        <IconButton
+-          color="inherit"
+-          component={RouterLink}
+-          to="/notifications"
+-          data-test="nav-top-notifications-link"
+-          size="large"
+-        >
+-          <Badge
+-            badgeContent={allNotifications ? allNotifications.length : undefined}
+-            data-test="nav-top-notifications-count"
+-            classes={{ badge: classes.customBadge }}
++        <Box className="NavBar-actions" display="flex" gap={1}>
++          <IconButton
++            color="inherit"
++            component={RouterLink}
++            to="/notifications"
++            data-test="nav-top-notifications-link"
++            size="large"
+           >
+-            <NotificationsIcon />
+-          </Badge>
+-        </IconButton>
++            <Badge
++              badgeContent={allNotifications ? allNotifications.length : undefined}
++              data-test="nav-top-notifications-count"
++              classes={{ badge: classes.customBadge }}
++            >
++              <NotificationsIcon />
++            </Badge>
++          </IconButton>
++          <Button
++            className={classes.newTransactionButton}
++            variant="contained"
++            color="inherit"
++            component={RouterLink}
++            to="/transaction/new"
++            data-test="nav-top-new-transaction"
++          >
++            <AttachMoneyIcon /> New
++          </Button>
++        </Box>
+       </Toolbar>
+       {(match.pathname === "/" || RegExp("/(?:public|contacts|personal)").test(match.pathname)) && (
+         <TransactionNavTabs />
+diff --git a/src/components/NavDrawer.tsx b/src/components/NavDrawer.tsx
+index f4e359c..0cfc5c7 100644
+--- a/src/components/NavDrawer.tsx
++++ b/src/components/NavDrawer.tsx
+@@ -141,7 +141,7 @@ export const mainListItems = (
+       <ListItemIcon>
+         <PersonIcon />
+       </ListItemIcon>
+-      <ListItemText primary="My Account" />
++      <ListItemText primary="Account settings" />
+     </ListItem>
+     <ListItem
+       button
+@@ -178,7 +178,7 @@ export const secondaryListItems = (signOutPending: Function) => (
+       <ListItemIcon>
+         <LogoutIcon />
+       </ListItemIcon>
+-      <ListItemText primary="Logout" />
++      <ListItemText primary="Sign out" />
+     </ListItem>
+   </div>
+ );
+diff --git a/src/components/SignInForm.tsx b/src/components/SignInForm.tsx
+index 95a99f4..0bb0c52 100644
+--- a/src/components/SignInForm.tsx
++++ b/src/components/SignInForm.tsx
+@@ -116,7 +116,7 @@ const SignInForm: React.FC<Props> = ({ authService }) => {
+                     label="Username"
+                     type="text"
+                     autoFocus
+-                    data-test="signin-username"
++                    data-test="login-username"
+                     error={(touched || value !== initialValue) && Boolean(error)}
+                     helperText={touched || value !== initialValue ? error : ""}
+                     {...field}
+@@ -132,7 +132,7 @@ const SignInForm: React.FC<Props> = ({ authService }) => {
+                     label="Password"
+                     type="password"
+                     id="password"
+-                    data-test="signin-password"
++                    data-test="login-password"
+                     error={touched && value !== initialValue && Boolean(error)}
+                     helperText={touched && value !== initialValue && touched ? error : ""}
+                     {...field}
+@@ -158,7 +158,7 @@ const SignInForm: React.FC<Props> = ({ authService }) => {
+                 data-test="signin-submit"
+                 disabled={!isValid || isSubmitting}
+               >
+-                Sign In
++                Log In
+               </Button>
+               <Grid container>
+                 <Grid item xs>
+diff --git a/src/components/TransactionCreateStepTwo.tsx b/src/components/TransactionCreateStepTwo.tsx
+index 65e44c5..8f14407 100644
+--- a/src/components/TransactionCreateStepTwo.tsx
++++ b/src/components/TransactionCreateStepTwo.tsx
+@@ -1,9 +1,19 @@
+-import React, { useState } from "react";
++import React, { useRef, useState } from "react";
+ import { styled } from "@mui/material/styles";
+ import NumberFormat from "react-number-format";
+ import { Formik, Form, Field, FieldProps } from "formik";
+ import { string, object, number } from "yup";
+-import { Paper, Typography, Button, Grid, Container, Avatar, Box, TextField } from "@mui/material";
++import {
++  Paper,
++  Typography,
++  Button,
++  ButtonGroup,
++  Grid,
++  Container,
++  Avatar,
++  Box,
++  TextField,
++} from "@mui/material";
+ import { User } from "../models";
+ 
+ const PREFIX = "TransactionCreateStepTwo";
+@@ -86,6 +96,7 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+   showSnackbar,
+ }) => {
+   const [transactionType, setTransactionType] = useState<string>();
++  const requestButton = useRef<HTMLButtonElement>(null);
+   const initialValues: FormValues = {
+     amount: "",
+     description: "",
+@@ -127,7 +138,21 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+           }}
+         >
+           {({ isValid, isSubmitting }) => (
+-            <Form className={classes.form} data-test="transaction-create-form">
++            <Form
++              className={classes.form}
++              data-test="transaction-create-form"
++              onKeyDown={(event) => {
++                if (
++                  event.key === "Enter" &&
++                  !event.nativeEvent.isComposing &&
++                  event.target instanceof HTMLInputElement &&
++                  event.target.type === "text"
++                ) {
++                  event.preventDefault();
++                  requestButton.current?.click();
++                }
++              }}
++            >
+               <Field name="amount">
+                 {({ field, meta: { error, value, initialValue, touched } }: FieldProps) => (
+                   <TextField
+@@ -138,7 +163,7 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+                     autoFocus
+                     id={"transaction-create-amount-input"}
+                     type="text"
+-                    placeholder="Amount"
++                    placeholder="Amount ($)"
+                     data-test={"transaction-create-amount-input"}
+                     error={(touched || value !== initialValue) && Boolean(error)}
+                     helperText={touched || value !== initialValue ? error : ""}
+@@ -159,7 +184,7 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+                     required
+                     id={"transaction-create-description-input"}
+                     type="text"
+-                    placeholder="Add a note"
++                    placeholder="What's it for?"
+                     data-test={"transaction-create-description-input"}
+                     error={(touched || value !== initialValue) && Boolean(error)}
+                     helperText={touched || value !== initialValue ? error : ""}
+@@ -167,42 +192,35 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
+                   />
+                 )}
+               </Field>
+-              <Grid
+-                container
+-                spacing={2}
+-                direction="row"
+-                justifyContent="center"
+-                alignItems="center"
+-              >
+-                <Grid item>
++              <Box data-test="transaction-create-actions">
++                <ButtonGroup variant="contained" fullWidth>
+                   <Button
+                     type="submit"
+                     fullWidth
+                     variant="contained"
+                     color="primary"
+                     className={classes.submit}
+-                    data-test="transaction-create-submit-request"
++                    data-test="transaction-create-pay-button"
+                     disabled={!isValid || isSubmitting}
+-                    onClick={() => setTransactionType("request")}
++                    onClick={() => setTransactionType("payment")}
+                   >
+-                    Request
++                    Pay
+                   </Button>
+-                </Grid>
+-                <Grid item>
+                   <Button
+                     type="submit"
+                     fullWidth
+                     variant="contained"
+                     color="primary"
+                     className={classes.submit}
+-                    data-test="transaction-create-submit-payment"
++                    data-test="transaction-create-request-button"
++                    ref={requestButton}
+                     disabled={!isValid || isSubmitting}
+-                    onClick={() => setTransactionType("payment")}
++                    onClick={() => setTransactionType("request")}
+                   >
+-                    Pay
++                    Request
+                   </Button>
+-                </Grid>
+-              </Grid>
++                </ButtonGroup>
++              </Box>
+             </Form>
+           )}
+         </Formik>
+diff --git a/src/components/TransactionDetail.tsx b/src/components/TransactionDetail.tsx
+index 44d9544..c5a4e20 100644
+--- a/src/components/TransactionDetail.tsx
++++ b/src/components/TransactionDetail.tsx
+@@ -1,7 +1,14 @@
+-import React from "react";
++import React, { useState } from "react";
+ import { styled } from "@mui/material/styles";
+ import { Button, Typography, Grid, Avatar, Paper, IconButton } from "@mui/material";
+-import { AvatarGroup } from "@mui/material";
++import {
++  AvatarGroup,
++  Dialog,
++  DialogActions,
++  DialogContent,
++  DialogContentText,
++  DialogTitle,
++} from "@mui/material";
+ import { ThumbUpAltOutlined as LikeIcon, CommentRounded as CommentIcon } from "@mui/icons-material";
+ import { TransactionResponseItem, TransactionRequestStatus, User } from "../models";
+ import CommentForm from "./CommentForm";
+@@ -9,6 +16,7 @@ import {
+   isPendingRequestTransaction,
+   receiverIsCurrentUser,
+   currentUserLikesTransaction,
++  formatAmount,
+ } from "../utils/transactionUtils";
+ import CommentsList from "./CommentList";
+ import TransactionTitle from "./TransactionTitle";
+@@ -106,6 +114,7 @@ const TransactionDetail: React.FC<TransactionProps> = ({
+   transactionUpdate,
+   currentUser,
+ }) => {
++  const [rejectOpen, setRejectOpen] = useState(false);
+   return (
+     <StyledPaper className={classes.paper}>
+       <Typography
+@@ -207,12 +216,7 @@ const TransactionDetail: React.FC<TransactionProps> = ({
+                       variant="contained"
+                       className={classes.redButton}
+                       size="small"
+-                      onClick={() =>
+-                        transactionUpdate({
+-                          id: transaction.id,
+-                          requestStatus: TransactionRequestStatus.rejected,
+-                        })
+-                      }
++                      onClick={() => setRejectOpen(true)}
+                       data-test={`transaction-reject-request-${transaction.id}`}
+                     >
+                       Reject Request
+@@ -229,6 +233,36 @@ const TransactionDetail: React.FC<TransactionProps> = ({
+           </Grid>
+         </Grid>
+       </Grid>
++      <Dialog
++        open={rejectOpen}
++        onClose={() => setRejectOpen(false)}
++        data-test="transaction-reject-dialog"
++      >
++        <DialogTitle>Reject this request?</DialogTitle>
++        <DialogContent>
++          <DialogContentText>
++            {transaction.senderName} requested {formatAmount(transaction.amount)} for "
++            {transaction.description}".
++          </DialogContentText>
++        </DialogContent>
++        <DialogActions>
++          <Button data-test="transaction-reject-cancel" onClick={() => setRejectOpen(false)}>
++            Cancel
++          </Button>
++          <Button
++            data-test="transaction-reject-confirm"
++            onClick={() => {
++              transactionUpdate({
++                id: transaction.id,
++                requestStatus: TransactionRequestStatus.rejected,
++              });
++              setRejectOpen(false);
++            }}
++          >
++            Reject
++          </Button>
++        </DialogActions>
++      </Dialog>
+       {transaction.comments.length > 0 && (
+         <Paper className={classes.paperComments}>
+           <Typography component="h2" variant="h6" color="primary" gutterBottom>
+diff --git a/src/containers/BankAccountsContainer.tsx b/src/containers/BankAccountsContainer.tsx
+index 6c20d6d..59d57d6 100644
+--- a/src/containers/BankAccountsContainer.tsx
++++ b/src/containers/BankAccountsContainer.tsx
+@@ -9,7 +9,7 @@ import {
+   TypegenDisabled,
+ } from "xstate";
+ import { Link as RouterLink, useRouteMatch } from "react-router-dom";
+-import { Grid, Button, Paper, Typography } from "@mui/material";
++import { Box, Button, Paper, Typography } from "@mui/material";
+ 
+ import { AuthMachineContext, AuthMachineEvents, AuthMachineSchema } from "../machines/authMachine";
+ import { DataContext, DataEvents, DataSchema } from "../machines/dataMachine";
+@@ -74,29 +74,26 @@ const BankAccountsContainer: React.FC<Props> = ({ authService, bankAccountsServi
+ 
+   return (
+     <StyledPaper className={classes.paper}>
+-      <Grid container direction="row" justifyContent="space-between" alignItems="center">
+-        <Grid item>
+-          <Typography component="h2" variant="h6" color="primary" gutterBottom>
+-            Bank Accounts
+-          </Typography>
+-        </Grid>
+-        <Grid item>
+-          <Button
+-            variant="contained"
+-            color="primary"
+-            size="large"
+-            component={RouterLink}
+-            to="/bankaccounts/new"
+-            data-test="bankaccount-new"
+-          >
+-            Create
+-          </Button>
+-        </Grid>
+-      </Grid>
++      <Typography component="h2" variant="h6" color="primary" gutterBottom>
++        Bank Accounts
++      </Typography>
+       <BankAccountList
+         bankAccounts={bankAccountsState?.context.results!}
+         deleteBankAccount={deleteBankAccount}
+       />
++      <Box mt={2}>
++        <Button
++          variant="outlined"
++          fullWidth
++          color="primary"
++          size="large"
++          component={RouterLink}
++          to="/bankaccounts/new"
++          data-test="bankaccount-new"
++        >
++          Create
++        </Button>
++      </Box>
+     </StyledPaper>
+   );
+ };

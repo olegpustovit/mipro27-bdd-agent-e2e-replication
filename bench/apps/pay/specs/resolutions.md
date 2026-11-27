@@ -12,3 +12,5 @@ Recorded 2026-11-27. These resolutions do not change any edit's intent or breaka
 - pressing Enter in a valid form creates a request;
 - clicking Pay creates a payment;
 - clicking Request creates a request.
+
+**Interaction with edits 2.2 and 2.3.** In v2 the toggle starts unselected. Enter in a valid transaction text field selects Request and opens the same review dialog reached by selecting Request and clicking Continue. Confirm creates the request. This preserves the keyboard transaction type and keeps confirmation mandatory. Pay and Request still select their respective types and proceed through Continue and Confirm.
