@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+import { appendFileSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
+import { parseArgs } from 'node:util';
+import { answerFormat, scenarioDetails } from './answer.mjs';
+import { models } from './codex.mjs';
+import { runSession } from './session.mjs';
+
+const { values } = parseArgs({ options: {
+  item: { type: 'string' }, out: { type: 'string' },
+} });
+if (!values.item || !values.out) throw new Error('Usage: bench/agent/run --item ITEM.json --out DIR');
+const bench = new URL('../', import.meta.url);
+const load = path => readFile(path, 'utf8');
+async function optional(path, fallback) {
+  try { return await load(path); }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return fallback;
+  }
+}
+const sha256 = text => createHash('sha256').update(text).digest('hex');
+
+const item = JSON.parse(await load(values.item));
+const modelPin = Object.hasOwn(models, item.arm) && models[item.arm];
+if (!modelPin) throw new Error('Run item must select an agent arm (luna, terra or sol)');
+const [model, effort] = modelPin;
+if (!['pay', 'mdl', 'fixture'].includes(item.app)) throw new Error('Invalid run item app');
+for (const segment of [item.scenario, ...(item.app === 'mdl' ? [item.version] : [])]) {
+  if (typeof segment !== 'string' || !/^[\w-]+$/.test(segment)) throw new Error('Invalid scenario path segment');
+}
+const path = item.app === 'mdl' ? `scenarios/moodle/${item.version}/${item.scenario}.feature` :
+  `scenarios/${item.app}/${item.scenario}.feature`;
+const url = new URL(process.env.BENCH_APP_URL);
+if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+  throw new Error('BENCH_APP_URL must be an HTTP(S) URL without embedded credentials');
+}
+
+const scenario = await load(process.env.BENCH_SCENARIO_FILE ?? new URL(path, bench));
+const { steps, numbered } = scenarioDetails(scenario);
+if (!steps.length) throw new Error('Scenario has no numbered steps');
+const template = item.app === 'fixture'
+  ? await optional(new URL('prompt/template.md', bench), null)
+  : await load(new URL('prompt/template.md', bench));
+const glossary = item.app === 'fixture'
+  ? await optional(new URL('prompt/glossary.md', bench), '')
+  : await load(new URL('prompt/glossary.md', bench));
+const fields = { url: url.href, scenario: numbered, glossary, answer_format: answerFormat };
+const developmentTemplate = `Execute the scenario using only the browser UI. Check each step in order.
+Stop at the first failing step. Do not change the application or bypass a check.
+
+Application URL: {{url}}
+
+{{scenario}}
+
+{{glossary}}
+
+{{answer_format}}`;
+const missing = new Set(['url', 'scenario', 'answer_format']);
+const prompt = (template ?? developmentTemplate).replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => {
+  if (!Object.hasOwn(fields, key)) throw new Error('Unknown prompt template variable: ' + key);
+  missing.delete(key);
+  return fields[key];
+});
+if (missing.size) throw new Error('Missing prompt template variables: ' + [...missing].join(', '));
+
+await mkdir(values.out, { recursive: true });
+const output = name => join(values.out, name);
+await writeFile(output('prompt.md'), prompt, { flag: 'wx' });
+await writeFile(output('run.json'), JSON.stringify({
+  model, effort, prompt_sha256: sha256(prompt), scenario_sha256: sha256(scenario),
+}, null, 2) + '\n', { flag: 'wx' });
+for (const kind of ['codex', 'browser']) await writeFile(output(kind + '.jsonl'), '', { flag: 'wx' });
+
+const answer = await runSession({
+  prompt, steps, model, effort, app: item.app, url: url.href,
+  trace: (kind, event) => appendFileSync(output(kind + '.jsonl'), JSON.stringify(event) + '\n'),
+  onInfrastructureFailure: () => { process.exitCode = 1; },
+});
+await writeFile(output('answer.json'), JSON.stringify(answer, null, 2) + '\n', { flag: 'wx' });
