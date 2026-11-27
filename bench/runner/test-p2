@@ -14,6 +14,7 @@ from time import monotonic
 from urllib.parse import urlencode
 
 from docker_engine import DockerEngine
+from ledger import file_digest
 from worker import BENCH, DEFAULT_WORKERS, Worker, docker
 
 pins = json.loads((BENCH / "env.lock.json").read_text())
@@ -56,6 +57,14 @@ def coded(index, barrier, *, moodle=False, fixture=False):
                 assert keys == marker, (keys, marker)
                 worker.engine.execute(worker.app, ("mv", db + ".p2", db))
             assert worker.run(raw) == 0, (raw / "coded.json").read_text()
+            if not moodle:
+                feature = (BENCH / "scenarios/pay/hold-out/hold-06.feature" if fixture else
+                           BENCH / "scenarios/pay/auth-login.feature")
+                if not feature.exists():
+                    feature = BENCH.parent / "study/scenarios.feature"
+                provenance = json.loads((raw / "provenance.json").read_text())
+                assert provenance == {"scenario_sha256": file_digest(feature), "prompt_sha256": None}
+
             containers = [worker.app, worker.browser, *([worker.db] if moodle else [])]
             peak = cpu = 0
             for container in containers:

@@ -21,6 +21,13 @@ BENCH = Path(__file__).resolve().parents[1]
 ROOT = BENCH.parent
 DEFAULT_WORKERS = 8
 MIB = 1024 ** 2
+AGENT_LIMIT_SECONDS = 300  # bench/agent/session.mjs
+AGENT_HOST_MARGIN_SECONDS = 30
+INFRASTRUCTURE_TIMEOUT_SECONDS = 300
+
+
+class AgentTimeout(RuntimeError):
+    """The host watchdog expired before the agent could report its result."""
 
 
 def docker(*args, timeout=30, check=True, input=None):
@@ -80,7 +87,6 @@ class Worker:
         self.startup_ms = None
         self.phases_ms = {}
         self.teardown_ms = None
-        self.deadline = monotonic() + 300
 
     def __enter__(self):
         return self
@@ -169,7 +175,7 @@ class Worker:
 
     def healthy(self, *names):
         pending = set(names)
-        deadline = min(self.deadline, monotonic() + 90)
+        deadline = monotonic() + 90
         while pending and monotonic() < deadline:
             for name in tuple(pending):
                 state = self.engine.inspect(name)["State"]
@@ -185,7 +191,7 @@ class Worker:
     def local(self, executable, raw, *args, env=None):
         output = subprocess.run([executable, *map(str, args)], stdin=subprocess.DEVNULL,
                                 capture_output=True, text=True, cwd=ROOT, env=env,
-                                timeout=max(1, self.deadline - monotonic()))
+                                timeout=INFRASTRUCTURE_TIMEOUT_SECONDS)
         if output.returncode and not (raw / "coded.json").is_file():
             raise RuntimeError(f"{executable} failed (exit {output.returncode})")
         return output.returncode
@@ -375,16 +381,24 @@ class Worker:
         else:
             container, repo, executable = self.browser, "/work", "bench/runner/coded-run"
         shutil.copyfile(raw / "item.json", self.input / "item.json")
-        with self.phase("adapter"):
-            # The CLI subprocess supplies an absolute timeout even if an
-            # adapter keeps emitting output. Cleanup stops the contained exec.
-            flags = [flag for entry in env for flag in ("-e", entry)]
-            result = docker("exec", *flags, "-w", repo, container, "node", executable,
-                            "--item", "/p2input/item.json", "--out", "/p2output",
-                            timeout=max(1, self.deadline - monotonic()), check=False)
-        for output in self.output.iterdir():
-            if not output.is_file() or output.is_symlink():
-                raise RuntimeError("adapter output must be a regular file")
-            with output.open("rb") as source, (raw / output.name).open("xb") as dest:
-                shutil.copyfileobj(source, dest)
+        timeout = (AGENT_LIMIT_SECONDS + AGENT_HOST_MARGIN_SECONDS
+                   if agent else INFRASTRUCTURE_TIMEOUT_SECONDS)
+        try:
+            with self.phase("adapter"):
+                flags = [flag for entry in env for flag in ("-e", entry)]
+                result = docker("exec", *flags, "-w", repo, container, "node", executable,
+                                "--item", "/p2input/item.json", "--out", "/p2output",
+                                timeout=timeout, check=False)
+        except subprocess.TimeoutExpired as error:
+            # Killing the docker client does not necessarily stop the contained exec.
+            self.remove("container", container)
+            if agent:
+                raise AgentTimeout(f"agent exceeded the {timeout:g}s host watchdog") from error
+            raise
+        finally:
+            for output in self.output.iterdir():
+                if not output.is_file() or output.is_symlink():
+                    raise RuntimeError("adapter output must be a regular file")
+                with output.open("rb") as source, (raw / output.name).open("xb") as dest:
+                    shutil.copyfileobj(source, dest)
         return result.returncode

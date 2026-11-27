@@ -69,9 +69,10 @@ export function resolvePaymentSupport(item) {
   return { file, world, support };
 }
 
-export async function payment(item) {
+export async function payment(item, pinScenario) {
   const { scenario, version } = item;
   const { file, world, support } = resolvePaymentSupport(item);
+  await pinScenario?.(readFileSync(join(root, file)));
 
   const { origin } = await import('./pay-origin.mjs');
   const { freshBrowser } = await import('../../../scripts/fixture.mjs');

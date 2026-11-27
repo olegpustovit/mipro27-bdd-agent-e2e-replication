@@ -1,10 +1,17 @@
 #!/usr/bin/env node
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({ options: { item: { type: 'string' }, out: { type: 'string' } } });
 if (!values.item || !values.out) throw new Error('Usage: coded-run --item ITEM_JSON --out DIR');
+
+await mkdir(values.out, { recursive: true });
+const pinScenario = source => writeFile(join(values.out, 'provenance.json'), JSON.stringify({
+  scenario_sha256: createHash('sha256').update(source).digest('hex'),
+  prompt_sha256: null,
+}) + '\n', { flag: 'wx' });
 
 const start = performance.now();
 const result = { status: 'fail', failed_step: null, failed_step_text: null };
@@ -13,8 +20,8 @@ try {
   for (const value of [item.scenario, item.version]) {
     if (typeof value !== 'string' || !/^[\w-]+$/.test(value)) throw new Error('Invalid scenario or version');
   }
-  if (item.app === 'pay') Object.assign(result, await (await import('./coded/pay.mjs')).payment(item));
-  else if (item.app === 'mdl') Object.assign(result, await (await import('./coded/moodle.mjs')).moodle(item));
+  if (item.app === 'pay') Object.assign(result, await (await import('./coded/pay.mjs')).payment(item, pinScenario));
+  else if (item.app === 'mdl') Object.assign(result, await (await import('./coded/moodle.mjs')).moodle(item, pinScenario));
   else throw new Error('Unknown coded app');
   process.exitCode = result.status === 'pass' ? 0 : 1;
 } catch (error) {
@@ -22,7 +29,6 @@ try {
   process.exitCode = 2;
 }
 result.minutes = (performance.now() - start) / 60_000;
-await mkdir(values.out, { recursive: true });
 const temp = join(values.out, `.coded-${process.pid}.json`);
 await writeFile(temp, JSON.stringify(result, null, 2) + '\n');
 await rename(temp, join(values.out, 'coded.json'));

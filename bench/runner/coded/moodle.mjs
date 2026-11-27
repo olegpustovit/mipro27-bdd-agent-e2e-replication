@@ -37,7 +37,7 @@ export function resolveMoodleItem(item) {
   return { ...target[phase], name: target.name, commit, arm, stepPatch, bugPatch };
 }
 
-export async function moodle(item) {
+export async function moodle(item, pinScenario) {
   const { scenario, phase } = item;
   const { arm, bugPatch, commit, feature, line, name, stepPatch } = resolveMoodleItem(item);
   if (arm !== 'sd-old' && !(arm === 'sd-new' && phase === 'post')) {
@@ -58,6 +58,7 @@ export async function moodle(item) {
       },
     };
     const source = await adapter.exec('webserver', ['cat', `/var/www/html/${feature}`]);
+    await pinScenario?.(source.stdout);
     const target = findScenario(parseFeature(source.stdout), { line, name });
     const result = await runScenario(adapter, { feature, line, timeoutMs: 120_000 });
     return interpret(result, name, scenario, commit, target.kind === 'scenario');
@@ -72,6 +73,7 @@ export async function moodle(item) {
       await adapter.exec('webserver', ['git', 'apply', '-'], { cwd: '/var/www/html', input: patch });
     }
     const source = await adapter.exec('webserver', ['cat', `/var/www/html/${feature}`]);
+    await pinScenario?.(source.stdout);
     const target = findScenario(parseFeature(source.stdout), { line, name });
     const result = await runScenario(adapter, { feature, line, timeoutMs: 120_000 });
     return interpret(result, name, scenario, commit, target.kind === 'scenario');
@@ -90,6 +92,7 @@ export async function moodle(item) {
     await ensureStateText(adapter, patch);
     // Native Behat executes the original setup and UI steps together, in source order.
     const source = readFileSync(join(adapter.dirs.src, feature), 'utf8');
+    await pinScenario?.(source);
     const target = findScenario(parseFeature(source), { line, name });
     const result = await runScenario(adapter, { feature, line, timeoutMs: 120_000 });
     return interpret(result, name, scenario, commit, target.kind === 'scenario');

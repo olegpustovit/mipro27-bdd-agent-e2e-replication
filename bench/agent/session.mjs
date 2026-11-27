@@ -39,12 +39,12 @@ export async function runSession({
       url, app,
       attemptTool(name, args) {
         if (cause) return false;
-        calls++;
-        trace('browser', { type: 'call', number: calls, name, args });
         if (calls >= toolLimit) {
           stop('budget_tools');
           return false;
         }
+        calls++;
+        trace('browser', { type: 'call', number: calls, name, args });
         return true;
       },
       observeTool(name, args, reply) {

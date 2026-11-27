@@ -99,12 +99,12 @@ test('5-minute watchdog terminates Codex with budget_time', async () => {
   assert.equal(answer.tool_calls, 0);
 });
 
-test('80th tool call terminates Codex with budget_tools', async () => {
+test('81st tool call terminates Codex with budget_tools', async () => {
   const fake = harness();
   const running = runSession(input, fake.dependencies);
   await setImmediate();
   assert.equal(toolLimit, 80);
-  for (let index = 1; index < 80; index++) {
+  for (let index = 0; index < 80; index++) {
     assert.equal(fake.browser.attemptTool('browser_snapshot', {}), true);
   }
   assert.equal(fake.browser.attemptTool('browser_snapshot', {}), false);

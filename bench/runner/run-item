@@ -20,9 +20,10 @@ from tempfile import TemporaryDirectory
 
 from ledger import ITEM_ID, Ledger, canonical, digest, locked
 from notify import send
-from worker import DEFAULT_WORKERS, Worker
+from worker import AGENT_LIMIT_SECONDS, AgentTimeout, DEFAULT_WORKERS, Worker
 
 BENCH = Path(__file__).resolve().parents[1]
+FROZEN_PLAN = BENCH / "plan/plan.json"
 MAX_ATTEMPTS = 4
 RUN_SECONDS = 300
 GIB = 1024 ** 3
@@ -39,9 +40,11 @@ def arguments():
                            help="exact item match; repeat to combine filters")
     parser.add_argument("--workers", type=int)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--resume", action="store_true", help="skip items with a valid result in this ledger")
+    repeat = parser.add_mutually_exclusive_group()
+    repeat.add_argument("--resume", action="store_true", help="skip valid items (the default)")
+    repeat.add_argument("--rerun-valid", action="store_true", help="rerun valid items on fixture plans only")
     parser.add_argument("--list-order", action="store_true", help="print seeded schedule and exit")
-    parser.add_argument("--plan", type=Path, default=BENCH / "plan/plan.json")
+    parser.add_argument("--plan", type=Path, default=FROZEN_PLAN)
     parser.add_argument("--ledger-dir", type=Path, default=BENCH / "ledger")
     parser.add_argument("--agent-run", type=Path, default=BENCH / "agent/run")
     parser.add_argument("--coded-run", type=Path, default=BENCH / "runner/coded-run")
@@ -138,8 +141,9 @@ def count(value):
     return type(value) is int and value >= 0
 
 
-def adapter_result(raw, is_agent):
-    value = read_object(raw / ("answer.json" if is_agent else "coded.json"))
+def adapter_result(raw, is_agent, *, host_timeout=False):
+    filename = "host-timeout.json" if host_timeout else ("answer.json" if is_agent else "coded.json")
+    value = read_object(raw / filename)
     states = {"pass", "fail", "unresolved"} if is_agent else {"pass", "fail"}
     if value["status"] not in states or not duration(value["minutes"]):
         raise ValueError("invalid status or minutes")
@@ -155,9 +159,9 @@ def adapter_result(raw, is_agent):
         cause = value["unresolved_cause"]
         if (cause not in causes if value["status"] == "unresolved" else cause is not None):
             raise ValueError("invalid unresolved cause")
-        if not count(value["tool_calls"]) or not all(
+        if not host_timeout and (not count(value["tool_calls"]) or not all(
             count(value["tokens"][field]) for field in ("input", "cached", "output")
-        ):
+        )):
             raise ValueError("invalid token or tool count")
     else:
         fields += ["message"]
@@ -171,7 +175,9 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
     command = args.agent_run if is_agent else args.coded_run
     default = BENCH / ("agent/run" if is_agent else "runner/coded-run")
     images = dict.fromkeys(("app", "db", "browser", "agent"))
-    if command.resolve() == default:
+    standard_adapter = command.resolve() == default
+    host_timeout = False
+    if standard_adapter:
         instance = None
         exit_code = None
         error = None
@@ -180,6 +186,9 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
                 images = instance.images
                 instance.start()
                 exit_code = instance.run(raw)
+        except AgentTimeout as failure:
+            error = str(failure)
+            host_timeout = True
         except (RuntimeError, OSError, KeyError, ValueError, subprocess.SubprocessError) as failure:
             error = str(failure)
             exit_code = None
@@ -192,6 +201,15 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
     else:
         exit_code = run_command(command, "--item", raw / "item.json", "--out", raw)
     elapsed = (time.monotonic() - clock) / 60
+    if host_timeout:
+        # Preserve any adapter-written answer as evidence and record the
+        # watchdog verdict separately. Total usage was never reported.
+        (raw / "host-timeout.json").write_bytes(canonical({
+            "status": "unresolved", "failed_step": None, "failed_step_text": None,
+            "reason": error, "raw": None, "unresolved_cause": "budget_time",
+            "minutes": AGENT_LIMIT_SECONDS / 60, "tool_calls": None,
+            "tokens": dict.fromkeys(("input", "cached", "output")),
+        }) + b"\n")
     model_pin = pins.get("models", {}).get(item["arm"], {})
     tool_versions = {key: pins[key] for key in ("node", "playwright", "playwrightMcp", "codexCli")
                      if key in pins}
@@ -201,7 +219,7 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
         "image_digests": images,
         "tool_versions": tool_versions, "model": model_pin.get("id", arm.get("model")),
         "effort": model_pin.get("effort", arm.get("effort")),
-        "prompt_sha256": pins.get("promptSha256") if is_agent else None,
+        "prompt_sha256": None,
         "scenario_sha256": None, "bug_id": item.get("bugId"),
         "valid": False, "invalid_reason": "invalid adapter output", "quarantined": True,
         "coded_result": None, "agent_answer": None, "unresolved_cause": None,
@@ -217,8 +235,9 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
                 raise ValueError("invalid adapter stop")
             stop = cause
             record["invalid_reason"] = stop
-            return record, stop
         provenance_path = raw / "provenance.json"
+        if not provenance_path.exists():
+            provenance_path = raw / "run.json"
         if provenance_path.exists():
             provenance = read_object(provenance_path)
             for field in ("image_digests", "tool_versions"):
@@ -227,13 +246,22 @@ def attempt_run(args, item, arm, attempt, raw, worker, plan_identity, pins):
             for field in ("model", "effort", "prompt_sha256", "scenario_sha256"):
                 if field in provenance:
                     record[field] = provenance[field]
-        if exit_code is None:
+        if stop:
+            return record, stop
+        if not host_timeout and exit_code is None:
             record["invalid_reason"] = "adapter unavailable or exceeded host timeout"
             return record, stop
-        if exit_code not in ({0} if is_agent else {0, 1}):
+        if not host_timeout and exit_code not in ({0} if is_agent else {0, 1}):
             record["invalid_reason"] = f"{'agent' if is_agent else 'coded'} adapter infrastructure error"
             return record, stop
-        answer, value = adapter_result(raw, is_agent)
+        if standard_adapter and not host_timeout:
+            fields = ("scenario_sha256", "prompt_sha256") if is_agent else ("scenario_sha256",)
+            for field in fields:
+                value = record[field]
+                if not isinstance(value, str) or len(value) != 64 or any(
+                        char not in "0123456789abcdef" for char in value):
+                    raise ValueError(f"missing or invalid {field}")
+        answer, value = adapter_result(raw, is_agent, host_timeout=host_timeout)
         record["agent_answer" if is_agent else "coded_result"] = answer
         record["minutes"] = value["minutes"]
         if is_agent:
@@ -286,7 +314,8 @@ def invalid_tail(records):
     for record in reversed(records):
         if record["valid"]:
             break
-        count += 1
+        if record["invalid_reason"] not in CONTROL_STOPS:
+            count += 1
     return count
 
 
@@ -307,11 +336,24 @@ def announce_stop(args, reason, item):
         print("Alert delivery failed.", file=sys.stderr)
 
 
+def repository_commit(*, require_clean):
+    def git(*flags):
+        result = subprocess.run(["git", *flags], cwd=BENCH.parent, capture_output=True,
+                                text=True, timeout=30)
+        if result.returncode:
+            raise ValueError("could not read repository state")
+        return result.stdout.strip()
+
+    if require_clean and git("status", "--porcelain", "--untracked-files=all"):
+        raise ValueError("working tree must be clean before a measured run")
+    return git("rev-parse", "HEAD")
+
+
 def execute(args, plan, items, plan_bytes):
     args.ledger_dir.mkdir(parents=True, exist_ok=True)
     with locked(args.ledger_dir, exclusive=True):
         (args.ledger_dir / "attempts.jsonl").touch(exist_ok=True)
-        ledger = Ledger(args.ledger_dir)
+        ledger = Ledger(args.ledger_dir, recover_orphans=True)
         # Resolve adapter paths independently of the caller's working directory.
         arms = {app: {arm["id"]: arm for arm in plan[app]["arms"]}
                 for app in {item["app"] for item in items}}
@@ -320,6 +362,7 @@ def execute(args, plan, items, plan_bytes):
                 raise ValueError(f"unknown adapter kind for {item['id']}")
         rules = StopRules(args)
         identity = {"plan_id": plan["planId"], "plan_sha256": digest(plan_bytes)}
+        identity["git_commit"] = repository_commit(require_clean=False)
         if run_command(args.lock_check, timeout=30) != 0:
             announce_stop(args, STOP_GATE, items[0]["id"])
             return 2
@@ -343,7 +386,7 @@ def work(args, ledger, rules, identity, arms, items, pins):
                 history = ledger.history[item_id]
                 if history and any(record["plan_sha256"] != identity["plan_sha256"] for record in history):
                     raise ValueError(f"plan changed for previously attempted item {item_id}")
-                if args.resume and history and history[-1]["valid"]:
+                if not args.rerun_valid and any(record["valid"] for record in history):
                     continue
                 if invalid_tail(history) >= MAX_ATTEMPTS:
                     missing.add(item_id)
@@ -357,10 +400,16 @@ def work(args, ledger, rules, identity, arms, items, pins):
                 if any(f.done() for f in active):
                     queue.appendleft(item)
                     break
+                arm = arms[item["app"]][item["arm"]]
+                agent = arm["kind"] == "agent"
+                adapter = args.agent_run if agent else args.coded_run
+                standard = BENCH / ("agent/run" if agent else "runner/coded-run")
+                if adapter.resolve() == standard and repository_commit(require_clean=True) != identity["git_commit"]:
+                    raise ValueError("repository HEAD changed during the run")
                 attempt, raw = ledger.allocate(item_id)
                 (raw / "item.json").write_bytes(payload)
                 worker = free.pop()
-                future = pool.submit(attempt_run, args, item, arms[item["app"]][item["arm"]],
+                future = pool.submit(attempt_run, args, item, arm,
                                      attempt, raw, worker, identity, pins)
                 active[future] = item, raw
                 print(f"launch {item_id} attempt={attempt} worker={worker}", flush=True)
@@ -398,6 +447,9 @@ def main():
     args = arguments()
     try:
         plan_bytes = args.plan.read_bytes()
+        campaign = args.plan.resolve() == FROZEN_PLAN or plan_bytes == FROZEN_PLAN.read_bytes()
+        if campaign and args.rerun_valid:
+            raise ValueError("--rerun-valid is forbidden for the campaign plan")
         plan = json.loads(plan_bytes)
         items = schedule(plan, args)
         if args.list_order:
@@ -408,7 +460,7 @@ def main():
     except KeyboardInterrupt:
         print("run-item: interrupted after active workers cleaned up", file=sys.stderr)
         return 130
-    except (ValueError, KeyError, TypeError, OSError) as error:
+    except (ValueError, KeyError, TypeError, OSError, subprocess.TimeoutExpired) as error:
         print(f"run-item: {error}", file=sys.stderr)
         return 1
 
