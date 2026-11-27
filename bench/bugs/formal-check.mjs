@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { appendFileSync, readFileSync, readdirSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { join } from 'node:path';
@@ -74,12 +74,8 @@ async function moodle({ bug, version, mode, pin, dbPin }) {
     await docker('run', '--pull=never', '-d', '--name', db, '--network', network,
       '--network-alias', 'db', dbPin.digest);
     await waitHealthy(db);
-    await docker('create', '--pull=never', '--name', app, '--network', network,
-      '--network-alias', 'webserver', '-v', `${join(bugs, bug, 'patch.diff')}:/opt/p7.diff:ro`,
-      pin.digest, 'bash', '-ec', mode === 'bug'
-        ? 'git apply /opt/p7.diff && exec apache2-foreground'
-        : 'exec apache2-foreground');
-    await docker('start', app);
+    await docker('run', '--pull=never', '-d', '--name', app, '--network', network,
+      '--network-alias', 'webserver', pin.digest);
     await docker('run', '--pull=never', '-d', '--name', browser, '--init', '--shm-size', '256m',
       '--network', network, images.browser.digest);
     await Promise.all([waitHealthy(app), waitHealthy(browser)]);
@@ -135,30 +131,31 @@ function matrix(app) {
   return folders.filter(id => id.startsWith(app === 'payment' ? 'pay-' : 'mdl-')).flatMap(bug =>
     json(`./${bug}/applies-to.json`).flatMap(version => ['healthy', 'bug'].map(mode => {
       if (app === 'moodle') {
-        const key = `mdl-${bug.split('-')[1].toLowerCase()}-post-healthy`;
-        const patch = new URL(`./${bug}/patch.diff`, import.meta.url);
-        const patchSha256 = mode === 'bug' ? createHash('sha256').update(readFileSync(patch)).digest('hex') : null;
-        return { app, bug, version, mode, pin: images.app[key], dbPin: images.db[key], patchSha256 };
+        const imageRun = mode === 'bug';
+        const key = imageRun ? bug : `mdl-${bug.split('-')[1].toLowerCase()}-post-healthy`;
+        return { app, bug, version, mode, pin: images.app[key], dbPin: images.db[key],
+          run: imageRun ? 'formal-P7-image' : 'formal-P7' };
       }
       const key = `pay-${version}-${mode === 'healthy' ? 'healthy' : bug.slice(4)}`;
-      return { app, bug, version, mode, pin: images.app[key] };
+      return { app, bug, version, mode, pin: images.app[key], run: 'formal-P7' };
     })));
 }
 
-const key = ({ bug, version, mode }) => `${bug} ${version} ${mode}`;
+const key = ({ run, bug, version, mode }) => `${run} ${bug} ${version} ${mode}`;
 
 function latestResults() {
   const latest = new Map();
   for (const line of readFileSync(ledger, 'utf8').split('\n').filter(Boolean)) {
     const record = JSON.parse(line);
-    if (record.run === 'formal-P7') latest.set(key(record), record);
+    if (['formal-P7', 'formal-P7-image'].includes(record.run)) latest.set(key(record), record);
   }
   return latest;
 }
 
 function passed(job, record) {
-  return record?.status === 'pass' && record.imageDigest === job.pin?.digest &&
-    record.dbImageDigest === job.dbPin?.digest && record.patchSha256 === job.patchSha256;
+  return Boolean(job.pin) && (job.app !== 'moodle' || Boolean(job.dbPin)) &&
+    record?.status === 'pass' && record.imageDigest === job.pin.digest &&
+    record.dbImageDigest === job.dbPin?.digest;
 }
 
 function summarize() {
@@ -166,9 +163,9 @@ function summarize() {
   const counts = new Map();
   let incomplete = false;
   for (const job of [...matrix('payment'), ...matrix('moodle')]) {
-    const { app, bug, version, mode } = job;
+    const { app, bug, version, mode, run } = job;
     const change = app === 'moodle' ? `${bug.split('-')[1]}-post ` : '';
-    const label = `${app} ${change}${version} ${mode}`;
+    const label = `${app} ${change}${version} ${mode}${run === 'formal-P7-image' ? ' (prebuilt image)' : ''}`;
     if (!counts.has(label)) counts.set(label, { pass: 0, total: 0 });
     const count = counts.get(label);
     count.total++;
@@ -191,11 +188,12 @@ if (selection === 'lint') {
   summarize();
 } else {
   assert(['payment', 'moodle'].includes(selection),
-    'Usage: node formal-check.mjs lint|summary|payment|moodle [--resume] [bug ...]');
+    'Usage: node formal-check.mjs lint|summary|payment|moodle [--resume] [--bug-only] [bug ...]');
   await verify(images.browser, 'browser');
   const args = process.argv.slice(3);
-  const subset = args.filter(arg => arg !== '--resume');
-  const jobs = matrix(selection).filter(job => !subset.length || subset.includes(job.bug));
+  const subset = args.filter(arg => !['--resume', '--bug-only'].includes(arg));
+  const jobs = matrix(selection).filter(job =>
+    (!args.includes('--bug-only') || job.mode === 'bug') && (!subset.length || subset.includes(job.bug)));
   assert(jobs.length);
   if (args.includes('--resume')) {
     const latest = latestResults();
@@ -212,7 +210,7 @@ if (selection === 'lint') {
       let status = 'fail';
       try {
         await verify(pin, bug);
-        if (job.dbPin) await verify(job.dbPin, bug + ' DB');
+        if (selection === 'moodle') await verify(job.dbPin, bug + ' DB');
         const output = await (selection === 'payment' ? payment(job) : moodle(job));
         const pass = `PASS ${bug} ${version} ${mode}`;
         assert.equal(output.split('\n').at(-1), pass);
@@ -225,9 +223,9 @@ if (selection === 'lint') {
         console.error(`FAIL ${bug} ${version} ${mode}\n${diagnostic}`);
       }
       appendFileSync(ledger, JSON.stringify({
-        run: 'formal-P7', app: selection, bug, version, mode, status,
+        run: job.run, app: selection, bug, version, mode, status,
         imageDigest: pin?.digest ?? null, time,
-        ...(job.dbPin && { dbImageDigest: job.dbPin.digest, patchSha256: job.patchSha256 }),
+        ...(job.dbPin && { dbImageDigest: job.dbPin.digest }),
       }) + '\n');
     }
   });
