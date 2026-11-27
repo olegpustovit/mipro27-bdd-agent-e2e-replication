@@ -36,7 +36,7 @@ export function codexCommand({ model, effort, endpoint }) {
     if (container) {
       return { start: () => spawn(executable, codexArgs, {
         cwd: directory, stdio: ['pipe', 'pipe', 'ignore'],
-        env: Object.fromEntries(['PATH', 'HOME', 'CODEX_HOME', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY']
+        env: Object.fromEntries(['PATH', 'HOME', 'CODEX_HOME', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'SSL_CERT_FILE']
           .map(key => [key, process.env[key]])),
       }), cleanup };
     }
