@@ -44,8 +44,11 @@ arm uses the preceding version's definitions. Each version uses
 `social.mjs` for the original suite and `hold-out.mjs` for hold-outs, as in
 v0's calibration. Missing files are infrastructure errors.
 
-The Moodle adapter reconstructs the replay build using the pinned commit and
-runtime, and uses worker `w89` by default. Set `BENCH_MOODLE_WORKER` to use a
-different dedicated Moodle worker. The worker lease prevents simultaneous
-use of the same fixture. The old post-change arm applies the replay's
-old-step patch. Bug items require the matching `bench/bugs/<bugId>/patch.diff`.
+The Moodle adapter reads the commit and native scenario location from
+`bench/apps/moodle/changes.json` and runs the original feature, including its
+setup steps, with the pinned Moodle runtime. The `sd-old` arm on the post-change
+commit restores the pre-change Behat definitions using `coded/moodle-steps/`.
+The `sd-new` arm uses the native post-change definitions. Bug items run on the
+post-change commit with `bench/bugs/mdl-<change>-<scenario>/patch.diff`.
+Set `BENCH_MOODLE_WORKER` to select a dedicated Moodle worker. The default is
+`w89`. The worker lease prevents simultaneous use of the same fixture.
