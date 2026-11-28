@@ -65,6 +65,20 @@ def load_targets():
     return targets, pinned
 
 
+def load_levels():
+    """The plan's sourced good-enough levels. There is no fallback: scoring stops if they are missing."""
+    path = BENCH / "plan/levels.json"
+    if not path.exists():
+        raise ValueError("bench/plan/levels.json is missing; scoring needs the plan's levels")
+    levels = json.loads(path.read_bytes())
+    for key in ("retention", "false_alarms"):
+        if not isinstance(levels.get(key), (int, float)) or not 0 < levels[key] < 1:
+            raise ValueError(f"invalid level {key} in bench/plan/levels.json")
+    if not levels.get("source"):
+        raise ValueError("levels need a source")
+    return levels
+
+
 def summarize(manifest, history, metadata, targets):
     results, excluded, invalid = read_cells(manifest, history, targets)
     units, unpaired = paired_units(results)
@@ -72,7 +86,7 @@ def summarize(manifest, history, metadata, targets):
     healthy_by_arm = by_scope(healthy)
     units_by_arm = by_scope(units.items())
     rates = metadata.get("rates_per_million", {})
-    levels = metadata.get("levels", {"retention": 0.8, "false_alarms": 0.1, "source": "study fallback"})
+    levels = metadata.get("levels") or load_levels()
     per_arm = []
     hold_out = []
     for app, arm in sorted({(cell["app"], cell["arm"]) for cell in manifest}):
