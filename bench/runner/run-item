@@ -299,7 +299,9 @@ class StopRules:
         worker, arm = record["worker"], record["arm"]
         for key, streaks in ((worker, self.invalid_workers), (arm, self.invalid_arms)):
             streaks[key] = 0 if record["valid"] else streaks[key] + 1
-        baseline = self.baselines.get(arm)
+        # Moodle runs are longer than payment runs; each app has its own baseline ("mdl:<arm>").
+        app = record["item_id"].split(".", 1)[0]
+        baseline = self.baselines.get(f"{app}:{arm}", self.baselines.get(arm) if app == "pay" else None)
         slow = baseline is not None and record["minutes"] > 2 * baseline
         self.slow[arm] = self.slow[arm] + 1 if slow else 0
         if self.invalid_workers[worker] >= 2 or self.invalid_arms[arm] >= 2:
